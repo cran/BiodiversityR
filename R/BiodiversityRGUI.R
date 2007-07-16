@@ -1,0 +1,12 @@
+`BiodiversityRGUI` <-
+function()
+{
+    options(Rcmdr=list(etc=file.path(.path.package(package="BiodiversityR"),
+        "etc"), sort.names=FALSE))
+    if ("Rcmdr" %in% .packages()) {
+        stop("R commander should not have been loaded yet")
+    }else{
+        require(Rcmdr) || stop("needs Rcmdr")
+    }
+}
+
