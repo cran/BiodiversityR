@@ -1,0 +1,35 @@
+`ordisymbol` <-
+function(ordiplot,y,factor,col=1,rainbow=T,legend=T,...) {
+    ordiscores <- scores(ordiplot, display="sites")
+    groups <- table(y[,factor])
+    m <- length(groups)
+    if (m > 25) {
+        warning("Symbol size was kept constant as there were more than 25 categories (> number of symbols that are currently used in R)")
+        rainbow <- T
+    }
+    levels <- names(groups)
+    if (rainbow == T) {palette(rainbow(m))}
+    for (i in 1:m) {
+        subs <- y[,factor]==levels[i]
+        for (q in 1:length(subs)) {
+            if(is.na(subs[q])) {subs[q]<-F}
+        }
+        scores <- ordiscores[subs,,drop=F]
+        if (rainbow == T && m < 26) {
+            points(scores[,1],scores[,2],pch=i,col=i,...)
+        }
+        if (rainbow == T && m > 25) {
+            points(scores[,1],scores[,2],pch=19,col=i,...)
+        }
+        if (rainbow == F) {
+            points(scores[,1],scores[,2],pch=i,col=col,...)
+        }
+    }
+    if (legend==T) {
+        if (rainbow==T && m<26) {legend(locator(1),legend=levels,pch=c(1:m),col=c(1:m))}
+        if (rainbow==T && m>25) {legend(locator(1),legend=levels,pch=rep(19,m),col=c(1:m))}
+        if (rainbow==F) {legend(locator(1),legend=levels,pch=c(1:m))}
+    }
+    palette("default")
+}
+
