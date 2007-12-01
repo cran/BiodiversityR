@@ -24,11 +24,11 @@ BiodiversityRGUI()
 The function launches the R-Commander GUI with an extra menu list for
 common statistical methods for biodiversity and community ecology analysis.
  
-The R-Commander is launched by changing the location of the Rcmdr "etc" folder to the "etc" folder of BiodiversityR. As the files of the "etc" folder of BiodiversityR are copied from Rcmdr 1.3-4, it is possible that newer versions of the R-Commander will not be launched properly. In such situations, it is possible that copying all files from the Rcmdr "etc" folder again and adding the BiodiversityR menu options to the Rcmdr-menus.txt is all that is needed to launch the R-Commander again.
+The R-Commander is launched by changing the location of the Rcmdr "etc" folder to the "etc" folder of BiodiversityR. As the files of the "etc" folder of BiodiversityR are copied from Rcmdr 1.3-9, it is possible that newer versions of the R-Commander will not be launched properly. In such situations, it is possible that copying all files from the Rcmdr "etc" folder again and adding the BiodiversityR menu options to the Rcmdr-menus.txt is all that is needed to launch the R-Commander again.
  
 BiodiversityR uses two data sets for analysis: the community dataset (or community matrix or species matrix) and the environmental dataset (or environmental matrix). The environmental dataset is the same dataset that is used as the "active dataset" of The R-Commander. (Note that you could sometimes use the same dataset as both the community and environmental dataset. For example, you could use the community dataset as environmental dataset as well to add information about specific species to ordination diagrams. As another example, you could use the environmental dataset as community dataset if you first calculated species richness of each site, saved this information in the environmental dataset, and then use species richness as response variable in a regression analysis.) Some options of analysis of ecological distance allow the community matrix to be a distance matrix (the community data set will be interpreted as distance matrix via \code{\link[stats:dist]{as.dist}} prior to further analysis). 
  
-Biodiversity.R provides the following menu options (each described below in greater detail):
+BiodiversityR provides the following menu options (each described below in greater detail):
 
 \itemize{
   \item{\bold{Select community dataset} (Community matrix menu)}{
@@ -41,6 +41,18 @@ Imports a community and environmental dataset from an Excel workbook.
 
   \item{\bold{Import datasets from Access} (Community matrix menu)}{
 Imports a community and environmental dataset from an Access database.
+} 
+
+  \item{\bold{View community data set} (Community matrix menu)}{
+Invoke the R text editor to view the data of the community data set.
+} 
+
+  \item{\bold{Edit community data set} (Community matrix menu)}{
+Invoke the R text editor to edit the data of the community data set.
+} 
+
+  \item{\bold{Check data sets} (Community matrix menu)}{
+Check whether the community and environmental data sets have compatible dimensions.
 } 
 
   \item{\bold{Same sites for community and environmental} (Community matrix menu)}{
@@ -59,8 +71,16 @@ Removes the same sites with NA from the environmental and community datasets.
 Transforms the community matrix.
 } 
 
-  \item{\bold{Select environmental dataset} (Environmental matrix menu)}{
+  \item{\bold{Select environmental data set} (Environmental matrix menu)}{
 Selects a dataset to be the environmental dataset.
+} 
+
+  \item{\bold{View environmental data set} (Environmental matrix menu)}{
+Invoke the R text editor to view the data of the environmental dataset.
+} 
+
+  \item{\bold{Edit environmental data set} (Environmental matrix menu)}{
+Invoke the R text editor to edit the data of the environmental dataset.
 } 
 
   \item{\bold{Summary} (Environmental matrix menu)}{
@@ -1025,15 +1045,11 @@ Option "envfit" chooses function \code{\link[vegan]{envfit}} to add information 
  
 Option "ordihull" chooses function \code{\link[vegan]{ordihull}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
-Option "ordihull2" chooses function \code{\link{ordihull2}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
- 
 Option "ordiarrows" chooses function \code{\link[vegan:ordihull]{ordiarrows}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
 Option "ordisegments" chooses function \code{\link[vegan:ordihull]{ordisegments}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
 Option "ordispider" chooses function \code{\link[vegan:ordihull]{ordispider}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
- 
-Option "ordispider2" chooses function \code{\link{ordispider2}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
 Option "ordiellipse" chooses function \code{\link[vegan:ordihull]{ordiellipse}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
@@ -1192,7 +1208,7 @@ Option "envfit" chooses function \code{\link[vegan]{envfit}} to add information 
  
 Option "ordihull" chooses function \code{\link[vegan]{ordihull}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
-Option "ordihull2" chooses function \code{\link{ordihull2}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
+Option "ordihull.centroids" chooses function \code{\link{ordihull.centroids}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
 Option "ordiarrows" chooses function \code{\link[vegan:ordihull]{ordiarrows}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
@@ -1200,7 +1216,7 @@ Option "ordisegments" chooses function \code{\link[vegan:ordihull]{ordisegments}
  
 Option "ordispider" chooses function \code{\link[vegan:ordihull]{ordispider}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
-Option "ordispider2" chooses function \code{\link{ordispider2}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
+Option "ordispider.centroids" chooses function \code{\link{ordispider.centroids}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
 Option "ordiellipse" chooses function \code{\link[vegan:ordihull]{ordiellipse}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  

@@ -41,7 +41,7 @@ faramea$presence <- as.numeric(faramea$Faramea.occidentalis > 0)
 attach(faramea)
 library(nnet)
 result <- nnetrandom(presence ~ Elevation, data=faramea, size=2, 
-    skip=FALSE, entropy=TRUE, trace=FALSE, maxit=1000, tries=1000, 
+    skip=FALSE, entropy=TRUE, trace=FALSE, maxit=1000, tries=100, 
     leave.one.out=FALSE)
 summary(result)
 result$fitted.values

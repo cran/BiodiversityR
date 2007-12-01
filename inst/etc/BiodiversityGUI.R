@@ -449,6 +449,34 @@ samesitesGUI <- function(){
     tkwait.window(top)
 }
 
+viewcommunity <- function(){
+    command <- justDoIt(paste("invisible(edit(", communityDataSet(), "))", sep=""))
+}
+
+editcommunity <- function(){
+    .communityDataSet <- communityDataSet()
+    justDoIt(paste("fix(", .communityDataSet, ")", sep=""))
+    communityDataSet(.communityDataSet)
+    invisible()
+}
+
+viewenvironmental <- function(){
+    justDoIt(paste("invisible(edit(", ActiveDataSet(), "))", sep=""))
+}
+
+editenvironmental <- function(){
+    .activeDataSet <- ActiveDataSet()
+    justDoIt(paste("fix(", .activeDataSet, ")", sep=""))
+    activeDataSet(.activeDataSet)
+    invisible()
+}
+
+checkdatasets <- function(){
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- communityDataSet()
+    doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
+}
+
 
 removeNAGUI <- function(){
     top <- tktoplevel()
@@ -2470,7 +2498,7 @@ unconordiGUI <- function(){
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
     types <- c("plot","ordiplot","ordiplot empty","identify sites","identify species","text sites","text species","points sites","points species","origin axes",
-        "envfit","ordihull (factor)","ordihull2 (factor)", "ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordispider2 (factor)","ordiellipse (factor)","ordisurf (continuous)",
+        "envfit","ordihull (factor)", "ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordiellipse (factor)","ordisurf (continuous)",
         "ordibubble (continuous)","ordisymbol (factor)","ordivector (species)","ordivector interpretation",
         "ordicluster","ordicluster2","ordispantree","ordinearest","ordiequilibriumcircle","distance displayed","coenocline","screeplot.cca","stressplot")
     for (x in types) tkinsert(typeBox, "end", x)
@@ -2494,6 +2522,7 @@ unconordiGUI <- function(){
         k <- tclvalue(NMSVariable)
         perm <- tclvalue(NMSpermVariable)
         treatasdist <- tclvalue(treatasdistVariable)==1
+        addspec <- tclvalue(addspecVariable) == "1"
         if (method=="PCA") {
             command <- paste("rda(", .communityDataSet, ")", sep="")
             doItAndPrint(paste("dist.eval(", .communityDataSet, ",'euc')", sep=""))
@@ -2530,7 +2559,8 @@ unconordiGUI <- function(){
             }
             command <- paste("cmdscale(distmatrix, k=", k, ", eig=T, add=T)", sep="")
         }
-        if (method=="metaMDS") {           
+        if (method=="metaMDS") { 
+            addspec <- F          
             command <- paste("metaMDS(", .communityDataSet, ",distance='", dist, "', k=", k, ", trymax=", perm, ", autotransform=T, noshare=0.1, expand=T, trace=1, plot=F)", sep="")
             doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
         }
@@ -2553,7 +2583,6 @@ unconordiGUI <- function(){
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
         sum <- tclvalue(summaryVariable) == "1"
-        addspec <- tclvalue(addspecVariable) == "1"
         scaling <- tclvalue(scalingVariable)
         if (method == "PCoA"  || method == "PCoA (Caillez)") {
             doItAndPrint(paste("rownames(", modelValue, "$points) <- rownames(", .communityDataSet, ")", sep=""))
@@ -2568,6 +2597,11 @@ unconordiGUI <- function(){
             if (method=="NMS (standard)") {
                 doItAndPrint(paste(modelValue, "<- add.spec.scores(", modelValue, ",", .communityDataSet, ", method='wa.scores')", sep=""))
             }
+        }
+        if (method == "PCA" || method == "PCA (prcomp)"  || method == "CA" || method == "DCA" || addspec == T) {
+            doItAndPrint(paste("check.ordiscores(", .communityDataSet, ",", modelValue, ", check.species=T)", sep=""))
+        }else{
+            doItAndPrint(paste("check.ordiscores(", .communityDataSet, ",", modelValue, ", check.species=F)", sep=""))
         }
         if (sum==T) {
             if (method == "PCA" || method == "CA" || method == "DCA") {
@@ -2669,9 +2703,6 @@ unconordiGUI <- function(){
         if (plottype == "ordihull (factor)" && varfactor==T){
             doItAndPrint(paste("ordihull(plot1,", axisvar, ",col='", col, "')", sep=""))
         }
-        if (plottype == "ordihull2 (factor)" && varfactor==T){
-            doItAndPrint(paste("ordihull2(plot1,", axisvar, ",col='", col, "')", sep=""))
-        }
         if (plottype == "ordiarrows (factor)" && varfactor==T){
             doItAndPrint(paste("ordiarrows(plot1,", axisvar, ",col='", col, "')", sep=""))
         }
@@ -2680,9 +2711,6 @@ unconordiGUI <- function(){
         }
         if (plottype == "ordispider (factor)" && varfactor==T){
             doItAndPrint(paste("ordispider(plot1,", axisvar, ",col='", col, "')", sep=""))
-            }
-        if (plottype == "ordispider2 (factor)" && varfactor==T){
-            doItAndPrint(paste("ordispider2(plot1,", axisvar, ",col='", col, "')", sep=""))
             }
         if (plottype == "ordiellipse (factor)" && varfactor==T){
             doItAndPrint(paste("ordiellipse(plot1,", axisvar, ",col='", col, "')", sep=""))
@@ -2866,7 +2894,7 @@ conordiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("RDA","CCA","capscale","CAPdiscrim","prc","multiconstrained (RDA)", "multiconstrained (CCA)", "multiconstrained (capscale)")
+    methods <- c("RDA","CCA","capscale","capscale(add)","CAPdiscrim","prc","multiconstrained (RDA)", "multiconstrained (CCA)", "multiconstrained (capscale)", "multiconstrained (capscale add)")
     for (x in methods) tkinsert(methodBox, "end", x)
     distBox <- tklistbox(method2Frame, width=27, height=3,
         selectmode="single", background="white", exportselection="FALSE") 
@@ -2905,7 +2933,7 @@ conordiGUI <- function(){
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
     types <- c("plot","ordiplot","ordiplot empty","identify sites","identify species","identify centroids","text sites","text species","text centroids",
         "points sites","points species","points centroids","origin axes",
-        "envfit","ordihull (factor)","ordihull2 (factor)","ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordispider2 (factor)","ordiellipse (factor)","ordisurf (continuous)",
+        "envfit","ordihull (factor)","ordihull.centroids (factor)","ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordispider.centroids (factor)","ordiellipse (factor)","ordisurf (continuous)",
         "ordibubble (continuous)","ordisymbol (factor)","ordivector (species)","ordivector interpretation","ordicluster","ordicluster2",
         "ordinearest","ordispantree","distance displayed","coenocline")
     for (x in types) tkinsert(typeBox, "end", x)
@@ -3026,8 +3054,21 @@ conordiGUI <- function(){
                 assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
             command <- paste("capscale(", formula, ",", .activeDataSet, ",dist='", dist, "', add=F)", sep="")
-            doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
-            doItAndPrint(paste("adonis(", formula, "," , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+            if(treatasdist==F){
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+                doItAndPrint(paste("adonis(", formula, "," , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+            }
+        }
+        if (method=="capscale(add)") {
+            if(treatasdist==T){
+                logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
+                assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("capscale(", formula, ",", .activeDataSet, ",dist='", dist, "', add=T)", sep="")
+            if(treatasdist==F){
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+                doItAndPrint(paste("adonis(", formula, "," , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+            }
         }
         if (method=="prc") {
             command <- paste("prc(", .communityDataSet, "," ,tclvalue(rhsVariable), ")", sep="")
@@ -3054,7 +3095,19 @@ conordiGUI <- function(){
                 assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
             command <- paste("multiconstrained(method='capscale',", formula, ",", .activeDataSet, ",dist='", dist, "', add=F, contrast=0, perm.max=", perm, ")", sep="")
-            doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            if(treatasdist==F){
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }
+        }
+        if (method=="multiconstrained (capscale add)") {
+            if(treatasdist==T){
+                logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
+                assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("multiconstrained(method='capscale',", formula, ",", .activeDataSet, ",dist='", dist, "', add=T, contrast=0, perm.max=", perm, ")", sep="")
+            if(treatasdist==F){
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }
         }
         modelValue <- tclvalue(modelName)
         if (!is.valid.name(modelValue)){
@@ -3063,19 +3116,21 @@ conordiGUI <- function(){
             }        
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
-        if(treatasdist==T  && method!="RDA" && method!="CCA"  && method!="prc" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)"){
-            logger(paste(.communityDataSet, " <- data.frame(as.matrix(", .communityDataSet, "))", sep=""))
-            assign(.communityDataSet, justDoIt(paste("data.frame(as.matrix(",.communityDataSet, "))", sep="")), envir=.GlobalEnv)
+        if (method == "RDA" || method == "CCA"  || method == "capscale" || method == "capscale(add)") {
+            doItAndPrint(paste("check.ordiscores(", .communityDataSet, ",", modelValue, ", check.species=T)", sep=""))
+        }
+        if (method == "CAPdiscrim") {
+            doItAndPrint(paste("check.ordiscores(", .communityDataSet, ",", modelValue, ", check.species=F)", sep=""))
         }
         sum <- tclvalue(summaryVariable) == "1"
         scaling <- tclvalue(scalingVariable)
         if (sum==T) {
-            if (method=="CAPdiscrim" || method=="multiconstrained (RDA)" || method=="multiconstrained (CCA)" || method=="multiconstrained (capscale)") {
+            if (method=="CAPdiscrim" || method=="multiconstrained (RDA)" || method=="multiconstrained (CCA)" || method=="multiconstrained (capscale)" || method=="multiconstrained (capscale add)") {
                 doItAndPrint(paste(modelValue, sep=""))
             }else{
                 doItAndPrint(paste("summary(", modelValue, ", scaling=", scaling, ")", sep=""))
             }
-            if (method=="RDA" || method=="CCA"  || method=='capscale') {
+            if (method=="RDA" || method=="CCA"  || method=="capscale"  || method=="capscale(add)") {
                 doItAndPrint(paste("deviance(", modelValue, ")", sep=""))  
                 doItAndPrint(paste("vif.cca(", modelValue, ")", sep=""))
             }
@@ -3084,12 +3139,16 @@ conordiGUI <- function(){
                 doItAndPrint(paste("inertcomp(", modelValue, ", display='species', statistic='explained', proportional=T)", sep="")) 
             }
         }
-        if (perm>0  && method !="CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)") {
+        if (perm>0  && method !="CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)") {
             doItAndPrint(paste("permutest.cca(", modelValue, ", permutations=", perm, ")", sep=""))
             doItAndPrint(paste("permutest.cca(", modelValue, ", permutations=", perm, ", first=T)", sep=""))
             if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", perm.max=", perm, ", by='terms')", sep=""))}
             }
+        if(treatasdist==T  && method!="RDA" && method!="CCA"  && method!="prc" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)"){
+            logger(paste(.communityDataSet, " <- data.frame(as.matrix(", .communityDataSet, "))", sep=""))
+            assign(.communityDataSet, justDoIt(paste("data.frame(as.matrix(",.communityDataSet, "))", sep="")), envir=.GlobalEnv)
         }
+    }
     onPlot <- function(){
         method <- methods[as.numeric(tkcurselection(methodBox))+1]
         modelValue <- tclvalue(modelName)
@@ -3170,8 +3229,8 @@ conordiGUI <- function(){
         if (plottype == "ordihull (factor)" && varfactor==T){
             doItAndPrint(paste("ordihull(plot1,", axisvar, ",col='", col, "')", sep=""))
             }
-        if (plottype == "ordihull2 (factor)" && varfactor==T){
-            doItAndPrint(paste("ordihull2(plot1,", axisvar, ",col='", col, "')", sep=""))
+        if (plottype == "ordihull.centroids (factor)" && varfactor==T){
+            doItAndPrint(paste("ordihull.centroids(", modelValue, ", plot1, ", axisvar, ", col='", col, "', return.outliers=T)", sep=""))
             }
         if (plottype == "ordiarrows (factor)" && varfactor==T){
             doItAndPrint(paste("ordiarrows(plot1,", axisvar, ",col='", col, "')", sep=""))
@@ -3182,8 +3241,8 @@ conordiGUI <- function(){
         if (plottype == "ordispider (factor)" && varfactor==T){
             doItAndPrint(paste("ordispider(plot1,", axisvar, ",col='", col, "')", sep=""))
             }
-        if (plottype == "ordispider2 (factor)" && varfactor==T){
-            doItAndPrint(paste("ordispider2(plot1,", axisvar, ",col='", col, "')", sep=""))
+        if (plottype == "ordispider.centroids (factor)" && varfactor==T){
+            doItAndPrint(paste("ordispider.centroids(", modelValue, ", plot1, ", axisvar, ", col='", col, "', return.outliers=T)", sep=""))
             }
         if (plottype == "ordiellipse (factor)" && varfactor==T){
             doItAndPrint(paste("ordiellipse(plot1,", axisvar, ",col='", col, "')", sep=""))
