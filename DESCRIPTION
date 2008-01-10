@@ -1,13 +1,13 @@
 Package: BiodiversityR
 Type: Package
 Title: GUI for biodiversity and community ecology analysis
-Version: 1.0
-Date: 2007-7-16
+Version: 1.1
+Date: 2007-12-01
 Author: Roeland Kindt
 Maintainer: Roeland Kindt (World Agroforestry Centre) <R.Kindt@CGIAR.org>
 Description: This package provides a GUI (Graphical User Interface, via the R-Commander) and some utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website.
 License: GPL v2
-URL: http://www.r-project.org, http://www.worldagroforestry.org/treesandmarkets/tree diversity analysis.asp
+URL: http://www.r-project.org, http://www.worldagroforestry.org/treesandmarkets/tree_diversity_analysis.asp
 Depends: R (>= 2.4.0), vegan (>= 1.8-6)
-Suggests: MASS, mgcv, cluster, Rcmdr (>= 1.3-4), car, RODBC, rpart, effects, multcomp, ellipse, maptree, sp, splancs, spatial, akima    
-Packaged: Wed Jul 25 14:47:15 2007; RKINDT
+Suggests: MASS, mgcv, cluster, Rcmdr (>= 1.3-4), car, RODBC, rpart, effects, multcomp, ellipse, maptree, sp, splancs, spatial, akima, nnet
+Packaged: Thu Jan 10 12:25:52 2008; RKINDT

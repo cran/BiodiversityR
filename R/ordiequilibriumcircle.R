@@ -11,7 +11,7 @@ function(pca,ordiplot,...) {
     }
     eigen <- pca$CA$eig
     p <- length(eigen)   
-    n <- nrow(Ordination.model1$CA$u)
+    n <- nrow(pca$CA$u)
     tot <- sum(eigen)
     const <- ((n-1)*tot)^0.25
     radius <- (2/p)^0.5

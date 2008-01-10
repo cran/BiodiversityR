@@ -9,16 +9,19 @@ GUI for biodiversity and community ecology analysis
 This package provides a GUI (Graphical User Interface, via the R-Commander) and some utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website.
 }
 \details{
+
 \tabular{ll}{
 Package: \tab BiodiversityR\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
-Date: \tab 2007-4-2\cr
+Version: \tab 1.1\cr
+Date: \tab 2007-12-01\cr
 License: \tab GPL v2\cr
-Depends: \tab R (>= 2.4.0), vegan (>= 1.9-31)\cr
-Suggests: \tab MASS, mgcv, cluster, Rcmdr (>= 1.3-4), car, RODBC, rpart, effects, multcomp, ellipse, maptree\cr
-Packaged: \tab Wed Jul 18 18:21:26 2007; RKINDT\cr
-Built: \tab R 2.4.0; ; 2007-07-18 18:21:28; windows\cr
+Depends: \tab R (>= 2.4.0), vegan (>= 1.8-6)\cr
+Suggests: \tab MASS, mgcv, cluster, Rcmdr (>= 1.3-4), car, RODBC, rpart,
+effects, multcomp, ellipse, maptree, sp, splancs, spatial,
+akima, nnet\cr
+Packaged: \tab Tue Jan 8 15:09:28 2008; RKINDT\cr
+Built: \tab R 2.6.1; ; 2008-01-08 15:09:29; windows\cr
 }
 
 We warmly thank all that provided inputs that lead to improvement of the Tree Diversity Analysis manual that describes common methods for biodiversity and community ecology analysis and its accompanying software. We especially appreciate the comments received during training sessions with draft versions of this manual and the accompanying software in Kenya, Uganda and Mali. We are equally grateful to the thoughtful reviews by Dr Simoneta Negrete-Yankelevich (Instituto de Ecologia, Mexico) and Dr Robert Burn (Reading University, UK) of the draft version of this manual, and to Hillary Kipruto for help in editing of this manual. We also want to specifically thank Mikkel Grum, Jane Poole and Paulo van Breugel for helping in testing the packaged version of the software. We also want to give special thanks for all the support that was given by Jan Beniest, Tony Simons and Kris Vanhoutte in realizing the book and software. 
@@ -29,8 +32,11 @@ We are grateful for the developers of the R Software for providing a free and po
 
 
 Index:
+
 \preformatted{
 BCI.env                 Barro Colorado Island Quadrat Descriptions
+BiodiversityR-package   GUI for biodiversity and community ecology
+                        analysis
 BiodiversityRGUI        GUI for Biodiversity Analysis and Ordination
 CAPdiscrim              Canonical Analysis of Principal Coordinates
                         based on Discriminant Analysis
@@ -40,6 +46,7 @@ PCAsignificance         PCA Significance
 accumresult             Alternative Species Accumulation Curve Results
 add.spec.scores         Add Species Scores to Unconstrained Ordination
                         Results
+balanced.specaccum      Balanced Species Accumulation Curves
 crosstabanalysis        Presence-absence Analysis by Cross Tabulation
 deviancepercentage      Calculate Percentage and Significance of
                         Deviance Explained by a GLM
@@ -57,6 +64,9 @@ loaded.citations        Give Citation Information for all Loaded
 makecommunitydataset    Make a Community Dataset from a Stacked Dataset
 multiconstrained        Pairwise Comparisons for All Levels of a
                         Categorical Variable by RDA, CCA or Capscale
+nested.anova.dbrda      Nested Analysis of Variance via Distance-based
+                        Redundancy Analysis or Non-parametric
+                        Multivariate Analysis of Variance
 nnetrandom              Calculate the NNET Result with the Smallest
                         Value from Various Random Starts
 ordicoeno               Coenoclines for an Ordination Axis
@@ -74,8 +84,11 @@ transfgradient          Gradient for Hypothetical Example of Turover of
                         Species Composition
 transfspecies           Hypothetical Example of Turover of Species
                         Composition
+warcom                  Warburgia ugandensis AFLP Scores
+warenv                  Warburgia ugandensis Population Structure
 }
 }
+
 \author{
 Roeland Kindt
 
