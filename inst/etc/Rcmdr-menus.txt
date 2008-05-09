@@ -1,6 +1,6 @@
 # R Commander Menu Definitions
 
-# last modified 22 June 2007 by J. Fox
+# last modified 22 March 2008 by J. Fox
 
 #   type    menu/item      operation/parent  label                                          command/menu                activation  install?
 
@@ -106,12 +106,12 @@
     item    clusterMenu     command         "Summarize hierarchical clustering..."          hclustSummary               "hclustSolutionsP()"          ""
     item    clusterMenu     command         "Add hierarchical clustering to data set..."    appendHclustGroup           "hclustSolutionsP()"          ""
     item    dimensionalMenu cascade         "Cluster analysis"                              clusterMenu                 ""          ""
-    menu    modelsMenu      statisticsMenu  ""                                              ""                          ""          ""
-    item    modelsMenu      command         "Linear regression..."                          linearRegressionModel       "numericP(2)"          ""
-    item    modelsMenu      command         "Linear model..."                               linearModel                 "numericP()"          ""
-    item    modelsMenu      command         "Generalized linear model..."                   generalizedLinearModel      "activeDataSetP()"          ""
-    item    modelsMenu      command         "Multinomial logit model..."                    multinomialLogitModel       "factorsP()" "packageAvailable('nnet')"
-    item    modelsMenu      command         "Ordinal regression model..."                   ordinalRegressionModel      "factorsP()" "packageAvailable('MASS')"
+    menu    statModelsMenu  statisticsMenu  ""                                              ""                          ""          ""
+    item    statModelsMenu  command         "Linear regression..."                          linearRegressionModel       "numericP(2)"          ""
+    item    statModelsMenu  command         "Linear model..."                               linearModel                 "numericP()"          ""
+    item    statModelsMenu  command         "Generalized linear model..."                   generalizedLinearModel      "activeDataSetP()"          ""
+    item    statModelsMenu  command         "Multinomial logit model..."                    multinomialLogitModel       "factorsP()" "packageAvailable('nnet')"
+    item    statModelsMenu  command         "Ordinal regression model..."                   ordinalRegressionModel      "factorsP()" "packageAvailable('MASS')"
     item    topMenu         cascade         "Statistics"                                    statisticsMenu              ""          ""
     item    statisticsMenu  cascade         "Summaries"                                     summariesMenu               ""          ""
     item    statisticsMenu  cascade         "Contingency tables"                            tablesMenu                  ""          "packageAvailable('abind')"
@@ -120,7 +120,7 @@
     item    statisticsMenu  cascade         "Variances"                                     variancesMenu               ""          ""
     item    statisticsMenu  cascade         "Nonparametric tests"                           nonparametricMenu           ""          ""
     item    statisticsMenu  cascade         "Dimensional analysis"                          dimensionalMenu             ""          ""
-    item    statisticsMenu  cascade         "Fit models"                                    modelsMenu                  ""          ""
+    item    statisticsMenu  cascade         "Fit models"                                    statModelsMenu              ""          ""
     menu    graphsMenu      topMenu         ""                                              ""                          ""          ""
     item    graphsMenu      command         "Color palette..."                              setPalette                  ""          ""
     item    graphsMenu      command         "Index plot..."                                 indexPlot                   "numericP()"          ""
@@ -342,6 +342,7 @@
     item    helpMenu        command         "Help on active data set (if available)"        helpDataSet                 "activeDataSetP()"          ""
     item    helpMenu        command         "About Rcmdr"                                   helpAboutCommander          ""          ""
     item    topMenu         cascade         "Help"                                          helpMenu                    ""          ""
+
 
     # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
 
