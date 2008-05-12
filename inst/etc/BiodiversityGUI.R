@@ -24,6 +24,7 @@
 # any package that you made use of.
 
 putRcmdr(".communityDataSet", NULL)
+putRcmdr("operatorFont", tkfont.create(family="courier", size=getRcmdr("log.font.size")))
 
 selectCommunityDataSet <- function(){
     dataSets <- listDataSets()
@@ -1474,6 +1475,10 @@ countGUI <- function(){
         justDoIt(paste(.activeDataSet, "$", tclvalue(lhsVariable), "<- ", .communityDataSet, "$",tclvalue(lhsVariable), sep=""))
         logger(paste(.activeDataSet, "$", tclvalue(lhsVariable), "<- ", .communityDataSet, "$",tclvalue(lhsVariable), sep=""))
         option <- options[as.numeric(tkcurselection(optionBox))+1]
+        if (option=="negative binomial model") {
+            justDoIt(paste("library(MASS)"))
+            logger(paste("library(MASS)"))
+        }
         if (option=="gam model" || option=="gam negbinom model") {
             justDoIt(paste("library(mgcv)"))
             logger(paste("library(mgcv)"))
@@ -3056,8 +3061,8 @@ conordiGUI <- function(){
             command <- paste("capscale(", formula, ",", .activeDataSet, ",dist='", dist, "', add=F)", sep="")
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
-                doItAndPrint(paste("adonis(", formula, "," , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
             }
+            doItAndPrint(paste("adonis(", formula, "," , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
         }
         if (method=="capscale(add)") {
             if(treatasdist==T){
@@ -3067,8 +3072,8 @@ conordiGUI <- function(){
             command <- paste("capscale(", formula, ",", .activeDataSet, ",dist='", dist, "', add=T)", sep="")
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
-                doItAndPrint(paste("adonis(", formula, "," , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
             }
+            doItAndPrint(paste("adonis(", formula, "," , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
         }
         if (method=="prc") {
             command <- paste("prc(", .communityDataSet, "," ,tclvalue(rhsVariable), ")", sep="")
