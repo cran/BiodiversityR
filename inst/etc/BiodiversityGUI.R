@@ -2359,8 +2359,8 @@ distmatrixGUI <- function(){
     onOK <- function(){
         dist <- distances[as.numeric(tkcurselection(distBox))+1]
         modelValue <- tclvalue(modelName)
-        logger(paste(modelValue, " <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-        assign(modelValue, justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+        logger(paste(modelValue, " <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+        assign(modelValue, justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
         doItAndPrint(paste(modelValue))
         doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
         treatasdist <- tclvalue(treatasdistVariable)==1
@@ -2544,8 +2544,8 @@ unconordiGUI <- function(){
         }
         if (method=="PCoA") {
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
@@ -2555,8 +2555,8 @@ unconordiGUI <- function(){
         }
         if (method=="PCoA (Caillez)") {
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
@@ -2571,8 +2571,8 @@ unconordiGUI <- function(){
         }
         if (method=="NMS (standard)") {
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
@@ -2747,8 +2747,8 @@ unconordiGUI <- function(){
             }            
         if (plottype == "ordicluster"){
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
@@ -2759,8 +2759,8 @@ unconordiGUI <- function(){
             }
         if (plottype == "ordicluster2"){
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
@@ -2771,8 +2771,8 @@ unconordiGUI <- function(){
             }
         if (plottype == "ordinearest"){
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
@@ -2781,8 +2781,8 @@ unconordiGUI <- function(){
             }
         if (plottype == "ordispantree"){
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
@@ -3088,18 +3088,18 @@ conordiGUI <- function(){
             doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
         }
         if (method=="multiconstrained (RDA)") {
-            command <- paste("multiconstrained(method='rda',", formula, ",", .activeDataSet, ", contrast=0, perm.max=", perm, ")", sep="")
+            command <- paste("multiconstrained(method='rda',", formula, ",", .activeDataSet, ", contrast=0, step=", perm, ")", sep="")
             doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
         }
         if (method=="multiconstrained (CCA)") {
-            command <- paste("multiconstrained(method='cca',", formula, ",", .activeDataSet, ", contrast=0, perm.max=", perm, ")", sep="")
+            command <- paste("multiconstrained(method='cca',", formula, ",", .activeDataSet, ", contrast=0, step=", perm, ")", sep="")
         }
         if (method=="multiconstrained (capscale)") {
             if(treatasdist==T){
                 logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
                 assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            command <- paste("multiconstrained(method='capscale',", formula, ",", .activeDataSet, ",dist='", dist, "', add=F, contrast=0, perm.max=", perm, ")", sep="")
+            command <- paste("multiconstrained(method='capscale',", formula, ",", .activeDataSet, ",dist='", dist, "', add=F, contrast=0, step=", perm, ")", sep="")
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
@@ -3109,7 +3109,7 @@ conordiGUI <- function(){
                 logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
                 assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            command <- paste("multiconstrained(method='capscale',", formula, ",", .activeDataSet, ",dist='", dist, "', add=T, contrast=0, perm.max=", perm, ")", sep="")
+            command <- paste("multiconstrained(method='capscale',", formula, ",", .activeDataSet, ",dist='", dist, "', add=T, contrast=0, step=", perm, ")", sep="")
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
@@ -3147,7 +3147,7 @@ conordiGUI <- function(){
         if (perm>0  && method !="CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)") {
             doItAndPrint(paste("permutest.cca(", modelValue, ", permutations=", perm, ")", sep=""))
             doItAndPrint(paste("permutest.cca(", modelValue, ", permutations=", perm, ", first=T)", sep=""))
-            if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", perm.max=", perm, ", by='terms')", sep=""))}
+            if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='terms')", sep=""))}
             }
         if(treatasdist==T  && method!="RDA" && method!="CCA"  && method!="prc" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)"){
             logger(paste(.communityDataSet, " <- data.frame(as.matrix(", .communityDataSet, "))", sep=""))
@@ -3276,8 +3276,8 @@ conordiGUI <- function(){
         }         
         if (plottype == "ordicluster"){
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
@@ -3288,8 +3288,8 @@ conordiGUI <- function(){
             }
         if (plottype == "ordicluster2"){
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
@@ -3300,8 +3300,8 @@ conordiGUI <- function(){
             }
         if (plottype == "ordinearest"){
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
@@ -3310,8 +3310,8 @@ conordiGUI <- function(){
             }
         if (plottype == "ordispantree"){
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
@@ -3488,8 +3488,8 @@ clusterGUI <- function(){
         }
         if (method != "kmeans"  && method != "cascadeKM") {
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "')", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
@@ -3712,8 +3712,8 @@ mantelGUI <- function(){
         if (test == "mantel") {
             doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
             if(treatasdist==F){
-                logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ",method='", dist1, "')", sep=""))
-                assign("distmatrix1", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist1, "')", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ",method='", dist1, "', na.rm=T)", sep=""))
+                assign("distmatrix1", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist1, "', na.rm=T)", sep="")), envir=.GlobalEnv)
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist1, "')", sep=""))
             }else{
                 logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))
@@ -3726,8 +3726,8 @@ mantelGUI <- function(){
                     logger(paste("distmatrix2 <- as.dist(as.matrix(daisy(", .activeDataSet, ")))", sep=""))
                     assign("distmatrix2", justDoIt(paste("as.dist(as.matrix(daisy(", .activeDataSet, ")))", sep="")), envir=.GlobalEnv)
                 }else{
-                    logger(paste("distmatrix2 <- vegdist(", .activeDataSet, ",method='",dist2, "')", sep=""))
-                    assign("distmatrix2", justDoIt(paste("vegdist(",.activeDataSet, ",method='",dist2, "')", sep="")), envir=.GlobalEnv)                
+                    logger(paste("distmatrix2 <- vegdist(", .activeDataSet, ",method='",dist2, "', na.rm=T)", sep=""))
+                    assign("distmatrix2", justDoIt(paste("vegdist(",.activeDataSet, ",method='",dist2, "', na.rm=T)", sep="")), envir=.GlobalEnv)                
                 }
             }else{
                 var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
@@ -3750,8 +3750,8 @@ mantelGUI <- function(){
             if (varfactor==T) {
                 doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
                 if(treatasdist==F){
-                    logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ",method='", dist1, "')", sep=""))
-                    assign("distmatrix1", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist1, "')", sep="")), envir=.GlobalEnv)
+                    logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ",method='", dist1, "', na.rm=T)", sep=""))
+                    assign("distmatrix1", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist1, "', na.rm=T)", sep="")), envir=.GlobalEnv)
                     doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist1, "')", sep=""))
                 }else{
                     logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))
@@ -3766,8 +3766,8 @@ mantelGUI <- function(){
             if (varfactor==T) {
                 doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
                 if(treatasdist==F){
-                    logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ",method='", dist1, "')", sep=""))
-                    assign("distmatrix1", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist1, "')", sep="")), envir=.GlobalEnv)
+                    logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ",method='", dist1, "', na.rm=T)", sep=""))
+                    assign("distmatrix1", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist1, "', na.rm=T)", sep="")), envir=.GlobalEnv)
                     doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist1, "')", sep=""))
                 }else{
                     logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))

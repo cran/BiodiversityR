@@ -13,15 +13,13 @@ This package provides a GUI (Graphical User Interface, via the R-Commander) and 
 \tabular{ll}{
 Package: \tab BiodiversityR\cr
 Type: \tab Package\cr
-Version: \tab 1.2\cr
-Date: \tab 2008-5-09\cr
+Version: \tab 1.3\cr
+Date: \tab 2009-7-02\cr
 License: \tab GPL v2\cr
-Depends: \tab R (>= 2.7.0), vegan (>= 1.8-6)\cr
+Depends: \tab R (>= 2.9.0), vegan (>= 1.15-3)\cr
 Suggests: \tab MASS, mgcv, cluster, Rcmdr (>= 1.3-14), car, RODBC, rpart,
 effects, multcomp, ellipse, maptree, sp, splancs, spatial,
 akima, nnet\cr
-Packaged: \tab Sat May 9 15:09:28 2008; RKINDT\cr
-Built: \tab R 2.7.0 ; 2008-05-09 15:09:29; windows\cr
 }
 
 We warmly thank all that provided inputs that lead to improvement of the Tree Diversity Analysis manual that describes common methods for biodiversity and community ecology analysis and its accompanying software. We especially appreciate the comments received during training sessions with draft versions of this manual and the accompanying software in Kenya, Uganda and Mali. We are equally grateful to the thoughtful reviews by Dr Simoneta Negrete-Yankelevich (Instituto de Ecologia, Mexico) and Dr Robert Burn (Reading University, UK) of the draft version of this manual, and to Hillary Kipruto for help in editing of this manual. We also want to specifically thank Mikkel Grum, Jane Poole and Paulo van Breugel for helping in testing the packaged version of the software. We also want to give special thanks for all the support that was given by Jan Beniest, Tony Simons and Kris Vanhoutte in realizing the book and software. 

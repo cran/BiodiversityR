@@ -1168,7 +1168,7 @@ Passed as argument for "scaling" for function \code{\link[vegan:plot.cca]{summar
 
   \item{\bold{permutations}}{
 Select the number of permutations for testing the significance of the constrained ordination by Monte-Carlo randomization tests. The default of "0" means that no permutation test will be done.
-Passed as argument for "permutations" for functions \code{\link[vegan:anova.cca]{permutest.cca}}, \code{\link{CAPdiscrim}} or \code{\link[vegan]{envfit}} (one of the plotting options) or as argument for perm.max for function \code{\link[vegan]{anova.cca}} (which is also called by \code{\link{multiconstrained}}).
+Passed as argument for "permutations" for functions \code{\link[vegan:anova.cca]{permutest.cca}}, \code{\link{CAPdiscrim}} or \code{\link[vegan]{envfit}} (one of the plotting options) or as argument for "step" for function \code{\link[vegan]{anova.cca}} (which is also called by \code{\link{multiconstrained}}).
 } 
 
   \item{\bold{Explanatory}}{
