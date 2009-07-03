@@ -47,7 +47,7 @@ The horizontal axis can be scaled by the total number of species, or by 100 perc
 
 The method of calculating the  confidence interval for species proportion is described in Hayek and Buzas (1997).
 
-Functions \code{rankabundance} and code{rankabuncomp} allow to calculate rank abundance curves for subsets of the community and environmental data sets. Function \code{rankabundance} calculates the rank abundance curve for the specified level of a selected environmental variable. Method \code{rankabuncomp} calculates the rank abundance curve for all levels of a selected environmental variable separatedly.
+Functions \code{rankabundance} and \code{rankabuncomp} allow to calculate rank abundance curves for subsets of the community and environmental data sets. Function \code{rankabundance} calculates the rank abundance curve for the specified level of a selected environmental variable. Method \code{rankabuncomp} calculates the rank abundance curve for all levels of a selected environmental variable separatedly.
 
 }
 

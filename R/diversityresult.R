@@ -89,6 +89,7 @@ function(x,y="",factor,level,index="Shannon",method="all",sortit=F,digits=8){
             }
         })
     }
+    options(digits=digits)   
     if(class(y) == "data.frame") {
         subs <- y[,factor]==level
         for (q in 1:length(subs)) {
