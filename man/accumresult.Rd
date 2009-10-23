@@ -11,11 +11,11 @@ Provides alternative methods of obtaining species accumulation results than prov
 
 \usage{
 accumresult(x,y="",factor="",level,scale="",method="exact",permutations=100,
-    conditioned=T, gamma="Jack.1", ...)
+    conditioned=T, gamma="boot", ...)
 accumplot(xr,addit=F,labels="",col=1,ci=2,pch=1,type="p",cex=1,xlim=c(1,xmax),
     ylim=c(1,rich),xlab="sites",ylab="species richness",...)
 accumcomp(x,y="",factor,scale="",method="exact",permutations=100,
-    conditioned=T, gamma="Boot",plotit=T,labelit=T,legend=T,rainbow=T,
+    conditioned=T, gamma="boot",plotit=T,labelit=T,legend=T,rainbow=T,
     xlim=c(1,max),ylim=c(0,rich),type="p",xlab="sites",
     ylab="species richness",...)
 }
@@ -77,10 +77,10 @@ library(vegan)
 data(dune.env)
 data(dune)
 dune.env$site.totals <- apply(dune,1,sum)
-Accum.1 <- accumresult(dune, y=dune.env, scale='site.totals', method='exact')
+Accum.1 <- accumresult(dune, y=dune.env, scale='site.totals', method='exact', conditioned=TRUE)
 Accum.1
 accumplot(Accum.1)
-accumcomp(dune, y=dune.env, factor='Management', method='exact', legend=FALSE)
+accumcomp(dune, y=dune.env, factor='Management', method='exact', legend=FALSE, conditioned=TRUE)
 ## CLICK IN THE GRAPH TO INDICATE WHERE THE LEGEND NEEDS TO BE PLACED FOR
 ## OPTION WHERE LEGEND=TRUE (DEFAULT).
 }

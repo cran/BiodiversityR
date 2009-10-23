@@ -10,9 +10,9 @@ This function provides a method for importing community or environmental data fr
 
 \usage{
 import.from.Excel(file = file.choose(), sheet = "community", sitenames = "sites", 
-    column = "species", value = "abundance", factor = "", level = "")
+    column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
 import.from.Access(file = file.choose(), table = "community", sitenames = "sites", 
-    column = "species", value = "abundance", factor = "", level = "")
+    column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
 }
 
 \arguments{
@@ -24,6 +24,7 @@ import.from.Access(file = file.choose(), table = "community", sitenames = "sites
   \item{value}{ Name of numerical variable for the cells of the crosstabulation (typically indicating abundance). The cells provide the sum of all values in the data frame; passed to \code{\link{makecommunitydataset}}. }
   \item{factor}{ Name of the variable to calculate a subset of the data frame; passed to \code{\link{makecommunitydataset}}. }
   \item{level}{ Value of the subset of the factor variable to calculate a subset of the data frame; passed to \code{\link{makecommunitydataset}}. }
+  \item{cepnames}{ Should the names of columns be abbreviated via \code{\link[vegan]{make.cepnames}} (TRUE) or not (FALSE). }
 }
 
 \details{
@@ -57,8 +58,8 @@ Tree diversity analysis: A manual and
 ## Check for file "dune.xls" in the etc folder of BiodiversityR
 ##
 #### Default 'ordiplot3d'
-\dontrun{
 library(RODBC)
+\dontrun{
 dunenew <- import.from.Excel(sheet="community", sitenames="sites")
 dune.envnew <- import.from.Excel(sheet="environmental", sitenames="sites")
 }

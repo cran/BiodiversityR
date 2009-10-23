@@ -1,5 +1,5 @@
 `accumresult` <-
-function(x,y="",factor="",level,scale="",method="exact",permutations=100,conditioned=T,gamma="Jack.1",...){
+function(x,y="",factor="",level,scale="",method="exact",permutations=100,conditioned=T,gamma="boot",...){
     op <- options()
     options(warn=-1)
     subs <- c(1:nrow(x))
