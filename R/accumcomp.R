@@ -1,5 +1,5 @@
 `accumcomp` <-
-function(x,y="",factor,scale="",method="exact",permutations=100,conditioned=T,gamma="Boot",plotit=T,labelit=T,legend=T,rainbow=T,xlim=c(1,max),ylim=c(0,rich),type="p",xlab="sites",ylab="species richness",...) {
+function(x,y="",factor,scale="",method="exact",permutations=100,conditioned=T,gamma="boot",plotit=T,labelit=T,legend=T,rainbow=T,xlim=c(1,max),ylim=c(0,rich),type="p",xlab="sites",ylab="species richness",...) {
     groups <- table(y[,factor])
     min <- min(groups)
     max <- max(groups)

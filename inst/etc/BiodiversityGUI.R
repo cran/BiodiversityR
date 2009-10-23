@@ -285,12 +285,12 @@ importfromExcelGUI <- function() {
         logger(paste("library(RODBC)", sep=""))
         stacked <- tclvalue(stackedVariable) == "1"
         if (stacked==F) {
-            command <- paste("import.from.Excel('", file, "', sheet='community',sitenames='", sitesValue, "')", sep="")
+            command <- paste("import.from.Excel('", file, "', sheet='community',sitenames='", sitesValue, "', cepnames=F)", sep="")
         }else{
             if (factorValue=="all") { 
-                command <- paste("import.from.Excel('", file, "', sheet='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "')", sep="")
+                command <- paste("import.from.Excel('", file, "', sheet='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "', cepnames=F)", sep="")
             }else{
-                command <- paste("import.from.Excel('", file, "', sheet='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "',factor='", factorValue, "',level='", levelValue, "')", sep="")
+                command <- paste("import.from.Excel('", file, "', sheet='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "',factor='", factorValue, "',level='", levelValue, "', cepnames=F)", sep="")
             }
         }
         logger(paste(comdsnameValue, " <- ", command, sep=""))
@@ -725,13 +725,13 @@ accumGUI <- function(){
             xlab <- paste(", xlab='", var2, "'", sep="")
         }
         if (var == "all") {
-            command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", method='", method, "',permutations=", perm, scale, ")", sep="")
+            command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", method='", method, "', conditioned =T, gamma = 'boot', permutations=", perm, scale, ")", sep="")
         }else{
             var <- .variables[as.numeric(tkcurselection(subsetBox))]
             if (sub == ".") {
-                command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='", method, "', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ")", sep="")
+                command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='", method, "', conditioned =T, gamma = 'boot', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ")", sep="")
             }else{
-                command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', method='", method, "', permutations=", perm , scale, ")", sep="")
+                command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', method='", method, "', conditioned =T, gamma = 'boot' , permutations=", perm , scale, ")", sep="")
             }
         }
         logger(paste(modelValue, " <- ", command, sep=""))
@@ -830,7 +830,7 @@ diversityGUI <- function(){
     indexScroll <- tkscrollbar(indexFrame, repeatinterval=5, command=function(...) tkyview(indexBox, ...))
     tkconfigure(indexBox, yscrollcommand=function(...) tkset(indexScroll, ...))
     indices <- c("richness","abundance","Shannon","Simpson","inverseSimpson","Logalpha","Berger","Jevenness","Eevenness",
-        "Jack.1","Jack.2","Chao","Boot","ACE")
+        "jack1","jack2","chao","boot")
     for (x in indices) tkinsert(indexBox, "end", x)
     methodFrame <- tkframe(choicesFrame)
     methodBox <- tklistbox(methodFrame, width=27, height=3,
@@ -1524,7 +1524,7 @@ countGUI <- function(){
             command <- paste("gam(", formula, ", family=poisson(link=log), data=",.activeDataSet, ", na.action=na.exclude)", sep="")
         }
         if (option == "gam negbinom model"){
-            command <- paste("gam(", formula, ", family=negative.binomial(1), data=",.activeDataSet, ", na.action=na.exclude)", sep="")
+            command <- paste("gam(", formula, ", family=negbin(1), data=",.activeDataSet, ", na.action=na.exclude)", sep="")
         }
         if (option == "glmmPQL"){
             command <- paste("glmmPQL(", formula, ", family=quasipoisson(link=log), data=",.activeDataSet, ", na.action=na.exclude)", sep="")
@@ -1599,10 +1599,10 @@ countGUI <- function(){
             }
         }
         if (plottype == "levene test (factor)" && option !="rpart" && varfactor==T) {
-            doItAndPrint(paste("levene.test(residuals(", modelValue, "), na.omit(", .activeDataSet ,")$", axisvar, ")", sep=""))
-            justDoIt(paste("plot(residuals(", modelValue, ") ~ na.omit(", .activeDataSet ,")$", axisvar, ")", sep=""))
-            logger(paste("plot(residuals(", modelValue, ") ~ na.omit(", .activeDataSet ,")$", axisvar, ")", sep=""))
-            doItAndPrint(paste("points(na.omit(", .activeDataSet ,")$", axisvar, ",residuals(", modelValue, "))", sep=""))
+            doItAndPrint(paste("levene.test(residuals(", modelValue, "), ", .activeDataSet ,"$", axisvar, ")", sep=""))
+            justDoIt(paste("plot(residuals(", modelValue, ") ~ ", .activeDataSet ,"$", axisvar, ")", sep=""))
+            logger(paste("plot(residuals(", modelValue, ") ~ ", .activeDataSet ,"$", axisvar, ")", sep=""))
+            doItAndPrint(paste("points(", .activeDataSet ,"$", axisvar, ",residuals(", modelValue, "))", sep=""))
         }
         if (plottype == "term plot" && option !="rpart"){
             if (option == "gam model" || option == "gam negbinom model"){
@@ -2151,10 +2151,10 @@ presabsGUI <- function(){
             }
         }
         if (plottype == "levene test (factor)" && option !="crosstab" && option !="rpart" && option !="nnetrandom" && varfactor==T) {
-            doItAndPrint(paste("levene.test(residuals(", modelValue, "), na.omit(", .activeDataSet ,")$", axisvar, ")", sep=""))
-            justDoIt(paste("plot(residuals(", modelValue, ") ~ na.omit(", .activeDataSet ,")$", axisvar, ")", sep=""))
-            logger(paste("plot(residuals(", modelValue, ") ~ na.omit(", .activeDataSet ,")$", axisvar, ")", sep=""))
-            doItAndPrint(paste("points(na.omit(", .activeDataSet ,")$", axisvar, ",residuals(", modelValue, "))", sep=""))
+            doItAndPrint(paste("levene.test(residuals(", modelValue, "), ", .activeDataSet ,"$", axisvar, ")", sep=""))
+            justDoIt(paste("plot(residuals(", modelValue, ") ~ ", .activeDataSet ,"$", axisvar, ")", sep=""))
+            logger(paste("plot(residuals(", modelValue, ") ~ ", .activeDataSet ,"$", axisvar, ")", sep=""))
+            doItAndPrint(paste("points(", .activeDataSet ,"$", axisvar, ",residuals(", modelValue, "))", sep=""))
         }
         if (plottype == "term plot" && option !="crosstab" && option !="rpart" && option !="nnetrandom"){
             if (option == "gam model" || option=="gam quasi-binomial model"){
@@ -2502,10 +2502,13 @@ unconordiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
-    types <- c("plot","ordiplot","ordiplot empty","identify sites","identify species","text sites","text species","points sites","points species","origin axes",
+    types <- c("plot","ordiplot","ordiplot empty","identify sites","identify species","text sites","text species","points sites","points species",
+        "label sites","label species","orditorp sites","orditorp species","origin axes",
         "envfit","ordihull (factor)", "ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordiellipse (factor)","ordisurf (continuous)",
         "ordibubble (continuous)","ordisymbol (factor)","ordivector (species)","ordivector interpretation",
-        "ordicluster","ordicluster2","ordispantree","ordinearest","ordiequilibriumcircle","distance displayed","coenocline","screeplot.cca","stressplot")
+        "ordicluster","ordicluster2","ordispantree","ordinearest","ordiequilibriumcircle","screeplot",
+        "distance displayed","coenocline","screeplot.cca","stressplot",
+        "orditkplot sites","orditkplot species","orditkplot pointlabel")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
     choice <- tkentry(plot3Frame, width=10, textvariable=choicesVariable)
@@ -2612,8 +2615,8 @@ unconordiGUI <- function(){
             if (method == "PCA" || method == "CA" || method == "DCA") {
                 doItAndPrint(paste("summary(", modelValue, ", scaling=", scaling, ")", sep=""))
                 if (method=="PCA") {doItAndPrint(paste("PCAsignificance(", modelValue, ")", sep=""))}
-                doItAndPrint(paste("goodness(", modelValue, ", display='species', choices=c(1:4), statistic='explained')", sep=""))
-                doItAndPrint(paste("inertcomp(", modelValue, ", display='species', statistic='explained',proportional=F)", sep=""))            
+                doItAndPrint(paste("goodness(", modelValue, ", display='sites', choices=c(1:4), statistic='explained')", sep=""))
+                doItAndPrint(paste("inertcomp(", modelValue, ", display='sites', statistic='explained',proportional=F)", sep=""))            
             }else{
                 doItAndPrint(paste(modelValue, sep=""))
                 if (method=="metaMDS") {doItAndPrint(paste("goodness(", modelValue, ")", sep=""))}
@@ -2695,9 +2698,29 @@ unconordiGUI <- function(){
         if (plottype == "points species"){
             doItAndPrint(paste("points(plot1, 'species', col='", col,"', cex=", cex, ")",sep=""))             
         }
+        if (plottype == "label sites"){
+            doItAndPrint(paste("ordilabel(plot1, 'sites', col='", col,"', cex=", cex, ")",sep=""))             
+        }
+        if (plottype == "label species"){
+            doItAndPrint(paste("ordilabel(plot1, 'species', col='", col,"', cex=", cex, ")",sep=""))             
+        }
+        if (plottype == "orditorp sites"){
+            doItAndPrint(paste("orditorp(plot1, 'sites', col='", col,"', cex=", cex, ")",sep=""))             
+        }
+        if (plottype == "orditorp species"){
+            doItAndPrint(paste("orditorp(plot1, 'species', col='", col,"', cex=", cex, ")",sep=""))             
+        }
         if (plottype == "origin axes"){
             doItAndPrint(paste("abline(h = 0, lty = 3)", sep=""))
             doItAndPrint(paste("abline(v = 0, lty = 3)", sep=""))
+        }
+        if (plottype == "screeplot"){
+            justDoIt(paste("par(cex=",cex,")", sep=""))
+            logger(paste("par(cex=",cex,")", sep=""))
+            if (method=="PCA" || method=="PCA (prcomp)") {
+                justDoIt(paste("plot1 <- screeplot(", modelValue, ", bstick=T)", sep=""))
+                logger(paste("plot1 <- screeplot(", modelValue, ", bstick=T)", sep=""))
+            }
         }
         axisvar <- .variables[as.numeric(tkcurselection(axisBox))+1]
         varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", axisvar, ")", sep="")), envir=.GlobalEnv)
@@ -2807,6 +2830,40 @@ unconordiGUI <- function(){
         if (plottype == "stressplot"  && method == "metaMDS"){
             doItAndPrint(paste("stressplot(", modelValue ,")", sep=""))
             }
+        if (plottype == "orditkplot sites"){
+            justDoIt(paste("par(cex=",cex,")", sep=""))
+            logger(paste("par(cex=",cex,")", sep=""))
+            if (method=="PCA" || method=="CA"  || method=="DCA") {
+                justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+            }else{
+                justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, ")))", sep="")) 
+                logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, ")))", sep="")) 
+            }
+        }
+        if (plottype == "orditkplot species"){
+            justDoIt(paste("par(cex=",cex,")", sep=""))
+            logger(paste("par(cex=",cex,")", sep=""))
+            if (method=="PCA" || method=="CA"  || method=="DCA") {
+                justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+            }else{
+                justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, ")))", sep="")) 
+                logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, ")))", sep="")) 
+            }
+        }
+        if (plottype == "orditkplot pointlabel"){
+            justDoIt(paste("par(cex=",cex,")", sep=""))
+            logger(paste("par(cex=",cex,")", sep=""))
+            if (method=="PCA" || method=="CA"  || method=="DCA") {
+                justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+            }else{
+                justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, ")))", sep="")) 
+                logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, ")))", sep="")) 
+            }
+        }
+
         data <- tclvalue(dataVariable) =="1"
         if (data==T) {
             justDoIt(paste(.activeDataSet, "$", modelValue, ".ax1 <- scores(plot1,display='sites')[,1]", sep=""))
@@ -2937,10 +2994,11 @@ conordiGUI <- function(){
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
     types <- c("plot","ordiplot","ordiplot empty","identify sites","identify species","identify centroids","text sites","text species","text centroids",
-        "points sites","points species","points centroids","origin axes",
+        "points sites","points species","points centroids",
+        "label sites","label species","label centroids","orditorp sites","orditorp species","orditorp centroids","origin axes",
         "envfit","ordihull (factor)","ordihull.centroids (factor)","ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordispider.centroids (factor)","ordiellipse (factor)","ordisurf (continuous)",
         "ordibubble (continuous)","ordisymbol (factor)","ordivector (species)","ordivector interpretation","ordicluster","ordicluster2",
-        "ordinearest","ordispantree","distance displayed","coenocline")
+        "ordinearest","ordispantree","ordiresids","distance displayed","coenocline","orditkplot sites","orditkplot species","orditkplot pointlabel")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
     choice <- tkentry(plot3Frame, width=10, textvariable=choicesVariable)
@@ -3139,15 +3197,16 @@ conordiGUI <- function(){
                 doItAndPrint(paste("deviance(", modelValue, ")", sep=""))  
                 doItAndPrint(paste("vif.cca(", modelValue, ")", sep=""))
             }
-            if (method=="RDA" || method=="CCA") {            
-                doItAndPrint(paste("goodness(", modelValue, ", display='species', statistic='explained')", sep=""))            
-                doItAndPrint(paste("inertcomp(", modelValue, ", display='species', statistic='explained', proportional=T)", sep="")) 
+            if (method=="RDA" || method=="CCA"  || method=="capscale"  || method=="capscale(add)") {            
+                doItAndPrint(paste("goodness(", modelValue, ", display='sites', statistic='explained')", sep=""))            
+                doItAndPrint(paste("inertcomp(", modelValue, ", display='sites', statistic='explained', proportional=T)", sep="")) 
             }
         }
         if (perm>0  && method !="CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)") {
             doItAndPrint(paste("permutest.cca(", modelValue, ", permutations=", perm, ")", sep=""))
             doItAndPrint(paste("permutest.cca(", modelValue, ", permutations=", perm, ", first=T)", sep=""))
             if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='terms')", sep=""))}
+            if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='margin')", sep=""))}
             }
         if(treatasdist==T  && method!="RDA" && method!="CCA"  && method!="prc" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)"){
             logger(paste(.communityDataSet, " <- data.frame(as.matrix(", .communityDataSet, "))", sep=""))
@@ -3166,32 +3225,36 @@ conordiGUI <- function(){
         col <- tclvalue(colVariable)
         treatasdist <- tclvalue(treatasdistVariable)==1
         justDoIt(paste("attach(", .activeDataSet, ")", sep=""))
-        if (plottype == "plot"  && method != "CAPdiscrim"){
+        if (plottype == "plot"  && method != "CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
             justDoIt(paste("par(cex=",cex,")", sep=""))
             logger(paste("par(cex=",cex,")", sep=""))
             justDoIt(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))
             logger(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))
             }
         if (plottype == "ordiplot"){
-            justDoIt(paste("par(cex=",cex,")", sep=""))
-            logger(paste("par(cex=",cex,")", sep=""))
-            if (method == "CAPdiscrim") {
-                justDoIt(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "))", sep=""))              
-                logger(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "))", sep=""))              
-            }else{
-                justDoIt(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))              
-                logger(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))              
+            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+                justDoIt(paste("par(cex=",cex,")", sep=""))
+                logger(paste("par(cex=",cex,")", sep=""))
+                if (method == "CAPdiscrim") {
+                    justDoIt(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "))", sep=""))              
+                    logger(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "))", sep=""))              
+                }else{
+                    justDoIt(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))              
+                    logger(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))              
+                }
             }
         }
         if (plottype == "ordiplot empty"){
-            justDoIt(paste("par(cex=",cex,")", sep=""))
-            logger(paste("par(cex=",cex,")", sep=""))
-            if (method == "CAPdiscrim") {
-                justDoIt(paste("plot1 <- ordiplot(", modelValue, ", type='none', choices=c(", choices, "))", sep=""))              
-                logger(paste("plot1 <- ordiplot(", modelValue, ", type='none', choices=c(", choices, "))", sep=""))              
-            }else{
-                justDoIt(paste("plot1 <- ordiplot(", modelValue, ", type='none',choices=c(", choices, "), scaling=", scaling, ")", sep="")) 
-                logger(paste("plot1 <- ordiplot(", modelValue, ", type='none',choices=c(", choices, "), scaling=", scaling, ")", sep="")) 
+            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+                justDoIt(paste("par(cex=",cex,")", sep=""))
+                logger(paste("par(cex=",cex,")", sep=""))
+                if (method == "CAPdiscrim") {
+                    justDoIt(paste("plot1 <- ordiplot(", modelValue, ", type='none', choices=c(", choices, "))", sep=""))              
+                    logger(paste("plot1 <- ordiplot(", modelValue, ", type='none', choices=c(", choices, "))", sep=""))              
+                }else{
+                    justDoIt(paste("plot1 <- ordiplot(", modelValue, ", type='none',choices=c(", choices, "), scaling=", scaling, ")", sep="")) 
+                    logger(paste("plot1 <- ordiplot(", modelValue, ", type='none',choices=c(", choices, "), scaling=", scaling, ")", sep="")) 
+                }
             }
         }
         if (plottype == "identify sites"){
@@ -3221,9 +3284,74 @@ conordiGUI <- function(){
         if (plottype == "points centroids"){
             doItAndPrint(paste("points(plot1, 'centroids', col='", col,"', cex=", cex, ")",sep=""))             
             }
+        if (plottype == "label sites"){
+            doItAndPrint(paste("ordilabel(plot1, 'sites', col='", col,"', cex=", cex, ")",sep=""))             
+            }
+        if (plottype == "label species"){
+            doItAndPrint(paste("ordilabel(plot1, 'species', col='", col,"', cex=", cex, ")",sep=""))             
+            }
+        if (plottype == "label centroids"){
+            doItAndPrint(paste("ordilabel(plot1, 'centroids', col='", col,"', cex=", cex, ")",sep=""))             
+            }
+        if (plottype == "orditorp sites"){
+            doItAndPrint(paste("orditorp(plot1, 'sites', col='", col,"', cex=", cex, ")",sep=""))             
+            }
+        if (plottype == "orditorp species"){
+            doItAndPrint(paste("orditorp(plot1, 'species', col='", col,"', cex=", cex, ")",sep=""))             
+            }
+        if (plottype == "orditorp centroids"){
+            doItAndPrint(paste("orditorp(plot1, 'centroids', col='", col,"', cex=", cex, ")",sep=""))             
+            }
         if (plottype == "origin axes"){
             doItAndPrint(paste("abline(h = 0, lty = 3)", sep=""))
             doItAndPrint(paste("abline(v = 0, lty = 3)", sep=""))
+        }
+        if (plottype == "ordiresids"){
+            if (method != "CAPdiscrim"  && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+                justDoIt(paste("par(cex=",cex,")", sep=""))
+                logger(paste("par(cex=",cex,")", sep=""))
+                justDoIt(paste("ordiresids(", modelValue, ", kind='residuals')", sep=""))              
+                logger(paste("ordiresids(", modelValue, ", kind='residuals')", sep=""))              
+            }
+        }
+        if (plottype == "orditkplot sites"){
+            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+                justDoIt(paste("par(cex=",cex,")", sep=""))
+                logger(paste("par(cex=",cex,")", sep=""))
+                if (method != "CAPdiscrim") {
+                    justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                    logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                }else{
+                    justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, ")))", sep="")) 
+                    logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, ")))", sep="")) 
+                }
+            }
+        }
+        if (plottype == "orditkplot species"){
+            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+                justDoIt(paste("par(cex=",cex,")", sep=""))
+                logger(paste("par(cex=",cex,")", sep=""))
+                if (method != "CAPdiscrim") {
+                    justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                    logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                }else{
+                    justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, ")))", sep="")) 
+                    logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, ")))", sep="")) 
+                }
+            }
+        }
+        if (plottype == "orditkplot pointlabel"){
+            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+                justDoIt(paste("par(cex=",cex,")", sep=""))
+                logger(paste("par(cex=",cex,")", sep=""))
+                if (method != "CAPdiscrim") {
+                    justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                    logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                }else{
+                    justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, ")))", sep="")) 
+                    logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, ")))", sep="")) 
+                }
+            }
         }
         axisvar <- .variables[as.numeric(tkcurselection(axisBox))+1]
         varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", axisvar, ")", sep="")), envir=.GlobalEnv)
@@ -3860,6 +3988,13 @@ mantelGUI <- function(){
     tkgrab.set(top)
     tkfocus(methodBox)
     tkwait.window(top)
+}
+
+
+cepNamesCommunity <- function() {
+    .communityDataSet <- communityDataSet()
+    justDoIt(paste("colnames(", .communityDataSet, ") <- make.cepnames(colnames(", .communityDataSet, "))", sep=""))
+    communityDataSet(.communityDataSet)
 }
 
 helpBiodiversityR <- function() {

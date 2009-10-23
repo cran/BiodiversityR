@@ -17,13 +17,12 @@ function(x,y="",factor,level,index="Shannon",method="all",sortit=F,digits=8){
     diversityresult0=function(x,index="Shannon",method="all"){
         x <- as.matrix(x)
         marg <- 1
-        if (index=="Jack.1" || index=="Jack.2" || index=="Chao" || index=="Boot") {method <- "s"}
-        if (method=="all") {
+        if (method=="all" && index!="jack1" && index!="jack2" && index!="chao" && index!="boot") {
             x <- apply(x,2,sum)
             marg <- 2
             }
         INDICES <- c("Shannon","Simpson","inverseSimpson","Logalpha","Berger","richness","abundance","Jevenness",
-            "Eevenness","Jack.1","Jack.2","Chao","Boot","ACE")
+            "Eevenness","jack1","jack2","chao","boot")
         index <- match.arg(index, INDICES)
         switch(index, Shannon = {
             result <- diversity(x,index="shannon",MARGIN=marg)    
@@ -32,7 +31,7 @@ function(x,y="",factor,level,index="Shannon",method="all",sortit=F,digits=8){
         }, inverseSimpson = {
             result <- diversity(x,index="invsimpson",MARGIN=marg)
         }, Logalpha = {
-            result <- fisher.alpha(x,MARGIN=marg)
+            result <- fisher.alpha(x,MARGIN=1)
         }, Berger = {
             if (marg == 2) {
                 result <- max(x)/sum(x)
@@ -73,20 +72,14 @@ function(x,y="",factor,level,index="Shannon",method="all",sortit=F,digits=8){
                 result2 <- result2[,1]
             }
             result <- exp(result1)/result2
-        }, Jack.1 = {
-            result2 <- specpool(x)$Jack.1
-        }, Jack.2 = {
-            result2 <- specpool(x)$Jack.2
-        }, Chao = {
-            result2 <- specpool(x)$Chao
-        }, Boot = {
-            result1 <- specpool(x)$Boot
-        }, ACE = {
-            if (method=="all") {
-                result1 <- estimateR(x)["S.ACE"]
-            }else{
-                result1 <- estimateR(x)["S.ACE",]
-            }
+        }, jack1 = {
+            result2 <- specpool(x)$jack1
+        }, jack2 = {
+            result2 <- specpool(x)$jack2
+        }, chao = {
+            result2 <- specpool(x)$chao
+        }, boot = {
+            result1 <- specpool(x)$boot
         })
     }
     options(digits=digits)   
@@ -106,6 +99,9 @@ function(x,y="",factor,level,index="Shannon",method="all",sortit=F,digits=8){
         colnames(result) <- index
         rownames(result) <- "none"
         return(result)
+    }
+    if (index=="jack1" || index=="jack2" || index=="chao" || index=="boot") {
+        method <- "all"
     }
     if (method=="jackknife") {
         result2 <- jackknife2(x,diversityresult0,index=index)

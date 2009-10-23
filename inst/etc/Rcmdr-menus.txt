@@ -353,6 +353,7 @@
     item    communMenu      command         "Import datasets from Access..."                importfromAccessGUI         ""          ""
     item    communMenu      command         "View community data set"                       viewcommunity               "communityDataSetP()"          ""
     item    communMenu      command         "Edit community data set"                       editcommunity               "communityDataSetP()"          ""
+    item    communMenu      command         "Abbreviate species names"                      cepNamesCommunity           "communityDataSetP()"          ""
     item    communMenu      command         "Check data sets"                               checkdatasets               "activeDataSetP() && communityDataSetP()"          ""
     item    communMenu      command         "Same sites for community/environmental..."     samesitesGUI                "activeDataSetP() && communityDataSetP()"          ""
     item    communMenu      command         "Make community data set..."                    makecommunityGUI            "activeDataSetP()"          ""

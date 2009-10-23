@@ -6,21 +6,9 @@
 GUI for biodiversity and community ecology analysis
 }
 \description{
-This package provides a GUI (Graphical User Interface, via the R-Commander) and some utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website.
+This package provides a GUI (Graphical User Interface, via the R-Commander; \code{\link{BiodiversityRGUI}}) and some utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website.
 }
 \details{
-
-\tabular{ll}{
-Package: \tab BiodiversityR\cr
-Type: \tab Package\cr
-Version: \tab 1.3\cr
-Date: \tab 2009-7-02\cr
-License: \tab GPL v2\cr
-Depends: \tab R (>= 2.9.0), vegan (>= 1.15-3)\cr
-Suggests: \tab MASS, mgcv, cluster, Rcmdr (>= 1.3-14), car, RODBC, rpart,
-effects, multcomp, ellipse, maptree, sp, splancs, spatial,
-akima, nnet\cr
-}
 
 We warmly thank all that provided inputs that lead to improvement of the Tree Diversity Analysis manual that describes common methods for biodiversity and community ecology analysis and its accompanying software. We especially appreciate the comments received during training sessions with draft versions of this manual and the accompanying software in Kenya, Uganda and Mali. We are equally grateful to the thoughtful reviews by Dr Simoneta Negrete-Yankelevich (Instituto de Ecologia, Mexico) and Dr Robert Burn (Reading University, UK) of the draft version of this manual, and to Hillary Kipruto for help in editing of this manual. We also want to specifically thank Mikkel Grum, Jane Poole and Paulo van Breugel for helping in testing the packaged version of the software. We also want to give special thanks for all the support that was given by Jan Beniest, Tony Simons and Kris Vanhoutte in realizing the book and software. 
  
@@ -28,64 +16,6 @@ We highly appreciate the support of the Programme for Cooperation with Internati
  
 We are grateful for the developers of the R Software for providing a free and powerful statistical package that allowed development of BiodiversityR. We also want to give special thanks to Jari Oksanen for developing the vegan package and John Fox for developing the Rcmdr package, which are key packages that are used by BiodiversityR.
 
-
-Index:
-
-\preformatted{
-BCI.env                 Barro Colorado Island Quadrat Descriptions
-BiodiversityR-package   GUI for biodiversity and community ecology
-                        analysis
-BiodiversityRGUI        GUI for Biodiversity Analysis and Ordination
-CAPdiscrim              Canonical Analysis of Principal Coordinates
-                        based on Discriminant Analysis
-NMSrandom               Calculate the NMS Result with the Smallest
-                        Stress from Various Random Starts
-PCAsignificance         PCA Significance
-accumresult             Alternative Species Accumulation Curve Results
-add.spec.scores         Add Species Scores to Unconstrained Ordination
-                        Results
-balanced.specaccum      Balanced Species Accumulation Curves
-caprescale              Rescale capcale scores
-crosstabanalysis        Presence-absence Analysis by Cross Tabulation
-deviancepercentage      Calculate Percentage and Significance of
-                        Deviance Explained by a GLM
-dist.eval               Distance Matrix Evaluation
-dist.zeroes             Distance Matrix Transformation
-distdisplayed           Compare Distance Displayed in Ordination
-                        Diagram with Distances of Distance Matrix
-disttransform           Community Matrix Transformation
-diversityresult         Alternative Diversity Results
-faramea                 Faramea occidentalis abundance in Panama
-import.from.Excel       Import Community or Environmental Data from
-                        Excel or Access
-loaded.citations        Give Citation Information for all Loaded
-                        Packages
-makecommunitydataset    Make a Community Dataset from a Stacked Dataset
-multiconstrained        Pairwise Comparisons for All Levels of a
-                        Categorical Variable by RDA, CCA or Capscale
-nested.anova.dbrda      Nested Analysis of Variance via Distance-based
-                        Redundancy Analysis or Non-parametric
-                        Multivariate Analysis of Variance
-nnetrandom              Calculate the NNET Result with the Smallest
-                        Value from Various Random Starts
-ordicoeno               Coenoclines for an Ordination Axis
-ordisymbol              Add Other Graphical Items to Ordination
-                        Diagrams
-radfitresult            Alternative Rank Abundance Fitting Results
-rankabundance           Rank Abundance Curves
-removeNAcomm            Synchronize Community and Environmental
-                        Datasets
-renyiresult             Alternative Renyi Diversity Results
-residualssurface        Show and Interpolate Two Dimensional
-                        Distribution of Residuals
-spatialsample           Spatial Sampling within a Polygon
-transfgradient          Gradient for Hypothetical Example of Turover of
-                        Species Composition
-transfspecies           Hypothetical Example of Turover of Species
-                        Composition
-warcom                  Warburgia ugandensis AFLP Scores
-warenv                  Warburgia ugandensis Population Structure
-}
 }
 
 \author{
