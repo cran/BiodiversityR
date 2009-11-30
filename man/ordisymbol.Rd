@@ -1,8 +1,6 @@
 \name{ordisymbol}
 \alias{ordisymbol}
 \alias{ordibubble}
-\alias{ordihull.centroids}
-\alias{ordispider.centroids}
 \alias{ordicluster2}
 \alias{ordinearest}
 \alias{ordivector}
@@ -16,10 +14,6 @@ Functions to add some other graphical itmes to ordination diagrams than provided
 \usage{
 ordisymbol(ordiplot, y, factor, col=1, rainbow=T, legend=T,...)
 ordibubble(ordiplot,var,...)
-ordihull.centroids(ordmod, ordiplot, groups, draw = c("lines", "polygon"), 
-    show.groups, return.outliers=F, return.index=F, ...)
-ordispider.centroids(ordmod, ordiplot, groups, w = weights(ordiplot, "sites"), 
-    show.groups, return.outliers=F, return.index=F,...) 
 ordicluster2(ordiplot, cluster, mingroups=1, maxgroups=nrow(ordiplot$sites),...)
 ordinearest(ordiplot, dist,...)
 ordivector(ordiplot, spec, lty=2,...)
@@ -33,13 +27,6 @@ ordivector(ordiplot, spec, lty=2,...)
   \item{col}{ Colour (as \code{\link[graphics]{points}}). }
   \item{rainbow}{ Use rainbow colours.  }
   \item{legend}{ Add the legend (you need to click in the graph where the legend needs to be plotted). }
-  \item{ordmod}{ Constrained ordination model that provides constrained ordination axes (provided by \code{\link[vegan:cca]{rda}}, \code{\link[vegan]{cca}} or \code{\link[vegan]{capscale}}).}
-  \item{groups}{ Factor giving the groups for which the graphical item is drawn (as in \code{\link[vegan]{ordihull}} and \code{\link[vegan:ordihull]{ordispider}}).}
-  \item{draw}{ Use either lines or polygons (as in \code{\link[vegan]{ordihull}}).}
-  \item{show.groups}{ Show only given groups. This can be a vector, or TRUE if you want to show items for which condition is TRUE (as in \code{\link[vegan]{ordihull}} and \code{\link[vegan:ordihull]{ordispider}}).}
-  \item{w}{ Weights used to find the average within group (as in \code{\link[vegan:ordihull]{ordispider}}).}
-  \item{return.outliers}{ Return the sites that are not closest to their own centroid.}
-  \item{return.index}{ Return results of a test whether sites are closest to their own centroid (TRUE) or not.}
   \item{cluster}{ Cluster object. }
   \item{mingroups}{ Minimum of clusters to be plotted. }
   \item{maxgroups}{ Maximum of clusters to be plotted.. }
@@ -53,9 +40,7 @@ ordivector(ordiplot, spec, lty=2,...)
 Function \code{ordisymbol} plots different levels of the specified variable in different symbols and different colours  (if \code{rainbow} option was selected). When you opt to add the legend, then you need to click in the ordination graph to indicate the position of the legend.
  
 Function \code{ordibubble} draws bubble diagrams indicating the value of the specified continuous variable. Circles indicate positive values, squares indicate negative values.
- 
-Functions \code{ordihull.centroid} and \code{ordispider.centroid} have the same behaviour as their \pkg{vegan} equivalents (\code{\link[vegan]{ordihull}} and \code{\link[vegan:ordihull]{ordispider}}), except that hulls and spiderplots are only drawn for those sites that are closest to their own group centroid. The function thus allows to identify multivariate outliers. Optionally details about the outliers are provided. The function only returns results for ordination methods that provide constrained ordination axes.
- 
+  
 Function \code{ordicluster2} provides an alternative method of overlaying information from hierarchical clustering on an ordination diagram than provided by function \code{\link[vegan:ordihull]{ordicluster}}. The method draws convex hulls around sites that are grouped into the same cluster. You can select the minimum and maximum number of clusters that are plotted (i.e. the range of clustering steps to be shown).
  
 Function \code{ordinearest} draws a vector from each site to the site that is nearest to it as determined from a distance matrix. When you combine the method with \code{\link[vegan:spantree]{lines.spantree}} using the same distance measure, then you can evaluate in part how the minimum spanning tree was constructed. 

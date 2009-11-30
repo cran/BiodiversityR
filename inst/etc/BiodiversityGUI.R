@@ -2502,10 +2502,10 @@ unconordiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
-    types <- c("plot","ordiplot","ordiplot empty","identify sites","identify species","text sites","text species","points sites","points species",
-        "label sites","label species","orditorp sites","orditorp species","origin axes",
+    types <- c("plot","ordiplot","ordiplot empty","origin axes","identify sites","identify species","text sites","text species","points sites","points species",
+        "label sites","label species","orditorp sites","orditorp species",
         "envfit","ordihull (factor)", "ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordiellipse (factor)","ordisurf (continuous)",
-        "ordibubble (continuous)","ordisymbol (factor)","ordivector (species)","ordivector interpretation",
+        "ordibubble (continuous)","ordisymbol (factor)","ordisymbol (click in figure)","ordivector (species)","ordivector interpretation",
         "ordicluster","ordicluster2","ordispantree","ordinearest","ordiequilibriumcircle","screeplot",
         "distance displayed","coenocline","screeplot.cca","stressplot",
         "orditkplot sites","orditkplot species","orditkplot pointlabel")
@@ -2753,6 +2753,10 @@ unconordiGUI <- function(){
             justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=F, rainbow=T, cex=", cex, ")", sep=""))
             logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=F, rainbow=T, cex=", cex, ")", sep=""))
         }
+        if (plottype == "ordisymbol (click in figure)" && varfactor==T){
+            justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=T, rainbow=T, cex=", cex, ")", sep=""))
+            logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=T, rainbow=T, cex=", cex, ")", sep=""))
+        }
         if (plottype == "ordivector (species)"){
             realspecies <- eval(parse(text=paste("any(colnames(", .communityDataSet, ")=='", axisvar, "')", sep="")), envir=.GlobalEnv)
             if (realspecies == T) {
@@ -2993,11 +2997,11 @@ conordiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
-    types <- c("plot","ordiplot","ordiplot empty","identify sites","identify species","identify centroids","text sites","text species","text centroids",
+    types <- c("plot","ordiplot","ordiplot empty","origin axes","identify sites","identify species","identify centroids","text sites","text species","text centroids",
         "points sites","points species","points centroids",
-        "label sites","label species","label centroids","orditorp sites","orditorp species","orditorp centroids","origin axes",
-        "envfit","ordihull (factor)","ordihull.centroids (factor)","ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordispider.centroids (factor)","ordiellipse (factor)","ordisurf (continuous)",
-        "ordibubble (continuous)","ordisymbol (factor)","ordivector (species)","ordivector interpretation","ordicluster","ordicluster2",
+        "label sites","label species","label centroids","orditorp sites","orditorp species","orditorp centroids",
+        "envfit","ordihull (factor)","ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordiellipse (factor)","ordisurf (continuous)",
+        "ordibubble (continuous)","ordisymbol (factor)","ordisymbol (click in figure)","ordivector (species)","ordivector interpretation","ordicluster","ordicluster2",
         "ordinearest","ordispantree","ordiresids","distance displayed","coenocline","orditkplot sites","orditkplot species","orditkplot pointlabel")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
@@ -3362,9 +3366,6 @@ conordiGUI <- function(){
         if (plottype == "ordihull (factor)" && varfactor==T){
             doItAndPrint(paste("ordihull(plot1,", axisvar, ",col='", col, "')", sep=""))
             }
-        if (plottype == "ordihull.centroids (factor)" && varfactor==T){
-            doItAndPrint(paste("ordihull.centroids(", modelValue, ", plot1, ", axisvar, ", col='", col, "', return.outliers=T)", sep=""))
-            }
         if (plottype == "ordiarrows (factor)" && varfactor==T){
             doItAndPrint(paste("ordiarrows(plot1,", axisvar, ",col='", col, "')", sep=""))
             }
@@ -3373,9 +3374,6 @@ conordiGUI <- function(){
             }
         if (plottype == "ordispider (factor)" && varfactor==T){
             doItAndPrint(paste("ordispider(plot1,", axisvar, ",col='", col, "')", sep=""))
-            }
-        if (plottype == "ordispider.centroids (factor)" && varfactor==T){
-            doItAndPrint(paste("ordispider.centroids(", modelValue, ", plot1, ", axisvar, ", col='", col, "', return.outliers=T)", sep=""))
             }
         if (plottype == "ordiellipse (factor)" && varfactor==T){
             doItAndPrint(paste("ordiellipse(plot1,", axisvar, ",col='", col, "')", sep=""))
@@ -3389,6 +3387,10 @@ conordiGUI <- function(){
         if (plottype == "ordisymbol (factor)" && varfactor==T){
             justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=F, cex=", cex, ")", sep=""))
             logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=F, cex=", cex, ")", sep=""))
+            }
+        if (plottype == "ordisymbol (click in figure)" && varfactor==T){
+            justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=T, cex=", cex, ")", sep=""))
+            logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=T, cex=", cex, ")", sep=""))
             }
         if (plottype == "ordivector (species)"){
             realspecies <- eval(parse(text=paste("any(colnames(", .communityDataSet, ")=='", axisvar, "')", sep="")), envir=.GlobalEnv)
@@ -3691,18 +3693,18 @@ clusterGUI <- function(){
         logger(paste("par(cex=",cex,")", sep=""))
         if (plottype == "dendrogram1"){
             if (method == "hclust") {
-                doItAndPrint(paste("plot(", modelValue, ", col='", col, "',main='',sub='',xlab='')", sep=""))              
+                doItAndPrint(paste("plot(", modelValue, ", col='", col, "',main='',sub='',xlab='',ylab='')", sep=""))              
                 }
             if (method == "agnes"  || method == "diana") {
-                doItAndPrint(paste("plot(", modelValue, ", which.plots=2, col='", col, "',main='',sub='',xlab='')", sep=""))              
+                doItAndPrint(paste("plot(", modelValue, ", which.plots=2, col='", col, "',main='',sub='',xlab='',ylab='')", sep=""))              
                 }
             }
         if (plottype == "dendrogram2"){
             if (method == "hclust") {
-                doItAndPrint(paste("plot(", modelValue, ", col='", col, "',main='',sub='',xlab='', hang=-1)", sep=""))              
+                doItAndPrint(paste("plot(", modelValue, ", col='", col, "',main='',sub='',xlab='',ylab='', hang=-1)", sep=""))              
                 }
             if (method == "agnes"  || method == "diana") {
-                doItAndPrint(paste("plot(", modelValue, ", which.plots=2, col='", col, "',main='',sub='',xlab='', hang=-1)", sep=""))              
+                doItAndPrint(paste("plot(", modelValue, ", which.plots=2, col='", col, "',main='',sub='',xlab='',ylab='', hang=-1)", sep=""))              
                 }
             }
         if (plottype == "pruned dendrogram" && method == "hclust"){
