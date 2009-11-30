@@ -1208,15 +1208,11 @@ Option "envfit" chooses function \code{\link[vegan]{envfit}} to add information 
  
 Option "ordihull" chooses function \code{\link[vegan]{ordihull}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
-Option "ordihull.centroids" chooses function \code{\link{ordihull.centroids}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
- 
 Option "ordiarrows" chooses function \code{\link[vegan:ordihull]{ordiarrows}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
 Option "ordisegments" chooses function \code{\link[vegan:ordihull]{ordisegments}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
 Option "ordispider" chooses function \code{\link[vegan:ordihull]{ordispider}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
- 
-Option "ordispider.centroids" chooses function \code{\link{ordispider.centroids}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
 Option "ordiellipse" chooses function \code{\link[vegan:ordihull]{ordiellipse}} to add information for the categorical variable of the environmental dataset selected on the right-hand side to ordination diagrams created by function \code{\link[vegan]{ordiplot}}.
  
