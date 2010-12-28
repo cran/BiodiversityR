@@ -8,7 +8,7 @@ Calculates scores (coordinates) to plot species for PCoA or NMS results that do 
 }
 
 \usage{
-add.spec.scores(ordi,comm,method="cor.scores",multi=1,Rscale=F,scaling="2")
+add.spec.scores(ordi,comm,method="cor.scores",multi=1,Rscale=F,scaling="1")
 }
 
 \arguments{
@@ -30,15 +30,16 @@ Tree diversity analysis: A manual and
   software for common statistical methods for ecological and
   biodiversity studies.
  
-  \url{http://www.worldagroforestry.org/treesandmarkets/tree_diversity_analysis.asp} }   
+  \url{http://www.worldagroforestry.org/resources/databases/tree-diversity-analysis} }   
 
 \author{Roeland Kindt}
 
 \examples{
 library(vegan)
 data(dune)
-distmatrix <- vegdist(dune)
-Ordination.model1 <- cmdscale(distmatrix, k=2, eig=TRUE, add=FALSE)
+distmatrix <- vegdist(dune, method='euc')
+## Principal coordinates analysis with 19 axes to estimate total variance
+Ordination.model1 <- cmdscale(distmatrix, k=19, eig=TRUE, add=FALSE)
 Ordination.model1 <- add.spec.scores(Ordination.model1,dune, method='pcoa.scores', Rscale=TRUE, scaling=1, multi=1)
 Ordination.model1
 ## Compare Ordination.model1 with:

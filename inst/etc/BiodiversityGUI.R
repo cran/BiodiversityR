@@ -1487,27 +1487,6 @@ countGUI <- function(){
             justDoIt(paste("library(rpart)"))
             logger(paste("library(rpart)"))
         }
-        .activeModel <- ActiveModel()
-        UpdateModelNumber()
-        if (option=="linear model") {
-            modelName <- tclVar(paste("RegModel.", getRcmdr("modelNumber"), sep=""))
-            if (is.element(modelValue, listLinearModels())) {
-                if ("no" == tclvalue(checkReplace(modelValue, type="Model"))){
-                    UpdateModelNumber(-1)
-                    linearRegressionModel()
-                    return()
-                 }
-             }
-        }
-        if (option=="Poisson model" || option=="quasi-Poisson model" || option=="negative binomial model") {
-            modelName <- tclVar(paste("GLM.", getRcmdr("modelNumber"), sep=""))
-            if (is.element(modelValue, listGeneralizedLinearModels())) {
-                if ("no" == tclvalue(checkReplace(modelValue))){
-                    UpdateModelNumber(-1)
-                    closeDialog()
-                }
-            }
-        }
         if (option == "linear model"){
             command <- paste("lm(", formula, ", data=",.activeDataSet, ", na.action=na.exclude)", sep="")
         }
@@ -1534,10 +1513,6 @@ countGUI <- function(){
         }
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
-        nterm <- 1
-        if (option=="linear model" ||option=="Poisson model" || option=="quasi-Poisson model" || option=="negative binomial model") {
-            nterm <- eval(parse(text=paste("length(term.names(", modelValue, ")[-1])", sep="")), envir=.GlobalEnv)
-        }
         sum <- tclvalue(summaryVariable) == "1"
         if (sum==T) {
             doItAndPrint(paste("summary(", modelValue, ")", sep=""))
@@ -1548,7 +1523,6 @@ countGUI <- function(){
         anov <- tclvalue(anovaVariable) == "1"
         if (anov==T && option!="glmmPQL" && option!="rpart") {
             doItAndPrint(paste("anova(", modelValue, ",test='F')", sep=""))
-            if (nterm > 1) {
                 doItAndPrint(paste("vif(lm(", formula, ", data=na.omit(",.activeDataSet, ")))", sep=""))
                 if (option=="linear model") {
                     doItAndPrint(paste("drop1(", modelValue, ",test='F')", sep=""))
@@ -1559,7 +1533,6 @@ countGUI <- function(){
                     doItAndPrint(paste("Anova(", modelValue, ",type='II', test='F', error.estimate='deviance')", sep=""))
                     doItAndPrint(paste("Anova(", modelValue, ",type='II', test='Wald')", sep=""))
                 }
-            }
         }        
         data <- tclvalue(dataVariable) =="1"
         if (data==T) {
@@ -1572,7 +1545,6 @@ countGUI <- function(){
             }
             activeDataSet(.activeDataSet)
         }
-        activeModel(modelValue)
     }
     onPlot <- function(){
         modelValue <- tclvalue(modelName)
@@ -2036,17 +2008,6 @@ presabsGUI <- function(){
             activeDataSet(.activeDataSet)
             formula <- paste("presence", right, sep=" ~ ")            
         }
-        .activeModel <- ActiveModel()
-        UpdateModelNumber()
-        if (option=="binomial model" || option=="quasi-binomial model") {
-            modelName <- tclVar(paste("GLM.", getRcmdr("modelNumber"), sep=""))
-            if (is.element(modelValue, listGeneralizedLinearModels())) {
-                if ("no" == tclvalue(checkReplace(modelValue))){
-                    UpdateModelNumber(-1)
-                    closeDialog()
-                }
-            }
-        }
         if (option == "crosstab"){
             y <- tclvalue(lhsVariable)
             command <- paste("crosstabanalysis(na.omit(", .activeDataSet, "),'", y, "','", right, "')", sep="")
@@ -2071,10 +2032,6 @@ presabsGUI <- function(){
         }
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
-        nterm <- 1
-        if (option=="binomial model" || option=="quasi-binomial model") {
-            nterm <- eval(parse(text=paste("length(term.names(", modelValue, ")[-1])", sep="")), envir=.GlobalEnv)
-        }
         sum <- tclvalue(summaryVariable) == "1"
         if (sum==T && option !="crosstab") {
             doItAndPrint(paste("summary(", modelValue, ")", sep=""))
@@ -2093,21 +2050,17 @@ presabsGUI <- function(){
         anov <- tclvalue(anovaVariable) == "1"
         if (anov==T && (option=="binomial model" || option=="gam model")) {
             doItAndPrint(paste("anova(", modelValue, ",test='Chi')", sep=""))
-            if (nterm > 1) {
                 doItAndPrint(paste("vif(lm(", formula, ", data=na.omit(",.activeDataSet, ")))", sep=""))                  
                 doItAndPrint(paste("drop1(", modelValue, ",test='Chi')", sep=""))
                 doItAndPrint(paste("Anova(", modelValue, ",type='II', test='F', error.estimate='deviance')", sep=""))
                 doItAndPrint(paste("Anova(", modelValue, ",type='II', test='Wald')", sep=""))
-            }
         } 
         if (anov==T && (option=="quasi-binomial model" || option=="gam quasi-binomial model")) {
             doItAndPrint(paste("anova(", modelValue, ",test='F')", sep=""))
-            if (nterm > 1) {
                 doItAndPrint(paste("vif(lm(", formula, ", data=na.omit(",.activeDataSet, ")))", sep=""))                  
                 doItAndPrint(paste("drop1(", modelValue, ",test='F')", sep=""))
                 doItAndPrint(paste("Anova(", modelValue, ",type='II', test='F', error.estimate='deviance')", sep=""))
                 doItAndPrint(paste("Anova(", modelValue, ",type='II', test='Wald')", sep=""))
-            }
         }       
         data <- tclvalue(dataVariable) =="1"
         if (data==T) {
@@ -2125,7 +2078,6 @@ presabsGUI <- function(){
             }
             activeDataSet(.activeDataSet)
         }
-        activeModel(modelValue)
     }
     onPlot <- function(){
         modelValue <- tclvalue(modelName)
@@ -4000,7 +3952,7 @@ cepNamesCommunity <- function() {
 }
 
 helpBiodiversityR <- function() {
-    print(help("BiodiversityRGUI"))
+    print(help("BiodiversityRGUI",help_type="html"))
 }
 
 allcitations <- function() {
