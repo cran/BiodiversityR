@@ -55,8 +55,6 @@ data(dune)
 data(dune.env)
 multiconstrained(method="capscale", dune~Management, data=dune.env,
     distance="bray",add=TRUE)
-multiconstrained(method="capscale", dune~Management, data=dune.env,
-    distance="bray",add=TRUE, by="axis")
 multiconstrained(method="capscale", dune~Management+Condition(A1),
     data=dune.env, distance="bray", add=TRUE, contrast=3)
 }

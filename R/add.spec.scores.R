@@ -1,5 +1,5 @@
 `add.spec.scores` <-
-function(ordi,comm,method="cor.scores",multi=1,Rscale=F,scaling="2") {
+function(ordi,comm,method="cor.scores",multi=1,Rscale=F,scaling="1") {
     ordiscores <- scores(ordi,display="sites")
     n <- ncol(comm)
     p <- ncol(ordiscores)
@@ -18,14 +18,16 @@ function(ordi,comm,method="cor.scores",multi=1,Rscale=F,scaling="2") {
         accounted <- sum(eigenv)
         tot <- 2*(accounted/ordi$GOF[2])-(accounted/ordi$GOF[1])
         eigen.var <- eigenv/(nrow(comm)-1)
-        neg <- sum(as.numeric(eigenv<0))
+        neg <- length(eigenv[eigenv<0])
+        pos <- length(eigenv[eigenv>0])
         tot <- tot/(nrow(comm)-1)
         eigen.percen <- 100*eigen.var/tot
         eigen.cumpercen <- cumsum(eigen.percen)
         constant <- ((nrow(comm)-1)*tot)^0.25
         ordiscores <- ordiscores * (nrow(comm)-1)^-0.5 * tot^-0.5 * constant
+        p1 <- min(p, pos)
         for (i in 1:n) {
-            for (j in 1:(p-neg)) {
+            for (j in 1:p1) {
                 specscores[i,j] <- cor(comm[,i],ordiscores[,j])*sd(comm[,i])/sd(ordiscores[,j])
                 if(is.na(specscores[i,j])) {specscores[i,j]<-0}
             }

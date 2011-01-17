@@ -28,7 +28,7 @@ Maintainer: Roeland Kindt (World Agroforestry Centre [ICRAF])
 \references{
 Kindt, R. & Coe, R. (2005) Tree diversity analysis: A manual and software for common statistical methods for ecological and biodiversity studies. 
  
-\url{http://www.worldagroforestry.org/treesandmarkets/tree_diversity_analysis.asp} 
+\url{http://www.worldagroforestry.org/resources/databases/tree-diversity-analysis} 
  
 We suggest to use this citation for this software as well (together with citations of all other packages that were used)  
 }
