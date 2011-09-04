@@ -1571,7 +1571,7 @@ countGUI <- function(){
             }
         }
         if (plottype == "levene test (factor)" && option !="rpart" && varfactor==T) {
-            doItAndPrint(paste("levene.test(residuals(", modelValue, "), ", .activeDataSet ,"$", axisvar, ")", sep=""))
+            doItAndPrint(paste("leveneTest(residuals(", modelValue, "), ", .activeDataSet ,"$", axisvar, ")", sep=""))
             justDoIt(paste("plot(residuals(", modelValue, ") ~ ", .activeDataSet ,"$", axisvar, ")", sep=""))
             logger(paste("plot(residuals(", modelValue, ") ~ ", .activeDataSet ,"$", axisvar, ")", sep=""))
             doItAndPrint(paste("points(", .activeDataSet ,"$", axisvar, ",residuals(", modelValue, "))", sep=""))
@@ -2103,7 +2103,7 @@ presabsGUI <- function(){
             }
         }
         if (plottype == "levene test (factor)" && option !="crosstab" && option !="rpart" && option !="nnetrandom" && varfactor==T) {
-            doItAndPrint(paste("levene.test(residuals(", modelValue, "), ", .activeDataSet ,"$", axisvar, ")", sep=""))
+            doItAndPrint(paste("leveneTest(residuals(", modelValue, "), ", .activeDataSet ,"$", axisvar, ")", sep=""))
             justDoIt(paste("plot(residuals(", modelValue, ") ~ ", .activeDataSet ,"$", axisvar, ")", sep=""))
             logger(paste("plot(residuals(", modelValue, ") ~ ", .activeDataSet ,"$", axisvar, ")", sep=""))
             doItAndPrint(paste("points(", .activeDataSet ,"$", axisvar, ",residuals(", modelValue, "))", sep=""))
