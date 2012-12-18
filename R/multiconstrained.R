@@ -42,17 +42,18 @@ function (method ="capscale", formula, data, distance = "bray", comm = NULL, add
         }else{
             comm1 <- as.dist(comm1)
         }
-		newenvdata <- data1
-		newcommunity <- comm1
-        assign("newenvdata",data1,env=.GlobalEnv)
-        assign("newcommunity",comm1,env=.GlobalEnv)
+	newenvdata <- data1
+	newcommunity <- comm1
+        .BiodiversityR <- new.env()
+        assign("newenvdata",data1,envir=.BiodiversityR)
+        assign("newcommunity",comm1,envir=.BiodiversityR)
         formula1 <- update(formula, newcommunity ~ .)
-		environment(formula1) <- .GlobalEnv
+	environment(formula1) <- .BiodiversityR
         if (method == "rda") {ordinationresult <- rda(formula1, data=newenvdata)}
         if (method == "cca") {ordinationresult <- cca(formula1, data=newenvdata)}
         if (method == "capscale") {ordinationresult <- capscale(formula1, data=newenvdata, distance=distance, add=add)}
         if (contrast==i) {
-		    comm1 <- data.frame(as.matrix(comm1))
+            comm1 <- data.frame(as.matrix(comm1))
             cat("Multiple comparisons for", method, "for", multicomp, "\n")
             if (method=="capscale") {
                 if (wasdist == T) {cat("Analysis done with distance matrix and add=", add, "\n")
@@ -65,6 +66,8 @@ function (method ="capscale", formula, data, distance = "bray", comm = NULL, add
         result[i,] <- anovaresult[1,]
         rownames(result)[i] <- paste(level1, "vs.", level2)
     }
+    remove("newenvdata",envir=.BiodiversityR)
+    remove("newcommunity",envir=.BiodiversityR)
     colnames(result) <- c("Df", "Var", "F", "N.Perm", "Pr(>F)")
     head <- paste("Multiple comparisons for", method, "for all contrasts of", multicomp, "\n")
     mod <- paste("Model: ", c(match.call()), "\n")

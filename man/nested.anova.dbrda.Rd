@@ -47,14 +47,16 @@ McArdle, B.H. and M.J. Anderson. (2001). Fitting multivariate models to communit
 \author{Roeland Kindt (World Agroforestry Centre)}
 
 \examples{
+\dontrun{
 library(vegan)
 data(warcom)
 data(warenv)
 # use larger number of permutations for real studies
 nested.npmanova(warcom~rift.valley+popshort, data=warenv, method="jac", 
-    permutations=10)
+    permutations=5)
 nested.anova.dbrda(warcom~rift.valley+popshort, data=warenv, method="jac", 
-    permutations=10)
+    permutations=5)
+}
 }
 
 

@@ -30,6 +30,8 @@ function(formula,data,method="euc",permutations=100,warnings=FALSE){
     ow <- options("warn")
     if (warnings==FALSE) {options(warn=0)}
     formula <- as.formula(formula)
+    .BiodiversityR <- new.env()
+    environment(formula) <- .BiodiversityR
     if (length(all.vars(formula)) > 3) 
         stop(paste("function only works with one main and one nested factor"))
     x <- eval(as.name((all.vars(formula)[1])))
@@ -45,7 +47,7 @@ function(formula,data,method="euc",permutations=100,warnings=FALSE){
     lowlev <- all.vars(formula)[3]
     environment(formula) <- .GlobalEnv
     data1 <- data
-    assign("data1",data,env=.GlobalEnv)
+    assign("data1",data,envir=.BiodiversityR)
     model <- capscale(formula,data1,distance="euclidean")
     anovares <- anova(model,perm.max=1,by="terms")
     anovadat <- data.frame(anovares)
@@ -63,9 +65,8 @@ function(formula,data,method="euc",permutations=100,warnings=FALSE){
     counter <- 1
     for (i in 1:permutations) {
         data2 <- randomize(data,toplev,lowlev)
-		testenv <- data2
-        assign("testenv", data2, env = parent.frame())
-        adonis2 <- adonis(formula,data=testenv,method=method,permutations=2)
+        assign("data2", data2, envir=.BiodiversityR)
+        adonis2 <- adonis(formula,data=data2,method=method,permutations=2)
         adonis2 <- data.frame(adonis2$aov.tab)
         Frand <- (adonis2[1,2]/df1)/(adonis2[2,2]/df2)
         if (Frand >= Ftop) {counter <- counter+1}
@@ -76,13 +77,14 @@ function(formula,data,method="euc",permutations=100,warnings=FALSE){
     counter <- 1
     for (i in 1:permutations) {
         data2 <- randomize2(data,toplev)
-		testenv <- data2
-        assign("testenv", data2, env = parent.frame())
-        adonis2 <- adonis(formula,data=testenv,method=method,permutations=2)
+        assign("data2", data2, envir=.BiodiversityR)
+        adonis2 <- adonis(formula,data=data2,method=method,permutations=2)
         adonis2 <- data.frame(adonis2$aov.tab)
         Frand <- (adonis2[2,2]/df2)/(adonis2[3,2]/df3)
         if (Frand >= Flow) {counter <- counter+1}
-    }    
+    } 
+    remove("data1", envir=.BiodiversityR)
+    remove("data2", envir=.BiodiversityR)   
     signi <- counter/(permutations+1)
     anovadat[2,5] <- signi
     colnames(anovadat) <- c("Df", "SumsofSquares", "F", "N.Perm", "Pr(>F)")

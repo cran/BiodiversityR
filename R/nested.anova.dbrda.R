@@ -48,9 +48,10 @@ function (formula, data, method = "euc", add = FALSE, permutations = 100,
     resp <- all.vars(formula)[1]
     toplev <- all.vars(formula)[2]
     lowlev <- all.vars(formula)[3]
-    environment(formula) <- .GlobalEnv
+    .BiodiversityR <- new.env()
+    environment(formula) <- .BiodiversityR
     data1 <- data
-    assign("data1", data, env = .GlobalEnv)
+    assign("data1", data, envir=.BiodiversityR)
     METHODS <- c("manhattan", "euclidean", "canberra", "bray", 
         "kulczynski", "gower", "morisita", "horn", "mountford", 
         "jaccard", "raup", "binomial", "chao")
@@ -178,17 +179,16 @@ function (formula, data, method = "euc", add = FALSE, permutations = 100,
     anovadat[2, 3] <- anovadat[2, 2]/df3
     formula1 <- as.formula(paste(resp, "~", lowlev, "+Condition(", 
         toplev, ")"))
-    model1 <- capscale(formula1, data = data1, dist = method, 
+    model1 <- capscale(formula1, data = data1, distance = method, 
         add = add)
     Ftop <- (model1$pCCA$tot.chi/df1)/(model1$CCA$tot.chi/df2)
     anovadat[1, 3] <- Ftop
     counter <- 1
     for (i in 1:permutations) {
         data2 <- randomize(data, toplev, lowlev)
-        testenv <- data2
-        assign("testenv", data2, env = parent.frame())
-        Ordinationperm <- capscale(formula1, data = testenv, 
-            dist = method, add = add)
+        assign("data2", data2, envir=.BiodiversityR)
+        Ordinationperm <- capscale(formula1, data = data2, 
+            distance = method, add = add)
         randomF <- (Ordinationperm$pCCA$tot.chi/df1)/(Ordinationperm$CCA$tot.chi/df2)
         if (randomF >= Ftop) {
             counter <- counter + 1
@@ -202,15 +202,16 @@ function (formula, data, method = "euc", add = FALSE, permutations = 100,
     counter <- 1
     for (i in 1:permutations) {
         data2 <- randomize2(data, toplev)
-        testenv <- data2
-        assign("testenv", data2, env = parent.frame())
-        Ordinationperm <- capscale(formula1, data = testenv, 
-            dist = method, add = add)
+        assign("data2", data2, envir=.BiodiversityR)
+        Ordinationperm <- capscale(formula1, data = data2, 
+            distance = method, add = add)
         randomF <- (Ordinationperm$CCA$tot.chi/df2)/(Ordinationperm$CA$tot.chi/df3)
         if (randomF >= Flow) {
             counter <- counter + 1
         }
     }
+    remove("data1", envir=.BiodiversityR)
+    remove("data2", envir=.BiodiversityR)
     signi <- counter/(permutations + 1)
     anovadat[2, 5] <- signi
     colnames(anovadat) <- c("Df", "SumsOfSquares", "F", "N.Perm", "Pr(>F)")

@@ -16,7 +16,7 @@ function(model,data,x,y,gam=F,npol=2,plotit=T,filled=F,bubble=F) {
         if (filled==F) {
             contour(interp(xpos,ypos,fitted,duplicate="mean"),lwd=2)
         }else{
-            filled.contour(interp(xpos,ypos,fitted,duplicate="mean"),color=terrain.colors)
+            filled.contour(interp(xpos,ypos,fitted,duplicate="mean"),color.palette=terrain.colors)
         }
         if (bubble==T && filled==F) {
             res2 <- abs(res)

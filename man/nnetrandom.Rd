@@ -35,6 +35,7 @@ The function returns the same components as \code{\link[nnet]{nnet}}, but adds t
 \author{Roeland Kindt (World Agroforestry Centre)}
 
 \examples{
+\dontrun{
 data(faramea)
 faramea <- na.omit(faramea)
 faramea$presence <- as.numeric(faramea$Faramea.occidentalis > 0)
@@ -52,6 +53,7 @@ result2 <- nnetrandom(presence ~ Elevation, data=faramea, size=2,
 result2$range
 result2$CV
 result2$successful
+}
 }
 
 \keyword{multivariate} 
