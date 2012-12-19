@@ -49,6 +49,7 @@ Ecology 84: 511-525.
 \author{Roeland Kindt (World Agroforestry Centre)}
 
 \examples{
+\dontrun{
 library(vegan)
 library(MASS)
 data(dune)
@@ -57,6 +58,7 @@ multiconstrained(method="capscale", dune~Management, data=dune.env,
     distance="bray",add=TRUE)
 multiconstrained(method="capscale", dune~Management+Condition(A1),
     data=dune.env, distance="bray", add=TRUE, contrast=3)
+}
 }
 
 \keyword{multivariate} 

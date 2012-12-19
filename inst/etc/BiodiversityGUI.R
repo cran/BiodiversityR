@@ -327,6 +327,87 @@ importfromExcelGUI <- function() {
     dialogSuffix(rows=4, columns=1)
 }
 
+importfromExcel2007GUI <- function() {
+    initializeDialog(title="Read Community and Environmental data From Excel 2007")
+    optionsFrame <- tkframe(top, relief="groove", borderwidth=2)
+    comdsname <- tclVar("CommunityDataset")
+    entrycomDsname <- tkentry(optionsFrame, width="20", textvariable=comdsname)
+    envdsname <- tclVar("EnvironmentalDataset")
+    entryenvDsname <- tkentry(optionsFrame, width="20", textvariable=envdsname)
+    dsites <- tclVar("sites")
+    entrysites <- tkentry(optionsFrame, width="20", textvariable=dsites)
+    stackedFrame <- tkframe(top, relief="groove", borderwidth=2)
+    stackedVariable <- tclVar("0")
+    stackedCheckBox <- tkcheckbutton(stackedFrame, variable=stackedVariable)
+    scolumn <- tclVar("species")
+    entrycol <- tkentry(stackedFrame, width="20", textvariable=scolumn)
+    sval <- tclVar("abundance")
+    entryval <- tkentry(stackedFrame, width="20", textvariable=sval)
+    sfactor <- tclVar("all")
+    entryfactor <- tkentry(stackedFrame, width="20", textvariable=sfactor)
+    slevel <- tclVar("all")
+    entrylevel <- tkentry(stackedFrame, width="20", textvariable=slevel)
+    onOK <- function(){
+        closeDialog()
+        comdsnameValue <- tclvalue(comdsname)
+        envdsnameValue <- tclvalue(envdsname)
+        sitesValue <- tclvalue(dsites)
+        colValue <- tclvalue(scolumn)
+        valValue <- tclvalue(sval)
+        factorValue <- tclvalue(sfactor)
+        levelValue <- tclvalue(slevel)
+        file <- tclvalue(tkgetOpenFile(filetypes='{"Excel Files" {".xlsx" ".XLSX"}} {"All Files" {"*"}}'))
+        if (file == "") {
+            if (getRcmdr("grab.focus")) tkgrab.release(top)
+            tkdestroy(top)
+            return()
+            }
+        justDoIt(paste("library(RODBC)", sep=""))
+        logger(paste("library(RODBC)", sep=""))
+        stacked <- tclvalue(stackedVariable) == "1"
+        if (stacked==F) {
+            command <- paste("import.from.Excel2007('", file, "', sheet='community',sitenames='", sitesValue, "', cepnames=F)", sep="")
+        }else{
+            if (factorValue=="all") { 
+                command <- paste("import.from.Excel2007('", file, "', sheet='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "', cepnames=F)", sep="")
+            }else{
+                command <- paste("import.from.Excel2007('", file, "', sheet='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "',factor='", factorValue, "',level='", levelValue, "', cepnames=F)", sep="")
+            }
+        }
+        logger(paste(comdsnameValue, " <- ", command, sep=""))
+        assign(comdsnameValue, justDoIt(command), envir=.GlobalEnv)
+        communityDataSet(comdsnameValue)
+        command <- paste("import.from.Excel2007('", file, "', sheet='environmental',sitenames='", sitesValue, "')", sep="")
+        logger(paste(envdsnameValue, " <- ", command, sep=""))
+        assign(envdsnameValue, justDoIt(command), envir=.GlobalEnv)
+        activeDataSet(envdsnameValue)
+        tkfocus(CommanderWindow())
+        }
+    onCancel <- function() {
+        tkgrab.release(top)
+        tkfocus(CommanderWindow())
+        tkdestroy(top)  
+        }
+    buttonsFrame <- tkframe(top)
+    OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
+    cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
+    tkgrid(tklabel(optionsFrame, text="Names for new datasets"), sticky="w")
+    tkgrid(tklabel(optionsFrame, text="Enter name for community data set:"), entrycomDsname, sticky="w")
+    tkgrid(tklabel(optionsFrame, text="Enter name for environmental data set:"), entryenvDsname, sticky="w")
+    tkgrid(tklabel(optionsFrame, text="Enter name for variable with sites:"), entrysites, sticky="w")
+    tkgrid(optionsFrame, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Options for stacked data entry"), sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Import community dataset from stacked format:"), stackedCheckBox, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Enter variable for species:"), entrycol, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Enter variable for abundance:"), entryval, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Enter factor for subset:"), entryfactor, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Enter level for subset:"), entrylevel, sticky="w")
+    tkgrid(stackedFrame, sticky="w")
+    tkgrid(OKbutton, cancelButton)
+    tkgrid(buttonsFrame, sticky="w")
+    dialogSuffix(rows=4, columns=1)
+}
+
 
 importfromAccessGUI <- function() {
     initializeDialog(title="Read Community and Environmental data From Access")
@@ -408,6 +489,88 @@ importfromAccessGUI <- function() {
     tkgrid(buttonsFrame, sticky="w")
     dialogSuffix(rows=4, columns=1)
 }
+
+importfromAccess2007GUI <- function() {
+    initializeDialog(title="Read Community and Environmental data From Access 2007")
+    optionsFrame <- tkframe(top, relief="groove", borderwidth=2)
+    comdsname <- tclVar("CommunityDataset")
+    entrycomDsname <- tkentry(optionsFrame, width="20", textvariable=comdsname)
+    envdsname <- tclVar("EnvironmentalDataset")
+    entryenvDsname <- tkentry(optionsFrame, width="20", textvariable=envdsname)
+    dsites <- tclVar("sites")
+    entrysites <- tkentry(optionsFrame, width="20", textvariable=dsites)
+    stackedFrame <- tkframe(top, relief="groove", borderwidth=2)
+    stackedVariable <- tclVar("0")
+    stackedCheckBox <- tkcheckbutton(stackedFrame, variable=stackedVariable)
+    scolumn <- tclVar("species")
+    entrycol <- tkentry(stackedFrame, width="20", textvariable=scolumn)
+    sval <- tclVar("abundance")
+    entryval <- tkentry(stackedFrame, width="20", textvariable=sval)
+    sfactor <- tclVar("all")
+    entryfactor <- tkentry(stackedFrame, width="20", textvariable=sfactor)
+    slevel <- tclVar("all")
+    entrylevel <- tkentry(stackedFrame, width="20", textvariable=slevel)
+    onOK <- function(){
+        closeDialog()
+        comdsnameValue <- tclvalue(comdsname)
+        envdsnameValue <- tclvalue(envdsname)
+        sitesValue <- tclvalue(dsites)
+        colValue <- tclvalue(scolumn)
+        valValue <- tclvalue(sval)
+        factorValue <- tclvalue(sfactor)
+        levelValue <- tclvalue(slevel)
+        file <- tclvalue(tkgetOpenFile(filetypes='{"Access Files" {".mdbx" ".MDBX"}} {"All Files" {"*"}}'))
+        if (file == "") {
+            if (getRcmdr("grab.focus")) tkgrab.release(top)
+            tkdestroy(top)
+            return()
+            }
+        justDoIt(paste("library(RODBC)", sep=""))
+        logger(paste("library(RODBC)", sep=""))
+        stacked <- tclvalue(stackedVariable) == "1"
+        if (stacked==F) {
+            command <- paste("import.from.Access2007('", file, "', table='community',sitenames='", sitesValue, "')", sep="")
+        }else{
+            if (factorValue=="all") { 
+                command <- paste("import.from.Access2007('", file, "', table='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "')", sep="")
+            }else{
+                command <- paste("import.from.Access2007('", file, "', table='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "',factor='", factorValue, "',level='", levelValue, "')", sep="")
+            }
+        }
+        logger(paste(comdsnameValue, " <- ", command, sep=""))
+        assign(comdsnameValue, justDoIt(command), envir=.GlobalEnv)
+        communityDataSet(comdsnameValue)
+        command <- paste("import.from.Access2007('", file, "', table='environmental',sitenames='", sitesValue, "')", sep="")
+        logger(paste(envdsnameValue, " <- ", command, sep=""))
+        assign(envdsnameValue, justDoIt(command), envir=.GlobalEnv)
+        activeDataSet(envdsnameValue)
+        tkfocus(CommanderWindow())
+        }
+    onCancel <- function() {
+        tkgrab.release(top)
+        tkfocus(CommanderWindow())
+        tkdestroy(top)  
+        }
+    buttonsFrame <- tkframe(top)
+    OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
+    cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
+    tkgrid(tklabel(optionsFrame, text="Names for new datasets"), sticky="w")
+    tkgrid(tklabel(optionsFrame, text="Enter name for community data set:"), entrycomDsname, sticky="w")
+    tkgrid(tklabel(optionsFrame, text="Enter name for environmental data set:"), entryenvDsname, sticky="w")
+    tkgrid(tklabel(optionsFrame, text="Enter name for variable with sites:"), entrysites, sticky="w")
+    tkgrid(optionsFrame, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Options for stacked data entry"), sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Import community dataset from stacked format:"), stackedCheckBox, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Enter variable for species:"), entrycol, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Enter variable for abundance:"), entryval, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Enter factor for subset:"), entryfactor, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Enter level for subset:"), entrylevel, sticky="w")
+    tkgrid(stackedFrame, sticky="w")
+    tkgrid(OKbutton, cancelButton)
+    tkgrid(buttonsFrame, sticky="w")
+    dialogSuffix(rows=4, columns=1)
+}
+
 
 
 samesitesGUI <- function(){
@@ -665,7 +828,7 @@ accumGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("exact","random","rarefaction", "coleman","collector")
+    methods <- c("exact","exact (unconditioned)","random","rarefaction", "coleman","collector")
     permVariable <- tclVar("100")
     permutation <- tkentry(method2Frame, width=10, textvariable=permVariable)
     for (x in methods) tkinsert(methodBox, "end", x)
@@ -725,13 +888,25 @@ accumGUI <- function(){
             xlab <- paste(", xlab='", var2, "'", sep="")
         }
         if (var == "all") {
-            command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", method='", method, "', conditioned =T, gamma = 'boot', permutations=", perm, scale, ")", sep="")
+            if (method == "exact (unconditioned)") {
+                command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", method='exact', conditioned =F, gamma = 'boot', permutations=", perm, scale, ")", sep="")
+            }else{
+                command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", method='", method, "', conditioned =T, gamma = 'boot', permutations=", perm, scale, ")", sep="")
+            }
         }else{
             var <- .variables[as.numeric(tkcurselection(subsetBox))]
             if (sub == ".") {
-                command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='", method, "', conditioned =T, gamma = 'boot', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ")", sep="")
+                if (method == "exact (unconditioned)") {
+                    command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='exact', conditioned =F, gamma = 'boot', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ")", sep="")
+                }else{
+                    command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='", method, "', conditioned =T, gamma = 'boot', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ")", sep="")
+                }
             }else{
-                command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', method='", method, "', conditioned =T, gamma = 'boot' , permutations=", perm , scale, ")", sep="")
+                if (method == "exact (unconditioned)") {
+                    command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', method='exact', conditioned =F, gamma = 'boot' , permutations=", perm , scale, ")", sep="")
+                }else{
+                    command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', method='", method, "', conditioned =T, gamma = 'boot' , permutations=", perm , scale, ")", sep="")
+                }
             }
         }
         logger(paste(modelValue, " <- ", command, sep=""))

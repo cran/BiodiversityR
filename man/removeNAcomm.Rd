@@ -6,7 +6,12 @@
 \alias{check.ordiscores}
 \alias{removezerospecies}
 \alias{subsetcomm}
-
+#ifdef windows
+\alias{import.from.Excel}
+\alias{import.from.Excel2007}
+\alias{import.from.Access}
+\alias{import.from.Access2007}
+#endif
 
 \title{Synchronize Community and Environmental Datasets}
 
@@ -22,6 +27,17 @@ removeNAcomm(x,y,variable)
 removeNAenv(x,variable)
 removezerospecies(x)
 subsetcomm(x,y,factor,level,returncomm=T)
+
+#ifdef windows
+import.from.Excel(file = file.choose(), sheet = "community", sitenames = "sites", 
+    column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
+import.from.Excel2007(file = file.choose(), sheet = "community", sitenames = "sites", 
+    column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
+import.from.Access(file = file.choose(), table = "community", sitenames = "sites", 
+    column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
+import.from.Access2007(file = file.choose(), table = "community", sitenames = "sites", 
+    column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
+#endif
 }
 
 \arguments{
@@ -30,9 +46,22 @@ subsetcomm(x,y,factor,level,returncomm=T)
   \item{ord}{ Ordination result. }
   \item{check.species}{ Should the species scores be checked (TRUE) or not. }
   \item{variable}{ Name of the variable from the environmental dataset with NA values that indicate those sites that should be removed. }
-  \item{factor}{ Variable of the environmental data frame that defines subsets to calculate diversity statistics for. }
-  \item{level}{ Level of the variable to create the subset to calculate diversity statistics. }
+  \item{factor}{ Variable of the environmental data frame that defines subsets for the data frame. }
+  \item{level}{ Level of the variable to create the subsets for the data frame. }
   \item{returncomm}{ For the selected sites, return the community dataset (TRUE) or the environmental dataset. }
+
+#ifdef windows
+  \item{file}{ Location of the Excel (or Access) file. }
+  \item{sheet}{ Name of the sheet of the Excel file to import: one of "community", "environmental" or "stacked". }
+  \item{table}{ Name of the table of the Access file to import: one of "community", "environmental" or "stacked". }
+  \item{sitenames}{ Name of categorical variable that provides the names for the sites. }
+  \item{column}{ Name of the categorical variable for the columns of the crosstabulation (typically indicating species); passed to \code{\link{makecommunitydataset}}. }
+  \item{value}{ Name of numerical variable for the cells of the crosstabulation (typically indicating abundance). The cells provide the sum of all values in the data frame; passed to \code{\link{makecommunitydataset}}. }
+  \item{cepnames}{ Should the names of columns be abbreviated via \code{\link[vegan]{make.cepnames}} (TRUE) or not (FALSE). }
+#endif
+
+
+
 }
 
 \details{
@@ -47,7 +76,16 @@ Functions \code{removeNAcomm} and \code{removeNAenv} provide a new data frame th
 Function \code{removezerospecies} removes species from a community dataset that have total abundance that is smaller or equal to zero.
 
 Function \code{subsetcomm} makes a subset of sites that contain a specified level of a categorical variable from the environmental data set. The same functionality of selecting subsets of the community or environmental data sets are implemented in various functions of \pkg{BiodiversityR} (for example \code{\link{diversityresult}}, \code{\link{renyiresult}} and \code{\link{accumresult}}) and have the advantage that it is not necessary to create a new data set. If a community dataset is returned, species that did not contain any individuals were removed from the data set. If an environmental dataset is returned, factor levels that did not occur were removed from the data set.
- 
+
+#ifdef windows
+The \code{import.from.XXXX} functions provide methods of importing community or environmental datasets through functions \code{\link[RODBC:odbcConnect]{odbcConnectExcel}} and \code{\link[RODBC]{sqlFetch}}.
+
+For stacked datasets, a community data set is created with function \code{\link{makecommunitydataset}}. For community data with more species than the limited number of columns in Excel, this may be the only option of importing a community dataset.
+
+An additional advantage of the function is that the community and environmental data can be stored in the same file. 
+
+You may want to check compatibility of the community and environmental datasets with functions \code{\link{check.datasets}} and modify the community dataset through \code{\link{same.sites}}.
+#endif 
 }
 
 \value{
