@@ -1,3 +1,7 @@
+import(stats, Rcmdr)
+
+importFrom(tcltk, tkfont.create, tkbutton)
+
 export(BiodiversityRGUI,check.datasets,check.ordiscores,spatialsample,makecommunitydataset,
     removeNAcomm,removeNAenv,subsetcomm,removezerospecies,balanced.specaccum,accumresult,accumplot,accumcomp,
     diversityresult,diversitycomp,rankabundance,radfitresult,rankabunplot,rankabuncomp,renyiresult,renyiplot,renyicomp,

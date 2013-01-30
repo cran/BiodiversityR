@@ -6,7 +6,7 @@ function()
     if ("Rcmdr" %in% .packages()) {
         stop("R commander should not have been loaded yet")
     }else{
-        require(Rcmdr) || stop("needs Rcmdr")
+        Commander()
     }
 }
 

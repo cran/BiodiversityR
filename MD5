@@ -1,6 +1,6 @@
-6cf8abeaee830fa89adedad671f3c710 *DESCRIPTION
-7a18284e2c75237f8ec25b76c378914d *NAMESPACE
-5df9e29dab56083fce3c46d7cf281865 *R/BiodiversityRGUI.R
+7cf922c76cab87da2ea7a79346c4f18f *DESCRIPTION
+bc8ada74d50d3498fde306b0e6700003 *NAMESPACE
+90f76ecb331086f800747878d3ef7e56 *R/BiodiversityRGUI.R
 f51c217b6b228f5699c2b101b9c40fb1 *R/CAPdiscrim.R
 547349655e4a4534e76c52c734e32c3d *R/NMSrandom.R
 2a9d5a35f7fe9d49119c79441659bf29 *R/PCAsignificance.R
@@ -70,7 +70,7 @@ c60e773952bf90f6082036f444b79925 *data/BCI.env.txt.gz
 37351079a5ac672b82707ef8e4c36719 *data/warcom.txt.gz
 93b84b8b327e4963bd31bc89f9d10154 *data/warenv.txt.gz
 c2e89e25151ea992f2f15b7e22d67e53 *inst/CITATION
-e29dbd39bb3650cb08e7be50b9dfd677 *inst/etc/BiodiversityGUI.R
+64ff80f1b63c66ae419820d46e81740f *inst/etc/BiodiversityGUI.R
 b58191df321d7c53f092d05a509af3d9 *inst/etc/BiodiversityR-menus.txt
 22a8a26570fc6d836ed86e2f124b668b *inst/etc/Nations.txt
 82b4f8c9936923cd5908aa63282f4bdc *inst/etc/Rcmdr-menus.txt
@@ -82,8 +82,8 @@ c017a3e81f9268d8c99ef38d1fa5c621 *inst/etc/dune.mdb
 62b3fd00780f96775cffaa4789b2efcc *inst/etc/model-classes.txt
 675baac39acb4ad494b2d4cec835a79b *inst/etc/submit.xbm
 bd23b3ee0d8aed46b986e3973e808bb7 *man/BCI.env.Rd
-c7656ea0db7f233a808b6ebba04067f7 *man/BiodiversityR-package.Rd
-e3a11330f452d19048793b656f5e4fca *man/BiodiversityRGUI.Rd
+5d44c8ac9cd0c122c05420efcf729ef3 *man/BiodiversityR-package.Rd
+0a38447b92b8d25dd1f8b6d309d7ca6c *man/BiodiversityRGUI.Rd
 f0e53a85222c92e6f0d746e114925d59 *man/CAPdiscrim.Rd
 3f2e4b9c3b05e4b86a7825e99f8f93e0 *man/NMSrandom.Rd
 bc2585dd304ddd087f3ccf328c1f033f *man/PCAsignificance.Rd

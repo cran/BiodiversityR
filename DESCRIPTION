@@ -1,8 +1,8 @@
 Package: BiodiversityR
 Type: Package
 Title: GUI for biodiversity, suitability and community ecology analysis
-Version: 2.0
-Date: 2012-12-18
+Version: 2.1
+Date: 2013-01-30
 Author: Roeland Kindt
 Maintainer: Roeland Kindt <R.Kindt@CGIAR.org>
 Description: This package provides a GUI (Graphical User Interface, via
@@ -19,11 +19,11 @@ Description: This package provides a GUI (Graphical User Interface, via
 License: GPL-2
 URL: http://www.r-project.org,
         http://www.worldagroforestry.org/resources/databases/tree-diversity-analysis
-Depends: R (>= 2.15.1), vegan (>= 1.17-12)
-Suggests: MASS, mgcv, cluster, Rcmdr (>= 1.3-14), car, RODBC, rpart,
-        effects, multcomp, ellipse, maptree, sp, splancs, spatial,
-        akima, nnet, dismo, raster (>= 2.0-31), gbm, randomForest, gam,
-        earth, mda, kernlab
-Packaged: 2012-12-19 06:04:23 UTC; RKINDT
+Depends: R (>= 2.15.1), vegan (>= 1.17-12), tcltk
+Imports: Rcmdr (>= 1.9-4)
+Suggests: MASS, mgcv, cluster, car, RODBC, rpart, effects, multcomp,
+        ellipse, maptree, sp, splancs, spatial, akima, nnet, dismo,
+        raster (>= 2.0-31), gbm, randomForest, gam, earth, mda, kernlab
+Packaged: 2013-01-31 09:02:53 UTC; RKINDT
 Repository: CRAN
-Date/Publication: 2012-12-19 07:32:59
+Date/Publication: 2013-01-31 11:02:33

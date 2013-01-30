@@ -36,11 +36,11 @@ Selects a dataset to be the community dataset.
 } 
  
   \item{\bold{Import datasets from Excel} (Community matrix menu)}{
-Imports a community and environmental dataset from an Excel workbook.
+Imports a community and environmental dataset from an Excel workbook (only applies to a Windows OS).
 } 
 
   \item{\bold{Import datasets from Access} (Community matrix menu)}{
-Imports a community and environmental dataset from an Access database.
+Imports a community and environmental dataset from an Access database (only applies to a Windows OS).
 } 
 
   \item{\bold{View community data set} (Community matrix menu)}{
@@ -160,7 +160,7 @@ This window selects the community dataset to be used in the biodiversity analyse
 \itemize{
   \item{\bold{Data Sets (pick one)}}{
 A drop-down list is provided with all the datasets that are available. The current community data set is indicated, or the first data set of the list is shown.
-New datasets can be loaded through the Data menu of the Rcmdr or through the "import from Excel" option of BiodiversityR.
+New datasets can be loaded through the Data menu of the Rcmdr or through the "import from Excel" option of BiodiversityR (only Windows OS).
 } 
 
   \item{\bold{OK}}{
@@ -170,128 +170,6 @@ Make the selected data set the community data set.
   \item{\bold{Cancel}}{
 Close the window and do not select a new data set.
 }
-}
-}
-
-
-\section{Import datasets from Excel}{
-
-This window enables to import community and environmental data sets from an Excel workbook with a specific format (sheets that are named "community" and "environmental" or "stacked" and "environmental"; first row containing the names of the variables) (an example is provided in the etc folder of the BiodiversityR package for the dune meadow dataset: dune.xls). The menu provides the following options:
-
-\itemize{
-  \item{\bold{Enter name for community data set}}{
-The name for the new community dataset.
-} 
-
-  \item{\bold{Enter name for environmental data set}}{
-The name for the new environmental dataset.
-} 
-
-  \item{\bold{Enter name for variable for sites}}{
-The name for the variable that indicates site names in the new dataset. The same variable should be available from the various sheets.
-Passed as argument for "sitenames" for function \code{\link{import.from.Excel}}
-} 
-
-  \item{\bold{Import community dataset from stacked format}}{
-Import the community data set from the stacked format or not. The stacked format is the only possibility for community data with more than 255 species (related to the maximum number of columns in Excel).
-  
-Option "Yes" will result in argument of "stacked" for "sheet" for function \code{\link{import.from.Excel}} to import the community data set.
- 
-Option "No" will result in argument of "community" for "sheet" for function \code{\link{import.from.Excel}} to import the community data set.
- 
-Either option will result in argument of "environmental" for "sheet" for function \code{\link{import.from.Excel}} to import the environmental data set.
-
-} 
-
-  \item{\bold{Enter variable for species}}{
-This option is only available for stacked data. The list shows the variables that can be used for the names of species (shown as names for the columns). 
-  
-Passed as argument for "column" of function \code{\link{import.from.Excel}}.
-} 
-
-  \item{\bold{Enter variable for abundance}}{
-This option is only available for stacked data. The list shows the variables that can be used for the abundance values (shown as totals for cells). 
-Passed as argument for "value" of function \code{\link{import.from.Excel}}.
-} 
-
-  \item{\bold{Enter factor for subset}}{
-This option is only available for stacked data. The list shows the variables that can be used for the abundance values (shown as totals for cells). 
-Passed as argument for "factor" of function \code{\link{import.from.Excel}}.
-} 
-
-  \item{\bold{Enter level for subset}}{
-Chooses the value for the subset variable to create the subset. 
-Passed as argument for "level" of function \code{\link{import.from.Excel}}.
-} 
-
-  \item{\bold{OK}}{
-Import the community and environmental datasets and make these the active datasets.
-} 
-
-  \item{\bold{Cancel}}{
-Close the window and do not import new datasets.
-} 
-}
-}
-
-
-\section{Import datasets from Access}{
-
-This window enables to import community and environmental data sets from an Access database with a specific format (sheets that are named "community" and "environmental" or "stacked" and "environmental"; first row containing the names of the variables) (an example is provided in the etc folder of the BiodiversityR package for the dune meadow dataset: dune.xls). The menu provides the following options:
-
-\itemize{
-  \item{\bold{Enter name for community data set}}{
-The name for the new community dataset.
-} 
-
-  \item{\bold{Enter name for environmental data set}}{
-The name for the new environmental dataset.
-} 
-
-  \item{\bold{Enter name for variable for sites}}{
-The name for the variable that indicates site names in the new dataset. The same variable should be available from the various sheets.
-Passed as argument for "sitenames" for function \code{\link{import.from.Access}}
-} 
-
-  \item{\bold{Import community dataset from stacked format}}{
-Import the community data set from the stacked format or not.
-  
-Option "Yes" will result in argument of "stacked" for "sheet" for function \code{\link{import.from.Access}} to import the community data set.
- 
-Option "No" will result in argument of "community" for "sheet" for function \code{\link{import.from.Access}} to import the community data set.
- 
-Either option will result in argument of "environmental" for "sheet" for function \code{\link{import.from.Access}} to import the environmental data set.
-
-} 
-
-  \item{\bold{Enter variable for species}}{
-This option is only available for stacked data. The list shows the variables that can be used for the names of species (shown as names for the columns). 
-  
-Passed as argument for "column" of function \code{\link{import.from.Access}}.
-} 
-
-  \item{\bold{Enter variable for abundance}}{
-This option is only available for stacked data. The list shows the variables that can be used for the abundance values (shown as totals for cells). 
-Passed as argument for "value" of function \code{\link{import.from.Access}}.
-} 
-
-  \item{\bold{Enter factor for subset}}{
-This option is only available for stacked data. The list shows the variables that can be used for the abundance values (shown as totals for cells). 
-Passed as argument for "factor" of function \code{\link{import.from.Access}}.
-} 
-
-  \item{\bold{Enter level for subset}}{
-Chooses the value for the subset variable to create the subset. 
-Passed as argument for "level" of function \code{\link{import.from.Access}}.
-} 
-
-  \item{\bold{OK}}{
-Import the community and environmental datasets and make these the active datasets.
-} 
-
-  \item{\bold{Cancel}}{
-Close the window and do not import new datasets.
-} 
 }
 }
 
@@ -412,7 +290,7 @@ This window selects the environmental dataset to be used in the biodiversity ana
 \itemize{
   \item{\bold{Data Sets (pick one)}}{
 A drop-down list is provided with all the datasets that are available. The current community data set is indicated, or the first data set of the list is shown.
-New datasets can be loaded through the Data menu of the Rcmdr or through the "import from Excel" option of BiodiversityR.
+New datasets can be loaded through the Data menu of the Rcmdr or through the "import from Excel" option of BiodiversityR (only in Windows OS).
 } 
 
   \item{\bold{OK}}{
