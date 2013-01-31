@@ -3,7 +3,7 @@
 \alias{BiodiversityR}
 \docType{package}
 \title{
-GUI for biodiversity and community ecology analysis
+GUI for biodiversity, suitability and community ecology analysis
 }
 \description{
 This package provides a GUI (Graphical User Interface, via the R-Commander; \code{\link{BiodiversityRGUI}}) and some utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website.

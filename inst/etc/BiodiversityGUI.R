@@ -770,14 +770,14 @@ boxcoxGUI <- function(){
     onOK <- function(){
         var <- .variables[as.numeric(tkcurselection(subsetBox))+1]
         doItAndPrint(paste("par(mfrow=c(1,2))", sep=""))
-        doItAndPrint(paste("qq.plot(", .activeDataSet, "$", var, ")", sep=""))
+        doItAndPrint(paste("qqPlot(", .activeDataSet, "$", var, ")", sep=""))
         doItAndPrint(paste("shapiro.test(", .activeDataSet, "$", var, ")", sep=""))
         doItAndPrint(paste("ks.test(", .activeDataSet, "$", var, ",pnorm)", sep=""))
-        doItAndPrint(paste("summary(box.cox.powers(na.omit(", .activeDataSet, ")$", var, "))", sep=""))
-        justDoIt(paste(.activeDataSet, "$", var, ".boxcox <- ", .activeDataSet, "$", var, "^ box.cox.powers(na.omit(", .activeDataSet, ")$", var, ")$lambda", sep=""))
-        logger(paste(.activeDataSet, "$", var, ".boxcox <- ", .activeDataSet, "$", var, "^ box.cox.powers(na.omit(", .activeDataSet, ")$", var, ")$lambda", sep=""))
+        doItAndPrint(paste("summary(powerTransform(na.omit(", .activeDataSet, ")$", var, "))", sep=""))
+        justDoIt(paste(.activeDataSet, "$", var, ".boxcox <- ", .activeDataSet, "$", var, "^ powerTransform(na.omit(", .activeDataSet, ")$", var, ")$lambda", sep=""))
+        logger(paste(.activeDataSet, "$", var, ".boxcox <- ", .activeDataSet, "$", var, "^ powerTransform(na.omit(", .activeDataSet, ")$", var, ")$lambda", sep=""))
         activeDataSet(.activeDataSet)
-        doItAndPrint(paste("qq.plot(", .activeDataSet, "$", var, ".boxcox)", sep=""))
+        doItAndPrint(paste("qqPlot(", .activeDataSet, "$", var, ".boxcox)", sep=""))
         doItAndPrint(paste("shapiro.test(", .activeDataSet, "$", var, ".boxcox)", sep=""))
         doItAndPrint(paste("ks.test(", .activeDataSet, "$", var, ".boxcox, pnorm)", sep=""))
         doItAndPrint(paste("par(mfrow=c(1,1))", sep=""))
@@ -1759,7 +1759,7 @@ countGUI <- function(){
             }    
         }
         if (plottype == "qq plot" && option !="rpart") {
-            doItAndPrint(paste("qq.plot(residuals(", modelValue, "))", sep=""))
+            doItAndPrint(paste("qqPlot(residuals(", modelValue, "))", sep=""))
             doItAndPrint(paste("shapiro.test(residuals(", modelValue, "))", sep=""))
             doItAndPrint(paste("ks.test(residuals(", modelValue, "), pnorm)", sep=""))
         }
@@ -1823,13 +1823,14 @@ countGUI <- function(){
             }
         }
         if (plottype == "cr plot" && option !="rpart") {
-            doItAndPrint(paste("cr.plots(", modelValue, ",'", axisvar, "')", sep=""))
+            doItAndPrint(paste("crPlots(", modelValue, ",'", axisvar, "')", sep=""))
         }
         if (plottype == "av plot" && option !="rpart") {
-            doItAndPrint(paste("av.plots(", modelValue, ", ask=F, identify.points=F)", sep=""))
+            doItAndPrint(paste("avPlots(", modelValue, ", ask=F, identify.points=F)", sep=""))
         }
         if (plottype == "influence plot" && option !="rpart") {
-            doItAndPrint(paste("influence.plot(", modelValue, ", labels=F)", sep=""))
+            doItAndPrint(paste("influencePlot(", modelValue, ", labels=F)", sep=""))
+            doItAndPrint(paste("influence.measures(", modelValue, ")", sep=""))
         }
         if (plottype == "multcomp (factor)" && option !="rpart" && varfactor==T) {
             justDoIt(paste("library(multcomp)", sep=""))
@@ -2297,7 +2298,7 @@ presabsGUI <- function(){
             doItAndPrint(paste("plot(effect('", axisvar, "',", modelValue, "))", sep=""))
         }
         if (plottype == "qq plot" && option !="crosstab" && option !="rpart" && option !="nnetrandom") {
-            doItAndPrint(paste("qq.plot(residuals(", modelValue, "))", sep=""))
+            doItAndPrint(paste("qqPlot(residuals(", modelValue, "))", sep=""))
             doItAndPrint(paste("shapiro.test(residuals(", modelValue, "))", sep=""))
             doItAndPrint(paste("ks.test(residuals(", modelValue, "), pnorm)", sep=""))
         }
@@ -2353,13 +2354,14 @@ presabsGUI <- function(){
             }
         }
         if (plottype == "cr plot" && option !="crosstab" && option !="rpart" && option !="nnetrandom") {
-            doItAndPrint(paste("cr.plots(", modelValue, ",'", axisvar, "')", sep=""))
+            doItAndPrint(paste("crPlots(", modelValue, ",'", axisvar, "')", sep=""))
         }
         if (plottype == "av plot" && option !="crosstab" && option !="rpart" && option !="nnetrandom") {
-            doItAndPrint(paste("av.plots(", modelValue, ", ask=F, identify.points=F)", sep=""))
+            doItAndPrint(paste("avPlots(", modelValue, ", ask=F, identify.points=F)", sep=""))
         }
         if (plottype == "influence plot" && option !="crosstab" && option !="rpart" && option !="nnetrandom") {
-            doItAndPrint(paste("influence.plot(", modelValue, ", labels=F)", sep=""))
+            doItAndPrint(paste("influencePlot(", modelValue, ", labels=F)", sep=""))
+            doItAndPrint(paste("influence.measures(", modelValue, ")", sep=""))
         }
         if (plottype == "multcomp (factor)" && option !="crosstab" && option !="rpart" && option !="nnetrandom" && varfactor==T) {
             justDoIt(paste("library(multcomp)", sep=""))
@@ -3334,8 +3336,8 @@ conordiGUI <- function(){
             }
         }
         if (perm>0  && method !="CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)") {
-            doItAndPrint(paste("permutest.cca(", modelValue, ", permutations=", perm, ")", sep=""))
-            doItAndPrint(paste("permutest.cca(", modelValue, ", permutations=", perm, ", first=T)", sep=""))
+            doItAndPrint(paste("permutest(", modelValue, ", permutations=", perm, ")", sep=""))
+            doItAndPrint(paste("permutest(", modelValue, ", permutations=", perm, ", first=T)", sep=""))
             if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='terms')", sep=""))}
             if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='margin')", sep=""))}
             }
