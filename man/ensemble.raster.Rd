@@ -34,7 +34,7 @@ ensemble.raster(x, p, a = NULL, an = 1000, ext = NULL, k = 0, pt = NULL, at = NU
     GLM.formula = NULL, GLM.family = binomial(link = "logit"), GLM.OLD = NULL, 
     GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, 
     GLMSTEP.k = 2, GLMSTEP.OLD = NULL, GAM.formula = NULL, GAM.family = binomial(link = "logit"), GAM.OLD = NULL, 
-    GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, GAMSTEP.OLD = NULL, 
+    GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, GAMSTEP.pos = 1, GAMSTEP.OLD = NULL, 
     MGCV.formula = NULL, MGCV.select = FALSE, MGCV.OLD = NULL, 
     MGCVFIX.formula = NULL, MGCVFIX.OLD = NULL, 
     EARTH.formula = NULL, EARTH.glm = list(family = binomial(link = "logit"), maxit = maxit), EARTH.OLD = NULL, 
@@ -64,7 +64,7 @@ ensemble.batch(x, species.presence, species.absence = NULL, an = 1000, ext = NUL
     GLM.formula = NULL, GLM.family = binomial(link = "logit"), 
     GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, GLMSTEP.k = 2, 
     GAM.formula = NULL, GAM.family = binomial(link = "logit"), 
-    GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, 
+    GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, GAMSTEP.pos = 1,
     MGCV.formula = NULL, MGCV.select = FALSE, 
     MGCVFIX.formula = NULL, 
     EARTH.formula = NULL, EARTH.glm = list(family = binomial(link = "logit"), maxit = maxit), 
@@ -154,6 +154,7 @@ ensemble.weights(weights = c(0.9, 0.8, 0.7, 0.5), decay = 1.5, multiply = TRUE, 
   \item{GAM.OLD}{ if not \code{NULL}, then do not calibrate a new generalized additive model, but use this model instead }
   \item{GAMSTEP.steps}{ maximum number of steps to be considered in the stepwise generalized additive model; see also \code{\link[gam]{step.gam}}  }
   \item{GAMSTEP.scope}{ range of models examined in the step-wise search n the stepwise generalized additive model; see also \code{\link[gam]{step.gam}}  }
+  \item{GAMSTEP.pos}{ parameter expected to be set to 1 to allow for fitting of the stepwise generalized additive model  }
   \item{GAMSTEP.OLD}{ if not \code{NULL}, then do not calibrate a new stepwise generalized additive model, but use this model instead }
   \item{MGCV.formula}{ formula for the generalized additive model; see also \code{\link[mgcv]{gam}}  }
   \item{MGCV.select}{ if \code{TRUE}, then the smoothing parameter estimation that is part of fitting can completely remove terms from the model; see also \code{\link[mgcv]{gam}}  }

@@ -1,12 +1,14 @@
 if(.Platform$OS.type == "windows") {
 
 `import.from.Excel` <-
-function(file=file.choose(),sheet="community",sitenames="sites",column="species",value="abundance",factor="",level="",cepnames=FALSE) {
+function(file=file.choose(), data.type="community", sheet=NULL, sitenames="sites", column="species", value="abundance", factor="", level="", cepnames=FALSE) {
     if (!require(RODBC)) {stop("Requires package RODBC")}
     dataplace <- odbcConnectExcel(file)
-    SHEETS <- c("community", "environmental", "stacked")
-    sheet <- match.arg(sheet, SHEETS)
-    if (sheet=="stacked") {
+    if (is.null(data.type) == TRUE) {data.type <- sheet}
+    TYPES <- c("community", "environmental", "stacked")
+    data.type <- match.arg(data.type, TYPES)
+    if (is.null(sheet) == TRUE) {sheet <- data.type}
+    if (data.type == "stacked") {
         stackeddata <- sqlFetch(dataplace,sheet)  
         result <- makecommunitydataset(stackeddata,row=sitenames,column=column,value=value,factor=factor,level=level)
     }else{
@@ -23,12 +25,14 @@ function(file=file.choose(),sheet="community",sitenames="sites",column="species"
 }
 
 `import.from.Excel2007` <-
-function(file=file.choose(),sheet="community",sitenames="sites",column="species",value="abundance",factor="",level="",cepnames=FALSE) {
+function(file=file.choose(), data.type="community", sheet=NULL, sitenames="sites", column="species", value="abundance", factor="", level="", cepnames=FALSE) {
     if (!require(RODBC)) {stop("Requires package RODBC")}
     dataplace <- odbcConnectExcel2007(file)
-    SHEETS <- c("community", "environmental", "stacked")
-    sheet <- match.arg(sheet, SHEETS)
-    if (sheet=="stacked") {
+    if (is.null(data.type) == TRUE) {data.type <- sheet}
+    TYPES <- c("community", "environmental", "stacked")
+    data.type <- match.arg(data.type, TYPES)
+    if (is.null(sheet) == TRUE) {sheet <- data.type}
+    if (data.type == "stacked") {
         stackeddata <- sqlFetch(dataplace,sheet)  
         result <- makecommunitydataset(stackeddata,row=sitenames,column=column,value=value,factor=factor,level=level)
     }else{

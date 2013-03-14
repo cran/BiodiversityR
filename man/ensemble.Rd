@@ -17,7 +17,7 @@ The basic function \code{ensemble.test} allows to evaluate different algorithms 
 
 \usage{
 ensemble.test(x, p, a = NULL, an = 1000, ext = NULL, k = 0, pt = NULL, at = NULL, 
-    layer.drops = NULL, VIF = FALSE,
+    layer.drops = NULL, VIF = FALSE, COR = FALSE,
     PLOTS = TRUE, 
     evaluations.keep = FALSE, models.keep = FALSE,
     input.weights = NULL,
@@ -35,7 +35,7 @@ ensemble.test(x, p, a = NULL, an = 1000, ext = NULL, k = 0, pt = NULL, at = NULL
     GLM.formula = NULL, GLM.family = binomial(link = "logit"), 
     GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, GLMSTEP.k = 2, 
     GAM.formula = NULL, GAM.family = binomial(link = "logit"), 
-    GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, 
+    GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, GAMSTEP.pos = 1,
     MGCV.formula = NULL, MGCV.select = FALSE,
     MGCVFIX.formula = NULL,
     EARTH.formula = NULL, EARTH.glm = list(family = binomial(link = "logit"), maxit = maxit), 
@@ -59,7 +59,7 @@ ensemble.test.splits(x, p, a = NULL, an = 1000, ext = NULL, k = 5,
     GLM.formula = NULL, GLM.family = binomial(link = "logit"), 
     GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, GLMSTEP.k = 2, 
     GAM.formula = NULL, GAM.family = binomial(link = "logit"), 
-    GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, 
+    GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, GAMSTEP.pos = 1,
     MGCV.formula = NULL, MGCV.select = FALSE,
     MGCVFIX.formula = NULL,
     EARTH.formula = NULL, EARTH.glm=list(family=binomial(link="logit"), maxit = maxit), 
@@ -82,7 +82,7 @@ ensemble.test.nnet(x, p, a = NULL, an = 1000, ext = NULL, k = 5,
     size = c(2, 4, 6, 8), decay = c(0.1, 0.05, 0.01, 0.001))
 
 ensemble.drop1(x, p, a = NULL, an = 1000, ext = NULL, k = 0, pt = NULL, at = NULL, 
-    layer.drops = NULL, VIF = FALSE,
+    layer.drops = NULL, VIF = FALSE, COR = FALSE,
     digits = 2, difference = FALSE, 
     input.weights = NULL, 
     MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, 
@@ -94,7 +94,8 @@ ensemble.drop1(x, p, a = NULL, an = 1000, ext = NULL, k = 0, pt = NULL, at = NUL
     GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100, 
     RF.ntree = 750, RF.mtry = log(nlayers(x)), 
     GLM.family = binomial(link = "logit"), GLMSTEP.steps = 1000, 
-    GLMSTEP.k = 2, GAM.family = binomial(link = "logit"), GAMSTEP.steps = 1000, 
+    GLMSTEP.k = 2, 
+    GAM.family = binomial(link = "logit"), GAMSTEP.steps = 1000, GAMSTEP.pos = 1,
     MGCV.select = FALSE, 
     EARTH.glm = list(family = binomial(link = "logit"), maxit = maxit), 
     RPART.xval = 50, 
@@ -114,6 +115,7 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{at}{ background points used for evaluating the suitability models, available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{layer.drops}{ vector that indicates which layers should be removed from RasterStack \code{x}. This argument is especially useful for the \code{ensemble.drop1} function. See also \code{\link[raster]{addLayer}}.  }
   \item{VIF}{ Estimate the variance inflation factors based on a generalized linear model with family=binomial(link="logit") calibrated on the training data  (if \code{TRUE}). See also \code{\link[car]{vif}}.  }
+  \item{COR}{ Provide information on the correlation between the numeric explanatory variables  (if \code{TRUE}). See also \code{\link[stats]{cor}}.  }
   \item{PLOTS}{ Plot the results of evaluation for the various suitability models (if \code{TRUE}). See also \code{\link[dismo]{evaluate}}.  }
   \item{evaluations.keep}{ Keep the results of evaluations (if \code{TRUE}). See also \code{\link[dismo]{evaluate}}. }
   \item{models.keep}{ Keep the fitted models (if \code{TRUE}). }
@@ -165,6 +167,7 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{GAM.family}{ description of the error distribution and link function for the generalized additive model; see also \code{\link[gam]{gam}}  }
   \item{GAMSTEP.steps}{ maximum number of steps to be considered in the stepwise generalized additive model; see also \code{\link[gam]{step.gam}}  }
   \item{GAMSTEP.scope}{ range of models examined in the step-wise search n the stepwise generalized additive model; see also \code{\link[gam]{step.gam}}  }
+  \item{GAMSTEP.pos}{ parameter expected to be set to 1 to allow for fitting of the stepwise generalized additive model  }
   \item{MGCV.formula}{ formula for the generalized additive model; see also \code{\link[mgcv]{gam}}  }
   \item{MGCV.select}{ if \code{TRUE}, then the smoothing parameter estimation that is part of fitting can completely remove terms from the model; see also \code{\link[mgcv]{gam}}  }
   \item{MGCVFIX.formula}{ formula for the generalized additive model with fixed d.f. regression splines; see also \code{\link[mgcv]{gam}} (the default formulae sets "s(..., fx=TRUE, ...)"; see also \code{\link[mgcv]{s}}) }

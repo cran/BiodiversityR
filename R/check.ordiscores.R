@@ -1,5 +1,5 @@
 `check.ordiscores` <- 
-function(x,ord,check.species=T) {
+function(x, ord, check.species=TRUE) {
     sitescores <- scores(ord,display="sites")
     if(nrow(x)!=nrow(sitescores)){
         cat("Warning: community data set and ordination result have different number of sites\n")

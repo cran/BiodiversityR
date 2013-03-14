@@ -26,91 +26,149 @@
 putRcmdr(".communityDataSet", NULL)
 putRcmdr("operatorFont", tkfont.create(family="courier", size=getRcmdr("log.font.size")))
 
+
+#changed based on R Commander 1.9-6 (data-Menu.R)
+
 selectCommunityDataSet <- function(){
-    dataSets <- listDataSets()
-    .communityDataSet <- CommunityDataSet()
-    if ((length(dataSets) == 1) && !is.null(.communityDataSet)) {
-        Message(message="There is only one dataset in memory.",
-                type="warning")
-        tkfocus(CommanderWindow())
-        return()
-        }
-    if (length(dataSets) == 0){
-        Message(message="There are no data sets from which to choose.",
-                type="error")
-        tkfocus(CommanderWindow())
-        return()
-        }
-    initializeDialog(title="Select Data Set")
-    dataSetsBox <- variableListBox(top, dataSets, title="Data Sets (pick one)", 
-        initialSelection=if (is.null(.communityDataSet)) NULL else which(.communityDataSet == dataSets) - 1)
-    onOK <- function(){
-        communityDataSet(getSelection(dataSetsBox))
-        closeDialog()
-        tkfocus(CommanderWindow())
-        }
-    OKCancelHelp(helpSubject="attach")
-    tkgrid(getFrame(dataSetsBox), sticky="nw")
-    tkgrid(buttonsFrame, sticky="w")
-    dialogSuffix(rows=2, columns=1)
-    }
+	dataSets <- listDataSets()
+	.communityDataSet <- CommunityDataSet()
+	if ((length(dataSets) == 1) && !is.null(.communityDataSet)) {
+		Message(message=gettextRcmdr("There is only one dataset in memory."),
+				type="warning")
+		tkfocus(CommanderWindow())
+		return()
+	}
+	if (length(dataSets) == 0){
+		Message(message=gettextRcmdr("There are no data sets from which to choose."),
+				type="error")
+		tkfocus(CommanderWindow())
+		return()
+	}
+	initializeDialog(title=gettextRcmdr("Select Community Data Set"))
+	dataSetsBox <- variableListBox(top, dataSets, title=gettextRcmdr("Data Sets (pick one)"),
+			initialSelection=if (is.null(.communityDataSet)) NULL else which(.communityDataSet == dataSets) - 1)
+	onOK <- function(){
+		communityDataSet(getSelection(dataSetsBox))
+		closeDialog()
+		tkfocus(CommanderWindow())
+	}
+	OKCancelHelp()
+	tkgrid(getFrame(dataSetsBox), sticky="nw")
+	tkgrid(buttonsFrame, sticky="w")
+	dialogSuffix(rows=2, columns=1)
+}
 
 
-communityDataSet <- function(dsname, flushModel=TRUE){
-    .communityDataSet <- CommunityDataSet()
-    if (missing(dsname)) {
-        if (is.null(.communityDataSet)){
-            Message(message="There is no community data set.", type="error")
-            return(FALSE)
-            }
-        else return(.communityDataSet)
-        }
-    if (!is.data.frame(get(dsname, envir=.GlobalEnv))){
-        Message(message=paste(dsname, " is not a data frame and cannot be attached.",
-            sep=""), type="error")
-        tkfocus(CommanderWindow())
-        return()
-        }
-    if (!is.null(.communityDataSet) && getRcmdr("attach.data.set")
-        && (length(grep(.communityDataSet, search())) !=0)) {
-        detach(pos = match(.communityDataSet, search()))
-        logger(paste("detach(", .communityDataSet, ")", sep=""))
-        }
-    if (flushModel) {
-        putRcmdr(".activeModel", NULL)
-        RcmdrTclSet("modelName", "<No active model>")
-        }
-    # -PhG tkconfigure(.modelLabel, fg="red")
-    CommunityDataSet(dsname)
-    Message(paste("The dataset ", dsname, " has ", nrow(eval(parse(text=dsname))), " rows and ",
-       ncol(eval(parse(text=dsname))), " columns.", sep=""), type="note")
-    CVariables(listCVariables())
-#    RcmdrTclSet("CommunitySetName", paste(" ", dsname, " "))
-    # -PhG tkconfigure(.dataSetLabel, fg="blue")
-#    if (!is.SciViews()) tkconfigure(getRcmdr("dataSetLabel"), fg="blue") else refreshStatus() # +PhG
-    if (getRcmdr("attach.data.set")){
-        attach(get(dsname, envir=.GlobalEnv), name=dsname)
-        logger(paste("attach(", dsname, ")", sep=""))
-        }
-#    if (is.SciViews()) refreshStatus() else if (flushModel) tkconfigure(getRcmdr("modelLabel"), fg="red") # +PhG (& J.Fox, 25Dec04)
-    activateMenus()
-    dsname
-    }
+#changed based on R Commander 1.9-6 (utilities.R)
 
+
+communityDataSet <- function(dsname, flushModel=TRUE, flushDialogMemory=TRUE){
+	.communityDataSet <- CommunityDataSet()
+	if (missing(dsname)) {
+		if (is.null(.communityDataSet)){
+			Message(message=gettextRcmdr("There is no community data set."), type="error")
+			return(FALSE)
+		}
+		else return(.communityDataSet)
+	}
+	if (!is.data.frame(ds <- get(dsname, envir=.GlobalEnv))){
+		if (!exists.method("as.data.frame", ds, default=FALSE)){
+			Message(message=paste(dsname, gettextRcmdr(" is not a data frame and cannot be attached."),
+							sep=""), type="error")
+			tkfocus(CommanderWindow())
+			return()
+		}
+		command <- paste(dsname, " <- as.data.frame(", dsname, ")", sep="")
+		justDoIt(command)
+		logger(command)
+		Message(message=paste(dsname, gettextRcmdr(" has been coerced to a data frame"), sep=""),
+				type="warning")
+	}
+	varnames <- names(get(dsname, envir=.GlobalEnv))
+	newnames <- make.names(varnames)
+	badnames <- varnames != newnames
+	if (any(badnames)){
+		command <- paste("names(", dsname, ") <- make.names(names(",
+				dsname, "))", sep="")
+		doItAndPrint(command)
+	}
+	if (!is.null(.communityDataSet) && getRcmdr("attach.data.set")
+			&& (length(grep(.communityDataSet, search())) !=0)) {
+		detach(pos = match(.communityDataSet, search()))
+		logger(paste("detach(", .communityDataSet, ")", sep=""))
+	}
+	if (flushModel) {
+		putRcmdr(".activeModel", NULL)
+		RcmdrTclSet("modelName", gettextRcmdr("<No active model>"))
+		if (!is.SciViews()) tkconfigure(getRcmdr("modelLabel"), foreground="red") else refreshStatus()
+	}
+	if (flushDialogMemory) putRcmdr("dialog.values", list())
+	# -PhG tkconfigure(.modelLabel, foreground="red")
+	CommunityDataSet(dsname)
+	Message(sprintf(gettextRcmdr("The dataset %s has %d rows and %d columns."), dsname,
+					nrow(get(dsname, envir=.GlobalEnv)), ncol(get(dsname, envir=.GlobalEnv))), type="note")
+	if (any(badnames)) Message(message=paste(dsname, gettextRcmdr(" contains non-standard variable names:\n"),
+						paste(varnames[badnames], collapse=", "),
+						gettextRcmdr("\nThese have been changed to:\n"), paste(newnames[badnames], collapse=", "),
+						sep=""), type="warning")
+	CVariables(listCVariables())
+#	Numeric(listNumeric())
+#	Factors(listFactors())
+#	TwoLevelFactors(listTwoLevelFactors())
+	RcmdrTclSet("dataSetName", paste(" ", dsname, " "))
+	# -PhG tkconfigure(.dataSetLabel, foreground="blue")
+	if (!is.SciViews()) tkconfigure(getRcmdr("dataSetLabel"), foreground="blue") else refreshStatus() # +PhG
+# 	if (getRcmdr("attach.data.set")){
+# 		attach(get(dsname, envir=.GlobalEnv), name=dsname)
+# 		logger(paste("attach(", dsname, ")", sep=""))
+# 	}
+	if (is.SciViews()) refreshStatus() else if (flushModel) tkconfigure(getRcmdr("modelLabel"), foreground="red") # +PhG (& J.Fox, 25Dec04)
+	activateMenus()
+	dsname
+}
+
+
+
+
+# changed based on R Commander 1.9-6 (utilities.R)
 
 checkCommunityDataSet <- function(){
-    if (communityDataSet() == FALSE) {
-        tkfocus(CommanderWindow())
-        FALSE
-        }
-    else TRUE
-    }
+	if (communityDataSet() == FALSE) {
+		tkfocus(CommanderWindow())
+		FALSE
+	}
+	else TRUE
+}
 
+
+# changed based on R Commander 1.9-6 (utilities.R)
 
 CommunityDataSet <- function(name){
-    if (missing(name)) getRcmdr(".communityDataSet")
-    else putRcmdr(".communityDataSet", name)
-    }
+	if (missing(name)) {
+		temp <- getRcmdr(".communityDataSet")
+		if (is.null(temp))
+			return(NULL)
+		else
+		if (!exists(temp) || !is.data.frame(get(temp,envir=.GlobalEnv))) {
+			Message(sprintf(gettextRcmdr("the dataset %s is no longer available"),
+							temp), type="error")
+			putRcmdr(".communityDataSet", NULL)
+			RcmdrTclSet("dataSetName", gettextRcmdr("<No active dataset>"))
+			putRcmdr(".activeModel", NULL)
+			RcmdrTclSet("modelName", gettextRcmdr("<No active model>"))
+			if (!is.SciViews()) {
+				tkconfigure(getRcmdr("dataSetLabel"), foreground="red") 
+				tkconfigure(getRcmdr("modelLabel"), foreground="red") 
+			} 
+			else refreshStatus()
+			activateMenus()
+			if (getRcmdr("suppress.menus") && RExcelSupported()) return(NULL)
+		}
+		return(temp)
+	}
+	else putRcmdr(".communityDataSet", name)
+}
+
 
 CVariables <- function(cnames){
     if (missing(cnames)) getRcmdr("cvariables")
@@ -147,6 +205,7 @@ remove(dune2,dune3,dune.env2)
 makecommunityGUI <- function(){
     top <- tktoplevel()
     tkwm.title(top, "Make community matrix")
+    .activeDataSet <- ActiveDataSet()
     .fvariables <- Factors()
     fvariables <- paste(.fvariables, ifelse(is.element(.fvariables, Factors()), "[factor]", ""))
     .nvariables <- Numeric()
@@ -249,9 +308,9 @@ makecommunityGUI <- function(){
 importfromExcelGUI <- function() {
     initializeDialog(title="Read Community and Environmental data From Excel")
     optionsFrame <- tkframe(top, relief="groove", borderwidth=2)
-    comdsname <- tclVar("CommunityDataset")
+    comdsname <- tclVar("CommunityData")
     entrycomDsname <- tkentry(optionsFrame, width="20", textvariable=comdsname)
-    envdsname <- tclVar("EnvironmentalDataset")
+    envdsname <- tclVar("EnvironmentalData")
     entryenvDsname <- tkentry(optionsFrame, width="20", textvariable=envdsname)
     dsites <- tclVar("sites")
     entrysites <- tkentry(optionsFrame, width="20", textvariable=dsites)
@@ -285,18 +344,18 @@ importfromExcelGUI <- function() {
         logger(paste("library(RODBC)", sep=""))
         stacked <- tclvalue(stackedVariable) == "1"
         if (stacked==F) {
-            command <- paste("import.from.Excel('", file, "', sheet='community',sitenames='", sitesValue, "', cepnames=F)", sep="")
+            command <- paste("import.from.Excel('", file, "', data.type='community', sheet='community', sitenames='", sitesValue, "', cepnames=F)", sep="")
         }else{
             if (factorValue=="all") { 
-                command <- paste("import.from.Excel('", file, "', sheet='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "', cepnames=F)", sep="")
+                command <- paste("import.from.Excel('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', cepnames=F)", sep="")
             }else{
-                command <- paste("import.from.Excel('", file, "', sheet='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "',factor='", factorValue, "',level='", levelValue, "', cepnames=F)", sep="")
+                command <- paste("import.from.Excel('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', factor='", factorValue, "', level='", levelValue, "', cepnames=F)", sep="")
             }
         }
         logger(paste(comdsnameValue, " <- ", command, sep=""))
         assign(comdsnameValue, justDoIt(command), envir=.GlobalEnv)
         communityDataSet(comdsnameValue)
-        command <- paste("import.from.Excel('", file, "', sheet='environmental',sitenames='", sitesValue, "')", sep="")
+        command <- paste("import.from.Excel('", file, "', data.type='environmental', sheet='environmental', sitenames='", sitesValue, "')", sep="")
         logger(paste(envdsnameValue, " <- ", command, sep=""))
         assign(envdsnameValue, justDoIt(command), envir=.GlobalEnv)
         activeDataSet(envdsnameValue)
@@ -330,9 +389,9 @@ importfromExcelGUI <- function() {
 importfromExcel2007GUI <- function() {
     initializeDialog(title="Read Community and Environmental data From Excel 2007")
     optionsFrame <- tkframe(top, relief="groove", borderwidth=2)
-    comdsname <- tclVar("CommunityDataset")
+    comdsname <- tclVar("CommunityData")
     entrycomDsname <- tkentry(optionsFrame, width="20", textvariable=comdsname)
-    envdsname <- tclVar("EnvironmentalDataset")
+    envdsname <- tclVar("EnvironmentalData")
     entryenvDsname <- tkentry(optionsFrame, width="20", textvariable=envdsname)
     dsites <- tclVar("sites")
     entrysites <- tkentry(optionsFrame, width="20", textvariable=dsites)
@@ -366,18 +425,18 @@ importfromExcel2007GUI <- function() {
         logger(paste("library(RODBC)", sep=""))
         stacked <- tclvalue(stackedVariable) == "1"
         if (stacked==F) {
-            command <- paste("import.from.Excel2007('", file, "', sheet='community',sitenames='", sitesValue, "', cepnames=F)", sep="")
+            command <- paste("import.from.Excel2007('", file, "', data.type='community', sheet='community', sitenames='", sitesValue, "', cepnames=F)", sep="")
         }else{
             if (factorValue=="all") { 
-                command <- paste("import.from.Excel2007('", file, "', sheet='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "', cepnames=F)", sep="")
+                command <- paste("import.from.Excel2007('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', cepnames=F)", sep="")
             }else{
-                command <- paste("import.from.Excel2007('", file, "', sheet='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "',factor='", factorValue, "',level='", levelValue, "', cepnames=F)", sep="")
+                command <- paste("import.from.Excel2007('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', factor='", factorValue, "', level='", levelValue, "', cepnames=F)", sep="")
             }
         }
         logger(paste(comdsnameValue, " <- ", command, sep=""))
         assign(comdsnameValue, justDoIt(command), envir=.GlobalEnv)
         communityDataSet(comdsnameValue)
-        command <- paste("import.from.Excel2007('", file, "', sheet='environmental',sitenames='", sitesValue, "')", sep="")
+        command <- paste("import.from.Excel2007('", file, "', data.type='environmental', sheet='environmental', sitenames='", sitesValue, "')", sep="")
         logger(paste(envdsnameValue, " <- ", command, sep=""))
         assign(envdsnameValue, justDoIt(command), envir=.GlobalEnv)
         activeDataSet(envdsnameValue)
@@ -412,7 +471,7 @@ importfromExcel2007GUI <- function() {
 importfromAccessGUI <- function() {
     initializeDialog(title="Read Community and Environmental data From Access")
     optionsFrame <- tkframe(top, relief="groove", borderwidth=2)
-    comdsname <- tclVar("CommunityDataset")
+    comdsname <- tclVar("CommunityData")
     entrycomDsname <- tkentry(optionsFrame, width="20", textvariable=comdsname)
     envdsname <- tclVar("EnvironmentalDataset")
     entryenvDsname <- tkentry(optionsFrame, width="20", textvariable=envdsname)
@@ -448,18 +507,18 @@ importfromAccessGUI <- function() {
         logger(paste("library(RODBC)", sep=""))
         stacked <- tclvalue(stackedVariable) == "1"
         if (stacked==F) {
-            command <- paste("import.from.Access('", file, "', table='community',sitenames='", sitesValue, "')", sep="")
+            command <- paste("import.from.Access('", file, "', data.type='community', table='community',sitenames='", sitesValue, "')", sep="")
         }else{
             if (factorValue=="all") { 
-                command <- paste("import.from.Access('", file, "', table='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "')", sep="")
+                command <- paste("import.from.Access('", file, "', data.type='stacked', table='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "')", sep="")
             }else{
-                command <- paste("import.from.Access('", file, "', table='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "',factor='", factorValue, "',level='", levelValue, "')", sep="")
+                command <- paste("import.from.Access('", file, "', data.type='stacked', table='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "',factor='", factorValue, "',level='", levelValue, "')", sep="")
             }
         }
         logger(paste(comdsnameValue, " <- ", command, sep=""))
         assign(comdsnameValue, justDoIt(command), envir=.GlobalEnv)
         communityDataSet(comdsnameValue)
-        command <- paste("import.from.Access('", file, "', table='environmental',sitenames='", sitesValue, "')", sep="")
+        command <- paste("import.from.Access('", file, "', data.type='environmental', table='environmental',sitenames='", sitesValue, "')", sep="")
         logger(paste(envdsnameValue, " <- ", command, sep=""))
         assign(envdsnameValue, justDoIt(command), envir=.GlobalEnv)
         activeDataSet(envdsnameValue)
@@ -493,9 +552,9 @@ importfromAccessGUI <- function() {
 importfromAccess2007GUI <- function() {
     initializeDialog(title="Read Community and Environmental data From Access 2007")
     optionsFrame <- tkframe(top, relief="groove", borderwidth=2)
-    comdsname <- tclVar("CommunityDataset")
+    comdsname <- tclVar("CommunityData")
     entrycomDsname <- tkentry(optionsFrame, width="20", textvariable=comdsname)
-    envdsname <- tclVar("EnvironmentalDataset")
+    envdsname <- tclVar("EnvironmentalData")
     entryenvDsname <- tkentry(optionsFrame, width="20", textvariable=envdsname)
     dsites <- tclVar("sites")
     entrysites <- tkentry(optionsFrame, width="20", textvariable=dsites)
@@ -529,18 +588,18 @@ importfromAccess2007GUI <- function() {
         logger(paste("library(RODBC)", sep=""))
         stacked <- tclvalue(stackedVariable) == "1"
         if (stacked==F) {
-            command <- paste("import.from.Access2007('", file, "', table='community',sitenames='", sitesValue, "')", sep="")
+            command <- paste("import.from.Access2007('", file, "', data.type='community', table='community',sitenames='", sitesValue, "')", sep="")
         }else{
             if (factorValue=="all") { 
-                command <- paste("import.from.Access2007('", file, "', table='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "')", sep="")
+                command <- paste("import.from.Access2007('", file, "', data.type='stacked', table='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "')", sep="")
             }else{
-                command <- paste("import.from.Access2007('", file, "', table='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "',factor='", factorValue, "',level='", levelValue, "')", sep="")
+                command <- paste("import.from.Access2007('", file, "', data.type='stacked', table='stacked', sitenames='", sitesValue, "',column='", colValue, "',value='", valValue, "',factor='", factorValue, "',level='", levelValue, "')", sep="")
             }
         }
         logger(paste(comdsnameValue, " <- ", command, sep=""))
         assign(comdsnameValue, justDoIt(command), envir=.GlobalEnv)
         communityDataSet(comdsnameValue)
-        command <- paste("import.from.Access2007('", file, "', table='environmental',sitenames='", sitesValue, "')", sep="")
+        command <- paste("import.from.Access2007('", file, "', data.type='environmental', table='environmental', sitenames='", sitesValue, "')", sep="")
         logger(paste(envdsnameValue, " <- ", command, sep=""))
         assign(envdsnameValue, justDoIt(command), envir=.GlobalEnv)
         activeDataSet(envdsnameValue)
@@ -576,6 +635,8 @@ importfromAccess2007GUI <- function() {
 samesitesGUI <- function(){
     top <- tktoplevel()
     tkwm.title(top, "same rows for community and environmental")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     saveFrame <- tkframe(top, relief="groove", borderwidth=2)
     saveVariable <- tclVar("1")
     saveCheckBox <- tkcheckbutton(saveFrame, variable=saveVariable)
@@ -618,7 +679,7 @@ viewcommunity <- function(){
 }
 
 editcommunity <- function(){
-    .communityDataSet <- communityDataSet()
+    .communityDataSet <- CommunityDataSet()
     justDoIt(paste("fix(", .communityDataSet, ")", sep=""))
     communityDataSet(.communityDataSet)
     invisible()
@@ -637,7 +698,7 @@ editenvironmental <- function(){
 
 checkdatasets <- function(){
     .activeDataSet <- ActiveDataSet()
-    .communityDataSet <- communityDataSet()
+    .communityDataSet <- CommunityDataSet()
     doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
 }
 
@@ -645,6 +706,8 @@ checkdatasets <- function(){
 removeNAGUI <- function(){
     top <- tktoplevel()
     tkwm.title(top, "remove NA cases")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     .variables <- Variables()
     variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     varFrame <- tkframe(top, relief="groove", borderwidth=2)
@@ -694,9 +757,68 @@ removeNAGUI <- function(){
 }
 
 
+disttransGUI <- function(){
+    top <- tktoplevel()
+    tkwm.title(top, "Community matrix transformation")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
+    methodFrame <- tkframe(top, relief="groove", borderwidth=2)
+    methodBox <- tklistbox(methodFrame, width=27, height=3,
+        selectmode="single", background="white", exportselection="FALSE") 
+    methodScroll <- tkscrollbar(methodFrame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
+    tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
+    methods <- c("hellinger","chord","profiles","chi.square","log","square","pa")
+    for (x in methods) tkinsert(methodBox, "end", x)
+    saveFrame <- tkframe(top, relief="groove", borderwidth=2)
+    saveVariable <- tclVar("1")
+    saveCheckBox <- tkcheckbutton(saveFrame, variable=saveVariable)
+    onOK <- function(){
+        method <- methods[as.numeric(tkcurselection(methodBox))+1]
+        sav <- tclvalue(saveVariable) == "1"
+        if (sav==T) {
+            DataSet <- eval(parse(text=paste(.communityDataSet, sep="")), envir=.GlobalEnv)
+            newname <- paste(.communityDataSet, ".orig", sep="")
+            logger(paste(newname, " <- ", .communityDataSet, sep=""))
+            assign(newname,DataSet, envir=.GlobalEnv)
+        }
+        logger(paste(.communityDataSet, " <- ", "disttransform(", .communityDataSet, ", method='", method, "')", sep=""))
+        assign(.communityDataSet, justDoIt(paste("disttransform(", .communityDataSet, ", method='", method, "')", sep="")), envir=.GlobalEnv)
+        communityDataSet(.communityDataSet)
+        }
+    onCancel <- function() {
+        tkgrab.release(top)
+        tkfocus(CommanderWindow())
+        tkdestroy(top)  
+        }
+    buttonsFrame <- tkframe(top)
+    OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
+    cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
+    tkgrid(tklabel(methodFrame, text="Method"), sticky="w")
+    tkgrid(methodBox, methodScroll,sticky="w")
+    tkgrid(methodFrame, sticky="w")
+    tkgrid(saveCheckBox, tklabel(saveFrame, text="save original community matrix"), sticky="w")
+    tkgrid(saveFrame, sticky="w")
+    tkgrid(OKbutton, cancelButton)
+    tkgrid(buttonsFrame, sticky="w")
+    tkgrid.configure(methodScroll, sticky="ns")
+    tkselection.set(methodBox, 0)
+    for (row in 0:6) tkgrid.rowconfigure(top, row, weight=0)
+    for (col in 0:0) tkgrid.columnconfigure(top, col, weight=0)
+    .Tcl("update idletasks")
+    tkwm.resizable(top, 0, 0)
+    tkwm.deiconify(top)
+    tkgrab.set(top)
+    tkfocus(methodBox)
+    tkwait.window(top)
+}
+
+
+# BiodiversityR 2.3 reload .activeDataSet
+
 envirosummaryGUI <- function(){
     top <- tktoplevel()
     tkwm.title(top, "Summary of environmental variables")
+    .activeDataSet <- ActiveDataSet()
     .variables <- Variables()
     variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     varFrame <- tkframe(top, relief="groove", borderwidth=2)
@@ -721,12 +843,12 @@ envirosummaryGUI <- function(){
             doItAndPrint(paste("pairs(", .activeDataSet, ")", sep=""))
         }else{
             var <- .variables[as.numeric(tkcurselection(subsetBox))]
-            varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", var, ")", sep="")), envir=.GlobalEnv)
+            varfactor <- eval(parse(text=paste("is.factor(", .activeDataSet, "$", var, ")", sep="")), envir=.GlobalEnv)
             if (varfactor==T) {
                 doItAndPrint(paste("plot(", .activeDataSet, "$", var,",xlab='", var, "',ylab='n')",sep=""))
             }else{
-                doItAndPrint(paste("boxplot(", .activeDataSet, "$", var,",xlab='", var, "')",sep=""))
-                doItAndPrint(paste("points(mean(", .activeDataSet, "$", var,"),pch=19,cex=1.5)",sep=""))
+                doItAndPrint(paste("boxplot(", .activeDataSet, "$", var,",xlab='", var, "')", sep=""))
+                doItAndPrint(paste("points(mean(", .activeDataSet, "$", var,"), pch=19, cex=1.5)",sep=""))
             }
         }
     }
@@ -759,6 +881,8 @@ envirosummaryGUI <- function(){
 
 boxcoxGUI <- function(){
     top <- tktoplevel()
+    tkwm.title(top, "Box-Cox transformation")
+    .activeDataSet <- ActiveDataSet()
     .variables <- Variables()
     variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     varFrame <- tkframe(top, relief="groove", borderwidth=2)
@@ -811,6 +935,8 @@ boxcoxGUI <- function(){
 accumGUI <- function(){
     top <- tktoplevel()
     tkwm.title(top, "Species accumulation curves")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     .variables <- Factors()
     variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     .svariables <- Numeric()
@@ -991,6 +1117,8 @@ accumGUI <- function(){
 diversityGUI <- function(){
     top <- tktoplevel()
     tkwm.title(top, "Diversity calculation")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     .variables <- Factors()
     variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     .cvariables <- CVariables()
@@ -1150,6 +1278,8 @@ diversityGUI <- function(){
 rankabunGUI <- function(){
     top <- tktoplevel()
     tkwm.title(top, "Rank abundance curves")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     .variables <- Factors()
     variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     .cvariables <- CVariables()
@@ -1281,6 +1411,8 @@ rankabunGUI <- function(){
 renyiGUI <- function(){
     top <- tktoplevel()
     tkwm.title(top, "Renyi diversity profile")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     .variables <- Factors()
     variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     .cvariables <- CVariables()
@@ -1439,6 +1571,8 @@ countGUI <- function(){
         }
     top <- tktoplevel()
     tkwm.title(top, "Analysis of species abundance")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     .variables <- Variables()
     variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     allvars <- ""
@@ -1951,6 +2085,8 @@ presabsGUI <- function(){
         }
     top <- tktoplevel()
     tkwm.title(top, "Analysis of presence/absence")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     .variables <- Variables()
     variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     allvars <- ""
@@ -2473,6 +2609,8 @@ presabsGUI <- function(){
 distmatrixGUI <- function(){
     top <- tktoplevel()
     tkwm.title(top, "Distance matrix calculation")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     modelName <- tclVar("Distmatrix.1")
     modelFrame <- tkframe(top, relief="groove", borderwidth=2)
     model <- tkentry(modelFrame, width=40, textvariable=modelName)
@@ -2527,63 +2665,10 @@ distmatrixGUI <- function(){
     tkwait.window(top)
 }
 
-
-disttransGUI <- function(){
-    top <- tktoplevel()
-    tkwm.title(top, "Community matrix transformation")
-    methodFrame <- tkframe(top, relief="groove", borderwidth=2)
-    methodBox <- tklistbox(methodFrame, width=27, height=3,
-        selectmode="single", background="white", exportselection="FALSE") 
-    methodScroll <- tkscrollbar(methodFrame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
-    tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("hellinger","chord","profiles","chi.square","log","square","pa")
-    for (x in methods) tkinsert(methodBox, "end", x)
-    saveFrame <- tkframe(top, relief="groove", borderwidth=2)
-    saveVariable <- tclVar("1")
-    saveCheckBox <- tkcheckbutton(saveFrame, variable=saveVariable)
-    onOK <- function(){
-        method <- methods[as.numeric(tkcurselection(methodBox))+1]
-        sav <- tclvalue(saveVariable) == "1"
-        if (sav==T) {
-            DataSet <- eval(parse(text=paste(.communityDataSet, sep="")), envir=.GlobalEnv)
-            newname <- paste(.communityDataSet, ".orig", sep="")
-            logger(paste(newname, " <- ", .communityDataSet, sep=""))
-            assign(newname,DataSet, envir=.GlobalEnv)
-        }
-        logger(paste(.communityDataSet, " <- ", "disttransform(", .communityDataSet, ", method='", method, "')", sep=""))
-        assign(.communityDataSet, justDoIt(paste("disttransform(", .communityDataSet, ", method='", method, "')", sep="")), envir=.GlobalEnv)
-        communityDataSet(.communityDataSet)
-        }
-    onCancel <- function() {
-        tkgrab.release(top)
-        tkfocus(CommanderWindow())
-        tkdestroy(top)  
-        }
-    buttonsFrame <- tkframe(top)
-    OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
-    cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
-    tkgrid(tklabel(methodFrame, text="Method"), sticky="w")
-    tkgrid(methodBox, methodScroll,sticky="w")
-    tkgrid(methodFrame, sticky="w")
-    tkgrid(saveCheckBox, tklabel(saveFrame, text="save original community matrix"), sticky="w")
-    tkgrid(saveFrame, sticky="w")
-    tkgrid(OKbutton, cancelButton)
-    tkgrid(buttonsFrame, sticky="w")
-    tkgrid.configure(methodScroll, sticky="ns")
-    tkselection.set(methodBox, 0)
-    for (row in 0:6) tkgrid.rowconfigure(top, row, weight=0)
-    for (col in 0:0) tkgrid.columnconfigure(top, col, weight=0)
-    .Tcl("update idletasks")
-    tkwm.resizable(top, 0, 0)
-    tkwm.deiconify(top)
-    tkgrab.set(top)
-    tkfocus(methodBox)
-    tkwait.window(top)
-}
-
-
 unconordiGUI <- function(){
     contrasts <- c("contr.treatment", "contr.poly")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     .variables <- Variables()
     variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     .cvariables <- CVariables()
@@ -2943,7 +3028,7 @@ unconordiGUI <- function(){
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            doItAndPrint(paste("lines.spantree(spantree(distmatrix,toolong=0),plot1,col='", col, "')", sep=""))
+            doItAndPrint(paste("lines(spantree(distmatrix,toolong=0),plot1,col='", col, "')", sep=""))
             }
         if (plottype == "distance displayed"){
             if(treatasdist==F){
@@ -3071,12 +3156,14 @@ conordiGUI <- function(){
                 rhs.chars[1] else rhs.chars[2]
         !is.element(check.char, c("+", "*", ":", "/", "-", "^", "(", "%"))
         }
+    top <- tktoplevel()
+    tkwm.title(top, "Constrained ordination")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     .variables <- Variables()
     variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     .cvariables <- CVariables()
     cvariables <- paste(.cvariables)
-    top <- tktoplevel()
-    tkwm.title(top, "Constrained ordination")
     modelName <- tclVar("Ordination.model1")
     modelFrame <- tkframe(top, relief="groove", borderwidth=2)
     model <- tkentry(modelFrame, width=40, textvariable=modelName)
@@ -3575,7 +3662,7 @@ conordiGUI <- function(){
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            doItAndPrint(paste("lines.spantree(spantree(distmatrix,toolong=0),plot1,col='", col, "')", sep=""))
+            doItAndPrint(paste("lines(spantree(distmatrix,toolong=0),plot1,col='", col, "')", sep=""))
             }
         if (plottype == "distance displayed"){
             if(treatasdist==F){
@@ -3684,7 +3771,9 @@ conordiGUI <- function(){
 
 clusterGUI <- function(){
     top <- tktoplevel()
-    tkwm.title(top, "Clustering")
+    tkwm.title(top, "Cluster analysis")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     modelName <- tclVar("Cluster.1")
     modelFrame <- tkframe(top, relief="groove", borderwidth=2)
     model <- tkentry(modelFrame, width=40, textvariable=modelName)
@@ -3915,6 +4004,8 @@ clusterGUI <- function(){
 mantelGUI <- function(){
     top <- tktoplevel()
     tkwm.title(top, "Compare distance matrices")
+    .activeDataSet <- ActiveDataSet()
+    .communityDataSet <- CommunityDataSet()
     .variables <- Variables()
     variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     methodFrame <- tkframe(top, relief="groove", borderwidth=2)
@@ -4123,7 +4214,7 @@ mantelGUI <- function(){
 
 
 cepNamesCommunity <- function() {
-    .communityDataSet <- communityDataSet()
+    .communityDataSet <- CommunityDataSet()
     justDoIt(paste("colnames(", .communityDataSet, ") <- make.cepnames(colnames(", .communityDataSet, "))", sep=""))
     communityDataSet(.communityDataSet)
 }

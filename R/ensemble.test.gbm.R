@@ -43,6 +43,10 @@
             }
         }
     }
+# set minimum and maximum values
+    for (i in 1:nlayers(x)) {
+        x[[i]] <- setMinMax(x[[i]])
+    }
     if (! require(gbm)) {stop("Please install the gbm package")}
     if (is.null(a)==T) {a <- randomPoints(x, n=an, ext=ext)}
     groupp <- kfold(p, k=k)

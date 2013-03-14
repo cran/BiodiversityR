@@ -3,13 +3,16 @@
 )
 {
     weights <- as.array(weights)
+#   weights should not be negative
+    weights[weights < 0] <- 0
     lw <- length(weights)
-    lp <- sum(as.numeric(weights>0))
+    lp <- sum(as.numeric(weights > 0))
     if (best < 1) {best <- lp}
     if (lp < best) {
         cat(paste("\n","parameter best (",best,") larger than number of positive weights (", lp, ")","\n", sep=""))
         cat(paste("parameter best therefore ignored","\n", "\n", sep=""))
-}
+        best <- lp
+    }
     original <- order(weights, decreasing=T)   
     decays <- as.numeric(rep(0,lw))
     decays[best] <- 1
@@ -18,10 +21,11 @@
             decays[i] <- decays[i+1] * decay
         }
     }
-#   check for equal ranks
+#   check for equal ranks > 0
     ranks <- rank(weights[original])
     ranklevels <- levels(as.factor(ranks))
-    if (length(ranklevels) < lw) {
+    if (lp < lw) {ranklevels <- ranklevels[ranklevels != as.character(min(as.numeric(ranklevels)))]}
+    if (length(ranklevels) < lp  && decay != 1) {
         cat(paste("\n","there were some ties in weights","\n", sep=""))
         cat(paste("average decay therefore used in some cases","\n", "\n", sep=""))        
         for (i in 1:length(ranklevels)) {

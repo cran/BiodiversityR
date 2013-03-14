@@ -1,5 +1,5 @@
 `subsetcomm` <-
-function(x,y,factor,level,returncomm=T) {
+function(x, y, factor, level, returncomm=TRUE) {
     subs <- y[,factor]==level
     for (q in 1:length(subs)) {
         if(is.na(subs[q])) {subs[q]<-F}

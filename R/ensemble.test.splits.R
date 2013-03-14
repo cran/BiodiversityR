@@ -15,7 +15,7 @@
     GLM.formula=NULL, GLM.family=binomial(link="logit"), 
     GLMSTEP.steps=1000, STEP.formula=NULL, GLMSTEP.scope=NULL, GLMSTEP.k=2,
     GAM.formula=NULL, GAM.family=binomial(link="logit"), 
-    GAMSTEP.steps=1000, GAMSTEP.scope=NULL,
+    GAMSTEP.steps=1000, GAMSTEP.scope=NULL, GAMSTEP.pos=1,
     MGCV.formula=NULL, MGCV.select=FALSE,
     MGCVFIX.formula=NULL, 
     EARTH.formula=NULL, EARTH.glm=list(family=binomial(link="logit"), maxit=maxit),
@@ -72,9 +72,17 @@
             }
         }
     }
+# set minimum and maximum values
+    for (i in 1:nlayers(x)) {
+        x[[i]] <- setMinMax(x[[i]])
+    }
     if (is.null(input.weights)==F) {
 # use the last column in case output from the ensemble.test.splits function is used
-        if (length(dim(input.weights)) == 2) {input.weights <- input.weights[,"MEAN"]}
+        if (length(dim(input.weights)) == 2) {
+            input.weights <- input.weights[,"MEAN"]
+            input.weights <- input.weights - 50
+            input.weights[input.weights < 0] <- 0
+        }
         MAXENT <- max(c(input.weights["MAXENT"], -1), na.rm=T)
         GBM <- max(c(input.weights["GBM"], -1), na.rm=T)
         RF <- max(c(input.weights["RF"], -1), na.rm=T)
@@ -244,7 +252,7 @@
             GLM.formula=GLM.formula, GLM.family=GLM.family, 
             GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=STEP.formula, GLMSTEP.scope=GLMSTEP.scope, 
             GAM.formula=GAM.formula, GAM.family=GAM.family, 
-            GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope,
+            GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope, GAMSTEP.pos=GAMSTEP.pos,
             MGCV.formula=MGCV.formula, MGCV.select=MGCV.select,
             MGCVFIX.formula=MGCVFIX.formula, 
             EARTH.formula=EARTH.formula, EARTH.glm=EARTH.glm,
@@ -280,13 +288,16 @@
         weights <- output[,"MEAN"]
 # no GEODIST
         weights <- weights[-20]
+# AUC of 0.5 indicates random predictions
+        weights <- weights - 50
+        weights[weights < 0] <- 0
     }
     output <- output[order(output[,"MEAN"], decreasing=T),]
     cat(paste("\n", "Results (as percentage) of ensemble.test.splits sorted by average AUC ",  "\n\n", sep = ""))
     print(output)
     if (SCRIPT==TRUE) {
         cat(paste("\n", "Suggested parameters for ensemble.grd function", "\n", sep = ""))
-        cat(paste("(these are based on average AUC)", "\n\n", sep=""))
+        cat(paste("(these are based on average AUC minus 0.5)", "\n\n", sep=""))
         print(weights)
     }
     remove(pc, envir=.BiodiversityR)

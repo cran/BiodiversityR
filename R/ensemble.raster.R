@@ -20,7 +20,7 @@
     GLM.formula=NULL, GLM.family=binomial(link="logit"), GLM.OLD=NULL,
     GLMSTEP.steps=1000, STEP.formula=NULL, GLMSTEP.scope=NULL, GLMSTEP.k=2, GLMSTEP.OLD=NULL,
     GAM.formula=NULL, GAM.family=binomial(link="logit"), GAM.OLD=NULL, 
-    GAMSTEP.steps=1000, GAMSTEP.scope=NULL, GAMSTEP.OLD=NULL,
+    GAMSTEP.steps=1000, GAMSTEP.scope=NULL, GAMSTEP.pos=1, GAMSTEP.OLD=NULL, 
     MGCV.formula=NULL, MGCV.select=FALSE, MGCV.OLD=NULL,
     MGCVFIX.formula=NULL, MGCVFIX.OLD=NULL,
     EARTH.formula=NULL, EARTH.glm=list(family=binomial(link="logit"), maxit=maxit), EARTH.OLD=NULL,
@@ -83,9 +83,17 @@
             }
         }
     }
+# set minimum and maximum values
+    for (i in 1:nlayers(x)) {
+        x[[i]] <- setMinMax(x[[i]])
+    }
     if (is.null(input.weights)==F) {
 # use the last column in case output from the ensemble.test.splits function is used
-        if (length(dim(input.weights)) == 2) {input.weights <- input.weights[,"MEAN"]}
+        if (length(dim(input.weights)) == 2) {
+            input.weights <- input.weights[,"MEAN"]
+            input.weights <- input.weights - 50
+            input.weights[input.weights < 0] <- 0
+        }
         MAXENT <- max(c(input.weights["MAXENT"], -1), na.rm=T)
         GBM <- max(c(input.weights["GBM"], -1), na.rm=T)
         GBMSTEP <- max(c(input.weights["GBMSTEP"], -1), na.rm=T)
@@ -657,6 +665,8 @@
         }else{ results2 <- GLMSTEP.OLD}
         if (is.null(results2) == F) {
             results <- results2
+            cat(paste("\n", "stepwise GLM formula","\n\n",sep = ""))
+            print(formula(results))
             cat(paste("\n", RASTER.species.orig, ": Evaluation with rasterStack: ", x@title, " and calibration data for stepwise GLM", "\n\n", sep = ""))
             TrainPres <- predict(results,newdata=TrainData[TrainData[,"pb"]==1,], type="response")
             TrainAbs <- predict(results,newdata=TrainData[TrainData[,"pb"]==0,], type="response")
@@ -763,18 +773,21 @@
         detach(package:gam)
     }
     if (GAMSTEP > 0) {
-        cat(paste("\n", "NOTE: stepwise GAM seems to require assignments of family and data to pos 1", "\n\n", sep=""))
-    } 
-    if (GAMSTEP > 0) {
         require(gam, quietly=T)
         eval1 <- eval2 <- results <- results2 <- pgams <- TestPres <- TestAbs <- NULL
         if(is.null(GAMSTEP.OLD) == T) {
             tryCatch(results <- gam(formula=STEP.formula, family=GAM.family, data=TrainData, weights=Yweights, control=gam.control(maxit=maxit, bf.maxit=50)),
                 error= function(err) {print(paste("first step of stepwise GAM calibration (gam package) failed"))},
                 silent=T)
+            assign("TrainData", TrainData, pos=GAMSTEP.pos)
+            assign("GAM.family", GAM.family, pos=GAMSTEP.pos)
+            assign("maxit", maxit, pos=GAMSTEP.pos)   
             tryCatch(results2 <- step.gam(results, scope=GAMSTEP.scope, direction="both", trace=F, steps=GAMSTEP.steps),
                 error= function(err) {print(paste("stepwise GAM calibration (gam package) failed"))},
                 silent=T)
+            remove(TrainData, pos=GAMSTEP.pos)
+            remove(GAM.family, pos=GAMSTEP.pos)
+            remove(maxit, pos=GAMSTEP.pos)
             if(is.null(results2) == T) {
                 prediction.failures <- TRUE
                 ws["GAMSTEP"] <- -1
@@ -782,6 +795,8 @@
         }else{ results2 <- GAMSTEP.OLD}
         if (is.null(results2) == F) {
             results <- results2
+            cat(paste("\n", "stepwise GAM formula (gam package)","\n\n",sep = ""))
+            print(formula(results))
             cat(paste("\n", RASTER.species.orig, ": Evaluation with rasterStack: ", x@title, " and calibration data for stepwise GAM (gam package)", "\n\n", sep = ""))
             TrainPres <- predict(results,newdata=TrainData[TrainData[,"pb"]==1,], type="response")
             TrainAbs <- predict(results,newdata=TrainData[TrainData[,"pb"]==0,], type="response")

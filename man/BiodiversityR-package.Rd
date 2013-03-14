@@ -19,10 +19,8 @@ We are grateful for the developers of the R Software for providing a free and po
 }
 
 \author{
-Roeland Kindt
 
-Maintainer: Roeland Kindt (World Agroforestry Centre [ICRAF])
-<R.Kindt@CGIAR.org>
+Maintainer: Roeland Kindt (World Agroforestry Centre)
  
 }
 \references{
