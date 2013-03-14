@@ -10,11 +10,15 @@ These functions provide a dataframe which can subsequently be used to evaluate t
 
 \usage{
 evaluation.strip.data(x, ext = NULL, vars=names(x), factors = NULL, steps = 50, 
-    modelnames = c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
-    "EARTH", "RPART", "NNET", "FDA", "SVM", "BIOCLIM", "DOMAIN", "MAHAL"))
+    modelnames = c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
+        "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL")
+)
 
-evaluation.strip.plot(data, modelnames = c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "EARTH", "RPART", "NNET", "FDA", "SVM",
-    "BIOCLIM", "DOMAIN", "MAHAL"), variable = NULL, model = NULL, ...)
+evaluation.strip.plot(data, 
+    modelnames = c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
+        "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL"), 
+    variable = NULL, model = NULL, ...
+)
 }
 
 \arguments{

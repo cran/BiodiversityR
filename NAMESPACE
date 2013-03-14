@@ -9,7 +9,7 @@ export(BiodiversityRGUI,check.datasets,check.ordiscores,spatialsample,makecommun
     NMSrandom,nnetrandom,ordibubble,ordisymbol,ordicluster2,ordinearest,ordivector,ordiequilibriumcircle,distdisplayed,
     ordicoeno,CAPdiscrim,caprescale,multiconstrained,disttransform,same.sites,loaded.citations,nested.anova.dbrda,
     nested.npmanova,ensemble.raster,ensemble.test,ensemble.formulae,ensemble.test.splits,ensemble.test.gbm,ensemble.test.nnet,
-    evaluation.strip.data,evaluation.strip.plot,ensemble.weights)
+    ensemble.drop1, ensemble.batch, evaluation.strip.data,evaluation.strip.plot,ensemble.weights)
 
 if(tools:::.OStype() == "windows") {
     export(import.from.Excel,import.from.Access,import.from.Excel2007,import.from.Access2007)

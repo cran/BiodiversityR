@@ -3,6 +3,7 @@
 \alias{ensemble.test.splits}
 \alias{ensemble.test.gbm}
 \alias{ensemble.test.nnet}
+\alias{ensemble.drop1}
 \alias{ensemble.formulae}
 
 \title{
@@ -15,46 +16,89 @@ The basic function \code{ensemble.test} allows to evaluate different algorithms 
 
 
 \usage{
-ensemble.test(x, p, a = NULL, an = 1000, ext = NULL, k = 0, pt = NULL, at = NULL, PLOTS = TRUE, evaluations.keep = FALSE, 
+ensemble.test(x, p, a = NULL, an = 1000, ext = NULL, k = 0, pt = NULL, at = NULL, 
+    layer.drops = NULL, VIF = FALSE,
+    PLOTS = TRUE, 
+    evaluations.keep = FALSE, models.keep = FALSE,
+    input.weights = NULL,
     MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, 
-    GAM = 1, GAMSTEP = 1, MGCV = 1, EARTH = 1, RPART = 1, NNET = 1, FDA = 1, SVM=1, BIOCLIM = 1, DOMAIN = 1, MAHAL=1, 
-    Yweights = "BIOMOD", factors = NULL, formulae.defaults=TRUE,
-    GBM.formula = NULL, GBM.n.trees = 3000,    
-    GBMSTEP.gbm.x = 2:(1 + nlayers(x)), GBMSTEP.tree.complexity = 5, GBMSTEP.learning.rate = 0.01, GBMSTEP.bag.fraction = 0.5, 
+    GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, RPART = 1, 
+    NNET = 1, FDA = 1, SVM = 1 , SVME = 1,
+    BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, 
+    GEODIST = 0, GEODIST.file.name = "Species001", RASTER.format = "raster", 
+    Yweights = "BIOMOD", factors = NULL, dummy.vars = NULL,
+    formulae.defaults = TRUE, maxit = 100,
+    GBM.formula = NULL, GBM.n.trees = 2000,    
+    GBMSTEP.gbm.x = 2:(1 + nlayers(x)), GBMSTEP.tree.complexity = 5, GBMSTEP.learning.rate = 0.005, 
+    GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100,
     RF.formula = NULL, RF.ntree = 750, RF.mtry = log(nlayers(x)), 
     GLM.formula = NULL, GLM.family = binomial(link = "logit"), 
     GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, GLMSTEP.k = 2, 
     GAM.formula = NULL, GAM.family = binomial(link = "logit"), 
     GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, 
-    MGCV.formula = NULL, 
-    EARTH.formula = NULL, EARTH.glm = list(family = binomial(link = "logit"), maxit=1000), 
+    MGCV.formula = NULL, MGCV.select = FALSE,
+    MGCVFIX.formula = NULL,
+    EARTH.formula = NULL, EARTH.glm = list(family = binomial(link = "logit"), maxit = maxit), 
     RPART.formula = NULL, RPART.xval = 50, 
     NNET.formula = NULL, NNET.size = 8, NNET.decay = 0.01, 
-    FDA.formula = NULL, SVM.formula=NULL)
+    FDA.formula = NULL, SVM.formula = NULL, SVME.formula = NULL)
 
-ensemble.test.splits(x, p, a = NULL, an = 1000, ext = NULL, k = 5, digits = 2, PLOTS = FALSE, SCRIPT = TRUE, 
-    MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, 
-    GAMSTEP = 1, MGCV = 1, EARTH = 1, RPART = 1, NNET = 1, FDA = 1, SVM=1, BIOCLIM = 1, DOMAIN = 1, MAHAL=1, 
-    Yweights = "BIOMOD", factors = NULL, formulae.defaults=TRUE,
-    GBM.formula = NULL, GBM.n.trees = 3000,    
-    GBMSTEP.gbm.x = 2:(1 + nlayers(x)), GBMSTEP.tree.complexity = 5, GBMSTEP.learning.rate = 0.01, GBMSTEP.bag.fraction = 0.5, 
+ensemble.test.splits(x, p, a = NULL, an = 1000, ext = NULL, k = 5, 
+    layer.drops = NULL, VIF = FALSE,
+    digits = 2, PLOTS = FALSE, SCRIPT = TRUE, 
+    input.weights = NULL,
+    MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, 
+    EARTH = 1, RPART = 1, NNET = 1, FDA = 1, SVM = 1 , SVME = 1, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1,     
+    GEODIST = 0, GEODIST.file.name = "Species001", RASTER.format = "raster", 
+    Yweights = "BIOMOD", factors = NULL, dummy.vars = NULL,
+    formulae.defaults = TRUE, maxit = 100,
+    GBM.formula = NULL, GBM.n.trees = 2000,    
+    GBMSTEP.gbm.x = 2:(1 + nlayers(x)), GBMSTEP.tree.complexity = 5, GBMSTEP.learning.rate = 0.005, 
+    GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100,
     RF.formula = NULL, RF.ntree = 750, RF.mtry = log(nlayers(x)), 
     GLM.formula = NULL, GLM.family = binomial(link = "logit"), 
     GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, GLMSTEP.k = 2, 
     GAM.formula = NULL, GAM.family = binomial(link = "logit"), 
     GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, 
-    MGCV.formula = NULL, 
-    EARTH.formula = NULL, EARTH.glm=list(family=binomial(link="logit"), maxit=1000), 
+    MGCV.formula = NULL, MGCV.select = FALSE,
+    MGCVFIX.formula = NULL,
+    EARTH.formula = NULL, EARTH.glm=list(family=binomial(link="logit"), maxit = maxit), 
     RPART.formula = NULL, RPART.xval = 50, 
     NNET.formula = NULL, NNET.size = 8, NNET.decay = 0.01, 
-    FDA.formula = NULL, SVM.formula=NULL)
+    FDA.formula = NULL, SVM.formula = NULL, SVME.formula = NULL)
 
-ensemble.test.gbm(x, p, a = NULL, an = 1000, ext = NULL, k = 5, digits = 2, PLOTS = FALSE, Yweights = "BIOMOD", factors=NULL, 
-    GBMSTEP.gbm.x = 2:(1 + nlayers(x)), complexity = c(3:6), learning = c(0.005, 0.002, 0.001), GBMSTEP.bag.fraction = 0.5)
+ensemble.test.gbm(x, p, a = NULL, an = 1000, ext = NULL, k = 5, 
+    layer.drops = NULL, VIF = FALSE,
+    digits = 2, PLOTS = FALSE, 
+    Yweights = "BIOMOD", factors=NULL, 
+    GBMSTEP.gbm.x = 2:(1 + nlayers(x)), complexity = c(3:6), learning = c(0.005, 0.002, 0.001), 
+    GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100)
 
-ensemble.test.nnet(x, p, a = NULL, an = 1000, ext = NULL, k = 5, digits = 2, PLOTS = FALSE, Yweights = "BIOMOD", factors=NULL, 
-    formulae.defaults=TRUE, NNET.formula = NULL, 
+ensemble.test.nnet(x, p, a = NULL, an = 1000, ext = NULL, k = 5, 
+    layer.drops = NULL, VIF = FALSE,
+    digits = 2, PLOTS = FALSE, Yweights = "BIOMOD", factors=NULL, 
+    formulae.defaults=TRUE, maxit=100, 
+    NNET.formula = NULL, 
     size = c(2, 4, 6, 8), decay = c(0.1, 0.05, 0.01, 0.001))
+
+ensemble.drop1(x, p, a = NULL, an = 1000, ext = NULL, k = 0, pt = NULL, at = NULL, 
+    layer.drops = NULL, VIF = FALSE,
+    digits = 2, difference = FALSE, 
+    input.weights = NULL, 
+    MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, 
+    EARTH = 1, RPART = 1, NNET = 1, FDA = 1, SVM = 1, SVME = 1, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, 
+    Yweights = "BIOMOD", 
+    factors = NULL, dummy.vars = NULL, 
+    maxit = 100, 
+    GBM.n.trees = 2000, GBMSTEP.tree.complexity = 5, GBMSTEP.learning.rate = 0.005, 
+    GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100, 
+    RF.ntree = 750, RF.mtry = log(nlayers(x)), 
+    GLM.family = binomial(link = "logit"), GLMSTEP.steps = 1000, 
+    GLMSTEP.k = 2, GAM.family = binomial(link = "logit"), GAMSTEP.steps = 1000, 
+    MGCV.select = FALSE, 
+    EARTH.glm = list(family = binomial(link = "logit"), maxit = maxit), 
+    RPART.xval = 50, 
+    NNET.size = 8, NNET.decay = 0.01)
 
 ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
 }
@@ -68,8 +112,12 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{k}{ If larger than 1, the number of groups to split between calibration (k-1) and evaluation (1) data sets (for example, \code{k=5} results in 4/5 of presence and background points to be used for calibrating the models, and 1/5 of presence and background points to be used for evaluating the models). See also \code{\link[dismo]{kfold}}.  }
   \item{pt}{ presence points used for evaluating the suitability models, available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{at}{ background points used for evaluating the suitability models, available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
+  \item{layer.drops}{ vector that indicates which layers should be removed from RasterStack \code{x}. This argument is especially useful for the \code{ensemble.drop1} function. See also \code{\link[raster]{addLayer}}.  }
+  \item{VIF}{ Estimate the variance inflation factors based on a generalized linear model with family=binomial(link="logit") calibrated on the training data  (if \code{TRUE}). See also \code{\link[car]{vif}}.  }
   \item{PLOTS}{ Plot the results of evaluation for the various suitability models (if \code{TRUE}). See also \code{\link[dismo]{evaluate}}.  }
   \item{evaluations.keep}{ Keep the results of evaluations (if \code{TRUE}). See also \code{\link[dismo]{evaluate}}. }
+  \item{models.keep}{ Keep the fitted models (if \code{TRUE}). }
+  \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.test.splits} can be used. }
   \item{MAXENT}{ number: if larger than 0, then a maximum entropy model (\code{\link[dismo]{maxent}}) will be fitted among ensemble }
   \item{GBM}{ number: if larger than 0, then a boosted regression trees model (\code{\link[gbm]{gbm}}) will be fitted among ensemble }
   \item{GBMSTEP}{ number: if larger than 0, then a stepwise boosted regression trees model (\code{\link[dismo]{gbm.step}}) will be fitted among ensemble }
@@ -79,23 +127,31 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{GAM}{ number: if larger than 0, then a generalized additive model (\code{\link[gam]{gam}}) will be fitted among ensemble }
   \item{GAMSTEP}{ number: if larger than 0, then a stepwise generalized additive model (\code{\link[gam]{step.gam}}) will be fitted among ensemble }
   \item{MGCV}{ number: if larger than 0, then a generalized additive model (\code{\link[mgcv]{gam}}) will be fitted among ensemble }
+  \item{MGCVFIX}{ number: if larger than 0, then a generalized additive model with fixed d.f. regression splines (\code{\link[mgcv]{gam}}) will be fitted among ensemble }
   \item{EARTH}{ number: if larger than 0, then a multivariate adaptive regression spline model (\code{\link[earth]{earth}}) will be fitted among ensemble }
   \item{RPART}{ number: if larger than 0, then a recursive partioning and regression tree model (\code{\link[rpart]{rpart}}) will be fitted among ensemble }
   \item{NNET}{ number: if larger than 0, then an artificial neural network model (\code{\link[nnet]{nnet}}) will be fitted among ensemble }
   \item{FDA}{ number: if larger than 0, then a flexible discriminant analysis model (\code{\link[mda]{fda}}) will be fitted among ensemble }
   \item{SVM}{ number: if larger than 0, then a support vector machine model (\code{\link[kernlab]{ksvm}}) will be fitted among ensemble }
+  \item{SVME}{ number: if larger than 0, then a support vector machine model (\code{\link[e1071]{svm}}) will be fitted among ensemble }
   \item{BIOCLIM}{ number: if larger than 0, then the BIOCLIM algorithm (\code{\link[dismo]{bioclim}}) will be fitted among ensemble }
   \item{DOMAIN}{ number: if larger than 0, then the DOMAIN algorithm (\code{\link[dismo]{domain}}) will be fitted among ensemble }
   \item{MAHAL}{ number: if larger than 0, then the Mahalanobis algorithm (\code{\link[dismo]{mahal}}) will be fitted among ensemble }
+  \item{GEODIST}{ number: if larger than 0, then the geoDist algorithm (\code{\link[dismo]{geoDist}}) will be fitted among ensemble (note that this algorithm does not use environmental layers, and is based only on the distance from presence points used to calibrate this algorithm) }
+  \item{GEODIST.file.name}{ First part of the names of the raster file that will be generated for the GEODIST model. }
+  \item{RASTER.format}{ Format of the raster files that will be generated for the GEODIST model. See \code{\link[raster]{writeFormats}} and \code{\link[raster]{writeRaster}}.  }
   \item{Yweights}{ chooses how cases of presence and background (absence) are weighted; \code{"BIOMOD"} results in equal weighting of all presence and all background cases, \code{"equal"} results in equal weighting of all cases. The user can supply a vector of weights similar to the number of cases in the calibration data set. }
   \item{factors}{ vector that indicates which variables are factors; see also \code{\link[dismo]{prepareData}}  }
+  \item{dummy.vars}{ vector that indicates which variables are dummy variables (influences formulae suggestions) }
   \item{formulae.defaults}{ Suggest formulae for most of the models (if \code{TRUE}). See also \code{\link{ensemble.formulae}}.   }
+  \item{maxit}{ Maximum number of iterations for some of the models. See also \code{\link[stats]{glm.control}}, \code{\link[gam]{gam.control}}, \code{\link[mgcv]{gam.control}} and \code{\link[nnet]{nnet}}.  }
   \item{GBM.formula}{ formula for the boosted regression trees algorithm; see also \code{\link[gbm]{gbm}}  }
   \item{GBM.n.trees}{ total number of trees to fit for the boosted regression trees model; see also \code{\link[gbm]{gbm}}  }
   \item{GBMSTEP.gbm.x}{ indices of column numbers with explanatory variables for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
   \item{GBMSTEP.tree.complexity}{ complexity of individual trees for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
   \item{GBMSTEP.learning.rate}{ weight applied to individual trees for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}} }
   \item{GBMSTEP.bag.fraction}{ proportion of observations used in selecting variables for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
+  \item{GBMSTEP.step.size}{ number of trees to add at each cycle for stepwise boosted regression trees (should be small enough to result in a smaller holdout deviance than the initial number of trees [50]); see also \code{\link[dismo]{gbm.step}}  }
   \item{RF.formula}{ formula for random forest algorithm; see also \code{\link[randomForest]{randomForest}}  }
   \item{RF.ntree}{ number of trees to grow for random forest algorithm; see also \code{\link[randomForest]{randomForest}}  }
   \item{RF.mtry}{ number of variables randomly sampled as candidates at each split for random forest algorithm; see also \code{\link[randomForest]{randomForest}}  }
@@ -110,6 +166,8 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{GAMSTEP.steps}{ maximum number of steps to be considered in the stepwise generalized additive model; see also \code{\link[gam]{step.gam}}  }
   \item{GAMSTEP.scope}{ range of models examined in the step-wise search n the stepwise generalized additive model; see also \code{\link[gam]{step.gam}}  }
   \item{MGCV.formula}{ formula for the generalized additive model; see also \code{\link[mgcv]{gam}}  }
+  \item{MGCV.select}{ if \code{TRUE}, then the smoothing parameter estimation that is part of fitting can completely remove terms from the model; see also \code{\link[mgcv]{gam}}  }
+  \item{MGCVFIX.formula}{ formula for the generalized additive model with fixed d.f. regression splines; see also \code{\link[mgcv]{gam}} (the default formulae sets "s(..., fx=TRUE, ...)"; see also \code{\link[mgcv]{s}}) }
   \item{EARTH.formula}{ formula for the multivariate adaptive regression spline model; see also \code{\link[earth]{earth}}  }
   \item{EARTH.glm}{ list of arguments to pass on to \code{\link[stats]{glm}}; see also \code{\link[earth]{earth}}  }
   \item{RPART.formula}{ formula for the recursive partioning and regression tree model; see also \code{\link[rpart]{rpart}}  }
@@ -119,13 +177,14 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{NNET.decay}{ parameter of weight decay for the artificial neural network model; see also \code{\link[nnet]{nnet}}  }
   \item{FDA.formula}{ formula for the flexible discriminant analysis model; see also \code{\link[mda]{fda}}  }
   \item{SVM.formula}{ formula for the support vector machine model; see also \code{\link[kernlab]{ksvm}}  }
+  \item{SVME.formula}{ formula for the support vector machine model; see also \code{\link[e1071]{svm}}  }
   \item{digits}{ number of decimal place after multiplying results by 100 (percentages); see also \code{\link[base]{round}}  }
   \item{SCRIPT}{ provide suggested parameters (weights) for the \code{\link{ensemble.raster}} function (if \code{TRUE})  }
   \item{complexity}{ vector with values of complexity of individual trees (\code{tree.complexity}) for boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
   \item{learning}{ vector with values of weights applied to individual trees (\code{learning.rate}) for boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
   \item{size}{ vector with values of number of units in the hidden layer for the artificial neural network model; see also \code{\link[nnet]{nnet}}  }
   \item{decay}{ vector with values of weight decay for the artificial neural network model; see also \code{\link[nnet]{nnet}}  }
-  \item{dummy.vars}{ vector that indicates which variables are dummy variables }
+  \item{difference}{ if \code{TRUE}, then AUC values of the models with all variables are subtracted from the models where one explanatory variable was excluded. After subtraction, positive values indicate that the model without the explanatory variable has a higher AUC than the model with all variables.   }
 }
 
 \details{
@@ -137,7 +196,9 @@ Function \code{ensemble.test.gbm} allows to test various combinations of paramet
 
 Function \code{ensemble.test.nnet} allows to test various combinations of parameters \code{size} and \code{decay} for the \code{\link[nnet]{nnet}} model.
 
-Function \code{ensemble.formulae} provides suggestions for formulae that can be used for \code{ensemble.test} and \code{\link{ensemble.raster}}.
+Function \code{ensemble.drop1} allows to test the effects of leaving out each of the explanatory variables, and comparing these results with the "full" model. Note that option of \code{difference = TRUE} may result in positive values, indicating that the model without the explanatory variable having larger AUC than the "full" model.
+
+Function \code{ensemble.formulae} provides suggestions for formulae that can be used for \code{ensemble.test} and \code{\link{ensemble.raster}}. This function is always used internally by the \code{ensemble.drop1} function.
 }
 
 \value{
@@ -168,7 +229,7 @@ Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in 
 # get predictor variables
 library(dismo)
 predictors <- stack(list.files(path=paste(system.file(package="dismo"), '/ex', sep=''), pattern='grd', full.names=TRUE ))
-# predictors
+predictors
 
 # presence points
 presence <- paste(system.file(package="dismo"), '/ex/bradypus.csv', sep='')
@@ -200,22 +261,23 @@ glmformula <- as.formula(pb ~ bio1 + I(bio1^2) + I(bio1^3) +
 
 # fit four ensemble models (RF, GLM, BIOCLIM, DOMAIN)
 ensemble.nofactors <- ensemble.test(x=predictors, p=pres_train, a=backg_train, pt=pres_test, at=backg_test,
-    MAXENT=0, GBM=0, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=0, GAMSTEP=0, MGCV=0, 
-    EARTH=0, RPART=0, NNET=0, FDA=0, SVM=0, BIOCLIM=1, DOMAIN=1, MAHAL=0,
-    Yweights="BIOMOD", factors=NULL,
+    MAXENT=0, GBM=0, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0,
+    EARTH=0, RPART=0, NNET=0, FDA=0, SVM=0, SVME=0, BIOCLIM=1, DOMAIN=1, MAHAL=0,
+    Yweights="BIOMOD", factors="biome",
     PLOTS=FALSE, evaluations.keep=TRUE,
     RF.formula=rfformula,
     GLM.formula=glmformula)
 
 # test performance of different suitability models; data are split in 4 subsets, each used once for evaluation
 # GAMSTEP option is not available at the moment (problems with assignments)
-ensemble.nofactors2 <- ensemble.test.splits(x=predictors, p=pres, a=background, k=4, 
-    MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=0, MGCV=1, 
-    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, BIOCLIM=1, DOMAIN=1, MAHAL=1,
-    Yweights="BIOMOD", factors=NULL,
+ensemble.withfactors <- ensemble.test.splits(x=predictors, p=pres, a=background, k=4, 
+    MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=0, MGCV=1, MGCVFIX=0,
+    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=1,
+    GEODIST=0,
+    Yweights="BIOMOD", factors="biome",
     PLOTS=FALSE, formulae.defaults=TRUE,
     GBMSTEP.learning.rate=0.002)
-ensemble.nofactors2
+ensemble.withfactors
 
 }
 }

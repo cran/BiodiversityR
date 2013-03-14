@@ -1,12 +1,49 @@
 `ensemble.test.nnet` <- function(
-    x, p, a=NULL, an=1000, ext=NULL, k=5, digits=2, PLOTS=FALSE,    
-    Yweights="BIOMOD", factors=NULL, formulae.defaults=TRUE,
+    x, p, a=NULL, an=1000, ext=NULL, k=5, 
+    layer.drops=NULL, VIF=FALSE,
+    digits=2, PLOTS=FALSE,    
+    Yweights="BIOMOD", factors=NULL, 
+    formulae.defaults=TRUE, maxit=100,
     NNET.formula=NULL,
     size=c(2, 4, 6, 8), decay=c(0.1, 0.05, 0.01, 0.001)
 )
 {
     .BiodiversityR <- new.env()
     if (! require(dismo)) {stop("Please install the dismo package")}
+    if (is.null(layer.drops) == F) {
+        vars <- names(x)
+        layer.drops <- as.character(layer.drops)
+        factors <- as.character(factors)
+        dummy.vars <- as.character(dummy.vars)
+        nd <- length(layer.drops)
+        for (i in 1:nd) {     
+            if (any(vars==layer.drops[i])==FALSE) {
+                cat(paste("\n", "WARNING: variable to exclude '", layer.drops[i], "' not among grid layers", "\n", sep = ""))
+            }else{
+                cat(paste("\n", "NOTE: variable ", layer.drops[i], " will not be included as explanatory variable", "\n", sep = ""))
+                x <- dropLayer(x, which(names(x) == layer.drops[i]))
+                vars <- names(x)
+                if (is.null(factors) == F) {
+                    factors <- factors[factors != layer.drops[i]]
+                    if(length(factors) == 0) {factors <- NULL}
+                }
+                if (is.null(dummy.vars) == F) {
+                    dummy.vars <- dummy.vars[dummy.vars != layer.drops[i]]
+                    if(length(dummy.vars) == 0) {dummy.vars <- NULL}
+                }
+            }
+        }
+    }
+    if (is.null(factors) == F) {
+        vars <- names(x)
+        factors <- as.character(factors)
+        nf <- length(factors)
+        for (i in 1:nf) {
+            if (any(vars==factors[i])==FALSE) {
+                cat(paste("\n", "WARNING: categorical variable '", factors[i], "' not among grid layers", "\n", sep = ""))
+            }
+        }
+    }
     if (! require(nnet)) {stop("Please install the nnet package")}
     if (formulae.defaults == T) {
         formulae <- ensemble.formulae(x, factors=factors)
@@ -39,10 +76,12 @@
             NNET.decay <- output[j, "decay"]
             cat(paste("\n", "size: ", NNET.size, ", decay: ", NNET.decay, "\n", sep=""))
             tests <- ensemble.test(x=x, p=pc, a=ac, pt=pt, at=at, 
+                VIF=VIF,
                 PLOTS=PLOTS, evaluations.keep=T,
                 MAXENT=0, GBM=0, GBMSTEP=0, RF=0, GLM=0, GLMSTEP=0, 
-                GAM=0, GAMSTEP=0, MGCV=0, EARTH=0, RPART=0, 
-                NNET=1, FDA=0, SVM=0, BIOCLIM=0, DOMAIN=0, MAHAL=0,  
+                GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, 
+                NNET=1, FDA=0, SVM=0, SVME=0, BIOCLIM=0, DOMAIN=0, MAHAL=0, GEODIST=0, 
+                maxit=maxit,
                 Yweights=Yweights, factors=factors,
                 NNET.formula=NNET.formula, NNET.size=NNET.size, NNET.decay=NNET.decay)
             output[j,2+i] <- tests$NNET.T@auc 
