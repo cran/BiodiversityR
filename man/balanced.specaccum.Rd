@@ -35,6 +35,10 @@ The functions provide alternative methods of obtaining species accumulation curv
 }
 
 \references{
+Kindt, R., Kalinganire, A., Larwanou, M., Belem, M., Dakouo, J.M., Bayala, J. & Kaire, M. (2008)
+   Species accumulation within landuse and tree diameter categories in Burkina Faso, Mali, Niger and Senegal.
+   Biodiversity and Conservation. 17: 1883-1905.
+
 Kindt, R. & Coe, R. (2005)
 Tree diversity analysis: A manual and
   software for common statistical methods for ecological and
@@ -48,9 +52,11 @@ Tree diversity analysis: A manual and
 library(vegan)
 data(dune.env)
 data(dune)
+# randomly sample 3 quadrats from each stratum of Management
 Accum.1 <- balanced.specaccum(dune, strata=dune.env$Management, reps=3)
 Accum.1
 dune.env$site.totals <- apply(dune,1,sum)
+# scale results by number of trees per quadrat
 Accum.2 <- balanced.specaccum(dune, strata=dune.env$Management, reps=3, scale=dune.env$site.totals)
 Accum.2
 }

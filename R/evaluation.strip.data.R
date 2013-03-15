@@ -1,7 +1,7 @@
 `evaluation.strip.data` <- function(
     x, ext=NULL, vars=names(x), factors=NULL, steps=50,
-    modelnames=c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP",
-        "MGCV", "EARTH", "RPART", "NNET", "FDA", "SVM", "BIOCLIM", "DOMAIN", "MAHAL")
+    modelnames=c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
+        "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL")
 )
 {
     if (is.null(ext) == F) {x <- crop(x, y=ext, snap="in")}
@@ -19,6 +19,7 @@
     nvars <- length(vars)
     factors2 <- factors
     if (is.null(factors) == F) {
+        factors <- as.character(factors)
         for (i in 1:length(factors)) {
             if(any(factors[i] == vars) == F) {
                 cat(paste("\n", "Warning: ", factors[i], " not among variables", "\n", "\n", sep=""))

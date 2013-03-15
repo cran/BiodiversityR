@@ -1,12 +1,15 @@
-`ensemble.test.splits` <- function(
-    x, p, a=NULL, an=1000, ext=NULL, k=5, 
-    layer.drops=NULL, VIF=FALSE,
-    digits=2, PLOTS=FALSE, SCRIPT=TRUE,
+`ensemble.batch` <- function(
+    x, species.presence, species.absence=NULL, an=1000, ext=NULL, k=0, k.splits=5, xn=c(x), 
+    layer.drops=NULL,
+    digits=2,
+    RASTER.format="raster", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
+    threshold.method="spec_sens",
+    ENSEMBLE.decay=1, ENSEMBLE.multiply=TRUE, ENSEMBLE.best=0,
     input.weights=NULL,
-    MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0, 
+    MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0,
     EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=1, 
-    GEODIST=0, GEODIST.file.name="Species001", RASTER.format="raster",
-    Yweights="BIOMOD", factors=NULL, dummy.vars=NULL,
+    GEODIST=0,
+    Yweights="BIOMOD", factors=NULL, dummy.vars=NULL, 
     formulae.defaults=TRUE, maxit=100,
     GBM.formula=NULL, GBM.n.trees=2000,
     GBMSTEP.gbm.x=2:(1+nlayers(x)), GBMSTEP.tree.complexity=5, GBMSTEP.learning.rate=0.005, 
@@ -28,6 +31,10 @@
     .BiodiversityR <- new.env()
     if (k < 1) {stop("Parameter k smaller than 1")}
     if (! require(dismo)) {stop("Please install the dismo package")}
+    if (is.null(xn) == T) {
+        cat(paste("\n", "NOTE: new rasterStack assumed to be equal to the base rasterStack", sep = ""))
+        xn <- x
+    }
     if (is.null(layer.drops) == F) {
         vars <- names(x)
         layer.drops <- as.character(layer.drops)
@@ -40,6 +47,9 @@
             }else{
                 cat(paste("\n", "NOTE: variable ", layer.drops[i], " will not be included as explanatory variable", "\n", sep = ""))
                 x <- dropLayer(x, which(names(x) == layer.drops[i]))
+                for (j in 1:length(xn)) {
+                    xn[[j]] <- dropLayer(xn[[j]], which(names(xn[[j]]) == layer.drops[i]))
+                }
                 vars <- names(x)
                 if (is.null(factors) == F) {
                     factors <- factors[factors != layer.drops[i]]
@@ -58,7 +68,7 @@
         nf <- length(factors)
         for (i in 1:nf) {
             if (any(vars==factors[i])==FALSE) {
-                cat(paste("\n", "WARNING: categorical variable '", factors[i], "' not among grid layers", "\n", sep = ""))
+                cat(paste("\n", "WARNING: categorical variable '", factors[i], "' not among grid layers", "\n\n", sep = ""))
             }
         }
     }
@@ -68,15 +78,31 @@
         nf <- length(dummy.vars)
         for (i in 1:nf) {
             if (any(vars==dummy.vars[i])==FALSE) {
-                cat(paste("\n", "WARNING: dummy variable '", dummy.vars[i], "' not among grid layers", "\n", sep = ""))
+                cat(paste("\n", "WARNING: dummy variable '", dummy.vars[i], "' not among grid layers", "\n\n", sep = ""))
             }
         }
     }
+    species.presence <- data.frame(species.presence)
+    if (ncol(species.presence) < 3) {stop("species.presence expected to be 3-column data.frame with species, x (lon) and y (lat) columns")}
+    if (ncol(species.presence) > 3) {
+        cat(paste("\n", "species.presence was expected to be 3-column data.frame with species, x (lon) and y (lat) columns", "\n\n", sep = ""))        
+        cat(paste("\n", "only first three columns used", "\n\n", sep = ""))
+        species.presence <- species.presence[,c(1:3)] 
+    }
+    if (is.null(species.absence)==F && ncol(species.absence) < 2) {stop("species.absence expected to be a 2-column data.frame with x (lon) and y (lat),  or 3-column data.frame with species, x (lon) and y (lat) columns")}
+    if (is.null(species.absence)==F && ncol(species.absence)> 3) {
+        cat(paste("\n", "species.absence was expected to be 3-column data.frame with species, x (lon) and y (lat) columns", "\n\n", sep = ""))        
+        cat(paste("\n", "only first three columns used", "\n\n", sep = ""))
+        species.absence <- species.absence[,c(1:3)] 
+    }
+    if (is.null(species.absence)==F && ncol(species.absence) == 2) {as <- data.frame(species.absence)}
+    if (is.null(species.absence)==T) {as <- randomPoints(x, n=an, ext=ext)}
     if (is.null(input.weights)==F) {
 # use the last column in case output from the ensemble.test.splits function is used
         if (length(dim(input.weights)) == 2) {input.weights <- input.weights[,"MEAN"]}
         MAXENT <- max(c(input.weights["MAXENT"], -1), na.rm=T)
         GBM <- max(c(input.weights["GBM"], -1), na.rm=T)
+        GBMSTEP <- max(c(input.weights["GBMSTEP"], -1), na.rm=T)
         RF <- max(c(input.weights["RF"], -1), na.rm=T)
         GLM <- max(c(input.weights["GLM"], -1), na.rm=T)
         GLMSTEP <- max(c(input.weights["GLMSTEP"], -1), na.rm=T)
@@ -161,14 +187,6 @@
         assign("GAM.family", GAM.family, envir=.BiodiversityR)
         detach(package:mgcv)   
     }
-    if (MGCVFIX > 0) {
-        if (! require(mgcv)) {stop("Please install the mgcv package")}
-        if (is.null(MGCVFIX.formula) == T && formulae.defaults == T) {MGCVFIX.formula <- formulae$MGCVFIX.formula}
-        if (is.null(MGCVFIX.formula) == T) {stop("Please provide the MGCVFIX.formula (hint: use ensemble.formulae function)")}
-        environment(MGCVFIX.formula) <- .BiodiversityR
-        assign("GAM.family", GAM.family, envir=.BiodiversityR)
-        detach(package:mgcv)   
-    }
     if (EARTH > 0) {
         if (! require(earth)) {stop("Please install the earth package")}
         if (is.null(EARTH.formula) == T && formulae.defaults == T) {EARTH.formula <- formulae$EARTH.formula}
@@ -210,90 +228,126 @@
                 return(attr(p, "probabilities")[,1])
              }
     }
-    if (is.null(a)==T) {a <- randomPoints(x, n=an, ext=ext)}
-    groupp <- kfold(p, k=k)
-    groupa <- kfold(a, k=k)
-    output <- array(NA, dim=c(20, k+1))
-    rownames(output) <- c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
-        "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL", "GEODIST")
-    colnames(output) <- c(1:k,"MEAN")
-    for (i in 1:k){
-        cat(paste("\n", "EVALUATION RUN: ", i, "\n\n", sep = ""))
-        pc <- p[groupp != i,]
-        pt <- p[groupp == i,]
-        ac <- a[groupa != i,]
-        at <- a[groupa == i,]
-        assign("pc", pc, envir=.BiodiversityR)
-        assign("pt", pt, envir=.BiodiversityR)
-        assign("ac", ac, envir=.BiodiversityR)
-        assign("at", at, envir=.BiodiversityR)
-        tests <- ensemble.test(x=x, p=pc, a=ac, pt=pt, at=at, 
-            VIF=VIF,
-            PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
-            MAXENT=MAXENT, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
-            GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
-            NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, MAHAL=MAHAL,
-            GEODIST=GEODIST, GEODIST.file.name=GEODIST.file.name, RASTER.format=RASTER.format,  
-            Yweights=Yweights, factors=factors, dummy.vars=dummy.vars,
-            maxit=maxit,
-            GBM.formula=GBM.formula, GBM.n.trees=GBM.n.trees,
-            GBMSTEP.gbm.x=GBMSTEP.gbm.x, GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
-            GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction,
-            GBMSTEP.step.size=GBMSTEP.step.size,
-            RF.formula=RF.formula, RF.ntree=RF.ntree, RF.mtry=RF.mtry, 
-            GLM.formula=GLM.formula, GLM.family=GLM.family, 
-            GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=STEP.formula, GLMSTEP.scope=GLMSTEP.scope, 
-            GAM.formula=GAM.formula, GAM.family=GAM.family, 
-            GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope,
-            MGCV.formula=MGCV.formula, MGCV.select=MGCV.select,
-            MGCVFIX.formula=MGCVFIX.formula, 
-            EARTH.formula=EARTH.formula, EARTH.glm=EARTH.glm,
-            RPART.formula=RPART.formula, RPART.xval=RPART.xval, 
-            NNET.formula=NNET.formula, NNET.size=NNET.size, NNET.decay=NNET.decay,
-            FDA.formula=FDA.formula, SVM.formula=SVM.formula, SVME.formula=SVME.formula)
-        if(is.null(tests$MAXENT.T)==F) {output["MAXENT",i] <- tests$MAXENT.T@auc}
-        if(is.null(tests$GBM.T)==F) {output["GBM",i] <- tests$GBM.T@auc} 
-        if(is.null(tests$GBMSTEP.T)==F) {output["GBMSTEP",i] <- tests$GBMSTEP.T@auc} 
-        if(is.null(tests$RF.T)==F) {output["RF",i] <- tests$RF.T@auc}
-        if(is.null(tests$GLM.T)==F) {output["GLM",i] <- tests$GLM.T@auc} 
-        if(is.null(tests$GLMS.T)==F) {output["GLMSTEP",i] <- tests$GLMS.T@auc}
-        if(is.null(tests$GAM.T)==F) {output["GAM",i] <- tests$GAM.T@auc} 
-        if(is.null(tests$GAMS.T)==F) {output["GAMSTEP",i] <- tests$GAMS.T@auc}
-        if(is.null(tests$MGCV.T)==F) {output["MGCV",i] <- tests$MGCV.T@auc} 
-        if(is.null(tests$MGCVF.T)==F) {output["MGCVFIX",i] <- tests$MGCVF.T@auc} 
-        if(is.null(tests$EARTH.T)==F) {output["EARTH",i] <- tests$EARTH.T@auc} 
-        if(is.null(tests$RPART.T)==F) {output["RPART",i] <- tests$RPART.T@auc}
-        if(is.null(tests$NNET.T)==F) {output["NNET",i] <- tests$NNET.T@auc} 
-        if(is.null(tests$FDA.T)==F) {output["FDA",i] <- tests$FDA.T@auc}
-        if(is.null(tests$SVM.T)==F) {output["SVM",i] <- tests$SVM.T@auc}
-        if(is.null(tests$SVME.T)==F) {output["SVME",i] <- tests$SVME.T@auc}
-        if(is.null(tests$BIOCLIM.T)==F) {output["BIOCLIM",i] <- tests$BIOCLIM.T@auc}
-        if(is.null(tests$DOMAIN.T)==F) {output["DOMAIN",i] <- tests$DOMAIN.T@auc}
-        if(is.null(tests$MAHAL.T)==F) {output["MAHAL",i] <- tests$MAHAL.T@auc}
-        if(is.null(tests$GEODIST.T)==F) {output["GEODIST",i] <- tests$GEODIST.T@auc}
+# process species by species
+    species.names <- levels(as.factor(species.presence[,1]))
+    output <- NULL
+    for (s in 1:length(species.names)) {
+        focal.species <- species.names[s]
+        cat(paste("\n", "Evaluations for species: ", focal.species, "\n\n", sep = ""))
+        ps <- species.presence[species.presence[,1]==focal.species, c(2:3)]
+        if (is.null(species.absence)==F && ncol(species.absence) == 3) {
+            as <- species.absence[species.absence[,1]==focal.species, c(2:3)]
+        }
+
+#1. first ensemble tests
+    splits <- ensemble.test.splits(x=x, p=ps, a=as, ext=ext, k=k.splits, 
+        VIF=T,
+        digits=digits, PLOTS=F, 
+        input.weights=input.weights,
+        MAXENT=MAXENT, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
+        GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, EARTH=EARTH, RPART=RPART, 
+        NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, MAHAL=MAHAL,
+        GEODIST=GEODIST, GEODIST.file.name=focal.species, RASTER.format=RASTER.format,  
+        Yweights=Yweights, factors=factors, dummy.vars=dummy.vars,
+        maxit=maxit,
+        GBM.formula=GBM.formula, GBM.n.trees=GBM.n.trees,
+        GBMSTEP.gbm.x=GBMSTEP.gbm.x, GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
+        GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction,
+        GBMSTEP.step.size=GBMSTEP.step.size,
+        RF.formula=RF.formula, RF.ntree=RF.ntree, RF.mtry=RF.mtry, 
+        GLM.formula=GLM.formula, GLM.family=GLM.family, 
+        GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=STEP.formula, GLMSTEP.scope=GLMSTEP.scope, 
+        GAM.formula=GAM.formula, GAM.family=GAM.family, 
+        GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope,
+        MGCV.formula=MGCV.formula, MGCV.select=MGCV.select,
+        MGCVFIX.formula=MGCVFIX.formula, 
+        EARTH.formula=EARTH.formula, EARTH.glm=EARTH.glm,
+        RPART.formula=RPART.formula, RPART.xval=RPART.xval, 
+        NNET.formula=NNET.formula, NNET.size=NNET.size, NNET.decay=NNET.decay,
+        FDA.formula=FDA.formula, SVM.formula=SVM.formula, SVME.formula=SVME.formula)
+
+#2. calibrate models and predict first raster
+#    xn <- as.character(xn)    
+    xn.f <- xn[[1]]
+    if(length(xn.f@title) == 0) {xn.f@title <- "stack1"}
+#    xn.f <- eval(as.name(xn.focal))
+    cat(paste("\n", "Predictions for species: ", focal.species, " for rasterStack: ", xn.f@title,  "\n\n", sep = ""))
+    rasters <- ensemble.raster(
+        x=x, p=ps, a=as, an=1000, ext=ext, k=k, pt=NULL, at=NULL, xn=xn.f, models.keep=TRUE, 
+        RASTER.species.name=focal.species, RASTER.stack.name=xn.f@title, RASTER.format=RASTER.format, RASTER.datatype=RASTER.datatype, RASTER.NAflag=RASTER.NAflag,
+        RASTER.models.overwrite=TRUE,
+        threshold.method=threshold.method,
+        ENSEMBLE.decay=ENSEMBLE.decay, ENSEMBLE.multiply=ENSEMBLE.multiply, ENSEMBLE.best=ENSEMBLE.best,
+        input.weights=splits[,"MEAN"],
+        MAXENT=0, GBM=0, GBMSTEP=0, RF=0, GLM=0, GLMSTEP=0, GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0,
+        EARTH=0, RPART=0, NNET=0, FDA=0, SVM=0, SVME=0, BIOCLIM=0, DOMAIN=0, MAHAL=0,  
+        Yweights=Yweights, factors=factors, dummy.vars=dummy.vars,
+        evaluation.strip=FALSE, 
+        maxit=maxit,
+        MAXENT.OLD=NULL,
+        GBM.formula=GBM.formula, GBM.n.trees=GBM.n.trees, GBM.OLD=NULL,    
+        GBMSTEP.gbm.x=GBMSTEP.gbm.x, GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
+        GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction, GBMSTEP.OLD=NULL,
+        RF.formula=RF.formula, RF.ntree=RF.ntree, RF.mtry=RF.mtry, RF.OLD=NULL,
+        GLM.formula=GLM.formula, GLM.family=GLM.family, GLM.OLD=NULL,
+        GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=STEP.formula, GLMSTEP.scope=GLMSTEP.scope, GLMSTEP.OLD=NULL,
+        GAM.formula=GAM.formula, GAM.family=GAM.family, GAM.OLD=NULL, 
+        GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope, GAMSTEP.OLD=NULL,
+        MGCV.formula=MGCV.formula, MGCV.select=MGCV.select, MGCV.OLD=NULL,
+        MGCVFIX.formula=MGCVFIX.formula, MGCVFIX.OLD=NULL,
+        EARTH.formula=EARTH.formula, EARTH.glm=EARTH.glm, EARTH.OLD=NULL,
+        RPART.formula=RPART.formula, RPART.xval=RPART.xval, RPART.OLD=NULL,
+        NNET.formula=NNET.formula, NNET.size=NNET.size, NNET.decay=NNET.decay, NNET.OLD=NULL,
+        FDA.formula=FDA.formula,  FDA.OLD=NULL, 
+        SVM.formula=SVM.formula, SVM.OLD=NULL, 
+        SVME.formula=SVME.formula, SVME.OLD=NULL,
+        BIOCLIM.OLD=NULL, DOMAIN.OLD=NULL, MAHAL.OLD=NULL)   
+
+#3. if several rasters, continue to predict the other rasters
+# (In this case, x is also set to be the new layer to generate evaluations for the new layer)
+
+    if (length(xn) > 1) {
+        for (n in 2:length(xn)) {
+            xn.f <- xn[[n]]
+            if(length(xn.f@title) == 0) {xn.f@title <- paste("stack", n, sep="")}
+#            xn.f <- eval(as.name(xn.focal))
+            cat(paste("\n", "Predictions for species: ", focal.species, " for rasterStack: ", xn.f@title,  "\n\n", sep = ""))
+            rasters2 <- ensemble.raster(
+                x=xn.f, p=ps, a=as, an=1000, ext=ext, k=k, pt=NULL, at=NULL, xn=xn.f, models.keep=FALSE, 
+                RASTER.species.name=focal.species, RASTER.stack.name=xn.f@title, RASTER.format=RASTER.format, RASTER.datatype=RASTER.datatype, RASTER.NAflag=RASTER.NAflag,
+                RASTER.models.overwrite=TRUE,
+                threshold.method=threshold.method,
+                ENSEMBLE.decay=ENSEMBLE.decay, ENSEMBLE.multiply=ENSEMBLE.multiply, ENSEMBLE.best=ENSEMBLE.best,
+                input.weights=splits[,"MEAN"],
+                MAXENT=0, GBM=0, GBMSTEP=0, RF=0, GLM=0, GLMSTEP=0, GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0,
+                EARTH=0, RPART=0, NNET=0, FDA=0, SVM=0, SVME=0, BIOCLIM=0, DOMAIN=0, MAHAL=0,  
+                Yweights=Yweights, factors=factors, dummy.vars=dummy.vars,
+                evaluation.strip=FALSE, 
+                MAXENT.OLD=rasters$MAXENT,
+                GBM.formula=GBM.formula, GBM.n.trees=GBM.n.trees, GBM.OLD=rasters$GBM,    
+                GBMSTEP.gbm.x=GBMSTEP.gbm.x, GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
+                GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction, GBMSTEP.OLD=rasters$GBMSTEP,
+                RF.formula=RF.formula, RF.ntree=RF.ntree, RF.mtry=RF.mtry, RF.OLD=rasters$RF,
+                GLM.formula=GLM.formula, GLM.family=GLM.family, GLM.OLD=rasters$GLM,
+                GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=STEP.formula, GLMSTEP.scope=GLMSTEP.scope, GLMSTEP.OLD=rasters$GLMSTEP,
+                GAM.formula=GAM.formula, GAM.family=GAM.family, GAM.OLD=rasters$GAM, 
+                GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope, GAMSTEP.OLD=rasters$GAMSTEP,
+                MGCV.formula=MGCV.formula, MGCV.select=MGCV.select, MGCV.OLD=rasters$MGCV,
+                MGCVFIX.formula=MGCVFIX.formula, MGCVFIX.OLD=rasters$MGCVFIX,
+                EARTH.formula=EARTH.formula, EARTH.glm=EARTH.glm, EARTH.OLD=rasters$EARTH,
+                RPART.formula=RPART.formula, RPART.xval=RPART.xval, RPART.OLD=rasters$RPART,
+                NNET.formula=NNET.formula, NNET.size=NNET.size, NNET.decay=NNET.decay, NNET.OLD=rasters$NNET,
+                FDA.formula=FDA.formula,  FDA.OLD=rasters$FDA, 
+                SVM.formula=SVM.formula, SVM.OLD=rasters$SVM, 
+                SVME.formula=SVME.formula, SVME.OLD=rasters$SVME,
+                BIOCLIM.OLD=rasters$BIOCLIM, DOMAIN.OLD=rasters$DOMAIN, MAHAL.OLD=rasters$MAHAL)  
+            }
+        }
+
+# end for all the species
     }
-    output[,k+1] <- rowMeans(output[,1:k], na.rm=T)
-    output[is.na(output[,"MEAN"]),] <- 0  
-    output <- 100*output
-    output <- round(output, digits=digits)
-    if (SCRIPT==TRUE) {
-        weights <- output[,"MEAN"]
-# no GEODIST
-        weights <- weights[-20]
-    }
-    output <- output[order(output[,"MEAN"], decreasing=T),]
-    cat(paste("\n", "Results (as percentage) of ensemble.test.splits sorted by average AUC ",  "\n\n", sep = ""))
-    print(output)
-    if (SCRIPT==TRUE) {
-        cat(paste("\n", "Suggested parameters for ensemble.grd function", "\n", sep = ""))
-        cat(paste("(these are based on average AUC)", "\n\n", sep=""))
-        print(weights)
-    }
-    remove(pc, envir=.BiodiversityR)
-    remove(pt, envir=.BiodiversityR)
-    remove(ac, envir=.BiodiversityR)
-    remove(at, envir=.BiodiversityR)
-    return(output)
+
+    cat(paste("\n", "end of batch processing", "\n\n", sep = ""))
 }
 
 

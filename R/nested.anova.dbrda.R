@@ -52,6 +52,7 @@ function (formula, data, method = "euc", add = FALSE, permutations = 100,
     environment(formula) <- .BiodiversityR
     data1 <- data
     assign("data1", data, envir=.BiodiversityR)
+    assign("data1", data1, envir=.BiodiversityR)
     METHODS <- c("manhattan", "euclidean", "canberra", "bray", 
         "kulczynski", "gower", "morisita", "horn", "mountford", 
         "jaccard", "raup", "binomial", "chao")
@@ -163,7 +164,10 @@ function (formula, data, method = "euc", add = FALSE, permutations = 100,
                 add = FALSE)
         }
     }
-    anovares <- anova(model, perm.max = 2, by = "terms")
+# remember the data
+    model$call$data <- data1
+#
+    anovares <- anova(model, perm = 2, by="terms")
     anovadat <- data.frame(anovares)
     adjust <- nrow(model$CCA$u) - 1
     if (pmatch("mean", model$inertia, nomatch = -1) > 0) {
@@ -179,6 +183,7 @@ function (formula, data, method = "euc", add = FALSE, permutations = 100,
     anovadat[2, 3] <- anovadat[2, 2]/df3
     formula1 <- as.formula(paste(resp, "~", lowlev, "+Condition(", 
         toplev, ")"))
+    environment(formula1) <- .BiodiversityR
     model1 <- capscale(formula1, data = data1, distance = method, 
         add = add)
     Ftop <- (model1$pCCA$tot.chi/df1)/(model1$CCA$tot.chi/df2)
@@ -223,5 +228,8 @@ function (formula, data, method = "euc", add = FALSE, permutations = 100,
     structure(anovadat, heading = c(head, mod), Random.seed = NA, 
         class = c("anova.cca", "anova", "data.frame"))
 }
+
+# test
+# model.test <- nested.anova.dbrda(warcom~rift.valley+popshort, data=warenv, method="jac", permutations=5)
 
 

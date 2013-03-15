@@ -45,20 +45,17 @@ function(formula,data,method="euc",permutations=100,warnings=FALSE){
     resp <- all.vars(formula)[1]
     toplev <- all.vars(formula)[2]
     lowlev <- all.vars(formula)[3]
-    environment(formula) <- .GlobalEnv
     data1 <- data
-    assign("data1",data,envir=.BiodiversityR)
-    model <- capscale(formula,data1,distance="euclidean")
-    anovares <- anova(model,perm.max=1,by="terms")
-    anovadat <- data.frame(anovares)
+    assign("data1",data1,envir=.BiodiversityR) 
+    adonis1 <- adonis(formula,data1,permutations=2,method=method)
+    adonis1 <- data.frame(adonis1$aov.tab)
+    anovadat <- adonis1[1:3, c(1:4,6)]
     df1 <- anovadat[1,1]
     df2 <- anovadat[2,1]
     df3 <- nrow(distmatrix)-df1-df2-1
-    adonis1 <- adonis(formula,data1,permutations=2,method=method)
-    adonis1 <- data.frame(adonis1$aov.tab)
-    sstop <- anovadat[1,2] <- adonis1[1,2]
-    sslow <- anovadat[2,2] <- adonis1[2,2]
-    ssres <- anovadat[3,2] <- adonis1[3,2]
+    sstop <- anovadat[1,2]
+    sslow <- anovadat[2,2]
+    ssres <- anovadat[3,2]
     vartot <- adonis1[4,2]
     Ftop <- anovadat[1,3] <- (sstop/df1)/(sslow/df2)
     Flow <- anovadat[2,3] <- (sslow/df2)/(ssres/df3)
@@ -94,5 +91,3 @@ function(formula,data,method="euc",permutations=100,warnings=FALSE){
     structure(anovadat, heading = c(head, mod), Random.seed = NA, 
         class = c("anova.cca", "anova", "data.frame"))
 }
-
-

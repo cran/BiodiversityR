@@ -1,7 +1,7 @@
 `evaluation.strip.plot` <- function(
     data, 
-    modelnames=c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP",
-        "MGCV", "EARTH", "RPART", "NNET", "FDA", "SVM", "BIOCLIM", "DOMAIN", "MAHAL"),
+    modelnames=c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
+        "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL"),
     variable=NULL, model=NULL, ...
 ) 
 {
