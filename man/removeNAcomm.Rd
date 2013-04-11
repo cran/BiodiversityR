@@ -20,22 +20,22 @@ These functions may assist to ensure that the sites of the community dataset are
 }
 
 \usage{
-same.sites(x,y)
-check.datasets(x,y)
-check.ordiscores(x,ord,check.species=T)
-removeNAcomm(x,y,variable)
-removeNAenv(x,variable)
+same.sites(x, y)
+check.datasets(x, y)
+check.ordiscores(x, ord, check.species = TRUE)
+removeNAcomm(x, y, variable)
+removeNAenv(x, variable)
 removezerospecies(x)
-subsetcomm(x,y,factor,level,returncomm=T)
+subsetcomm(x, y, factor, level, returncomm = TRUE)
 
 #ifdef windows
-import.from.Excel(file = file.choose(), sheet = "community", sitenames = "sites", 
+import.from.Excel(file = file.choose(), data.type = "community", sheet = NULL, sitenames = "sites", 
     column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
-import.from.Excel2007(file = file.choose(), sheet = "community", sitenames = "sites", 
+import.from.Excel2007(file = file.choose(), data.type = "community", sheet = NULL, sitenames = "sites", 
     column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
-import.from.Access(file = file.choose(), table = "community", sitenames = "sites", 
+import.from.Access(file = file.choose(), data.type = "community", table = NULL, sitenames = "sites", 
     column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
-import.from.Access2007(file = file.choose(), table = "community", sitenames = "sites", 
+import.from.Access2007(file = file.choose(), data.type = "community", table = NULL, sitenames = "sites", 
     column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
 #endif
 }
@@ -52,8 +52,9 @@ import.from.Access2007(file = file.choose(), table = "community", sitenames = "s
 
 #ifdef windows
   \item{file}{ Location of the Excel (or Access) file. }
-  \item{sheet}{ Name of the sheet of the Excel file to import: one of "community", "environmental" or "stacked". }
-  \item{table}{ Name of the table of the Access file to import: one of "community", "environmental" or "stacked". }
+  \item{data.type}{ Type of the data set to be imported: one of "community", "environmental" or "stacked". }
+  \item{sheet}{ Name of the sheet of the Excel file to import from (if missing, then \code{data.type} is used) }
+  \item{table}{ Name of the table of the Access file to import from (if missing, then \code{data.type} is used) }
   \item{sitenames}{ Name of categorical variable that provides the names for the sites. }
   \item{column}{ Name of the categorical variable for the columns of the crosstabulation (typically indicating species); passed to \code{\link{makecommunitydataset}}. }
   \item{value}{ Name of numerical variable for the cells of the crosstabulation (typically indicating abundance). The cells provide the sum of all values in the data frame; passed to \code{\link{makecommunitydataset}}. }
@@ -85,6 +86,9 @@ For stacked datasets, a community data set is created with function \code{\link{
 An additional advantage of the function is that the community and environmental data can be stored in the same file. 
 
 You may want to check compatibility of the community and environmental datasets with functions \code{\link{check.datasets}} and modify the community dataset through \code{\link{same.sites}}.
+
+Please note that you must have the 32-bit Microsoft drivers when using 32-bit R, the 64-bit Microsoft drivers when using 64-bit R... and that only one set of drivers can be installed (\code{\link[RODBC:odbcConnect]{odbcConnectExcel}}).
+
 #endif 
 }
 

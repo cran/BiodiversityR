@@ -44,6 +44,10 @@
             }
         }
     }
+# set minimum and maximum values
+    for (i in 1:nlayers(x)) {
+        x[[i]] <- setMinMax(x[[i]])
+    }
     if (! require(nnet)) {stop("Please install the nnet package")}
     if (formulae.defaults == T) {
         formulae <- ensemble.formulae(x, factors=factors)

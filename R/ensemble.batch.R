@@ -18,7 +18,7 @@
     GLM.formula=NULL, GLM.family=binomial(link="logit"), 
     GLMSTEP.steps=1000, STEP.formula=NULL, GLMSTEP.scope=NULL, GLMSTEP.k=2,
     GAM.formula=NULL, GAM.family=binomial(link="logit"), 
-    GAMSTEP.steps=1000, GAMSTEP.scope=NULL,
+    GAMSTEP.steps=1000, GAMSTEP.scope=NULL, GAMSTEP.pos=1,
     MGCV.formula=NULL, MGCV.select=FALSE,
     MGCVFIX.formula=NULL, 
     EARTH.formula=NULL, EARTH.glm=list(family=binomial(link="logit"), maxit=maxit),
@@ -82,6 +82,10 @@
             }
         }
     }
+# set minimum and maximum values
+    for (i in 1:nlayers(x)) {
+        x[[i]] <- setMinMax(x[[i]])
+    }
     species.presence <- data.frame(species.presence)
     if (ncol(species.presence) < 3) {stop("species.presence expected to be 3-column data.frame with species, x (lon) and y (lat) columns")}
     if (ncol(species.presence) > 3) {
@@ -99,7 +103,11 @@
     if (is.null(species.absence)==T) {as <- randomPoints(x, n=an, ext=ext)}
     if (is.null(input.weights)==F) {
 # use the last column in case output from the ensemble.test.splits function is used
-        if (length(dim(input.weights)) == 2) {input.weights <- input.weights[,"MEAN"]}
+        if (length(dim(input.weights)) == 2) {
+            input.weights <- input.weights[,"MEAN"]
+            input.weights <- input.weights - 50
+            input.weights[input.weights < 0] <- 0
+        }
         MAXENT <- max(c(input.weights["MAXENT"], -1), na.rm=T)
         GBM <- max(c(input.weights["GBM"], -1), na.rm=T)
         GBMSTEP <- max(c(input.weights["GBMSTEP"], -1), na.rm=T)
@@ -258,7 +266,7 @@
         GLM.formula=GLM.formula, GLM.family=GLM.family, 
         GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=STEP.formula, GLMSTEP.scope=GLMSTEP.scope, 
         GAM.formula=GAM.formula, GAM.family=GAM.family, 
-        GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope,
+        GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope, GAMSTEP.pos=GAMSTEP.pos,
         MGCV.formula=MGCV.formula, MGCV.select=MGCV.select,
         MGCVFIX.formula=MGCVFIX.formula, 
         EARTH.formula=EARTH.formula, EARTH.glm=EARTH.glm,
@@ -292,7 +300,7 @@
         GLM.formula=GLM.formula, GLM.family=GLM.family, GLM.OLD=NULL,
         GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=STEP.formula, GLMSTEP.scope=GLMSTEP.scope, GLMSTEP.OLD=NULL,
         GAM.formula=GAM.formula, GAM.family=GAM.family, GAM.OLD=NULL, 
-        GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope, GAMSTEP.OLD=NULL,
+        GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope, GAMSTEP.OLD=NULL, GAMSTEP.pos=GAMSTEP.pos,
         MGCV.formula=MGCV.formula, MGCV.select=MGCV.select, MGCV.OLD=NULL,
         MGCVFIX.formula=MGCVFIX.formula, MGCVFIX.OLD=NULL,
         EARTH.formula=EARTH.formula, EARTH.glm=EARTH.glm, EARTH.OLD=NULL,
@@ -331,7 +339,7 @@
                 GLM.formula=GLM.formula, GLM.family=GLM.family, GLM.OLD=rasters$GLM,
                 GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=STEP.formula, GLMSTEP.scope=GLMSTEP.scope, GLMSTEP.OLD=rasters$GLMSTEP,
                 GAM.formula=GAM.formula, GAM.family=GAM.family, GAM.OLD=rasters$GAM, 
-                GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope, GAMSTEP.OLD=rasters$GAMSTEP,
+                GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope, GAMSTEP.OLD=rasters$GAMSTEP, GAMSTEP.pos=GAMSTEP.pos,
                 MGCV.formula=MGCV.formula, MGCV.select=MGCV.select, MGCV.OLD=rasters$MGCV,
                 MGCVFIX.formula=MGCVFIX.formula, MGCVFIX.OLD=rasters$MGCVFIX,
                 EARTH.formula=EARTH.formula, EARTH.glm=EARTH.glm, EARTH.OLD=rasters$EARTH,

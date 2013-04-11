@@ -1,6 +1,6 @@
 `ensemble.drop1` <- function(
     x, p, a=NULL, an=1000, ext=NULL, k=0, pt=NULL, at=NULL,
-    layer.drops=NULL, VIF=FALSE,
+    layer.drops=NULL, VIF=FALSE, COR=FALSE,
     digits=2, difference=FALSE,
     input.weights=NULL,
     MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0, 
@@ -14,7 +14,7 @@
     GLM.family=binomial(link="logit"), 
     GLMSTEP.steps=1000, GLMSTEP.k=2,
     GAM.family=binomial(link="logit"), 
-    GAMSTEP.steps=1000,
+    GAMSTEP.steps=1000, GAMSTEP.pos=1,
     MGCV.select=FALSE, 
     EARTH.glm=list(family=binomial(link="logit"), maxit=maxit),
     RPART.xval=50, 
@@ -67,9 +67,17 @@
             }
         }
     }
+# set minimum and maximum values
+    for (i in 1:nlayers(x)) {
+        x[[i]] <- setMinMax(x[[i]])
+    }
     if (is.null(input.weights)==F) {
 # use the last column in case output from the ensemble.test.splits function is used
-        if (length(dim(input.weights)) == 2) {input.weights <- input.weights[,"MEAN"]}
+        if (length(dim(input.weights)) == 2) {
+            input.weights <- input.weights[,"MEAN"]
+            input.weights <- input.weights - 50
+            input.weights[input.weights < 0] <- 0
+        }
         MAXENT <- max(c(input.weights["MAXENT"], -1), na.rm=T)
         GBM <- max(c(input.weights["GBM"], -1), na.rm=T)
         GBMSTEP <- max(c(input.weights["GBMSTEP"], -1), na.rm=T)
@@ -182,7 +190,7 @@
 # first fit with all variables
     tests <- ensemble.test(x=x, p=p, a=a, pt=pt, at=at, 
         PLOTS=FALSE, evaluations.keep=T, models.keep=F,
-        layer.drops=NULL, VIF=VIF,
+        layer.drops=NULL, VIF=VIF, COR=COR,
         formulae.defaults=T, maxit=maxit,
         MAXENT=MAXENT, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
         GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
@@ -197,7 +205,7 @@
         GLM.formula=NULL, GLM.family=GLM.family, 
         GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=NULL, GLMSTEP.scope=NULL, 
         GAM.formula=NULL, GAM.family=GAM.family, 
-        GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=NULL,
+        GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=NULL, GAMSTEP.pos=GAMSTEP.pos,
         MGCV.formula=NULL, MGCV.select=MGCV.select,
         MGCVFIX.formula=NULL, 
         EARTH.formula=NULL, EARTH.glm=EARTH.glm,
@@ -224,9 +232,6 @@
     if(is.null(tests$DOMAIN.T)==F) {output["DOMAIN",1] <- tests$DOMAIN.T@auc}
     if(is.null(tests$MAHAL.T)==F) {output["MAHAL",1] <- tests$MAHAL.T@auc}
 
-
-
-
 # sequentially leave out the focal variable, then fit again
 
     vars <- names(x)
@@ -236,7 +241,7 @@
         cat(paste("\n", "Leaving out variable ", var.f, "\n\n", sep = ""))
     tests <- ensemble.test(x=x, p=p, a=a, pt=pt, at=at, 
         PLOTS=FALSE, evaluations.keep=T, models.keep=F,
-        layer.drops=var.f, VIF=VIF,
+        layer.drops=var.f, VIF=VIF, COR=COR,
         formulae.defaults=T, maxit=maxit,
         MAXENT=MAXENT, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
         GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
@@ -251,7 +256,7 @@
         GLM.formula=NULL, GLM.family=GLM.family, 
         GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=NULL, GLMSTEP.scope=NULL, 
         GAM.formula=NULL, GAM.family=GAM.family, 
-        GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=NULL,
+        GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=NULL, GAMSTEP.pos=GAMSTEP.pos,
         MGCV.formula=NULL, MGCV.select=MGCV.select,
         MGCVFIX.formula=NULL, 
         EARTH.formula=NULL, EARTH.glm=EARTH.glm,
@@ -286,6 +291,7 @@
             output[,i+1] <- output[,i+1] - output[,1]
         }
     }
+    output <- output[order(output[,"all_vars"], decreasing=T),]
     cat(paste("\n", "Results (as percentage) of ensemble.drop1",  "\n\n", sep = ""))
     if (difference == T) {
         cat(paste("\n", "Note that positive differences indicate that the model without the variable", sep = ""))

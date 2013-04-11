@@ -5,7 +5,10 @@
 )
 {
     if (is.null(ext) == F) {x <- crop(x, y=ext, snap="in")}
-    setMinMax(x)
+# set minimum and maximum values
+    for (i in 1:nlayers(x)) {
+        x[[i]] <- setMinMax(x[[i]])
+    }
     varslayers <- names(x)
     nvars <- length(vars)
     vars2 <- vars

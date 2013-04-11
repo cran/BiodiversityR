@@ -1,6 +1,6 @@
 `ensemble.test` <- function(
     x, p, a=NULL, an=1000, ext=NULL, k=0, pt=NULL, at=NULL,
-    layer.drops=NULL, VIF=FALSE,
+    layer.drops=NULL, VIF=FALSE, COR=FALSE,
     PLOTS=TRUE, evaluations.keep=FALSE, models.keep=FALSE, 
     input.weights=NULL,
     MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0,
@@ -15,7 +15,7 @@
     GLM.formula=NULL, GLM.family=binomial(link="logit"), 
     GLMSTEP.steps=1000, STEP.formula=NULL, GLMSTEP.scope=NULL, GLMSTEP.k=2,
     GAM.formula=NULL, GAM.family=binomial(link="logit"), 
-    GAMSTEP.steps=1000, GAMSTEP.scope=NULL,
+    GAMSTEP.steps=1000, GAMSTEP.scope=NULL, GAMSTEP.pos=1,
     MGCV.formula=NULL, MGCV.select=FALSE,
     MGCVFIX.formula=NULL, 
     EARTH.formula=NULL, EARTH.glm=list(family=binomial(link="logit"), maxit=maxit),
@@ -71,10 +71,17 @@
             }
         }
     }
-
+# set minimum and maximum values
+    for (i in 1:nlayers(x)) {
+        x[[i]] <- setMinMax(x[[i]])
+    }
     if (is.null(input.weights)==F) {
 # use the last column in case output from the ensemble.test.splits function is used
-        if (length(dim(input.weights)) == 2) {input.weights <- input.weights[,"MEAN"]}
+        if (length(dim(input.weights)) == 2) {
+            input.weights <- input.weights[,"MEAN"]
+            input.weights <- input.weights - 50
+            input.weights[input.weights < 0] <- 0
+        }
         MAXENT <- max(c(input.weights["MAXENT"], -1), na.rm=T)
         GBM <- max(c(input.weights["GBM"], -1), na.rm=T)
         GBMSTEP <- max(c(input.weights["GBMSTEP"], -1), na.rm=T)
@@ -293,6 +300,18 @@
         }else{
             cat(paste("\n", "NOTE: VIF evaluation failed", "\n", sep = "")) 
         }
+    }
+    if (COR == T) {
+        TrainDataNum <- TrainData[, colnames(TrainData) != "pb"]
+        if(is.null(factors)==F) {
+            for (i in 1:length(factors)) {
+                TrainDataNum <- TrainDataNum[, colnames(TrainDataNum) != factors[i]]            
+            }
+        }
+        corresult <- cor(TrainDataNum)
+        corresult <- round(100*corresult, digits=1)
+        cat(paste("\n", "Correlation between numeric variables (as percentage)", "\n", sep = ""))        
+        print(corresult)
     }
     if(evaluations.keep==T) {
         evaluations <- list(p=p, a=a, pt=pt, at=at, MAXENT.C=NULL, MAXENT.T=NULL, 
@@ -612,17 +631,20 @@
         detach(package:gam)
     }
     if (GAMSTEP > 0) {
-        cat(paste("\n", "NOTE: stepwise GAM seems to require assignments of family and data to pos 1", "\n\n",sep=""))
-    } 
-    if (GAMSTEP > 0) {
         require(gam, quietly=T)
         eval1 <- eval2 <- results <- results2 <- TestPres <- TestAbs <- NULL
         tryCatch(results <- gam(formula=STEP.formula, family=GAM.family, data=TrainData, weights=Yweights, control=gam.control(maxit=maxit, bf.maxit=50)), 
             error= function(err) {print(paste("first step of stepwise GAM calibration (gam package) failed"))},
             silent=T)
+        assign("TrainData", TrainData, pos=GAMSTEP.pos)
+        assign("GAM.family", GAM.family, pos=GAMSTEP.pos)
+        assign("maxit", maxit, pos=GAMSTEP.pos)      
         tryCatch(results2 <- step.gam(results, scope=GAMSTEP.scope, direction="both", trace=F, steps=GAMSTEP.steps), 
             error= function(err) {print(paste("stepwise GAM calibration (gam package) failed"))},
-            silent=T)
+            silent=F)
+        remove(TrainData, pos=GAMSTEP.pos)
+        remove(GAM.family, pos=GAMSTEP.pos)
+        remove(maxit, pos=GAMSTEP.pos)
         if (is.null(results2) == F) {
             results <- results2
             cat(paste("\n", "stepwise GAM formula (gam package)","\n\n",sep = ""))
@@ -633,11 +655,11 @@
             eval1 <- evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
             if ((identical(pt, p) == F) || (identical(at, a) == F) == T) {
-                cat(paste("\n", "stepwise GAM evaluation","\n\n","\n", sep = ""))
-                tryCatch(TestPres <- gam::predict(results,newdata=TestData[TestData[,"pb"]==1,], type="response"),
+                cat(paste("\n", "stepwise GAM evaluation (gam package)","\n\n","\n", sep = ""))
+                tryCatch(TestPres <- predict(results,newdata=TestData[TestData[,"pb"]==1,], type="response"),
                     error= function(err) {print(paste("stepwise GAM evaluation (step 1, gam package) failed"))},
                     silent=T)
-                tryCatch(TestAbs <- gam::predict(results,newdata=TestData[TestData[,"pb"]==0,], type="response"),
+                tryCatch(TestAbs <- predict(results,newdata=TestData[TestData[,"pb"]==0,], type="response"),
                     error= function(err) {print(paste("stepwise GAM evaluation (step 2, gam package) failed"))},
                     silent=T)
                 if (is.null(TestPres) == F && is.null(TestAbs) == F) {
