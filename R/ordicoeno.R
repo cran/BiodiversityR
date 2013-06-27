@@ -1,5 +1,5 @@
 `ordicoeno` <-
-function(x,ordiplot,axis=1,...) {
+function(x, ordiplot, axis=1, legend=FALSE, cex=0.8, ncol=4, ...) {
     if (!require(mgcv)) {stop("Requires package mgcv")}
     ordiscore <- scores(ordiplot,display="sites")[,axis]
     original <- cbind(x,ordiscore)
@@ -9,18 +9,34 @@ function(x,ordiplot,axis=1,...) {
     edfs <- array(NA,dim=c(ncol(x)))
     names(edfs) <- colnames(x)
     palette(rainbow(ncol(x)))
-    gamresult <- gam(sorted[,1]~s(ordiscore),data=sorted)
-    edfs[1] <- summary(gamresult)$edf
-    newdata <- data.frame(seq(min(sorted$ordiscore), max(sorted$ordiscore), length = 1000))
-    colnames(newdata) <- "ordiscore"
-    gamresult2 <- predict(gamresult,newdata)
-    plot(newdata$ordiscore,gamresult2,type="l",ylim=c(0,max(x)),
-        col=1,pch=1,xlab="site score on ordination axis",ylab="species values",...)    
+#
+    pchtypes <- c(0:ncol(x))
+    names(pchtypes) <- pchtypes
+    pchtypes <- pchtypes - trunc(pchtypes/26)*26
+#
+    gammodel <- gam(sorted[,1]~s(ordiscore),data=sorted)
+    edfs[1] <- summary(gammodel)$edf
+    newdata1 <- data.frame(seq(min(sorted$ordiscore), max(sorted$ordiscore), length = 1000))
+    newdata2 <- data.frame(seq(min(sorted$ordiscore), max(sorted$ordiscore), length = 20))
+    colnames(newdata1) <- colnames(newdata2) <- "ordiscore"
+    gamresult1 <- predict(gammodel, newdata1)
+    gamresult2 <- predict(gammodel, newdata2)
+    plot(newdata1$ordiscore, gamresult1, type="l", ylim=c(0,max(x)),
+        col=1, pch=0, xlab="site score on ordination axis", ylab="species values", ...)
+    points(newdata2$ordiscore, gamresult2, type="p", col=1, pch=pchtypes[1], cex=cex, ...)    
     for (i in 2:ncol(x)) {
-        gamresult <- gam(sorted[,i]~s(ordiscore),data=sorted)
-        gamresult2 <- predict(gamresult,newdata)
-        edfs[i] <- summary(gamresult)$edf
-        points(newdata$ordiscore,gamresult2,type="l",pch=19,col=i,...)
+        gammodel <- gam(sorted[,i]~s(ordiscore), data=sorted)
+        gamresult1 <- predict(gammodel, newdata1)
+        gamresult2 <- predict(gammodel, newdata2)
+        edfs[i] <- summary(gammodel)$edf
+        points(newdata1$ordiscore, gamresult1, type="l", pch=0, col=i, cex=cex, ...)
+        points(newdata2$ordiscore, gamresult2, type="p", pch=pchtypes[i], col=i, cex=cex, ...)
+    }
+    colnames <- names(edfs)
+    edfs <- as.numeric(edfs)
+    names(edfs) <- colnames
+    if (legend == T) {
+        legend("top", legend = colnames, pch=pchtypes[1:ncol(x)], lty=1, col = c(1:ncol(x)), ncol=ncol)
     }
     palette("default")
     cat("edfs from GAM models for each species...\n")

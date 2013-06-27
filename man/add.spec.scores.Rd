@@ -40,7 +40,8 @@ data(dune)
 distmatrix <- vegdist(dune, method='euc')
 ## Principal coordinates analysis with 19 axes to estimate total variance
 Ordination.model1 <- cmdscale(distmatrix, k=19, eig=TRUE, add=FALSE)
-Ordination.model1 <- add.spec.scores(Ordination.model1,dune, method='pcoa.scores', Rscale=TRUE, scaling=1, multi=1)
+Ordination.model1 <- add.spec.scores(Ordination.model1,dune, 
+    method='pcoa.scores', Rscale=TRUE, scaling=1, multi=1)
 Ordination.model1
 ## Compare Ordination.model1 with:
 Ordination.model2 <- rda(dune)

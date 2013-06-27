@@ -1,18 +1,19 @@
 `ensemble.weights` <- function(
-    weights=c(0.9, 0.8, 0.7, 0.5), decay=1.5, multiply=TRUE, scale=TRUE, best=0
+    weights=c(0.9, 0.8, 0.7, 0.5), 
+    min.weight=0,
+    decay=1.5, multiply=TRUE, scale=TRUE, best=0
 )
 {
-    weights <- as.array(weights)
+    names.weights <- names(weights)
+    weights <- as.numeric(weights)
+    names(weights) <- names.weights
 #   weights should not be negative
-    weights[weights < 0] <- 0
+    if (min.weight < 0) {min.weight <- 0}
+    weights[weights < min.weight] <- 0
     lw <- length(weights)
     lp <- sum(as.numeric(weights > 0))
     if (best < 1) {best <- lp}
-    if (lp < best) {
-        cat(paste("\n","parameter best (",best,") larger than number of positive weights (", lp, ")","\n", sep=""))
-        cat(paste("parameter best therefore ignored","\n", "\n", sep=""))
-        best <- lp
-    }
+    if (lp < best) {best <- lp}
     original <- order(weights, decreasing=T)   
     decays <- as.numeric(rep(0,lw))
     decays[best] <- 1
@@ -26,8 +27,7 @@
     ranklevels <- levels(as.factor(ranks))
     if (lp < lw) {ranklevels <- ranklevels[ranklevels != as.character(min(as.numeric(ranklevels)))]}
     if (length(ranklevels) < lp  && decay != 1) {
-        cat(paste("\n","there were some ties in weights","\n", sep=""))
-        cat(paste("average decay therefore used in some cases","\n", "\n", sep=""))        
+# some ties in weights need to be replaced by mean decay
         for (i in 1:length(ranklevels)) {
             index <- ranks==ranklevels[i]
             meandecay <- mean(decays[index])
@@ -50,7 +50,6 @@
     }
     return(weights)
 }
-
 
 
 

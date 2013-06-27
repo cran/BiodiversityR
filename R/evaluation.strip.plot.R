@@ -28,15 +28,20 @@
     }
     if(is.null(model)==F) {
         m <- colnames(data) == model
-        vars <- max(data[,1])
-        dim1 <- ceiling(sqrt(vars))
-        dim2 <- ceiling(vars/dim1)
-        par(mfrow=c(dim1,dim2))
-        for (i in 1:vars) {
-            f <- data[,1]==i
-            plot(data[f,i+2], data[f, m], main=colnames(data)[i+2], xlab="", ylab=model,...)
+# models with data
+        if(is.na(sum(data[, m]))) { 
+            cat(paste("NOTE: No data for model: ",  model, "\n", sep = ""))
+        }else{
+            vars <- max(data[,1])
+            dim1 <- ceiling(sqrt(vars))
+            dim2 <- ceiling(vars/dim1)
+            par(mfrow=c(dim1,dim2))
+            for (i in 1:vars) {
+                f <- data[,1]==i
+                plot(data[f,i+2], data[f, m], main=colnames(data)[i+2], xlab="", ylab=model,...)
+            }
+            par(mfrow=c(1,1))
         }
-        par(mfrow=c(1,1))
     }
 }
 

@@ -33,7 +33,7 @@
     factors <- factors2
     nnum <- nvars - length(factors)
     nrows <- nnum * steps
-    out <- array(dim=c(nnum*steps, nvars+2),NA)
+    out <- array(dim=c(nnum*steps, nvars+2), NA)
     dimnames(out)[[2]] <- c("focal.var","categorical",vars)
 # for categorical variables first
     fixedlevel <- array(dim=c(nvars))
@@ -81,8 +81,7 @@
     }
     modelnames <- c(modelnames, "ENSEMBLE")
     nmodels <- length(modelnames)
-    modelout <- array(dim=c(nrows, nmodels), NA)
-    modelout[, nmodels] <- rep(0.0, nrows)
+    modelout <- array(dim=c(nrows, nmodels), 0.0)
     dimnames(modelout)[[2]] <- modelnames
     out <- cbind(out, modelout)
     out <- data.frame(out)

@@ -60,7 +60,8 @@ Ordination.model2 <- capscale(dune ~ Management,dune.env,dist='bray', add=FALSE)
 Ordination.model2$CA$tot.chi+Ordination.model2$CCA$tot.chi
 # [1] 4.593946896588808
 Ordination.model3 <- caprescale(Ordination.model2, verbose=TRUE)
-Distmatrix.3 <- as.matrix(vegdist(summary(Ordination.model3,axes=17,scaling=1)$constraints,method='euc'))
+sum1 <- summary(Ordination.model3,axes=17,scaling=1)$constraints
+Distmatrix.3 <- as.matrix(vegdist(sum1 ,method='euc'))
 totalsumsquares2 <- sum((Distmatrix.3)^2)/(2*20)/19
 totalsumsquares2
 # [1] 4.593946896588808
