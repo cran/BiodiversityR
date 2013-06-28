@@ -12,9 +12,10 @@ Functions to add some other graphical itmes to ordination diagrams than provided
 }
 
 \usage{
-ordisymbol(ordiplot, y, factor, col=1, rainbow=T, legend=T,...)
+ordisymbol(ordiplot, y, factor, col = 1, rainbow = TRUE, 
+    legend = TRUE, legend.x = "topleft", legend.ncol = 1, ...)
 ordibubble(ordiplot,var,...)
-ordicluster2(ordiplot, cluster, mingroups=1, maxgroups=nrow(ordiplot$sites),...)
+ordicluster2(ordiplot, cluster, mingroups = 1, maxgroups = nrow(ordiplot$sites), ...)
 ordinearest(ordiplot, dist,...)
 ordivector(ordiplot, spec, lty=2,...)
 }
@@ -26,7 +27,9 @@ ordivector(ordiplot, spec, lty=2,...)
   \item{var}{ Continous variable of the environmental dataset or species from the community dataset. }
   \item{col}{ Colour (as \code{\link[graphics]{points}}). }
   \item{rainbow}{ Use rainbow colours.  }
-  \item{legend}{ Add the legend (you need to click in the graph where the legend needs to be plotted). }
+  \item{legend}{ Add the legend. }
+  \item{legend.x}{ Location of the legend; see also \code{\link[graphics]{legend}}. }
+  \item{legend.ncol}{ the number of columns in which to set the legend items; see also \code{\link[graphics]{legend}}  }
   \item{cluster}{ Cluster object. }
   \item{mingroups}{ Minimum of clusters to be plotted. }
   \item{maxgroups}{ Maximum of clusters to be plotted.. }
@@ -37,7 +40,7 @@ ordivector(ordiplot, spec, lty=2,...)
 }
 
 \details{
-Function \code{ordisymbol} plots different levels of the specified variable in different symbols and different colours  (if \code{rainbow} option was selected). When you opt to add the legend, then you need to click in the ordination graph to indicate the position of the legend.
+Function \code{ordisymbol} plots different levels of the specified variable in different symbols and different colours  (if \code{rainbow} option was selected).
  
 Function \code{ordibubble} draws bubble diagrams indicating the value of the specified continuous variable. Circles indicate positive values, squares indicate negative values.
   
@@ -71,15 +74,14 @@ data(dune)
 data(dune.env)
 Ordination.model1 <- rda(dune)
 plot1 <- ordiplot(Ordination.model1, choices=c(1,2), scaling=2)
-ordisymbol(plot1,dune.env,"Management",legend=FALSE)
-## Make sure you click in the graph to show where the legend should be placed
-## In case that you choose option of legend=TRUE
+ordisymbol(plot1, dune.env, "Management", legend=TRUE, 
+    legend.x="topleft", legend.ncol=1)
 plot2 <- ordiplot(Ordination.model1, choices=c(1,2), scaling=1)
 distmatrix <- vegdist(dune, method='bray')
 cluster <- hclust(distmatrix, method='single')
 ordicluster2(plot2, cluster)
-ordinearest(plot2,distmatrix,col=2)
-ordivector(plot2,"Agrsto",lty=2)
+ordinearest(plot2, distmatrix, col=2)
+ordivector(plot2, "Agrsto", lty=2)
 }
 
 \keyword{multivariate} 

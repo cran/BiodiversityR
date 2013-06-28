@@ -1,5 +1,7 @@
 `ordisymbol` <-
-function(ordiplot,y,factor,col=1,rainbow=T,legend=T,...) {
+function(ordiplot, y, factor, col=1, rainbow=TRUE, 
+    legend=TRUE, legend.x="topleft", legend.ncol=1, ...) 
+{
     ordiscores <- scores(ordiplot, display="sites")
     groups <- table(y[,factor])
     m <- length(groups)
@@ -26,9 +28,9 @@ function(ordiplot,y,factor,col=1,rainbow=T,legend=T,...) {
         }
     }
     if (legend==T) {
-        if (rainbow==T && m<26) {legend(locator(1),legend=levels,pch=c(1:m),col=c(1:m))}
-        if (rainbow==T && m>25) {legend(locator(1),legend=levels,pch=rep(19,m),col=c(1:m))}
-        if (rainbow==F) {legend(locator(1),legend=levels,pch=c(1:m))}
+        if (rainbow==T && m<26) {legend(x=legend.x, legend=levels, pch=c(1:m), col=c(1:m), ncol=legend.ncol)}
+        if (rainbow==T && m>25) {legend(x=legend.x, legend=levels, pch=rep(19,m), col=c(1:m), ncol=legend.ncol)}
+        if (rainbow==F) {legend(x=legend.x, legend=levels, pch=c(1:m))}
     }
     palette("default")
 }

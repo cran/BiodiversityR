@@ -4,6 +4,8 @@
 {
 # in older version of raster used layerNames instead of names
     vars <- names(x)
+# exclude column for pb for data.frames
+    vars <- vars[which(vars != "pb")]
     gamscope <- as.list(vars)
     names(gamscope) <- vars
     nv <- length(vars)

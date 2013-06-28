@@ -10,13 +10,15 @@ These functions provide a dataframe which can subsequently be used to evaluate t
 
 \usage{
 evaluation.strip.data(x, ext = NULL, vars=names(x), factors = NULL, steps = 50, 
-    modelnames = c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
-        "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL")
+    modelnames = c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", 
+        "GAMSTEP", "MGCV", "MGCVFIX","EARTH", "RPART", "NNET", "FDA", 
+        "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL")
 )
 
 evaluation.strip.plot(data, 
-    modelnames = c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
-        "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL"), 
+    modelnames = c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", 
+        "GAMSTEP", "MGCV", "MGCVFIX", "EARTH", "RPART", "NNET", "FDA", 
+        "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL"), 
     variable = NULL, model = NULL, ...
 )
 }
@@ -61,7 +63,8 @@ Elith J, Ferrier S, Huettmann F & Leathwick J. 2005. The evaluation strip: A new
 \examples{
 # get predictor variables
 library(dismo)
-predictors <- stack(list.files(path=paste(system.file(package="dismo"), '/ex', sep=''), pattern='grd', full.names=TRUE ))
+predictors <- stack(list.files(path=paste(system.file(package="dismo"), '/ex', sep=''), 
+    pattern='grd', full.names=TRUE ))
 names(predictors)
 
 # create data set with ranges of explanatory variables

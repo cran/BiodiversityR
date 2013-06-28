@@ -29,14 +29,21 @@ removezerospecies(x)
 subsetcomm(x, y, factor, level, returncomm = TRUE)
 
 #ifdef windows
-import.from.Excel(file = file.choose(), data.type = "community", sheet = NULL, sitenames = "sites", 
-    column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
-import.from.Excel2007(file = file.choose(), data.type = "community", sheet = NULL, sitenames = "sites", 
-    column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
-import.from.Access(file = file.choose(), data.type = "community", table = NULL, sitenames = "sites", 
-    column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
-import.from.Access2007(file = file.choose(), data.type = "community", table = NULL, sitenames = "sites", 
-    column = "species", value = "abundance", factor = "", level = "", cepnames = FALSE)
+import.from.Excel(file = file.choose(), data.type = "community", sheet = NULL, 
+    sitenames = "sites", column = "species", value = "abundance", 
+    factor = "", level = "", cepnames = FALSE)
+
+import.from.Excel2007(file = file.choose(), data.type = "community", sheet = NULL, 
+    sitenames = "sites", column = "species", value = "abundance", 
+    factor = "", level = "", cepnames = FALSE)
+
+import.from.Access(file = file.choose(), data.type = "community", table = NULL, 
+    sitenames = "sites", column = "species", value = "abundance", 
+    factor = "", level = "", cepnames = FALSE)
+
+import.from.Access2007(file = file.choose(), data.type = "community", table = NULL, 
+    sitenames = "sites", column = "species", value = "abundance", 
+    factor = "", level = "", cepnames = FALSE)
 #endif
 }
 

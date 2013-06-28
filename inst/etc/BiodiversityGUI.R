@@ -1059,7 +1059,7 @@ accumGUI <- function(){
             var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
             xlab <- paste(", xlab='", var2, "'", sep="")
         }
-        doItAndPrint(paste("accumplot(",modelValue, ",addit=", addit, ", ci=", ci, ",ci.type='bar', col='", col, "', cex=", cex, xlab, xlim, ylim, ", pch=", pch, ", labels='", sub ,"')", sep=""))
+        doItAndPrint(paste("accumplot(",modelValue, ",addit=", addit, ", ci=", ci, ",ci.type='bar', col='", col, "', cex=", cex, xlab, ", ylab='species richness'", xlim, ylim, ", pch=", pch, ", labels='", sub ,"')", sep=""))
     }
     onCancel <- function() {
         tkgrab.release(top)
@@ -2719,7 +2719,7 @@ unconordiGUI <- function(){
     types <- c("plot","ordiplot","ordiplot empty","origin axes","identify sites","identify species","text sites","text species","points sites","points species",
         "label sites","label species","orditorp sites","orditorp species",
         "envfit","ordihull (factor)", "ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordiellipse (factor)","ordisurf (continuous)",
-        "ordibubble (continuous)","ordisymbol (factor)","ordisymbol (click in figure)","ordivector (species)","ordivector interpretation",
+        "ordibubble (continuous)","ordisymbol (factor)","ordisymbol (factor, legend)","ordivector (species)","ordivector interpretation",
         "ordicluster","ordicluster2","ordispantree","ordinearest","ordiequilibriumcircle","screeplot",
         "distance displayed","coenocline","screeplot.cca","stressplot",
         "orditkplot sites","orditkplot species","orditkplot pointlabel")
@@ -2967,9 +2967,9 @@ unconordiGUI <- function(){
             justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=F, rainbow=T, cex=", cex, ")", sep=""))
             logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=F, rainbow=T, cex=", cex, ")", sep=""))
         }
-        if (plottype == "ordisymbol (click in figure)" && varfactor==T){
-            justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=T, rainbow=T, cex=", cex, ")", sep=""))
-            logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=T, rainbow=T, cex=", cex, ")", sep=""))
+        if (plottype == "ordisymbol (factor, legend)" && varfactor==T){
+            justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=T, legend.x='topleft', legend.ncol=1, rainbow=T, cex=", cex, ")", sep=""))
+            logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=T, legend.x='topleft', legend.ncol=1, rainbow=T, cex=", cex, ")", sep=""))
         }
         if (plottype == "ordivector (species)"){
             realspecies <- eval(parse(text=paste("any(colnames(", .communityDataSet, ")=='", axisvar, "')", sep="")), envir=.GlobalEnv)
@@ -3040,7 +3040,7 @@ unconordiGUI <- function(){
             }
         }
         if (plottype == "coenocline"){
-            doItAndPrint(paste("ordicoeno(", .communityDataSet ,",plot1,axis=1)", sep=""))
+            doItAndPrint(paste("ordicoeno(", .communityDataSet ,", ordiplot=plot1, axis=1, legend=T, cex=0.8, ncol=4)", sep=""))
             }
         if (plottype == "screeplot.cca"  && method == "PCA"){
             doItAndPrint(paste("screeplot.cca(", modelValue ,",bstick=T)", sep=""))
@@ -3217,7 +3217,7 @@ conordiGUI <- function(){
         "points sites","points species","points centroids",
         "label sites","label species","label centroids","orditorp sites","orditorp species","orditorp centroids",
         "envfit","ordihull (factor)","ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordiellipse (factor)","ordisurf (continuous)",
-        "ordibubble (continuous)","ordisymbol (factor)","ordisymbol (click in figure)","ordivector (species)","ordivector interpretation","ordicluster","ordicluster2",
+        "ordibubble (continuous)","ordisymbol (factor)","ordisymbol (factor, legend)","ordivector (species)","ordivector interpretation","ordicluster","ordicluster2",
         "ordinearest","ordispantree","ordiresids","distance displayed","coenocline","orditkplot sites","orditkplot species","orditkplot pointlabel")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
@@ -3604,9 +3604,9 @@ conordiGUI <- function(){
             justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=F, cex=", cex, ")", sep=""))
             logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=F, cex=", cex, ")", sep=""))
             }
-        if (plottype == "ordisymbol (click in figure)" && varfactor==T){
-            justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=T, cex=", cex, ")", sep=""))
-            logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=T, cex=", cex, ")", sep=""))
+        if (plottype == "ordisymbol (factor, legend)" && varfactor==T){
+            justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=T, legend.x='topleft', legend.ncol=1, cex=", cex, ")", sep=""))
+            logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=T, legend.x='topleft', legend.ncol=1, cex=", cex, ")", sep=""))
             }
         if (plottype == "ordivector (species)"){
             realspecies <- eval(parse(text=paste("any(colnames(", .communityDataSet, ")=='", axisvar, "')", sep="")), envir=.GlobalEnv)
@@ -3674,7 +3674,7 @@ conordiGUI <- function(){
             }
             }
         if (plottype == "coenocline"){
-            doItAndPrint(paste("ordicoeno(", .communityDataSet ,",plot1,axis=1)", sep=""))
+            doItAndPrint(paste("ordicoeno(", .communityDataSet, ", ordiplot=plot1, axis=1, legend=T, cex=0.8, ncol=4)", sep=""))
             }                 
         data <- tclvalue(dataVariable) =="1"
         if (data==T) {
