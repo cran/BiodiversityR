@@ -1,9 +1,12 @@
 `ensemble.test.gbm` <- function(
     x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, ext=NULL, k=5, 
     TrainData=NULL,
-    layer.drops=NULL, VIF=FALSE,
-    PLOTS=FALSE,    
-    Yweights="BIOMOD", factors=NULL,
+    TRUNC=TRUE,
+    VIF=FALSE, COR=FALSE,
+    SINK=FALSE, PLOTS=FALSE, 
+    species.name="Species001",
+    Yweights="BIOMOD", 
+    layer.drops=NULL, factors=NULL,
     GBMSTEP.gbm.x=2:(ncol(TrainData.orig)), 
     complexity=c(3:6), learning=c(0.005, 0.002, 0.001), 
     GBMSTEP.bag.fraction=0.5, GBMSTEP.step.size=100
@@ -22,33 +25,66 @@
     if (is.null(TrainData) == T) {
         if(is.null(x) == T) {stop("value for parameter x is missing (RasterStack object)")}
         if(inherits(x,"RasterStack") == F) {stop("x is not a RasterStack object")}
+        if(projection(x)=="NA") {
+            projection(x) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+        }
         if(is.null(p) == T) {stop("presence locations are missing (parameter p)")}
     }
+
+# create output file
+    dir.create("outputs", showWarnings = F)
+    paste.file <- paste(getwd(), "/outputs/", species.name, "_output.txt", sep="")
+    OLD.SINK <- TRUE
+    if (sink.number(type="output") == 0) {OLD.SINK <- F}
+    if (SINK==T && OLD.SINK==F) {
+        if (file.exists(paste.file) == F) {
+            cat(paste("\n", "NOTE: results captured in file: ", paste.file, "\n", sep = ""))
+        }else{
+            cat(paste("\n", "NOTE: results appended in file: ", paste.file, "\n", sep = ""))
+        }
+        cat(paste("\n\n", "RESULTS (ensemble.test.gbm function)", "\n", sep=""), file=paste.file, append=T)
+        sink(file=paste.file, append=T)
+        cat(paste(date(), "\n", sep=""))
+        print(match.call())
+    }
+
 # check TrainData
     if (is.null(TrainData) == F) {
         TrainData <- data.frame(TrainData)
         if (colnames(TrainData)[1] !="pb") {stop("first column for TrainData should be 'pb' containing presence (1) and absence (0) data")}
         if ((is.null(x) == F) && (nlayers(x) != (ncol(TrainData)-1))) {
-            cat(paste("\n", "WARNING: different number of explanatory variables in rasterStack and data.frame", sep = ""))
+            cat(paste("\n", "WARNING: different number of explanatory variables in rasterStack and TrainData", sep = ""))
         }
     }
-# modify rasterStack x only if TrainData is not used
-    if (is.null(TrainData) == T) {
+
+# modify RasterStack x only if this RasterStack was provided
+    if (is.null(x) == F) {
+        if (is.null(ext) == F) {
+            if(length(x@title) == 0) {x@title <- "stack1"}
+            title.old <- x@title
+            x <- crop(x, y=ext, snap="in")
+            x@title <- title.old
+        }
         if (is.null(layer.drops) == F) {
             vars <- names(x)
             layer.drops <- as.character(layer.drops)
             factors <- as.character(factors)
+            dummy.vars <- as.character(dummy.vars)
             nd <- length(layer.drops)
             for (i in 1:nd) {     
                 if (any(vars==layer.drops[i])==FALSE) {
                     cat(paste("\n", "WARNING: variable to exclude '", layer.drops[i], "' not among grid layers", "\n", sep = ""))
                 }else{
-                    cat(paste("\n", "NOTE: variable ", layer.drops[i], " will not be included as explanatory variable", "\n", sep = ""))
-                    x <- dropLayer(x, which(names(x) == layer.drops[i]))
+                    cat(paste("\n", "NOTE: variable '", layer.drops[i], "' will not be included as explanatory variable", "\n", sep = ""))
+                    x <- dropLayer(x, which(names(x) %in% c(layer.drops[i]) ))
                     vars <- names(x)
                     if (is.null(factors) == F) {
                         factors <- factors[factors != layer.drops[i]]
                         if(length(factors) == 0) {factors <- NULL}
+                    }
+                    if (is.null(dummy.vars) == F) {
+                        dummy.vars <- dummy.vars[dummy.vars != layer.drops[i]]
+                        if(length(dummy.vars) == 0) {dummy.vars <- NULL}
                     }
                 }
             }
@@ -60,6 +96,20 @@
             for (i in 1:nf) {
                 if (any(vars==factors[i])==FALSE) {
                     cat(paste("\n", "WARNING: categorical variable '", factors[i], "' not among grid layers", "\n", sep = ""))
+                    factors <- factors[factors != factors[i]]
+                    if(length(factors) == 0) {factors <- NULL}
+                }
+            }
+        }
+        if (is.null(dummy.vars) == F) {
+            vars <- names(x)
+            dummy.vars <- as.character(dummy.vars)
+            nf <- length(dummy.vars)
+            for (i in 1:nf) {
+                if (any(vars==dummy.vars[i])==FALSE) {
+                    cat(paste("\n", "WARNING: dummy variable '", dummy.vars[i], "' not among grid layers", "\n", sep = ""))
+                    dummy.vars <- dummy.vars[dummy.vars != dummy.vars[i]]
+                    if(length(dummy.vars) == 0) {dummy.vars <- NULL}
                 }
             }
         }
@@ -74,34 +124,56 @@
                 x[[j]] <- raster::as.factor(x[[j]])
             }
         }
-# modify TrainData
-    }else{
+    }
+# 
+# modify TrainData if layer.drops
+    if (is.null(TrainData) == F) {
         if (is.null(layer.drops) == F) {
-            vars <- colnames(TrainData)
+            vars <- names(TrainData)
             layer.drops <- as.character(layer.drops)
             factors <- as.character(factors)
+            dummy.vars <- as.character(dummy.vars)
             nd <- length(layer.drops)
             for (i in 1:nd) {     
                 if (any(vars==layer.drops[i])==FALSE) {
                     cat(paste("\n", "WARNING: variable to exclude '", layer.drops[i], "' not among columns of TrainData", "\n", sep = ""))
                 }else{
-                    cat(paste("\n", "NOTE: variable ", layer.drops[i], " will not be included as explanatory variable", "\n", sep = ""))
+                    cat(paste("\n", "NOTE: variable '", layer.drops[i], "' will not be included as explanatory variable", "\n", sep = ""))
                     TrainData <- TrainData[, which(colnames(TrainData) != layer.drops[i])]
+                    if (is.null(TestData) == F) {TestData <- TestData[, which(colnames(TestData) != layer.drops[i])]}
                     vars <- colnames(TrainData)
                     if (is.null(factors) == F) {
                         factors <- factors[factors != layer.drops[i]]
                         if(length(factors) == 0) {factors <- NULL}
                     }
+                    if (is.null(dummy.vars) == F) {
+                        dummy.vars <- dummy.vars[dummy.vars != layer.drops[i]]
+                        if(length(dummy.vars) == 0) {dummy.vars <- NULL}
+                    }
                 }
             }
         }
         if (is.null(factors) == F) {
-            vars <- colnames(TrainData)
+            vars <- names(TrainData)
             factors <- as.character(factors)
             nf <- length(factors)
             for (i in 1:nf) {
                 if (any(vars==factors[i])==FALSE) {
                      cat(paste("\n", "WARNING: categorical variable '", factors[i], "' not among columns of TrainData", "\n", sep = ""))
+                    factors <- factors[factors != factors[i]]
+                    if(length(factors) == 0) {factors <- NULL}
+                }
+            }
+        }
+        if (is.null(dummy.vars) == F) {
+            vars <- names(TrainData)
+            dummy.vars <- as.character(dummy.vars)
+            nf <- length(dummy.vars)
+            for (i in 1:nf) {
+                if (any(vars==dummy.vars[i])==FALSE) {
+                    cat(paste("\n", "WARNING: dummy variable '", dummy.vars[i], "' not among columns of TrainData", "\n", sep = ""))
+                    dummy.vars <- dummy.vars[dummy.vars != dummy.vars[i]]
+                    if(length(dummy.vars) == 0) {dummy.vars <- NULL}
                 }
             }
         }
@@ -158,8 +230,9 @@
             lr <- output[j, "learning.rate"]
             cat(paste("\n", "complexity: ", complex, ", learning: ", lr, "\n", sep=""))
             tests <- ensemble.test(x=x,
-                TrainData=TrainData.c, TestData=TestData.c, 
-                VIF=VIF,
+                TrainData=TrainData.c, TestData=TestData.c,
+                TRUNC=TRUNC, 
+                VIF=VIF, COR=COR,
                 PLOTS=PLOTS, evaluations.keep=T,
                 MAXENT=0, GBM=0, GBMSTEP=1, RF=0, GLM=0, GLMSTEP=0, 
                 GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, 
@@ -178,6 +251,7 @@
     output[,3:(k+3)] <- 100*output[,3:(k+3)]
     print(output)
     cat(paste("\n\n"))
+    if (SINK==T  && OLD.SINK==F) {sink(file=NULL, append=T)}
     return(list(table=output, call=match.call() ))
 }
 

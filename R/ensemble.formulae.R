@@ -78,10 +78,10 @@
 # no categorical variables for earth
     results$EARTH.formula <- as.formula(paste(catpb, paste(earthvars, sep="", collapse="+"), sep="", collapse="+"))
     results$RPART.formula <- as.formula(paste(catpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
-    results$NNET.formula <- as.formula(paste(catpb, paste(explicitcatvars, sep="", collapse="+"), sep="", collapse="+"))
+    results$NNET.formula <- as.formula(paste(catpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
     results$FDA.formula <- as.formula(paste(numpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
     results$SVM.formula <- as.formula(paste(numpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
-    results$SVME.formula <- as.formula(paste(catpb, paste(explicitcatvars, sep="", collapse="+"), sep="", collapse="+"))
+    results$SVME.formula <- as.formula(paste(catpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
     if (is.null(factors) == F) {
         cat(paste("\n", "Note that categorical variables were not included for EARTH", "\n", "\n", sep = ""))
     }

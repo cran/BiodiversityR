@@ -1,6 +1,6 @@
 \name{ensemble.raster}
 \alias{ensemble.raster}
-\alias{ensemble.batch}
+\alias{ensemble.habitat.change}
 
 \title{
 Suitability mapping based on ensembles of modelling algorithms: consensus mapping
@@ -11,222 +11,67 @@ The basic function \code{ensemble.raster} creates two consensus raster layers, o
 }
 
 \usage{
-ensemble.raster(x = NULL, p = NULL, a = NULL, an = 1000, 
-    excludep = FALSE, ext = NULL, 
-    k = 0, pt = NULL, at = NULL, xn = x, 
-    TrainData = NULL, TestData = NULL,
-    ENSEMBLE.rasters = TRUE, 
-    layer.drops = NULL,
-    models.keep = FALSE, 
+ensemble.raster(xn = NULL, ext = NULL, 
+    models.list = NULL, 
+    input.weights = models.list$output.weights,
+    thresholds = models.list$thresholds,
     RASTER.species.name = "Species001", RASTER.stack.name = xn@title, 
-    RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag=-32767, 
-    RASTER.models.overwrite = TRUE, 
-    threshold.method = "spec_sens",
-    ENSEMBLE.decay = 1, ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, 
-    input.weights = NULL, models.list = NULL,
-    MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, 
-    GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, RPART = 1, NNET = 1, 
-    FDA = 1, SVM = 1, SVME = 1, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, 
-    Yweights = "BIOMOD", factors = NULL, dummy.vars = NULL,
-    evaluation.strip = TRUE, 
-    formulae.defaults = TRUE, maxit = 100,
-    MAXENT.a = NULL, MAXENT.an = 10000, MAXENT.BackData = NULL, 
-    MAXENT.path = paste(getwd(), "/models/maxent", sep=""), MAXENT.OLD = NULL, 
-    GBM.formula = NULL, GBM.n.trees = 2001, GBM.OLD = NULL,
-    GBMSTEP.gbm.x = 2:(ncol(TrainData.vars)+1), GBMSTEP.tree.complexity = 5, 
-    GBMSTEP.learning.rate = 0.005, 
-    GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100, GBMSTEP.OLD = NULL, 
-    RF.formula = NULL, RF.ntree = 751, 
-    RF.mtry = floor(sqrt(ncol(TrainData.vars))), RF.OLD = NULL, 
-    GLM.formula = NULL, GLM.family = binomial(link = "logit"), GLM.OLD = NULL, 
-    GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, 
-    GLMSTEP.k = 2, GLMSTEP.OLD = NULL, GAM.formula = NULL, 
-    GAM.family = binomial(link = "logit"), GAM.OLD = NULL, 
-    GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, GAMSTEP.pos = 1, GAMSTEP.OLD = NULL, 
-    MGCV.formula = NULL, MGCV.select = FALSE, MGCV.OLD = NULL, 
-    MGCVFIX.formula = NULL, MGCVFIX.OLD = NULL, 
-    EARTH.formula = NULL, 
-    EARTH.glm = list(family = binomial(link = "logit"), maxit = maxit), 
-    EARTH.OLD = NULL, 
-    RPART.formula = NULL, RPART.xval = 50, RPART.OLD = NULL, 
-    NNET.formula = NULL, NNET.size = 8, NNET.decay = 0.01, NNET.OLD = NULL, 
-    FDA.formula = NULL, FDA.OLD = NULL, 
-    SVM.formula = NULL, SVM.OLD= NULL, 
-    SVME.formula = NULL, SVME.OLD= NULL, 
-    BIOCLIM.OLD = NULL, DOMAIN.OLD = NULL, 
-    MAHAL.shape = 1, MAHAL.OLD = NULL)
+    RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
+    RASTER.models.overwrite = TRUE,
+    KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
+    evaluate = FALSE, SINK = FALSE,
+    p = models.list$p, a = models.list$a,
+    pt = models.list$pt, at = models.list$at)
 
-ensemble.batch(x = NULL, species.presence = NULL, species.absence = NULL, 
-    an = 1000, excludep = FALSE, ext = NULL, 
-    k.raster = 0, k.splits = 5, n.ensembles = 1, xn = c(x), 
-    TrainData = NULL, TestData = NULL,
-    layer.drops = NULL,
-    presence.min = 20,
-    RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767, 
-    threshold.method = "spec_sens", 
-    ENSEMBLE.decay = 1, ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, 
-    input.weights = NULL, 
-    MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, 
-    GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, RPART = 1, NNET = 1, 
-    FDA = 1, SVM = 1, SVME = 1, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, 
-    GEODIST = 0, 
-    Yweights = "BIOMOD", factors = NULL, dummy.vars = NULL,
-    formulae.defaults = TRUE, maxit = 100,
-    MAXENT.a = NULL, MAXENT.an = 10000, MAXENT.BackData = NULL, 
-    MAXENT.path = paste(getwd(), "/models/maxent", sep=""),
-    GBM.formula = NULL, GBM.n.trees = 2001, 
-    GBMSTEP.gbm.x = 2:(1 + nlayers(x)), 
-    GBMSTEP.tree.complexity = 5, GBMSTEP.learning.rate = 0.005, 
-    GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100,
-    RF.formula = NULL, RF.ntree = 751, RF.mtry = floor(sqrt(nlayers(x))), 
-    GLM.formula = NULL, GLM.family = binomial(link = "logit"), 
-    GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, GLMSTEP.k = 2, 
-    GAM.formula = NULL, GAM.family = binomial(link = "logit"), 
-    GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, GAMSTEP.pos = 1,
-    MGCV.formula = NULL, MGCV.select = FALSE, 
-    MGCVFIX.formula = NULL, 
-    EARTH.formula = NULL, 
-    EARTH.glm = list(family = binomial(link = "logit"), maxit = maxit), 
-    RPART.formula = NULL, RPART.xval = 50, 
-    NNET.formula = NULL, NNET.size = 8, NNET.decay = 0.01, FDA.formula = NULL, 
-    SVM.formula = NULL, SVME.formula = NULL,
-    MAHAL.shape = 1)
-
+ensemble.habitat.change(base.map=file.choose(), 
+    other.maps=choose.files(),
+    change.folder="ensembles/change",
+    RASTER.format = "raster", RASTER.datatype = "INT1U", RASTER.NAflag = 255,
+    KML.out = FALSE, KML.folder = "KML/change",
+    KML.maxpixels = 100000, KML.blur = 10)
 }
 
 \arguments{
-  \item{x}{ RasterStack object (\code{\link[raster]{stack}}) containing all layers that correspond to explanatory variables. This RasterStack object is used for calibrating the suitability models.  }
-  \item{p}{ presence points used for calibrating the suitability models, typically available in 2-column (x, y) or (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
-  \item{species.presence}{ presence points used for calibrating the suitability models, available in 3-column (species, x, y) or (species, lon, lat) dataframe  }
-  \item{a}{ background points used for calibrating the suitability models, typically available in 2-column (x, y) or (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
-  \item{species.absence}{ background points used for calibrating the suitability models, either available in a 3-column (species, x, y) or (species, lon, lat), or available in a 2-column (x, y) or (lon, lat) dataframe. In case of a 2-column dataframe, the same background locations will be used for all species.  }
-  \item{an}{ number of background points for calibration to be selected with \code{\link[dismo]{randomPoints}} in case argument \code{a} or \code{species.absence} is missing  }
-  \item{excludep}{ parameter that indicates (if \code{TRUE}) that presence points will be excluded from the background points; see also \code{\link[dismo]{randomPoints}} }
+  \item{xn}{ RasterStack object (\code{\link[raster]{stack}}) containing all layers that correspond to explanatory variables of an ensemble calibrated earlier with \code{\link{ensemble.test}}. See also \code{\link[raster]{predict}}.   }
   \item{ext}{ an Extent object to limit the prediction to a sub-region of \code{xn} and the selection of background points to a sub-region of \code{x}, typically provided as c(lonmin, lonmax, latmin, latmax); see also \code{\link[raster]{predict}}, \code{\link[dismo]{randomPoints}} and \code{\link[raster]{extent}} }
-  \item{k}{ If larger than 1, the mumber of groups to split between calibration (k-1) and evaluation (1) data sets (for example, \code{k=5} results in 4/5 of presence and background points to be used for calibrating the models, and 1/5 of presence and background points to be used for evaluating the models). See also \code{\link[dismo]{kfold}}.  }
-  \item{k.raster}{ If larger than 1, the mumber of groups to split between calibration (k-1) and evaluation (1) data sets (for example, \code{k=5} results in 4/5 of presence and background points to be used for calibrating the models, and 1/5 of presence and background points to be used for evaluating the models). See also \code{\link[dismo]{kfold}}.  }
-  \item{k.splits}{ If larger than 1, the number of splits for the \code{\link{ensemble.test.splits}} step in batch processing. See also \code{\link[dismo]{kfold}}.  }
-  \item{n.ensembles}{ If larger than 1, the number of different ensembles generated per species in batch processing. }
-  \item{pt}{ presence points used for evaluating the suitability models, typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}}  }
-  \item{at}{ background points used for calibrating the suitability models, typicall available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
-  \item{xn}{ RasterStack object (\code{\link[raster]{stack}}) containing all layers that correspond to explanatory variables. This RasterStack object is used for creating the suitability maps corresponding to individual suitability models and consensus models. For batch processing (\code{ensemble.batch}), several RasterStack objects can be provided in a format as c(stack1, stack2, stack3); these will be used sequentially. See also \code{\link[raster]{predict}}.  }
-  \item{TrainData}{ dataframe with first column 'pb' describing presence (1) and absence (0) and other columns containing explanatory variables; see also \code{\link[dismo]{prepareData}}. In case that this dataframe is provided, then locations p and a are not used.  }
-  \item{TestData}{ dataframe with first column 'pb' describing presence (1) and absence (0) and other columns containing explanatory variables; see also \code{\link[dismo]{prepareData}}. In case that this dataframe is provided, then locations pt and at are not used.  }
-  \item{ENSEMBLE.rasters}{ if \code{FALSE}, then no ensemble raster layers are produced.  }
-  \item{presence.min}{ minimum number of presence locations for the organism (if smaller, no models are fitted).  }
-  \item{layer.drops}{ vector that indicates which layers should be removed from RasterStack \code{x}. See also \code{\link[raster]{addLayer}}.  }
-  \item{models.keep}{ store the details for each suitability modelling algorithm (if \code{TRUE}). (This may be particularly useful when projecting to different possible future climates.)  }
-  \item{RASTER.species.name}{ First part of the names of the raster files that will be generated, potentially an identifier for the modelled species (or organism). }
-  \item{RASTER.stack.name}{ Last part of the names of the raster files that will be generated, potentially an identifier for the RasterStack used for predictions (i.e. parameter \code{xn}). }
+  \item{models.list}{ list with 'old' model objects such as \code{MAXENT} or \code{RF}. }
+  \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.test.splits} can be used. }
+  \item{thresholds}{ array with the threshold values separating predicted presence for each of the algorithms. }
+  \item{RASTER.species.name}{ First part of the names of the raster files that will be generated, expected to identify the modelled species (or organism). }
+  \item{RASTER.stack.name}{ Last part of the names of the raster files that will be generated, expected to identify the predictor stack used. }
   \item{RASTER.format}{ Format of the raster files that will be generated. See \code{\link[raster]{writeFormats}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.datatype}{ Format of the raster files that will be generated. See \code{\link[raster]{dataType}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.NAflag}{ Value that is used to store missing data. See \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.models.overwrite}{ Overwrite the raster files that correspond to each suitability modelling algorithm (if \code{TRUE}). (Overwriting actually implies that raster files are created or overwritten that start with "working_").  }
-  \item{threshold.method}{ Method to calculate the threshold between predicted absence and presence; one of \code{spec_sens} (highest sum of sum of the true positive rate and the true negative rate), \code{kappa} (highest kappa value) or \code{no_omission} (highest threshold that corresponds to no omission). See See \code{\link[dismo]{threshold}}.   }
-  \item{ENSEMBLE.decay}{ Ratio by which the input weights (assumed to correspond to evaluation indices of suitability models) are multiplied after they were sorted from worst to best model based on their input weights. For example, with 4 models and a decay of 2, the input weight of the best model (i.e. the model with the highest input weight) is multiplied by 2*2*2, the input weight of the second best model is multiplied by 2*2, the input weight of the third best model is multiplied by 2, and the worst model is not multiplied.  }
-  \item{ENSEMBLE.best}{ The number of individual suitability models to be used in the consensus suitability map (based on a weighted average). In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then all individual suitability models with positive input weights are included in the consensus suitability map.  }
-  \item{ENSEMBLE.min}{ The minimum input weight (assumed to correspond to evaluation indices of suitability models) for a model to be included in the ensemble.  }
-  \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.test.splits} can be used. }
-  \item{models.list}{ list with 'old' model objects such as \code{MAXENT.OLD} or \code{RF.OLD}. }
-  \item{MAXENT}{ Input weight for a maximum entropy model (\code{\link[dismo]{maxent}}). (Only weights > 0 will be used.)  }
-  \item{GBM}{ Input weight for a boosted regression trees model (\code{\link[gbm]{gbm}}). (Only weights > 0 will be used.)  }
-  \item{GBMSTEP}{ Input weight for a stepwise boosted regression trees model (\code{\link[dismo]{gbm.step}}). (Only weights > 0 will be used.)  }
-  \item{RF}{ Input weight for a random forest model (\code{\link[randomForest]{randomForest}}). (Only weights > 0 will be used.)  }
-  \item{GLM}{ Input weight for a generalized linear model (\code{\link[stats]{glm}}). (Only weights > 0 will be used.)  }
-  \item{GLMSTEP}{ Input weight for a stepwise generalized linear model (\code{\link[MASS]{stepAIC}}). (Only weights > 0 will be used.)  }
-  \item{GAM}{ Input weight for a generalized additive model (\code{\link[gam]{gam}}). (Only weights > 0 will be used.)  }
-  \item{GAMSTEP}{ Input weight for a stepwise generalized additive model (\code{\link[gam]{step.gam}}). (Only weights > 0 will be used.)  }
-  \item{MGCV}{ Input weight for a generalized additive model (\code{\link[mgcv]{gam}}). (Only weights > 0 will be used.)  }
-  \item{MGCVFIX}{ number: if larger than 0, then a generalized additive model with fixed d.f. regression splines (\code{\link[mgcv]{gam}}) will be fitted among ensemble }
-  \item{EARTH}{ Input weight for a multivariate adaptive regression spline model (\code{\link[earth]{earth}}). (Only weights > 0 will be used.)  }
-  \item{RPART}{ Input weight for a recursive partioning and regression tree model (\code{\link[rpart]{rpart}}). (Only weights > 0 will be used.)  }
-  \item{NNET}{ Input weight for an artificial neural network model (\code{\link[nnet]{nnet}}). (Only weights > 0 will be used.)  }
-  \item{FDA}{ Input weight for a flexible discriminant analysis model (\code{\link[mda]{fda}}). (Only weights > 0 will be used.)  }
-  \item{SVM}{ Input weight for a support vector machine model (\code{\link[kernlab]{ksvm}}). (Only weights > 0 will be used.)  }
-  \item{SVME}{ Input weight for a support vector machine model (\code{\link[e1071]{svm}}). (Only weights > 0 will be used.) }
-  \item{BIOCLIM}{ Input weight for the BIOCLIM algorithm (\code{\link[dismo]{bioclim}}). (Only weights > 0 will be used.)  }
-  \item{DOMAIN}{ Input weight for the DOMAIN algorithm (\code{\link[dismo]{domain}}). (Only weights > 0 will be used.)  }
-  \item{MAHAL}{ Input weight for the Mahalonobis algorithm (\code{\link[dismo]{mahal}}). (Only weights > 0 will be used.)  }
-  \item{GEODIST}{ number: if larger than 0, then the geoDist algorithm (\code{\link[dismo]{geoDist}}) will be fitted among ensemble, but only for calculation of AUC values (note that this algorithm does not use environmental layers, and is based only on the distance from presence points used to calibrate this algorithm) }
-  \item{Yweights}{ chooses how cases of presence and background (absence) are weighted; \code{"BIOMOD"} results in equal weighting of all presence and all background cases, \code{"equal"} results in equal weighting of all cases. The user can supply a vector of weights similar to the number of cases in the calibration data set. }
-  \item{factors}{ vector that indicates which variables are factors; see also \code{\link[dismo]{prepareData}}  }
-  \item{dummy.vars}{ vector that indicates which variables are dummy variables (influences formulae suggestions) }
-  \item{evaluation.strip}{ Obtain information that can be plotted by the \code{\link{evaluation.strip.plot}} function (if \code{TRUE})  }
-  \item{formulae.defaults}{ Suggest formulae for most of the models (if \code{TRUE}). See also \code{\link{ensemble.formulae}}.   }
-  \item{maxit}{ Maximum number of iterations for some of the models. See also \code{\link[stats]{glm.control}}, \code{\link[gam]{gam.control}}, \code{\link[mgcv]{gam.control}} and \code{\link[nnet]{nnet}}.  }
-  \item{MAXENT.a}{ background points used for calibrating the maximum entropy model (\code{\link[dismo]{maxent}}), typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}. Ignored if \code{MAXENT.BackData} is provided.  }
-  \item{MAXENT.an}{ number of background points for calibration to be selected with \code{\link[dismo]{randomPoints}} in case argument \code{MAXENT.a} is missing. When used with the \code{ensemble.batch} function, the same background locations will be used for each of the species runs; this implies that for each species, presence locations are not excluded from the background data for this function.   }
-  \item{MAXENT.BackData}{ dataframe containing explanatory variables for the background locations. This information will be used for calibrating the maximum entropy model (\code{\link[dismo]{maxent}}). When used with the \code{ensemble.batch} function, the same background locations will be used for each of the cross-validation runs; this is based on the assumption that a large number (~10000) of background locations are used.  }
-  \item{MAXENT.path}{ path to the directory where output files of the maximum entropy model are stored; see also \code{\link[dismo]{maxent}}   }
-  \item{MAXENT.OLD}{ If not \code{NULL}, then do not calibrate a new maximum entropy model, but use this model instead. Ignored if \code{model.list} is not null.   }
-  \item{GBM.formula}{ formula for the boosted regression trees algorithm; see also \code{\link[gbm]{gbm}}  }
-  \item{GBM.n.trees}{ total number of trees to fit for the boosted regression trees model; see also \code{\link[gbm]{gbm}}  }
-  \item{GBM.OLD}{ If not \code{NULL}, then do not calibrate a new boosted regression tree model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{GBMSTEP.gbm.x}{ indices of column numbers with explanatory variables for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
-  \item{GBMSTEP.tree.complexity}{ complexity of individual trees for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
-  \item{GBMSTEP.learning.rate}{ weight applied to individual trees for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}} }
-  \item{GBMSTEP.bag.fraction}{ proportion of observations used in selecting variables for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
-  \item{GBMSTEP.step.size}{ number of trees to add at each cycle for stepwise boosted regression trees (should be small enough to result in a smaller holdout deviance than the initial number of trees [50]); see also \code{\link[dismo]{gbm.step}}  }
-  \item{GBMSTEP.OLD}{ If not \code{NULL}, then do not calibrate a new stepwise boosted regression tree model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{RF.formula}{ formula for the random forest algorithm; see also \code{\link[randomForest]{randomForest}}  }
-  \item{RF.ntree}{ number of trees to grow for random forest algorithm; see also \code{\link[randomForest]{randomForest}}  }
-  \item{RF.mtry}{ number of variables randomly sampled as candidates at each split for random forest algorithm; see also \code{\link[randomForest]{randomForest}}  }
-  \item{RF.OLD}{ If not \code{NULL}, then do not calibrate a new random forest model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{GLM.formula}{ formula for the generalized linear model; see also \code{\link[stats]{glm}}  }
-  \item{GLM.family}{ description of the error distribution and link function for the generalized linear model; see also \code{\link[stats]{glm}}  }
-  \item{GLM.OLD}{ If not \code{NULL}, then do not calibrate a new generalized linear model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{GLMSTEP.steps}{ maximum number of steps to be considered for stepwise generalized linear model; see also \code{\link[MASS]{stepAIC}}  }
-  \item{STEP.formula}{ formula for the "starting model" to be considered for stepwise generalized linear model; see also \code{\link[MASS]{stepAIC}}  }
-  \item{GLMSTEP.scope}{ range of models examined in the stepwise search; see also \code{\link[MASS]{stepAIC}}  }
-  \item{GLMSTEP.k}{ multiple of the number of degrees of freedom used for the penalty (only k = 2 gives the genuine AIC); see also \code{\link[MASS]{stepAIC}}  }
-  \item{GLMSTEP.OLD}{ If not \code{NULL}, then do not calibrate a new stepwise generalized linear model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{GAM.formula}{ formula for the generalized additive model; see also \code{\link[gam]{gam}}  }
-  \item{GAM.family}{ description of the error distribution and link function for the generalized additive model; see also \code{\link[gam]{gam}}  }
-  \item{GAM.OLD}{ If not \code{NULL}, then do not calibrate a new generalized additive model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{GAMSTEP.steps}{ maximum number of steps to be considered in the stepwise generalized additive model; see also \code{\link[gam]{step.gam}}  }
-  \item{GAMSTEP.scope}{ range of models examined in the step-wise search n the stepwise generalized additive model; see also \code{\link[gam]{step.gam}}  }
-  \item{GAMSTEP.pos}{ parameter expected to be set to 1 to allow for fitting of the stepwise generalized additive model  }
-  \item{GAMSTEP.OLD}{ If not \code{NULL}, then do not calibrate a new stepwise generalized additive model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{MGCV.formula}{ formula for the generalized additive model; see also \code{\link[mgcv]{gam}}  }
-  \item{MGCV.select}{ if \code{TRUE}, then the smoothing parameter estimation that is part of fitting can completely remove terms from the model; see also \code{\link[mgcv]{gam}}  }
-  \item{MGCV.OLD}{ If not \code{NULL}, then do not calibrate a new generalized additive model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{MGCVFIX.formula}{ formula for the generalized additive model with fixed d.f. regression splines; see also \code{\link[mgcv]{gam}} (the default formulae sets "s(..., fx=TRUE, ...)"; see also \code{\link[mgcv]{s}}) }
-  \item{MGCVFIX.OLD}{ If not \code{NULL}, then do not calibrate a new generalized additive model with fixed d.f. regression splines, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{EARTH.formula}{ formula for the multivariate adaptive regression spline model; see also \code{\link[earth]{earth}}  }
-  \item{EARTH.glm}{ list of arguments to pass on to \code{\link[stats]{glm}}; see also \code{\link[earth]{earth}}  }
-  \item{EARTH.OLD}{ If not \code{NULL}, then do not calibrate a new multivariate adaptive regression spline model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{RPART.formula}{ formula for the recursive partioning and regression tree model; see also \code{\link[rpart]{rpart}}  }
-  \item{RPART.xval}{ number of cross-validations for the recursive partioning and regression tree model; see also \code{\link[rpart]{rpart.control}}  }
-  \item{RPART.OLD}{ If not \code{NULL}, then do not calibrate a new recursive partioning and regression tree model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{NNET.formula}{ formula for the artificial neural network model; see also \code{\link[nnet]{nnet}}  }
-  \item{NNET.size}{ number of units in the hidden layer for the artificial neural network model; see also \code{\link[nnet]{nnet}}  }
-  \item{NNET.decay}{ parameter of weight decay for the artificial neural network model; see also \code{\link[nnet]{nnet}}  }
-  \item{NNET.OLD}{ If not \code{NULL}, then do not calibrate a new artificial neural network model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{FDA.formula}{ formula for the flexible discriminant analysis model; see also \code{\link[mda]{fda}}  }
-  \item{FDA.OLD}{ If not \code{NULL}, then do not calibrate a new flexible discriminant model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{SVM.formula}{ formula for the support vector machine model; see also \code{\link[kernlab]{ksvm}}  }
-  \item{SVM.OLD}{ If not \code{NULL}, then do not calibrate a new support vector machine model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{SVME.formula}{ formula for the support vector machine model; see also \code{\link[e1071]{svm}}  }
-  \item{SVME.OLD}{ If not \code{NULL}, then do not calibrate a new support vector machine model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{BIOCLIM.OLD}{ If not \code{NULL}, then do not calibrate a new BIOCLIM model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{DOMAIN.OLD}{ If not \code{NULL}, then do not calibrate a new DOMAIN model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{MAHAL.shape}{ parameter that influences the transformation of output values of \code{\link[dismo]{mahal}}. See details section.  }
-  \item{MAHAL.OLD}{ If not \code{NULL}, then do not calibrate a new Mahalonobis model, but use this model instead. Ignored if \code{model.list} is not null.  }
+  \item{KML.out}{ if \code{FALSE}, then no kml layers (layers that can be shown in Google Earth) are produced. If \code{TRUE}, then kml files will be saved in a subfolder 'kml'.   }
+  \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
+  \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
+  \item{evaluate}{ if \code{TRUE}, then evaluate the created raster layers at locations \code{p}, \code{a}, \code{pt} and \code{at} (if provided). See also \code{\link[dismo]{evaluate}} }
+  \item{SINK}{ Append the results to a text file in subfolder 'outputs' (if \code{TRUE}). The name of file is based on argument \code{RASTER.species.name}. In case the file already exists, then results are appended. See also \code{\link[base]{sink}}.  }
+  \item{p}{ presence points used for calibrating the suitability models, typically available in 2-column (x, y) or (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
+  \item{a}{ background points used for calibrating the suitability models, typically available in 2-column (x, y) or (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
+  \item{pt}{ presence points used for evaluating the suitability models, typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}}  }
+  \item{at}{ background points used for calibrating the suitability models, typicall available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
+
+  \item{base.map}{ filename with baseline map used to produce maps that show changes in suitable habitat }
+  \item{other.maps}{ files with other maps used to produce maps that show changes in suitable habitat from a defined base.map  }
+  \item{change.folder}{ folder where new maps documenting changes in suitable habitat will be stored  }
+  \item{KML.folder}{ folder where new maps (in Google Earth format) documenting changes in suitable habitat will be stored  }
 
 }
 
 \details{
-The basic function \code{ensemble.raster} fits individual suitability models for all models with positive input weights. In subfolder "models" of the working directory, suitability maps for the individual suitability modelling algorithms are stored. In subfolder "ensembles", a consensus suitability map based on a weighted average of individual suitability models is stored (the name of this map contains "_ENSEMBLE_"). In subfolder "ensembles", a presence-absence (1-0) map is also provided (based on the consensus suitability map and the defined method for calculating the threshold); part of the name for this map contains "_PRESENCE_". Also in subfolder "ensembles", a consensus suitability map (with part of the name containing "_COUNT_") based on the number of individual suitability models that predict presence of the focal organism is stored.
+The basic function \code{ensemble.raster} fits individual suitability models for all models with positive input weights. In subfolder "models" of the working directory, suitability maps for the individual suitability modelling algorithms are stored. In subfolder "ensembles", a consensus suitability map based on a weighted average of individual suitability models is stored. In subfolder "ensembles/presence", a presence-absence (1-0) map will be provided. In subfolder "ensembles/count", a consensus suitability map based on the number of individual suitability models that predict presence of the focal organism is stored.
 
-Most of the features of \code{ensemble.raster} are also available from \code{\link{ensemble.test}}. The main difference between the two functions is that \code{ensemble.raster} generates raster layers for individual suitability models.
+Several of the features of \code{ensemble.raster} are also available from \code{\link{ensemble.test}}. The main difference between the two functions is that \code{ensemble.raster} generates raster layers for individual suitability models, whereas the purpose of \code{\link{ensemble.test}} is specifically to test different suitability modelling algorithms.
 
 Note that values in suitability maps are integer values that were calculated by multiplying probabilities by 1000 (see also \code{\link[base]{trunc}}).
 
 As the Mahalanobis function (\code{\link[dismo]{mahal}}) does not always provide values within a range of 0 - 1, the output values are rescaled by first subtracting the value of \code{1 - MAHAL.shape} from each prediction, followed by calculating the absolute value, followed by calculating the reciprocal value and finally multiplying this reciprocal value with \code{MAHAL.shape}. As this rescaling method does not estimate probabilities, inclusion in the calculation of a (weighted) average of ensemble probabilities may be problematic (the same applies to other distance-based methods). 
 
-The \code{ensemble.batch} function allows for batch processing, using presence (possibly absence) locations for several species. The function also allows predictions for more than one rasterStack object. The function first calls the \code{ensemble.test.splits} function to determine the average AUC (parameter \code{k.splits} determines the number of splits); thereafter the average AUC is used as input weight in the \code{ensemble.raster} function. Note that more information is provided when exploring all the options of \code{ensemble.raster} by a species-by-species and raster-by-raster process.   
+The \code{ensemble.habitat.change} function produces new raster layers that show changes in suitable and not suitable habitat between a base raster and a list of other rasters. The output uses the following coding: 0 = areas that remain unsuitable, 11 = areas that remain suitable, 10 = areas of lost habitat, 1 = areas of new habitat. (Codes are inspired on a binary classification of habitat suitability in base [1- or 0-] and other layer [-1 or -0], eg new habitat is coded 01 = 1).
 
-When reporting results and as part of file names, names for \code{rasterStack} used for calibrations or predictions are obtained from the "title" slot. In case that these slots do not contain a name, then names such as "base" and "stack2" are given for these slots to differentiate between the \code{rasterStack}.
+With \code{KML.out = TRUE}, kml files are created in a subfolder named "KML". The colouring of the consensus suitability PNG is based on 20 intervals of size 50 between 0 and 1000. The colouring of the presence-absence PNG uses green for presence and red for absence. The colouring of the count suitability PNG uses black for zero (no models predict presence) and blue for the theoretical maximum number of models to predict presence (i.e. the count of all final weights), whereas intermediate numbers (1 to theoretical maximum - 1) are ranged from red to green. The colouring of the habitat change maps are: black (cells that are never suitable [value: 0]), green (cells that are always suitable [value: 11]), red (cells that are lost habitat [value: 10] and blue (cells that are new habitat [value: 1]).
 
 }
 
@@ -257,10 +102,14 @@ Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in 
 
 # get predictor variables
 library(dismo)
-predictors <- stack(list.files(path=paste(system.file(package="dismo"), '/ex', sep=''),
-    pattern='grd', full.names=TRUE ))
+predictor.files <- list.files(path=paste(system.file(package="dismo"), '/ex', sep=''),
+    pattern='grd', full.names=TRUE)
+predictors <- stack(predictor.files)
+predictors <- subset(predictors, subset=c("bio1", "bio5", 
+    "bio6", "bio7", "bio8", "bio12", "bio16", "bio17", "biome"))
 predictors
 predictors@title <- "base"
+
 
 # presence points
 # presence points
@@ -271,116 +120,104 @@ pres <- read.table(presence_file, header=TRUE, sep=',')[,-1]
 ext <- extent(-90, -32, -33, 23)
 background <- randomPoints(predictors, n=1000, ext=ext, extf = 1.00)
 
-# formulae for random forest and generalized linear model
-rfformula <- as.formula(pb ~ bio1+bio5+bio6+bio7+bio8+bio12+bio16+bio17)
-
-glmformula <- as.formula(pb~bio1 + I(bio1^2) + I(bio1^3) + 
-    bio12 + I(bio12^2) + I(bio12^3) + 
-    bio16 + I(bio16^2) + I(bio16^3) + bio17 + I(bio17^2) + I(bio17^3) + 
-    bio5 + I(bio5^2) + I(bio5^3) + bio6 + I(bio6^2) + I(bio6^3) + 
-    bio7 + I(bio7^2) + I(bio7^3) + bio8 + I(bio8^2) + I(bio8^3) )
-
 # if desired, change working directory where subfolders of "models" and 
 # "ensembles" will be created
-# raster layers will be saved here in subfolders of /models and /ensembles:
+# raster layers will be saved in subfolders of /models and /ensembles:
 getwd()
 
-# fit four ensemble models
-# weights are based on previous run of ensemble.test.splits function
-# all presence points are utilized
-ensemble.nofactors <- ensemble.raster(x=predictors, p=pres, a=background, k=0, ext=ext,
+# first calibrate the ensemble
+# calibration is done in two steps
+# in step 1, a k-fold procedure is used to determine the weights
+# in step 2, models are calibrated for all presence and background locations
+# factor is not used as it is not certain whether correct levels will be used
+# it may therefore be better to use dummy variables
+
+# step 1: 3-fold cross-validation
+ensemble.calibrate.step1 <- ensemble.test.splits(x=predictors, p=pres, a=background, 
+    ext=ext,
+    k=3, 
     layer.drops=c("biome"),
-    MAXENT=0, GBM=0, GBMSTEP=0, RF=0.8538, GLM=0.7948, GLMSTEP=0, GAM=0, GAMSTEP=0,
-    MGCV=0, EARTH=0, RPART=0, NNET=0, FDA=0, SVM=0, SVME=0, 
-    BIOCLIM=0.7031, DOMAIN=0.7265, MAHAL=0,
-    Yweights="BIOMOD", factors=NULL,
-    models.keep=TRUE, evaluation.strip=TRUE,
-    RF.formula=rfformula,
-    GLM.formula=glmformula)
+    SINK=TRUE, species.name="Bradypus",
+    MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
+    GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
+    SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
+    ENSEMBLE.tune=TRUE,
+    ENSEMBLE.best=c(4:10), ENSEMBLE.decay=c(1.00, 1.1, 1.2, 1.3, 1.4, 1.5),
+    Yweights="BIOMOD", factors=c("biome"),
+    PLOTS=FALSE, formulae.defaults=TRUE,
+    GBMSTEP.learning.rate=0.002)
 
-evaluation.strip.plot(ensemble.nofactors$evaluation$evaluation.strip, 
-    model="ENSEMBLE", type="o", col="red")
+# step 2: create the models that will be used for the raster predictions
+# models with input.weights < 0.05 are excluded
 
-# split data in 5 subsets, use 1/5 for evaluation and 4/5 for calibration
-ensemble.nofactors <- ensemble.raster(x=predictors, p=pres, a=background, k=5, ext=ext,
+ensemble.calibrate.step1$output.weights[
+    ensemble.calibrate.step1$output.weights < 0.05] <- 0
+
+ensemble.calibrate.step2 <- ensemble.test(x=predictors, p=pres, a=background, 
+    ext=ext,
     layer.drops=c("biome"),
-    MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, 
-    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=1,
-    Yweights="BIOMOD",
-    models.keep=TRUE, evaluation.strip=TRUE,
-    formulae.defaults=TRUE)
+    SINK=TRUE, species.name="Bradypus",
+    models.keep=TRUE,
+    input.weights=ensemble.calibrate.step1$output.weights,
+    AUC.weights=FALSE, ENSEMBLE.tune=FALSE,
+    Yweights="BIOMOD", factors=c("biome"),
+    PLOTS=FALSE, formulae.defaults=TRUE,
+    GBMSTEP.learning.rate=0.002)
 
-evaluation.strip.plot(ensemble.nofactors$evaluation$evaluation.strip, 
-    model="ENSEMBLE", type="o", col="red")
+# step 3: use previously calibrated models
+ensemble.nofactors1 <- ensemble.raster(xn=predictors, ext=ext,
+    models.list=ensemble.calibrate.step2$models, 
+    input.weights=ensemble.calibrate.step2$models$output.weights,
+    thresholds=ensemble.calibrate.step2$models$thresholds,
+    SINK=TRUE,
+    RASTER.species.name="Bradypus", RASTER.stack.name="base")
 
-# use dataframe instead of presence and background locations
-# use 1/5 of data for evaluation and 4/5 for calibration
-TrainData1 <- prepareData(x=predictors, p=pres, b=background, factors="biome", xy=FALSE)
-ensemble.nofactors <- ensemble.raster(x=NULL, k=5, xn=predictors, ext=ext,
-    TrainData=TrainData1,
+# use the base map to check for changes in suitable habitat
+# this type of analysis is typically done with different predictor layers
+# (for example, predictor layers representing different possible future climates)
+# in this example, changes from a previous model (ensemble.nofactors1)
+# are contrasted with a newly calibrated model (ensemble.nofactors2)
+ensemble.calibrate.step1 <- ensemble.test.splits(x=predictors, p=pres, a=background, 
+    ext=ext,
+    k=3, 
     layer.drops=c("biome"),
-    MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, 
-    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=1,
-    Yweights="BIOMOD",
-    models.keep=TRUE, evaluation.strip=TRUE,
-    formulae.defaults=TRUE)
+    SINK=TRUE, species.name="Bradypus",
+    MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
+    GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
+    SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
+    ENSEMBLE.tune=TRUE,
+    ENSEMBLE.best=c(4:10), ENSEMBLE.decay=c(1.00, 1.1, 1.2, 1.3, 1.4, 1.5),
+    Yweights="BIOMOD", 
+    PLOTS=FALSE, formulae.defaults=TRUE,
+    GBMSTEP.learning.rate=0.002)
 
-# internally use ensemble.strategy to select the ensemble model with best parameters
-# Mahalanobis model not used as resulting in restricted distributions
-ensemble.nofactors <- ensemble.raster(x=predictors, p=pres, a=background, k=5, ext=ext,
+ensemble.calibrate.step1$output.weights[
+    ensemble.calibrate.step1$output.weights < 0.05] <- 0
+
+ensemble.calibrate.step2 <- ensemble.test(x=predictors, p=pres, a=background, 
+    ext=ext,
     layer.drops=c("biome"),
-    MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, 
-    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
-    ENSEMBLE.best=c(2:10), ENSEMBLE.decay=c(1.0, 1.25, 1.5, 1.75, 2.0),
-    Yweights="BIOMOD",
-    models.keep=TRUE, evaluation.strip=TRUE,
-    formulae.defaults=TRUE)
+    SINK=TRUE, species.name="Bradypus",
+    models.keep=TRUE,
+    input.weights=ensemble.calibrate.step1$output.weights,
+    AUC.weights=FALSE, ENSEMBLE.tune=FALSE,
+    Yweights="BIOMOD", 
+    PLOTS=FALSE, formulae.defaults=TRUE,
+    GBMSTEP.learning.rate=0.002)
 
+ensemble.nofactors2 <- ensemble.raster(xn=predictors, ext=ext,
+    models.list=ensemble.calibrate.step2$models, 
+    input.weights=ensemble.calibrate.step2$models$output.weights,
+    thresholds=ensemble.calibrate.step2$models$thresholds,
+    SINK=TRUE,
+    RASTER.species.name="Bradypus", RASTER.stack.name="recalibrated")
 
-# fit 3 ensembles with batch processing, choosing the best ensemble model based on the 
-# average AUC of 5-fold split of calibration and testing data
-# final models use all available presence data and average weights determined by the 
-# ensemble.test.splits function (called internally)
-# batch processing can handle several species by using 3-column species.presence and 
-# species.absence data sets
-# note that these calculations can take a while
+base.file <- paste(getwd(), "/ensembles/presence/Bradypus_base.grd", sep="")
+other.file <- paste(getwd(), "/ensembles/presence/Bradypus_recalibrated.grd", sep="")
 
-ensemble.nofactors <- ensemble.batch(x=predictors, species.presence=pres, 
-    species.absence=background, 
-    k.raster=0, k.splits=5, n.ensembles=3, ext=ext,
-    layer.drops=c("biome"),
-    ENSEMBLE.best=c(2:10), ENSEMBLE.decay=c(1.0, 1.25, 1.5, 1.75, 2.0), 
-    ENSEMBLE.min=0.5,
-    MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=0, MGCV=1, 
-    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
-    Yweights="BIOMOD",
-    formulae.defaults=TRUE)
-
-
-ext.north <- extent(-90, -32, 0, 23)
-predictors.north <- crop(predictors, y=ext.north, snap="out")
-predictors.north@title <- "north"
-ext.south <- extent(-90, -32, -33, 0)
-predictors.south <- crop(predictors, y=ext.south, snap="out")
-predictors.south@title <- "south"
-
-# predict for different raster layers
-# a similar method can be used for extrapolation to different future climates
-ensemble.nofactors <- ensemble.batch(x=predictors, species.presence=pres, 
-    species.absence=background, 
-    xn=c(predictors.north, predictors.south),
-    k.raster=0, k.splits=5, n.ensembles=1, ext=ext,
-    layer.drops=c("biome"),
-    ENSEMBLE.best=c(2:10), ENSEMBLE.decay=c(1.0, 1.25, 1.5, 1.75, 2.0), 
-    ENSEMBLE.min=0.5,
-    MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=0, MGCV=1, 
-    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
-    Yweights="BIOMOD",
-    formulae.defaults=TRUE)
-
-
-
-
+changed.habitat <- ensemble.habitat.change(base.map=base.file, 
+    other.maps=c(other.file),
+    change.folder="ensembles/change")
 }
 
 }

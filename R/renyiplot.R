@@ -1,5 +1,7 @@
-`renyiplot` <-
-function(xr,addit=F,pch=1,ylim=c(0,m),labelit=T,legend=T,col=1,cex=1,rainbow=T,evenness=F,...) {
+`renyiplot` <- function(xr, addit=F, pch=1,
+    xlab="alpha", ylab="H-alpha", ylim=c(0,m),
+    labelit=T, legend=T, col=1, cex=1, rainbow=T, evenness=F,...) 
+{
     x <- xr
     x <- as.matrix(x)
     p <- ncol(x)
@@ -7,17 +9,17 @@ function(xr,addit=F,pch=1,ylim=c(0,m),labelit=T,legend=T,col=1,cex=1,rainbow=T,e
     m <- max(x,na.rm=T)
     names <- colnames(x)
     names <- as.factor(names)
-    pos <- -1
+    pos <- -1000
     ylab <- "H-alpha"
     if(evenness==T) {
-        pos <- 1
-        ylab <- "E-alpha"
+        pos <- 1000
+        if (ylab== "H-alpha") {ylab <- "E-alpha"}
         x[,] <- x[,]-x[,1]
         m <- min(x,na.rm=T)
         ylim <- c(m,0)
     }
     if(addit==F) {
-        plot(names,rep(pos,p),xlab="alpha",ylab=ylab,ylim=ylim,bty="l",...)
+        plot(names,rep(pos,p),xlab=xlab,ylab=ylab,ylim=ylim,bty="l",...)
     }
     if (n > 25) {
         warning("Symbol size was kept constant as there were more than 25 profiles (> number of symbols that are currently used in R)")
@@ -47,4 +49,9 @@ function(xr,addit=F,pch=1,ylim=c(0,m),labelit=T,legend=T,col=1,cex=1,rainbow=T,e
     }
     palette("default")
 }
+
+
+
+
+
 
