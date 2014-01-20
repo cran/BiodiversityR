@@ -11,14 +11,19 @@ Provides some alternative methods of obtaining results on Renyi diversity profil
 }
 
 \usage{
-renyiresult(x,y="",factor,level,method="all",
-    scales=c(0,0.25,0.5,1,2,4,8,Inf),evenness=F,...)
-renyiplot(xr,addit=F,pch=1,ylim=c(0,m),labelit=T,legend=T,col=1,cex=1,
-    rainbow=T,evenness=F,...)
-renyiaccumresult(x,y="",factor,level,
-    scales=c(0,0.25,0.5,1,2,4,8,Inf),permutations=100,...)
-renyicomp(x,y,factor,sites=Inf,
-    scales=c(0,0.25,0.5,1,2,4,8,Inf),permutations=100,plotit=T,...)
+renyiresult(x, y="", factor, level, method = "all",
+    scales = c(0,0.25,0.5,1,2,4,8,Inf), evenness = F,...)
+
+renyiplot(xr,addit=F, pch = 1, 
+    xlab = "alpha", ylab = "H-alpha", ylim = c(0,m),
+    labelit = T, legend = T, col = 1, cex = 1,
+    rainbow = T, evenness = F, ...)
+
+renyiaccumresult(x, y = "", factor, level,
+    scales=c(0,0.25,0.5,1,2,4,8,Inf), permutations = 100,...)
+
+renyicomp(x, y, factor, sites=Inf,
+    scales = c(0,0.25,0.5,1,2,4,8,Inf), permutations = 100, plotit = T,...)
 }
 
 \arguments{
@@ -32,6 +37,8 @@ renyicomp(x,y,factor,sites=Inf,
   \item{xr}{ Result from \code{\link[vegan]{renyi}} or \code{renyiresult}. }
   \item{addit}{ Add diversity profile to an existing graph. }
   \item{pch}{ Symbol used for drawing the diversity profiles (as in function \code{\link[graphics]{points}}). }
+  \item{xlab}{ Label for the horizontal axis. }
+  \item{ylab}{ Label for the vertical axis. }
   \item{ylim}{ Limits of the vertical axis. }
   \item{labelit}{ Provide site labels (site names) at beginning and end of the diversity profiles. }
   \item{legend}{ Add the legend (you need to click in the graph where the legend needs to be plotted). }

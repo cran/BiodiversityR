@@ -9,7 +9,7 @@
 \alias{ensemble.strategy}
 
 \title{
-Suitability mapping based on ensembles of modelling algorithms: comparison of different algorithms
+Suitability mapping based on ensembles of modelling algorithms: comparison of different algorithms and calibration
 }
 
 \description{
@@ -21,67 +21,78 @@ The basic function \code{ensemble.test} allows to evaluate different algorithms 
 ensemble.test(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, ext = NULL, 
     k = 0, pt = NULL, at = NULL,
     TrainData = NULL, TestData = NULL, 
-    layer.drops = NULL, VIF = FALSE, COR = FALSE,
-    PLOTS = TRUE, 
-    evaluations.keep = FALSE, models.keep = FALSE,
-    ENSEMBLE.decay = 1, ENSEMBLE.best = 0, ENSEMBLE.min = 0.7,
-    input.weights = NULL, models.list = NULL,
+    TRUNC = TRUE,
+    VIF = FALSE, COR = FALSE,
+    SINK = FALSE, PLOTS = TRUE, 
+    threshold.method = "spec_sens", threshold.sensitivity = 0.9,
+    evaluations.keep = FALSE, 
+    models.list = NULL, models.keep = FALSE, 
+    models.save = FALSE, species.name = "Species001",
+    AUC.weights = TRUE, ENSEMBLE.tune = FALSE, 
+    ENSEMBLE.best = 0, ENSEMBLE.min = 0.7,
+    ENSEMBLE.decay = 1, ENSEMBLE.interval.width = 0.05,
+    input.weights = NULL, 
     MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, 
-    GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, RPART = 1, 
-    NNET = 1, FDA = 1, SVM = 1 , SVME = 1,
+    GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, 
+    RPART = 1, NNET = 1, FDA = 1, SVM = 1 , SVME = 1,
     BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, 
     GEODIST = 0, 
-    Yweights = "BIOMOD", factors = NULL, dummy.vars = NULL,
+    Yweights = "BIOMOD", 
+    layer.drops = NULL, factors = NULL, dummy.vars = NULL,
     formulae.defaults = TRUE, maxit = 100,
     MAXENT.a = NULL, MAXENT.an = 10000, MAXENT.BackData = NULL, 
-    MAXENT.path = paste(getwd(), "/models/maxent", sep=""), MAXENT.OLD = NULL,
-    GBM.formula = NULL, GBM.n.trees = 2001, GBM.OLD = NULL,
+    MAXENT.path=paste(getwd(), "/models/maxent_", species.name,  sep=""), 
+    GBM.formula = NULL, GBM.n.trees = 2001, 
     GBMSTEP.gbm.x = 2:(ncol(TrainData.vars)+1), GBMSTEP.tree.complexity = 5, 
     GBMSTEP.learning.rate = 0.005, GBMSTEP.bag.fraction = 0.5, 
-    GBMSTEP.step.size = 100, GBMSTEP.OLD = NULL,
+    GBMSTEP.step.size = 100, 
     RF.formula = NULL, RF.ntree = 751, 
-    RF.mtry = floor(sqrt(ncol(TrainData.vars))), RF.OLD = NULL,
-    GLM.formula = NULL, GLM.family = binomial(link = "logit"), GLM.OLD = NULL,
+    RF.mtry = floor(sqrt(ncol(TrainData.vars))), 
+    GLM.formula = NULL, GLM.family = binomial(link = "logit"), 
     GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, 
-    GLMSTEP.k = 2, GLMSTEP.OLD = NULL,
-    GAM.formula = NULL, GAM.family = binomial(link = "logit"), GAM.OLD = NULL, 
-    GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, GAMSTEP.pos = 1, GAMSTEP.OLD = NULL, 
-    MGCV.formula = NULL, MGCV.select = FALSE, MGCV.OLD = NULL,
-    MGCVFIX.formula = NULL, MGCVFIX.OLD = NULL,
+    GLMSTEP.k = 2, 
+    GAM.formula = NULL, GAM.family = binomial(link = "logit"), 
+    GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, GAMSTEP.pos = 1, 
+    MGCV.formula = NULL, MGCV.select = FALSE, 
+    MGCVFIX.formula = NULL, 
     EARTH.formula = NULL, 
     EARTH.glm = list(family = binomial(link = "logit"), maxit = maxit), 
-    EARTH.OLD = NULL,
-    RPART.formula = NULL, RPART.xval = 50, RPART.OLD = NULL,
-    NNET.formula = NULL, NNET.size = 8, NNET.decay = 0.01, NNET.OLD = NULL,
-    FDA.formula = NULL, FDA.OLD = NULL, 
-    SVM.formula = NULL, SVM.OLD = NULL, 
-    SVME.formula = NULL, SVME.OLD = NULL,
-    BIOCLIM.OLD = NULL, 
-    DOMAIN.OLD = NULL, 
-    MAHAL.shape = 1, MAHAL.OLD = NULL,
-    GEODIST.file.name = "Species001", RASTER.format = "raster", GEODIST.OLD = NULL)
+    RPART.formula = NULL, RPART.xval = 50, 
+    NNET.formula = NULL, NNET.size = 8, NNET.decay = 0.01, 
+    FDA.formula = NULL, 
+    SVM.formula = NULL, 
+    SVME.formula = NULL, 
+    MAHAL.shape = 1, 
+    RASTER.format = "raster")
 
 ensemble.test.splits(x = NULL, p = NULL, a = NULL, an = 1000, 
     excludep = FALSE, ext = NULL, 
     k = 5, 
     TrainData = NULL,
-    layer.drops = NULL, VIF = FALSE,
-    PLOTS = FALSE, data.keep = FALSE,
-    ENSEMBLE.decay = 1, ENSEMBLE.best = 0, ENSEMBLE.min = 0.7,
+    TRUNC = TRUE,
+    VIF = FALSE, COR = FALSE,
+    SINK = FALSE, PLOTS = FALSE, 
+    data.keep = FALSE,
+    species.name = "Species001",
+    threshold.method = "spec_sens", threshold.sensitivity = 0.9,
+    AUC.weights = TRUE, ENSEMBLE.tune = FALSE, 
+    ENSEMBLE.best = 0, ENSEMBLE.min = 0.7,
+    ENSEMBLE.decay = 1, ENSEMBLE.interval.width = 0.05, 
     input.weights = NULL,
-    MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, 
-    GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, RPART = 1, NNET = 1, FDA = 1, 
-    SVM = 1 , SVME = 1, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1,     
-    GEODIST = 0,     
-    Yweights = "BIOMOD", factors = NULL, dummy.vars = NULL,
+    MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, 
+    GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, 
+    RPART = 1, NNET = 1, FDA = 1, SVM = 1 , SVME = 1, 
+    BIOCLIM = 1, DOMAIN = 1, MAHAL = 1,
+    Yweights = "BIOMOD", 
+    layer.drops = NULL, factors = NULL, dummy.vars = NULL,
     formulae.defaults = TRUE, maxit = 100,
     MAXENT.a = NULL, MAXENT.an = 10000, MAXENT.BackData = NULL, 
-    MAXENT.path = paste(getwd(), "/models/maxent", sep=""),
+    MAXENT.path = paste(getwd(), "/models/maxent_", species.name,  sep=""), 
     GBM.formula = NULL, GBM.n.trees = 2001, 
-    GBMSTEP.gbm.x = 2:(ncol(TrainData.orig)), GBMSTEP.tree.complexity = 5, 
+    GBMSTEP.gbm.x = 2:(ncol(TrainData1)), GBMSTEP.tree.complexity = 5, 
     GBMSTEP.learning.rate = 0.005, 
     GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100, 
-    RF.formula = NULL, RF.ntree = 751, RF.mtry = floor(sqrt(ncol(TrainData.orig)-1)), 
+    RF.formula = NULL, RF.ntree = 751, RF.mtry = floor(sqrt(ncol(TrainData1)-1)), 
     GLM.formula = NULL, GLM.family = binomial(link = "logit"), 
     GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, GLMSTEP.k = 2, 
     GAM.formula = NULL, GAM.family = binomial(link = "logit"), 
@@ -95,15 +106,17 @@ ensemble.test.splits(x = NULL, p = NULL, a = NULL, an = 1000,
     FDA.formula = NULL, 
     SVM.formula = NULL, 
     SVME.formula = NULL, 
-    MAHAL.shape = 1, 
-    GEODIST.file.name = "Species001", RASTER.format = "raster")
+    MAHAL.shape = 1)
 
 ensemble.test.gbm(x, p, a = NULL, an = 1000, excludep = FALSE, ext = NULL, 
     k = 5, 
     TrainData = NULL,
-    layer.drops = NULL, VIF = FALSE,
-    PLOTS = FALSE, 
-    Yweights = "BIOMOD", factors = NULL, 
+    TRUNC = TRUE,
+    VIF = FALSE, COR = FALSE,
+    SINK = FALSE, PLOTS = FALSE, 
+    species.name = "Species001",
+    Yweights = "BIOMOD", 
+    layer.drops = NULL, factors = NULL, 
     GBMSTEP.gbm.x = 2:(ncol(TrainData.orig)), 
     complexity = c(3:6), learning = c(0.005, 0.002, 0.001), 
     GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100)
@@ -111,8 +124,12 @@ ensemble.test.gbm(x, p, a = NULL, an = 1000, excludep = FALSE, ext = NULL,
 ensemble.test.nnet(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, 
     ext = NULL, k = 5, 
     TrainData = NULL,
-    layer.drops = NULL, VIF = FALSE,
-    PLOTS = FALSE, Yweights = "BIOMOD", factors = NULL, 
+    TRUNC = TRUE,
+    VIF = FALSE, COR = FALSE,
+    SINK = FALSE, PLOTS = FALSE, 
+    species.name = "Species001",
+    Yweights = "BIOMOD", 
+    layer.drops = NULL, factors = NULL, 
     formulae.defaults = TRUE, maxit = 100, 
     NNET.formula = NULL, 
     sizes = c(2, 4, 6, 8), decays = c(0.1, 0.05, 0.01, 0.001))
@@ -120,47 +137,48 @@ ensemble.test.nnet(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE,
 ensemble.drop1(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, ext = NULL, 
     k = 0, pt = NULL, at = NULL, 
     TrainData = NULL, TestData = NULL,
-    layer.drops = NULL, VIF = FALSE, COR = FALSE,
+    VIF = FALSE, COR = FALSE,
+    SINK = FALSE, 
+    species.name = "Species001",
     difference = FALSE, 
     ENSEMBLE.decay = 1, ENSEMBLE.best = 0, ENSEMBLE.min = 0.7,
     input.weights = NULL, 
-    MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, 
-    GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, RPART = 1, NNET = 1, FDA = 1, 
-    SVM = 1, SVME = 1, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, 
+    MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, 
+    GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, 
+    RPART = 1, NNET = 1, FDA = 1, SVM = 1, SVME = 1, 
+    BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, 
     Yweights = "BIOMOD", 
-    factors = NULL, dummy.vars = NULL, 
+    layer.drops = NULL, factors = NULL, dummy.vars = NULL, 
     maxit = 100,
     MAXENT.a = NULL, MAXENT.an = 10000, MAXENT.BackData = NULL, 
-    MAXENT.path = paste(getwd(), "/models/maxent", sep=""), 
-    GBM.formula = NULL, GBM.n.trees = 2001, 
-    GBMSTEP.gbm.x = 2:(ncol(TrainData.orig)), GBMSTEP.tree.complexity = 5, 
-    GBMSTEP.learning.rate = 0.005, 
+    MAXENT.path = paste(getwd(), "/models/maxent_", species.name,  sep=""), 
+    GBM.n.trees = 2001, 
+    GBMSTEP.tree.complexity = 5, GBMSTEP.learning.rate = 0.005, 
     GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100, 
-    RF.formula = NULL, RF.ntree = 751, RF.mtry = floor(sqrt(ncol(TrainData.orig)-1)), 
-    GLM.formula = NULL, GLM.family = binomial(link = "logit"), 
-    GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, GLMSTEP.k = 2, 
-    GAM.formula = NULL, GAM.family = binomial(link = "logit"), 
+    RF.ntree = 751, 
+    GLM.family = binomial(link = "logit"), 
+    GLMSTEP.steps = 1000, GLMSTEP.scope = NULL, GLMSTEP.k = 2, 
+    GAM.family = binomial(link = "logit"), 
     GAMSTEP.steps = 1000, GAMSTEP.scope = NULL, GAMSTEP.pos = 1, 
-    MGCV.formula = NULL, MGCV.select = FALSE, 
-    MGCVFIX.formula = NULL, 
-    EARTH.formula = NULL, 
+    MGCV.select = FALSE, 
     EARTH.glm = list(family = binomial(link = "logit"), maxit = maxit), 
-    RPART.formula = NULL, RPART.xval = 50, 
-    NNET.formula = NULL, NNET.size = 8, NNET.decay = 0.01, 
-    FDA.formula = NULL, 
-    SVM.formula = NULL, 
-    SVME.formula = NULL,  
+    RPART.xval = 50, 
+    NNET.size = 8, NNET.decay = 0.01, 
     MAHAL.shape = 1)
 
 ensemble.weights(weights = c(0.9, 0.8, 0.7, 0.5), 
-    min.weight = 0, decay = 1.5, multiply = TRUE, scale = TRUE, best = 0)
+    best = 0, min.weight = 0, 
+    decay = 1.0, interval.width = 0.1,
+    digits = 4)
 
-ensemble.strategy(TrainData = NULL, TestData = NULL, verbose = FALSE,
-    ENSEMBLE.best = c(1:19), 
+ensemble.strategy(TrainData = NULL, 
+    strategy.k=4, strategy.runs=10, verbose = FALSE,
+    ENSEMBLE.best = c(1:19), ENSEMBLE.min = c(0.7),
     ENSEMBLE.decay = c(1.0, 1.25, 1.5, 1.75, 2.0), 
-    ENSEMBLE.min = c(0.7))
+    ENSEMBLE.interval.width = c(0.05))
 
 ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
+
 }
 
 \arguments{
@@ -175,18 +193,26 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{at}{ background points used for evaluating the suitability models, available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{TrainData}{ dataframe with first column 'pb' describing presence (1) and absence (0) and other columns containing explanatory variables; see also \code{\link[dismo]{prepareData}}. In case that this dataframe is provided, then locations p and a are not used. For the maximum entropy model (\code{\link[dismo]{maxent}}), a different dataframe is used for calibration; see parameter \code{MAXENT.TrainData}. }
   \item{TestData}{ dataframe with first column 'pb' describing presence (1) and absence (0) and other columns containing explanatory variables; see also \code{\link[dismo]{prepareData}}. In case that this dataframe is provided, then locations pt and at are not used. For \code{ensemble.strategy}, this dataframe should be a dataframe that contains predictions for various models - such dataframe can be provided by the \code{ensemble.test} or \code{\link{ensemble.raster}} functions.  }
-  \item{layer.drops}{ vector that indicates which layers should be removed from RasterStack \code{x}. This argument is especially useful for the \code{ensemble.drop1} function. See also \code{\link[raster]{addLayer}}.  }
-  \item{VIF}{ Estimate the variance inflation factors based on a generalized linear model with family = binomial(link = "logit") calibrated on the training data  (if \code{TRUE}). See also \code{\link[car]{vif}}.  }
+  \item{TRUNC}{ Multiply the predictions of each suitability model by 1000, and then truncate (if \code{TRUE}). The same transformation method (multiplication by 1000 and subsequent truncation) is used for predictions of raster layers (\code{\link{ensemble.raster}}). See also \code{\link[base]{Round}}.  }
+  \item{VIF}{ Estimate the variance inflation factors based on a linear model calibrated on the training data  (if \code{TRUE}). Only background locations will be used and the response variable 'pb' will be replaced by a random variable. See also \code{\link[car]{vif}}.  }
   \item{COR}{ Provide information on the correlation between the numeric explanatory variables  (if \code{TRUE}). See also \code{\link[stats]{cor}}.  }
+  \item{SINK}{ Append the results to a text file in subfolder 'outputs' (if \code{TRUE}). The name of file is based on argument \code{species.name}. In case the file already exists, then results are appended. See also \code{\link[base]{sink}}.  }
   \item{PLOTS}{ Plot the results of evaluation for the various suitability models (if \code{TRUE}). See also \code{\link[dismo]{evaluate}}.  }
+  \item{threshold.method}{ Method to calculate the threshold between predicted absence and presence; possibilities include \code{spec_sens} (highest sum of the true positive rate and the true negative rate), \code{kappa} (highest kappa value), \code{no_omission} (highest threshold that corresponds to no omission), \code{prevalence} (modeled prevalence is closest to observed prevalence) and \code{equal_sens_spec} (equal true positive rate and true negative rate). See \code{\link[dismo]{threshold}}.   }
+  \item{threshold.sensitivity}{ Sensitivity value for \code{threshold.method = 'sensitivity'}. See \code{\link[dismo]{threshold}}.   }
   \item{evaluations.keep}{ Keep the results of evaluations (if \code{TRUE}). See also \code{\link[dismo]{evaluate}}. }
-  \item{models.keep}{ Keep the fitted models (if \code{TRUE}). }
+  \item{models.list}{ list with 'old' model objects such as \code{MAXENT} or \code{RF}. }
+  \item{models.keep}{ store the details for each suitability modelling algorithm (if \code{TRUE}). (This may be particularly useful when projecting to different possible future climates.)  }
+  \item{models.save}{ Save the list with model details to a file (if \code{TRUE}). The filename will be \code{species.name} with extension \code{.models}; this file will be saved in subfolder of \code{models}. When loading this file, model results will be available as \code{ensemble.models}. }
+  \item{species.name}{ Name by which the model details will be saved to a file; see also argument \code{models.save} }
   \item{data.keep}{ Keep the data for each k-fold cross-validation run (if \code{TRUE}). }
-  \item{ENSEMBLE.decay}{ Ratio by which the input weights (assumed to correspond to evaluation indices of suitability models) are multiplied after they were sorted from worst to best model based on their input weights. For example, with 4 models and a decay of 2, the input weight of the best model (i.e. the model with the highest input weight) is multiplied by 2*2*2, the input weight of the second best model is multiplied by 2*2, the input weight of the third best model is multiplied by 2, and the worst model is not multiplied. In case a vector is provided, then function \code{ensemble.strategy} is called internally to select the ensemble model with the best AUC. }
-  \item{ENSEMBLE.best}{ The number of individual suitability models to be used in the consensus suitability map (based on a weighted average). In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then all individual suitability models with positive input weights are included in the consensus suitability map. In case a vector is provided, then function \code{ensemble.strategy} is called internally to select the ensemble model with the best AUC. }
-  \item{ENSEMBLE.min}{ The minimum input weight (assumed to correspond to evaluation indices of suitability models) for a model to be included in the ensemble. In case a vector is provided, then function \code{ensemble.strategy} is called internally to select the ensemble model with the best AUC.  }
+  \item{AUC.weights}{ If \code{TRUE}, then AUC values are used as weights for the ensemble model, scaled to sum to 1 for the ensemble model through \code{ensemble.weights}. If \code{FALSE}, then input weights are scaled to sum to 1 for the ensemble model, but AUC values are not considered. }
+  \item{ENSEMBLE.tune}{ Determine weights for the ensemble model based on AUC values through internal cross-validation procedures (if \code{TRUE}). See details. }
+  \item{ENSEMBLE.best}{ The number of individual suitability models to be used in the consensus suitability map (based on a weighted average). In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then all individual suitability models with positive input weights are included in the consensus suitability map. In case a vector is provided, \code{ensemble.strategy} is called internally to determine weights for the ensemble model. }
+  \item{ENSEMBLE.min}{ The minimum input weight (assumed to correspond to evaluation indices of suitability models) for a model to be included in the ensemble. In case a vector is provided, function \code{ensemble.strategy} is called internally to determine weights for the ensemble model.  }
+  \item{ENSEMBLE.decay}{ Number by which the AUC values are multiplied, applied to AUC intervals determined by \code{ENSEMBLE.interval.width}. See details. }
+  \item{ENSEMBLE.interval.width}{ Witdh of the AUC interval to which the \code{ENSEMBLE.decay} is applied. See details. }
   \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.test.splits} can be used. }
-  \item{models.list}{ list with 'old' model objects such as \code{MAXENT.OLD} or \code{RF.OLD}. }
   \item{MAXENT}{ number: if larger than 0, then a maximum entropy model (\code{\link[dismo]{maxent}}) will be fitted among ensemble }
   \item{GBM}{ number: if larger than 0, then a boosted regression trees model (\code{\link[gbm]{gbm}}) will be fitted among ensemble }
   \item{GBMSTEP}{ number: if larger than 0, then a stepwise boosted regression trees model (\code{\link[dismo]{gbm.step}}) will be fitted among ensemble }
@@ -208,6 +234,7 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{MAHAL}{ number: if larger than 0, then the Mahalanobis algorithm (\code{\link[dismo]{mahal}}) will be fitted among ensemble }
   \item{GEODIST}{ number: if larger than 0, then the geoDist algorithm (\code{\link[dismo]{geoDist}}) will be fitted among ensemble (note that this algorithm does not use environmental layers, and is based only on the distance from presence points used to calibrate this algorithm) }
   \item{Yweights}{ chooses how cases of presence and background (absence) are weighted; \code{"BIOMOD"} results in equal weighting of all presence and all background cases, \code{"equal"} results in equal weighting of all cases. The user can supply a vector of weights similar to the number of cases in the calibration data set. }
+  \item{layer.drops}{ vector that indicates which layers should be removed from RasterStack \code{x}. This argument is especially useful for the \code{ensemble.drop1} function. See also \code{\link[raster]{addLayer}}.  }
   \item{factors}{ vector that indicates which variables are factors; see also \code{\link[dismo]{prepareData}}  }
   \item{dummy.vars}{ vector that indicates which variables are dummy variables (influences formulae suggestions) }
   \item{formulae.defaults}{ Suggest formulae for most of the models (if \code{TRUE}). See also \code{\link{ensemble.formulae}}.   }
@@ -216,75 +243,62 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{MAXENT.an}{ number of background points for calibration to be selected with \code{\link[dismo]{randomPoints}} in case argument \code{MAXENT.a} is missing}
   \item{MAXENT.BackData}{ dataframe containing explanatory variables for the background locations. This information will be used for calibrating the maximum entropy model (\code{\link[dismo]{maxent}}). When used with the \code{ensemble.test.splits} function, the same background locations will be used for each of the cross-validation runs; this is based on the assumption that a large number (~10000) of background locations are used.  }
   \item{MAXENT.path}{ path to the directory where output files of the maximum entropy model are stored; see also \code{\link[dismo]{maxent}}   }
-  \item{MAXENT.OLD}{ If not \code{NULL}, then do not calibrate a new maximum entropy model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{GBM.formula}{ formula for the boosted regression trees algorithm; see also \code{\link[gbm]{gbm}}  }
   \item{GBM.n.trees}{ total number of trees to fit for the boosted regression trees model; see also \code{\link[gbm]{gbm}}  }
-  \item{GBM.OLD}{ If not \code{NULL}, then do not calibrate a new boosted regression tree model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{GBMSTEP.gbm.x}{ indices of column numbers with explanatory variables for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
   \item{GBMSTEP.tree.complexity}{ complexity of individual trees for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
   \item{GBMSTEP.learning.rate}{ weight applied to individual trees for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}} }
   \item{GBMSTEP.bag.fraction}{ proportion of observations used in selecting variables for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
   \item{GBMSTEP.step.size}{ number of trees to add at each cycle for stepwise boosted regression trees (should be small enough to result in a smaller holdout deviance than the initial number of trees [50]); see also \code{\link[dismo]{gbm.step}}  }
-  \item{GBMSTEP.OLD}{ If not \code{NULL}, then do not calibrate a new stepwise boosted regression tree model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{RF.formula}{ formula for random forest algorithm; see also \code{\link[randomForest]{randomForest}}  }
   \item{RF.ntree}{ number of trees to grow for random forest algorithm; see also \code{\link[randomForest]{randomForest}}  }
   \item{RF.mtry}{ number of variables randomly sampled as candidates at each split for random forest algorithm; see also \code{\link[randomForest]{randomForest}}  }
-  \item{RF.OLD}{ If not \code{NULL}, then do not calibrate a new random forest model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{GLM.formula}{ formula for the generalized linear model; see also \code{\link[stats]{glm}}  }
   \item{GLM.family}{ description of the error distribution and link function for the generalized linear model; see also \code{\link[stats]{glm}}  }
-  \item{GLM.OLD}{ If not \code{NULL}, then do not calibrate a new generalized linear model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{GLMSTEP.steps}{ maximum number of steps to be considered for stepwise generalized linear model; see also \code{\link[MASS]{stepAIC}}  }
   \item{STEP.formula}{ formula for the "starting model" to be considered for stepwise generalized linear model; see also \code{\link[MASS]{stepAIC}}  }
   \item{GLMSTEP.scope}{ range of models examined in the stepwise search; see also \code{\link[MASS]{stepAIC}}  }
   \item{GLMSTEP.k}{ multiple of the number of degrees of freedom used for the penalty (only k = 2 gives the genuine AIC); see also \code{\link[MASS]{stepAIC}}  }
-  \item{GLMSTEP.OLD}{ If not \code{NULL}, then do not calibrate a new stepwise generalized linear model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{GAM.formula}{ formula for the generalized additive model; see also \code{\link[gam]{gam}}  }
   \item{GAM.family}{ description of the error distribution and link function for the generalized additive model; see also \code{\link[gam]{gam}}  }
-  \item{GAM.OLD}{ If not \code{NULL}, then do not calibrate a new generalized additive model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{GAMSTEP.steps}{ maximum number of steps to be considered in the stepwise generalized additive model; see also \code{\link[gam]{step.gam}}  }
   \item{GAMSTEP.scope}{ range of models examined in the step-wise search n the stepwise generalized additive model; see also \code{\link[gam]{step.gam}}  }
   \item{GAMSTEP.pos}{ parameter expected to be set to 1 to allow for fitting of the stepwise generalized additive model  }
-  \item{GAMSTEP.OLD}{ If not \code{NULL}, then do not calibrate a new stepwise generalized additive model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{MGCV.formula}{ formula for the generalized additive model; see also \code{\link[mgcv]{gam}}  }
   \item{MGCV.select}{ if \code{TRUE}, then the smoothing parameter estimation that is part of fitting can completely remove terms from the model; see also \code{\link[mgcv]{gam}}  }
-  \item{MGCV.OLD}{ If not \code{NULL}, then do not calibrate a new generalized additive model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{MGCVFIX.formula}{ formula for the generalized additive model with fixed d.f. regression splines; see also \code{\link[mgcv]{gam}} (the default formulae sets "s(..., fx = TRUE, ...)"; see also \code{\link[mgcv]{s}}) }
-  \item{MGCVFIX.OLD}{ If not \code{NULL}, then do not calibrate a new generalized additive model with fixed d.f. regression splines, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{EARTH.formula}{ formula for the multivariate adaptive regression spline model; see also \code{\link[earth]{earth}}  }
   \item{EARTH.glm}{ list of arguments to pass on to \code{\link[stats]{glm}}; see also \code{\link[earth]{earth}}  }
-  \item{EARTH.OLD}{ If not \code{NULL}, then do not calibrate a new multivariate adaptive regression spline model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{RPART.formula}{ formula for the recursive partioning and regression tree model; see also \code{\link[rpart]{rpart}}  }
   \item{RPART.xval}{ number of cross-validations for the recursive partioning and regression tree model; see also \code{\link[rpart]{rpart.control}}  }
-  \item{RPART.OLD}{ If not \code{NULL}, then do not calibrate a new recursive partioning and regression tree model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{NNET.formula}{ formula for the artificial neural network model; see also \code{\link[nnet]{nnet}}  }
   \item{NNET.size}{ number of units in the hidden layer for the artificial neural network model; see also \code{\link[nnet]{nnet}}  }
   \item{NNET.decay}{ parameter of weight decay for the artificial neural network model; see also \code{\link[nnet]{nnet}}  }
-  \item{NNET.OLD}{ If not \code{NULL}, then do not calibrate a new artificial neural network model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{FDA.formula}{ formula for the flexible discriminant analysis model; see also \code{\link[mda]{fda}}  }
-  \item{FDA.OLD}{ If not \code{NULL}, then do not calibrate a new flexible discriminant model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{SVM.formula}{ formula for the support vector machine model; see also \code{\link[kernlab]{ksvm}}  }
-  \item{SVM.OLD}{ If not \code{NULL}, then do not calibrate a new support vector machine model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{SVME.formula}{ formula for the support vector machine model; see also \code{\link[e1071]{svm}}  }
-  \item{SVME.OLD}{ If not \code{NULL}, then do not calibrate a new support vector machine model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{BIOCLIM.OLD}{ If not \code{NULL}, then do not calibrate a new BIOCLIM model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{DOMAIN.OLD}{ If not \code{NULL}, then do not calibrate a new DOMAIN model, but use this model instead. Ignored if \code{model.list} is not null.  }
   \item{MAHAL.shape}{ parameter that influences the transformation of output values of \code{\link[dismo]{mahal}}. See details section.  }
-  \item{MAHAL.OLD}{ If not \code{NULL}, then do not calibrate a new Mahalonobis model, but use this model instead. Ignored if \code{model.list} is not null.  }
-  \item{GEODIST.file.name}{ First part of the names of the raster file that will be generated for the GEODIST model. }
   \item{RASTER.format}{ Format of the raster files that will be generated for the GEODIST model. See \code{\link[raster]{writeFormats}} and \code{\link[raster]{writeRaster}}.  }
-  \item{GEODIST.OLD}{ If not \code{NULL}, then do not calibrate a new geoDist model, but use this model instead. Ignored if \code{model.list} is not null.  }
+
   \item{complexity}{ vector with values of complexity of individual trees (\code{tree.complexity}) for boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
   \item{learning}{ vector with values of weights applied to individual trees (\code{learning.rate}) for boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
+
   \item{sizes}{ vector with values of number of units in the hidden layer for the artificial neural network model; see also \code{\link[nnet]{nnet}}  }
   \item{decays}{ vector with values of weight decay for the artificial neural network model; see also \code{\link[nnet]{nnet}}  }
+
   \item{difference}{ if \code{TRUE}, then AUC values of the models with all variables are subtracted from the models where one explanatory variable was excluded. After subtraction, positive values indicate that the model without the explanatory variable has a higher AUC than the model with all variables.   }
+
   \item{weights}{ input weights for the \code{ensemble.weights} function }
+  \item{best}{ The number of final weights. In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then this parameter is ignored. }
   \item{min.weight}{ The minimum input weight to be included in the output.  }
-  \item{decay}{ Ratio by which the input weights are multiplied after they were sorted. For example, with 4 input weights and a decay of 2, the largest input weight is multiplied by 2*2*2, the second largest input weight is multiplied by 2*2, the third largest input weight is multiplied by 2, and the smallest input weight is not multiplied.  }
-  \item{multiply}{ If \code{TRUE}, then the input weights are multiplied by the \code{decay} to obtain the output weighting. If \code{FALSE}, then the output weighting directly corresponds to the \code{ENSEMBLE.decay}.  }
-  \item{best}{ The number of final weights. In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then this parameter is ignored.  }
-  \item{scale}{ scale the output weights so that the sum of output weights equals 1 (if \code{TRUE}, default for \code{ensemble.raster}) }
+  \item{decay}{ Number by which the AUC values are multiplied, applied to AUC intervals determined by \code{interval.width}. See details. }
+  \item{interval.width}{ Witdh of the AUC interval to which the \code{decay} is applied. See details. }
+  \item{digits}{ Number of number of decimal places in the output weights; see also \code{\link[base]{round}}.  }
+
+  \item{strategy.k}{ Number of splits of the data set in cross-validation runs for \code{ensemble.strategy}) }
+  \item{strategy.runs}{ Number of cross-validation runs for \code{ensemble.strategy}) }
   \item{verbose}{ If \code{TRUE}, then provide intermediate results for \code{ensemble.strategy}) }
+
 }
 
 \details{
@@ -296,19 +310,23 @@ Calibration of the maximum entropy (MAXENT) algorithm is not based on background
 
 As the Mahalanobis function (\code{\link[dismo]{mahal}}) does not always provide values within a range of 0 - 1, the output values are rescaled by first subtracting the value of \code{1 - MAHAL.shape} from each prediction, followed by calculating the absolute value, followed by calculating the reciprocal value and finally multiplying this reciprocal value with \code{MAHAL.shape}. As this rescaling method does not estimate probabilities, inclusion in the calculation of a (weighted) average of ensemble probabilities may be problematic (the same applies to other distance-based methods). 
 
+It is possible to increase the contribution to the ensemble model for models with higher AUC values through the \code{ENSEMBLE.decay} and \code{ENSEMBLE.interval.width} parameters. With \code{ENSEMBLE.decay = 2} and \code{ENSEMBLE.interval.width = 0.10}, AUC values within the range of [0, 0.10[ are multiplied by 1, AUC values within the range of [0.10, 0.20[ are multiplied by 1 * 2, AUC values within the range of [0.20, 0.30[ are multiplied by 1 * 2 * 2, AUC values within the range of[0.30, 0.40[ are multiplied by 1 * 2 * 2 * 2, ... With \code{ENSEMBLE.decay = 1.5} and \code{ENSEMBLE.interval.width = 0.05}, AUC values within the range of [0, 0.05[ are multiplied by 1, AUC values within the range of [0.05, 0.10[ are multiplied by 1.5, AUC values within the range of [0.10, 0.15[ are multiplied by 1.5 * 1.5, AUC values within the range of[0.15, 0.20[ are multiplied by 1.5 * 1.5 * 1.5, ... 
+
+\code{ENSEMBLE.tune} will result in an internal crossvalidation procedure whereby the calibration (training) data set is split in \code{strategy.k} subsets and subsequently the AUC values of the subsets is used to determine the weights for the ensemble model. The procedure continues by calculating the average of the weights for each subset. The cross-validation procedure is repeated several times and finally average weights over all the runs are provided. When combined with different parameter values for \code{ENSEMBLE.min}, \code{ENSEMBLE.best}, \code{ENSEMBLE.decay} or \code{ENSEMBLE.interval.width}, the procedure identifies the ensemble model with best AUC for a specific cross-validation and the associated weights for this ensemble model. Essentially \code{ENSEMBLE.tune} explores how differences in weights of the submodels results in changes in the AUC of the ensemble model, and selects the weights that result in the ensemble model with highest weights. Note that the tuning procedure is only based on the training data set.  
+
 Function \code{ensemble.test.splits} splits the presence and background locations in a user-defined (\code{k}) number of subsets (i.e. k-fold cross-validation), then sequentially calibrates individual suitability models with (\code{k-1}) combined subsets and evaluates those with the remaining one subset, whereby each subset is used once for evaluation in the user-defined number (\code{k}) of runs. For example, \code{k = 5} results in splitting the locations in 5 subsets, then using one of these subsets in turn for evaluations (see also \code{\link[dismo]{kfold}}). Note that for the maximum entropy (MAXENT) algorithm, the same background data will be used in each cross-validation run (this is based on the assumption that a large number (~10000) of background locations are used).
 
 Function \code{ensemble.test.gbm} allows to test various combinations of parameters \code{tree.complexity} and \code{learning.rate} for the \code{\link[dismo]{gbm.step}} model.
 
 Function \code{ensemble.test.nnet} allows to test various combinations of parameters \code{size} and \code{decay} for the \code{\link[nnet]{nnet}} model.
 
-Function \code{ensemble.drop1} allows to test the effects of leaving out each of the explanatory variables, and comparing these results with the "full" model. Note that option of \code{difference = TRUE} may result in positive values, indicating that the model without the explanatory variable having larger AUC than the "full" model.
+Function \code{ensemble.drop1} allows to test the effects of leaving out each of the explanatory variables, and comparing these results with the "full" model. Note that option of \code{difference = TRUE} may result in positive values, indicating that the model without the explanatory variable having larger AUC than the "full" model. A procedure is included to estimate the deviance of a model based on the fitted values, using -2 * (sum(x*log(x)) + sum((1-x)*log(1-x))) where x is a vector of the fitted values for a respective model. (It was checked that this procedure results in similar deviance estimates for the null and 'full' models for glm, but note that it is not certain whether deviance can be calculated in a similar way for other submodels.)
 
 Function \code{ensemble.formulae} provides suggestions for formulae that can be used for \code{ensemble.test} and \code{\link{ensemble.raster}}. This function is always used internally by the \code{ensemble.drop1} function.
 
 The \code{ensemble.weights} function is used internally by the \code{ensemble.test} and \code{\link{ensemble.raster}} functions, using the input weights for the different suitability modelling algorithms. Ties between input weights result in the same output weights.
 
-The \code{ensemble.strategy} function is used internally by the \code{ensemble.test} and \code{\link{ensemble.raster}} functions, using the train and test data sets with predictions of the different suitability modelling algorithms and different combinations of parameters \code{ENSEMBLE.decay}, \code{ENSEMBLE.best} and \code{ENSEMBLE.min}. The final ensemble model is based on the parameters that generate the best AUC.
+The \code{ensemble.strategy} function is used internally by the \code{ensemble.test} and \code{\link{ensemble.raster}} functions, using the train and test data sets with predictions of the different suitability modelling algorithms and different combinations of parameters \code{ENSEMBLE.decay}, \code{ENSEMBLE.interval.width},  \code{ENSEMBLE.best} and \code{ENSEMBLE.min}. The final ensemble model is based on the parameters that generate the best AUC.
 }
 
 \value{
@@ -338,8 +356,11 @@ Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in 
 
 # get predictor variables
 library(dismo)
-predictors <- stack(list.files(path=paste(system.file(package="dismo"), '/ex', sep=''), 
-    pattern='grd', full.names=TRUE ))
+predictor.files <- list.files(path=paste(system.file(package="dismo"), '/ex', sep=''),
+    pattern='grd', full.names=TRUE)
+predictors <- stack(predictor.files)
+predictors <- subset(predictors, subset=c("bio1", "bio5", 
+    "bio6", "bio7", "bio8", "bio12", "bio16", "bio17", "biome"))
 predictors
 predictors@title <- "base"
 
@@ -375,6 +396,7 @@ glmformula <- as.formula(pb ~ bio1 + I(bio1^2) + I(bio1^3) +
 # fit four ensemble models (RF, GLM, BIOCLIM, DOMAIN)
 ensemble.nofactors <- ensemble.test(x=predictors, p=pres_train, a=backg_train, 
     pt=pres_test, at=backg_test,
+    species.name="Bradypus",
     MAXENT=0, GBM=0, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=0, 
     GAMSTEP=0, MGCV=0, MGCVFIX=0,EARTH=0, RPART=0, NNET=0, FDA=0, 
     SVM=0, SVME=0, BIOCLIM=1, DOMAIN=1, MAHAL=0,
@@ -385,9 +407,14 @@ ensemble.nofactors <- ensemble.test(x=predictors, p=pres_train, a=backg_train,
 
 # fit four ensemble models (RF, GLM, BIOCLIM, DOMAIN) using default formulae
 # variable 'biome' is not included as explanatory variable
-ensemble.nofactors <- ensemble.test(x=predictors, p=pres_train, a=backg_train, 
+# results are provided in a file in the 'outputs' subfolder of the working
+# directory
+ensemble.nofactors <- ensemble.test(x=predictors,
+    p=pres_train, a=backg_train, 
     pt=pres_test, at=backg_test,
     layer.drops="biome",
+    species.name="Bradypus",
+    SINK=TRUE,
     MAXENT=0, GBM=0, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=0, 
     GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, NNET=0, FDA=0, 
     SVM=0, SVME=0, BIOCLIM=1, DOMAIN=1, MAHAL=0,
@@ -396,54 +423,73 @@ ensemble.nofactors <- ensemble.test(x=predictors, p=pres_train, a=backg_train,
     formulae.defaults=TRUE)    
 
 # instead of providing presence and background locations, provide data.frames
+# because 'biome' is a factor, RasterStack and extent need to be provided
+# to check for levels in the Training and Testing data set
 TrainData1 <- prepareData(x=predictors, p=pres_train, b=backg_train, 
-    factors="biome", xy=FALSE)
+    factors=c("biome"), xy=FALSE)
 TestData1 <- prepareData(x=predictors, p=pres_test, b=backg_test, 
-    factors="biome", xy=FALSE)
-ensemble.factors1 <- ensemble.test(x=NULL, TrainData=TrainData1, TestData=TestData1,
-    MAXENT=0, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=1, 
-    GAMSTEP=0, MGCV=1, MGCVFIX=0, EARTH=0, RPART=1, NNET=0, FDA=1, 
-    SVM=1, SVME=0, BIOCLIM=1, DOMAIN=1, MAHAL=0,
-    Yweights="BIOMOD", factors="biome",
-    PLOTS=FALSE, evaluations.keep=TRUE, models.keep=FALSE)
-
-# compare different methods of calculating ensembles
-ensemble.factors2 <- ensemble.test(x=NULL, TrainData=TrainData1, TestData=TestData1,
-    MAXENT=0, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=1, 
-    GAMSTEP=0, MGCV=1, MGCVFIX=0, EARTH=0, RPART=1, NNET=0, FDA=1, 
-    SVM=1, SVME=0, BIOCLIM=1, DOMAIN=1, MAHAL=0,
-    ENSEMBLE.best=c(2:10), ENSEMBLE.decay=c(1.0, 1.25, 1.5, 1.75, 2.0),
-    Yweights="BIOMOD", factors="biome",
-    PLOTS=FALSE, evaluations.keep=TRUE, models.keep=FALSE)
-
-# test performance of different suitability models
-# data are split in 4 subsets, each used once for evaluation
-ensemble.nofactors2 <- ensemble.test.splits(x=predictors, p=pres, a=background, k=4, 
-    layer.drops=c("biome"),
+    factors=c("biome"), xy=FALSE)
+ensemble.factors1 <- ensemble.test(x=predictors, ext=ext, 
+    TrainData=TrainData1, TestData=TestData1,
+    p=pres_train, a=backg_train, 
+    pt=pres_test, at=backg_test,
+    species.name="Bradypus",
+    SINK=TRUE,
     MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
-    SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=1,
-    GEODIST=0,
-    ENSEMBLE.best=c(2:10), ENSEMBLE.decay=c(1.0, 1.25, 1.5, 1.75, 2.0),
+    SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
+    Yweights="BIOMOD", factors="biome",
+    PLOTS=FALSE, evaluations.keep=TRUE)
+
+# compare different methods of calculating ensembles
+ensemble.factors2 <- ensemble.test(x=predictors, ext=ext,
+    TrainData=TrainData1, TestData=TestData1,
+    p=pres_train, a=backg_train, 
+    pt=pres_test, at=backg_test,
+    species.name="Bradypus",
+    SINK=TRUE,
+    MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
+    GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
+    SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
+    ENSEMBLE.best=c(8:15), ENSEMBLE.decay=c(1.0, 1.1, 1.2, 1.3, 1.4, 1.5),
+    ENSEMBLE.interval.width=0.025,
+    Yweights="BIOMOD", factors="biome",
+    PLOTS=FALSE, evaluations.keep=TRUE)
+
+# test performance of different suitability models
+# data are split in 3 subsets, each used once for evaluation
+ensemble.nofactors2 <- ensemble.test.splits(x=predictors, ext=ext,
+    p=pres, a=background, k=3, 
+    layer.drops=c("biome"),
+    species.name="Bradypus",
+    SINK=TRUE,
+    MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
+    GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
+    SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
+    ENSEMBLE.best=c(8:15), ENSEMBLE.decay=c(1.0, 1.1, 1.2, 1.3, 1.4, 1.5),
+    ENSEMBLE.interval.width=0.025,
     Yweights="BIOMOD", factors="biome",
     PLOTS=FALSE, formulae.defaults=TRUE,
     GBMSTEP.learning.rate=0.002)
+ensemble.nofactors2
 
 # test the result of leaving out one of the variables from the model
 # note that positive differences indicate that the model without the variable 
 # has higher AUC than the full model
-ensemble.variables <- ensemble.drop1(x=predictors, p=pres, a=background, k=4,
-    layer.drops=c("bio6"),
-    difference=T,
-    VIF=T, 
-    MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
+ensemble.variables <- ensemble.drop1(x=predictors, ext=ext,
+    p=pres, a=background, k=5,
+    layer.drops=c("bio6", "bio1", "bio12"),
+    species.name="Bradypus",
+    SINK=TRUE,
+    difference=TRUE,
+    VIF=TRUE, 
+    MAXENT=0, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
-    SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=1,
-    ENSEMBLE.best=c(2:10), ENSEMBLE.decay=c(1.0, 1.25, 1.5, 1.75, 2.0),
+    SVM=1, SVME=1, BIOCLIM=0, DOMAIN=0, MAHAL=0,
+    ENSEMBLE.best=c(8:12), ENSEMBLE.decay=c(1.0, 1.1, 1.2, 1.3, 1.4, 1.5),
     Yweights="BIOMOD", factors="biome",
     GBMSTEP.learning.rate=0.002)
 ensemble.variables
-
 
 }
 }
