@@ -8,11 +8,11 @@
     species.name = "Species001",
     threshold.method="spec_sens", threshold.sensitivity=0.9,
     AUC.weights=TRUE, ENSEMBLE.tune=FALSE, 
-    ENSEMBLE.best=0, ENSEMBLE.min=0.7,
-    ENSEMBLE.decay=1, ENSEMBLE.interval.width=0.05, 
+    ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1, 
     input.weights=NULL,
     MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0, 
     EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=1, 
+    PROBIT=FALSE,
     Yweights="BIOMOD", 
     layer.drops=NULL, factors=NULL, dummy.vars=NULL,
     formulae.defaults=TRUE, maxit=100,
@@ -62,11 +62,12 @@
                 if(length(dummy.vars) == 0) {dummy.vars <- NULL}
             }
         }
+        if(length(layer.drops) == 0) {layer.drops <- NULL}
     }
 #
     output.rownames <- c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
         "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL", "ENSEMBLE")
-    if(length(ENSEMBLE.decay) > 1 || length(ENSEMBLE.interval.width) > 1 || length(ENSEMBLE.best) > 1 || length(ENSEMBLE.min) > 1) {ENSEMBLE.tune <- TRUE}
+    if(length(ENSEMBLE.exponent) > 1 || length(ENSEMBLE.best) > 1 || length(ENSEMBLE.min) > 1) {ENSEMBLE.tune <- TRUE}
     if(ENSEMBLE.tune == F) {
         output <- array(0, dim=c(length(output.rownames), k+1))
         rownames(output) <- output.rownames
@@ -101,15 +102,16 @@
 # run ensemble.test first to obtain MAXENT.BackData and var.names
     tests <- ensemble.test(x=x, ext=ext,
         p=p, a=a, an=an, excludep=excludep, k=0, 
-        TrainData=TrainData,
+        TrainData=TrainData, 
         TRUNC=TRUNC,
         VIF=F, COR=F,
         PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
         AUC.weights=F, ENSEMBLE.tune=F,
-        ENSEMBLE.decay=1, ENSEMBLE.best=1, ENSEMBLE.min=0.7, 
+        ENSEMBLE.exponent=1, ENSEMBLE.best=1, ENSEMBLE.min=0.7, 
         MAXENT=0, GBM=0, GBMSTEP=0, RF=0, GLM=0, GLMSTEP=0, 
         GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, 
         NNET=0, FDA=0, SVM=0, SVME=0, BIOCLIM=0, DOMAIN=0, MAHAL=0,
+        MAXENT.a=MAXENT.a, MAXENT.an=MAXENT.an, MAXENT.BackData=MAXENT.BackData,
         GEODIST=0,
         factors=factors)
 
@@ -162,16 +164,16 @@
                 threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity,
                 PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
                 AUC.weights=AUC.weights, ENSEMBLE.tune=ENSEMBLE.tune,
-                ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, 
-                ENSEMBLE.decay=ENSEMBLE.decay, ENSEMBLE.interval.width=ENSEMBLE.interval.width,
+                ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, ENSEMBLE.exponent=ENSEMBLE.exponent, 
                 MAXENT=MAXENT, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
                 GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
                 NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, MAHAL=MAHAL,
-                GEODIST=0,   
+                GEODIST=0, 
+                PROBIT=PROBIT,  
                 Yweights=Yweights, 
                 factors=factors2, dummy.vars=dummy.vars2,
                 maxit=maxit,
-                MAXENT.a=MAXENT.a, MAXENT.an=MAXENT.an, MAXENT.BackData=MAXENT.BackData2, MAXENT.path=MAXENT.path,
+                MAXENT.BackData=MAXENT.BackData2, MAXENT.path=MAXENT.path,
                 GBM.formula=GBM.formula, GBM.n.trees=GBM.n.trees, 
                 GBMSTEP.gbm.x=GBMSTEP.gbm.x, GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
                 GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction,
@@ -205,16 +207,16 @@
                 threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity,
                 PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
                 AUC.weights=AUC.weights, ENSEMBLE.tune=ENSEMBLE.tune,
-                ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min,  
-                ENSEMBLE.decay=ENSEMBLE.decay, ENSEMBLE.interval.width=ENSEMBLE.interval.width,
+                ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, ENSEMBLE.exponent=ENSEMBLE.exponent,
                 MAXENT=MAXENT, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
                 GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
                 NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, MAHAL=MAHAL,
-                GEODIST=0,   
+                GEODIST=0, 
+                PROBIT=PROBIT,  
                 Yweights=Yweights, 
                 factors=factors2, dummy.vars=dummy.vars2,
                 maxit=maxit,
-                MAXENT.a=MAXENT.a, MAXENT.an=MAXENT.an, MAXENT.BackData=MAXENT.BackData2, MAXENT.path=MAXENT.path,
+                MAXENT.BackData=MAXENT.BackData2, MAXENT.path=MAXENT.path,
                 GBM.formula=GBM.formula, GBM.n.trees=GBM.n.trees, 
                 GBMSTEP.gbm.x=GBMSTEP.gbm.x, GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
                 GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction,
@@ -291,7 +293,7 @@
     }
     output.weights <- output[,"MEAN"]
     output.weights <- output.weights[names(output.weights) != "ENSEMBLE"]
-    output.weights <- ensemble.weights(output.weights, decay=1, best=0, min.weight=0)
+    output.weights <- ensemble.weights(output.weights, exponent=1, best=0, min.weight=0)
     output <- output[order(output[,k+1], decreasing=T),]
     cat(paste("\n", "Results of ensemble.test.splits sorted by average AUC for tests T_1 to T_", k, "\n", sep = ""))
     if(ENSEMBLE.tune == T) {
@@ -303,7 +305,7 @@
     print(output.weights)
     cat(paste("\n", "Minimum input weight is 0.05", "\n", sep=""))
     output.weights[output.weights < 0.05] <- 0
-    output.weights <- ensemble.weights(weights=output.weights, decay=1, best=0, min.weight=0)
+    output.weights <- ensemble.weights(weights=output.weights, exponent=1, best=0, min.weight=0)
     cat(paste("\n", "Weights for ensemble forecasting", "\n", sep = ""))
     print(output.weights)
 
@@ -338,3 +340,4 @@
         return(list(table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, data=TestData.all, call=match.call()))
     }
 }
+

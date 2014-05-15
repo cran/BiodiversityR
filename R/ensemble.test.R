@@ -10,12 +10,12 @@
     models.list=NULL, models.keep=FALSE, 
     models.save=FALSE, species.name="Species001",
     AUC.weights=TRUE, ENSEMBLE.tune=FALSE, 
-    ENSEMBLE.best=0, ENSEMBLE.min=0.7,
-    ENSEMBLE.decay=1, ENSEMBLE.interval.width=0.05, 
+    ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1.0,
     input.weights=NULL, 
     MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0,
     EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=1, 
     GEODIST=0, 
+    PROBIT=FALSE,
     Yweights="BIOMOD", 
     layer.drops=NULL, factors=NULL, dummy.vars=NULL,
     formulae.defaults=TRUE, maxit=100,
@@ -96,47 +96,50 @@
             dummy.vars <- as.character(dummy.vars)
             nd <- length(layer.drops)
             for (i in 1:nd) {     
-                if (any(vars==layer.drops[i])==FALSE) {
+                if (any(vars==layer.drops[i]) == FALSE) {
                     cat(paste("\n", "WARNING: variable to exclude '", layer.drops[i], "' not among columns of TrainData", "\n", sep = ""))
                 }else{
                     cat(paste("\n", "NOTE: variable '", layer.drops[i], "' will not be included as explanatory variable", "\n", sep = ""))
                     TrainData <- TrainData[, which(colnames(TrainData) != layer.drops[i])]
                     if (is.null(TestData) == F) {TestData <- TestData[, which(colnames(TestData) != layer.drops[i])]}
                     vars <- colnames(TrainData)
-                    if (is.null(factors) == F) {
-                        factors <- factors[factors != layer.drops[i]]
-                        if(length(factors) == 0) {factors <- NULL}
+                    if (length(factors) > 0) {
+                        factors <- factors[factors != layer.drops[i]]                        
                     }
-                    if (is.null(dummy.vars) == F) {
+                    if (length(dummy.vars) > 0) {
                         dummy.vars <- dummy.vars[dummy.vars != layer.drops[i]]
-                        if(length(dummy.vars) == 0) {dummy.vars <- NULL}
                     }
                 }
             }
+            if(length(layer.drops) == 0) {layer.drops <- NULL} 
+            if(length(factors) == 0) {factors <- NULL}
+            if(length(dummy.vars) == 0) {dummy.vars <- NULL}
         }
         if (is.null(factors) == F) {
             vars <- names(TrainData)
             factors <- as.character(factors)
             nf <- length(factors)
+            old.factors <- factors
             for (i in 1:nf) {
-                if (any(vars==factors[i])==FALSE) {
-                    cat(paste("\n", "WARNING: categorical variable '", factors[i], "' not among columns of TrainData", "\n", sep = ""))
-                    factors <- factors[factors != factors[i]]
-                    if(length(factors) == 0) {factors <- NULL}
+                if (any(vars==old.factors[i]) == FALSE) {
+                    cat(paste("\n", "WARNING: categorical variable '", old.factors[i], "' not among columns of TrainData", "\n", sep = ""))
+                    factors <- factors[factors != old.factors[i]]
                 }
             }
+            if(length(factors) == 0) {factors <- NULL}
         }
         if (is.null(dummy.vars) == F) {
             vars <- names(TrainData)
             dummy.vars <- as.character(dummy.vars)
             nf <- length(dummy.vars)
+            old.dummy.vars <- dummy.vars
             for (i in 1:nf) {
-                if (any(vars==dummy.vars[i])==FALSE) {
-                    cat(paste("\n", "WARNING: dummy variable '", dummy.vars[i], "' not among columns of TrainData", "\n", sep = ""))
-                    dummy.vars <- dummy.vars[dummy.vars != dummy.vars[i]]
-                    if(length(dummy.vars) == 0) {dummy.vars <- NULL}
+                if (any(vars==old.dummy.vars[i]) == FALSE) {
+                    cat(paste("\n", "WARNING: dummy variable '", old.dummy.vars[i], "' not among columns of TrainData", "\n", sep = ""))
+                    dummy.vars <- dummy.vars[dummy.vars != old.dummy.vars[i]]
                 }
             }
+            if(length(dummy.vars) == 0) {dummy.vars <- NULL}
         }
     }
 # 
@@ -169,40 +172,43 @@
                         cat(paste("\n", "NOTE: variable '", layer.drops[i], "' will not be included as explanatory variable", "\n", sep = ""))
                         x <- dropLayer(x, which(names(x) %in% c(layer.drops[i]) ))
                         vars <- names(x)
-                        if (is.null(factors) == F) {
+                        if (length(factors) > 0) {
                             factors <- factors[factors != layer.drops[i]]
-                            if(length(factors) == 0) {factors <- NULL}
                         }
-                        if (is.null(dummy.vars) == F) {
+                        if (length(dummy.vars) > 0) {
                             dummy.vars <- dummy.vars[dummy.vars != layer.drops[i]]
-                            if(length(dummy.vars) == 0) {dummy.vars <- NULL}
                         }
                     }
                 }
+                if(length(layer.drops) == 0) {layer.drops <- NULL}
+                if(length(factors) == 0) {factors <- NULL}
+                if(length(dummy.vars) == 0) {dummy.vars <- NULL}
             }
             if (is.null(factors) == F) {
                 vars <- names(x)
                 factors <- as.character(factors)
                 nf <- length(factors)
+                old.factors <- factors
                 for (i in 1:nf) {
-                    if (any(vars==factors[i])==FALSE) {
-                        cat(paste("\n", "WARNING: categorical variable '", factors[i], "' not among grid layers", "\n", sep = ""))
-                        factors <- factors[factors != factors[i]]
-                        if(length(factors) == 0) {factors <- NULL}
+                    if (any(vars==old.factors[i])==FALSE) {
+                        cat(paste("\n", "WARNING: categorical variable '", old.factors[i], "' not among grid layers", "\n", sep = ""))
+                        factors <- factors[factors != old.factors[i]]
                     }
                 }
+                if(length(factors) == 0) {factors <- NULL}
             }
             if (is.null(dummy.vars) == F) {
                 vars <- names(x)
                 dummy.vars <- as.character(dummy.vars)
                 nf <- length(dummy.vars)
+                old.dummy.vars <- dummy.vars
                 for (i in 1:nf) {
-                    if (any(vars==dummy.vars[i])==FALSE) {
-                        cat(paste("\n", "WARNING: dummy variable '", dummy.vars[i], "' not among grid layers", "\n", sep = ""))
-                        dummy.vars <- dummy.vars[dummy.vars != dummy.vars[i]]
-                        if(length(dummy.vars) == 0) {dummy.vars <- NULL}
+                    if (any(vars==old.dummy.vars[i]) == FALSE) {
+                        cat(paste("\n", "WARNING: dummy variable '", old.dummy.vars[i], "' not among grid layers", "\n", sep = ""))
+                        dummy.vars <- dummy.vars[dummy.vars != old.dummy.vars[i]]
                     }
                 }
+                if(length(dummy.vars) == 0) {dummy.vars <- NULL}
             }
         }
         # set minimum and maximum values
@@ -238,6 +244,7 @@
                         MAXENT.BackData <- MAXENT.BackData[, which(names(MAXENT.BackData) != layer.drops[i])]
                     }
                 }
+                if(length(layer.drops) == 0) {layer.drops <- NULL}
             }
         }
     }
@@ -269,7 +276,7 @@
         EARTH, RPART, NNET, FDA, SVM, SVME, BIOCLIM, DOMAIN, MAHAL, GEODIST))
     names(ws) <- c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX", 
         "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL", "GEODIST")
-    ws <- ensemble.weights(weights=ws, decay=1, best=0, min.weight=0)
+    ws <- ensemble.weights(weights=ws, exponent=1, best=0, min.weight=0)
 #
     thresholds <- c(ws, NA)
     names(thresholds) <- c(names(ws), "ENSEMBLE")
@@ -277,27 +284,50 @@
 #
     MAXENT.OLD <- GBM.OLD <- GBMSTEP.OLD <- RF.OLD <- GLM.OLD <- GLMSTEP.OLD <- GAM.OLD <- GAMSTEP.OLD <- MGCV.OLD <- NULL
     MGCVFIX.OLD <- EARTH.OLD <- RPART.OLD <- NNET.OLD <- FDA.OLD <- SVM.OLD <- SVME.OLD <- BIOCLIM.OLD <- DOMAIN.OLD <- MAHAL.OLD <- GEODIST.OLD <- NULL
+# probit models, NULL if no probit model fitted
+    MAXENT.PROBIT.OLD <- GBM.PROBIT.OLD <- GBMSTEP.PROBIT.OLD <- RF.PROBIT.OLD <- GLM.PROBIT.OLD <- GLMSTEP.PROBIT.OLD <- GAM.PROBIT.OLD <- GAMSTEP.PROBIT.OLD <- MGCV.PROBIT.OLD <- NULL
+    MGCVFIX.PROBIT.OLD <- EARTH.PROBIT.OLD <- RPART.PROBIT.OLD <- NNET.PROBIT.OLD <- FDA.PROBIT.OLD <- SVM.PROBIT.OLD <- SVME.PROBIT.OLD <- BIOCLIM.PROBIT.OLD <- DOMAIN.PROBIT.OLD <- MAHAL.PROBIT.OLD <- NULL
     if (is.null(models.list) == F) {
-        MAXENT.OLD <- models.list$MAXENT
-        GBM.OLD <- models.list$GBM
-        GBMSTEP.OLD <- models.list$GBMSTEP
-        RF.OLD <- models.list$RF
-        GLM.OLD <- models.list$GLM
-        GLMSTEP.OLD <- models.list$GLMSTEP
-        GAM.OLD <- models.list$GAM
-        GAMSTEP.OLD <- models.list$GAMSTEP
-        MGCV.OLD <- models.list$MGCV
-        MGCVFIX.OLD <- models.list$MGCVFIX
-        EARTH.OLD <- models.list$EARTH
-        RPART.OLD <- models.list$RPART
-        NNET.OLD <- models.list$NNET
-        FDA.OLD <- models.list$FDA
-        SVM.OLD <- models.list$SVM
-        SVME.OLD <- models.list$SVME
-        BIOCLIM.OLD <- models.list$BIOCLIM
-        DOMAIN.OLD <- models.list$DOMAIN
-        MAHAL.OLD <- models.list$MAHAL
-        GEODIST.OLD <- models.list$GEODIST
+        if (is.null(models.list$MAXENT) == F) {MAXENT.OLD <- models.list$MAXENT}
+        if (is.null(models.list$GBM) == F) {GBM.OLD <- models.list$GBM}
+        if (is.null(models.list$GBMSTEP) == F) {GBMSTEP.OLD <- models.list$GBMSTEP}
+        if (is.null(models.list$RF) == F) {RF.OLD <- models.list$RF}
+        if (is.null(models.list$GLM) == F) {GLM.OLD <- models.list$GLM}
+        if (is.null(models.list$GLMSTEP) == F) {GLMSTEP.OLD <- models.list$GLMSTEP}
+        if (is.null(models.list$GAM) == F) {GAM.OLD <- models.list$GAM}
+        if (is.null(models.list$GAMSTEP) == F) {GAMSTEP.OLD <- models.list$GAMSTEP}
+        if (is.null(models.list$MGCV) == F) {MGCV.OLD <- models.list$MGCV}
+        if (is.null(models.list$MGCVFIX) == F) {MGCVFIX.OLD <- models.list$MGCVFIX}
+        if (is.null(models.list$EARTH) == F) {EARTH.OLD <- models.list$EARTH}
+        if (is.null(models.list$RPART) == F) {RPART.OLD <- models.list$RPART}
+        if (is.null(models.list$NNET) == F) {NNET.OLD <- models.list$NNET}
+        if (is.null(models.list$FDA) == F) {FDA.OLD <- models.list$FDA}
+        if (is.null(models.list$SVM) == F) {SVM.OLD <- models.list$SVM}
+        if (is.null(models.list$SVME) == F) {SVME.OLD <- models.list$SVME}
+        if (is.null(models.list$BIOCLIM) == F) {BIOCLIM.OLD <- models.list$BIOCLIM}
+        if (is.null(models.list$DOMAIN) == F) {DOMAIN.OLD <- models.list$DOMAIN}
+        if (is.null(models.list$MAHAL) == F) {MAHAL.OLD <- models.list$MAHAL}
+        if (is.null(models.list$GEODIST) == F) {GEODIST.OLD <- models.list$GEODIST}
+# probit models
+        if (is.null(models.list$MAXENT.PROBIT) == F) {MAXENT.PROBIT.OLD <- models.list$MAXENT.PROBIT}
+        if (is.null(models.list$GBM.PROBIT) == F) {GBM.PROBIT.OLD <- models.list$GBM.PROBIT}
+        if (is.null(models.list$GBMSTEP.PROBIT) == F) {GBMSTEP.PROBIT.OLD <- models.list$GBMSTEP.PROBIT}
+        if (is.null(models.list$RF.PROBIT) == F) {RF.PROBIT.OLD <- models.list$RF.PROBIT}
+        if (is.null(models.list$GLM.PROBIT) == F) {GLM.PROBIT.OLD <- models.list$GLM.PROBIT}
+        if (is.null(models.list$GLMSTEP.PROBIT) == F) {GLMSTEP.PROBIT.OLD <- models.list$GLMSTEP.PROBIT}
+        if (is.null(models.list$GAM.PROBIT) == F) {GAM.PROBIT.OLD <- models.list$GAM.PROBIT}
+        if (is.null(models.list$GAMSTEP.PROBIT) == F) {GAMSTEP.PROBIT.OLD <- models.list$GAMSTEP.PROBIT}
+        if (is.null(models.list$MGCV.PROBIT) == F) {MGCV.PROBIT.OLD <- models.list$MGCV.PROBIT}
+        if (is.null(models.list$MGCVFIX.PROBIT) == F) {MGCVFIX.PROBIT.OLD <- models.list$MGCVFIX.PROBIT}
+        if (is.null(models.list$EARTH.PROBIT) == F) {EARTH.PROBIT.OLD <- models.list$EARTH.PROBIT}
+        if (is.null(models.list$RPART.PROBIT) == F) {RPART.PROBIT.OLD <- models.list$RPART.PROBIT}
+        if (is.null(models.list$NNET.PROBIT) == F) {NNET.PROBIT.OLD <- models.list$NNET.PROBIT}
+        if (is.null(models.list$FDA.PROBIT) == F) {FDA.PROBIT.OLD <- models.list$FDA.PROBIT}
+        if (is.null(models.list$SVM.PROBIT) == F) {SVM.PROBIT.OLD <- models.list$SVM.PROBIT}
+        if (is.null(models.list$SVME.PROBIT) == F) {SVME.PROBIT.OLD <- models.list$SVME.PROBIT}
+        if (is.null(models.list$BIOCLIM.PROBIT) == F) {BIOCLIM.PROBIT.OLD <- models.list$BIOCLIM.PROBIT}
+        if (is.null(models.list$DOMAIN.PROBIT) == F) {DOMAIN.PROBIT.OLD <- models.list$DOMAIN.PROBIT}
+        if (is.null(models.list$MAHAL.PROBIT) == F) {MAHAL.PROBIT.OLD <- models.list$MAHAL.PROBIT}
     }
 # check formulae and packages
     if (ws["MAXENT"] > 0) {
@@ -678,10 +708,12 @@
         }
         MAXENT.BackData <- data.frame(MAXENT.BackData)
         if (is.null(layer.drops) == F) {
+            layer.drops <- as.character(layer.drops)
             nd <- length(layer.drops)
             for (i in 1:nd) {     
                 MAXENT.BackData <- MAXENT.BackData[, which(colnames(MAXENT.BackData) != layer.drops[i])]
             }
+            if(length(layer.drops) == 0) {layer.drops <- NULL}
         }
         TestValid <- complete.cases(MAXENT.BackData)
         MAXENT.BackData <- MAXENT.BackData[TestValid,]
@@ -695,21 +727,24 @@
             cat(paste("\n", "Summary of Background data set used for calibration of MAXENT model (rows: ", nrow(MAXENT.BackData),  ")\n", sep = ""))
             print(summary(MAXENT.BackData))
         }
-        if (identical(colnames(TrainData.vars), colnames(MAXENT.BackData)) == F) {
+        if (all(names(MAXENT.BackData) %in% names(TrainData.vars)) == F) {
                 cat(paste("\n", "WARNING: MAXENT.BackData has different (sequence of) colnames than TrainData", sep = ""))
                 cat(paste("\n", "MAXENT model will not be calibrated", "\n", sep = "")) 
                 ws["MAXENT"] <- 0
 #                MAXENT.BackData <- NULL
         }else{
-            MAXENT.TrainData <- rbind(TrainData.vars, MAXENT.BackData)
-            MAXENT.pa <- c(rep(1, nrow(TrainData.vars)), rep(0, nrow(MAXENT.BackData)))
+            MAXENT.TrainData <- rbind(TrainData.pres, MAXENT.BackData)
+            cat(paste("\n", "Summary of Training data set used for calibration of MAXENT model (rows: ", nrow(MAXENT.TrainData),  ", presence locations: ", nrow(TrainData.pres), ")\n", sep = ""))
+            print(summary(MAXENT.TrainData))
+            MAXENT.pa <- c(rep(1, nrow(TrainData.pres)), rep(0, nrow(MAXENT.BackData)))
             assign("MAXENT.TrainData", MAXENT.TrainData, envir=.BiodiversityR)
             assign("MAXENT.pa", MAXENT.pa, envir=.BiodiversityR)            
         }
     }
 #
 #
-    if (VIF == T) {
+    newVIF <- NULL
+    if (VIF == T  && length(names(TrainData.vars)) > 1 ) {
         if (! require(car)) {stop("Please install the car package")}
 # only use background data
         TrainDataNum <- TrainData[TrainData[,"pb"]==0,]
@@ -743,7 +778,7 @@
     }
     if (COR == T) {
         TrainDataNum <- TrainData[, colnames(TrainData) != "pb"]
-        if(is.null(factors) == F) {
+        if(is.null(factors)) {
             for (i in 1:length(factors)) {
                 TrainDataNum <- TrainDataNum[, colnames(TrainDataNum) != factors[i]]            
             }
@@ -801,6 +836,9 @@
     Yweights <- Yweights1
     assign("Yweights", Yweights, envir=.BiodiversityR)
 #
+# prepare for calculation of deviance
+    obs1 <- TrainData[, "pb"]
+#
 # count models
     mc <- 0
 #
@@ -809,7 +847,7 @@
     if (ws["MAXENT"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Maximum entropy algorithm (package: dismo)\n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         # Put the file 'maxent.jar' in the 'java' folder of dismo
         # the file 'maxent.jar' can be obtained from from http://www.cs.princeton.edu/~schapire/maxent/.
         jar <- paste(system.file(package="dismo"), "/java/maxent.jar", sep='')
@@ -821,8 +859,24 @@
             results <- MAXENT.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "MAXENT calibration tested with calibration data of other algorithms","\n\n",sep = ""))
+            cat(paste("\n", "MAXENT calibration tested with calibration data of other algorithms","\n\n", sep = ""))
             TrainData[,"MAXENT"] <- dismo::predict(object=results, x=TrainData.vars)
+            if (PROBIT == T) {
+                if(is.null(MAXENT.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ MAXENT"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- MAXENT.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n", sep = ""))
+                TrainData[,"MAXENT.step1"] <- TrainData[,"MAXENT"]
+                if (TRUNC == T) {TrainData[,"MAXENT.step1"] <- trunc(1000*TrainData[,"MAXENT.step1"])}
+                TrainData[,"MAXENT"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "MAXENT"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"MAXENT"] <- trunc(1000*TrainData[,"MAXENT"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"MAXENT"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"MAXENT"]
@@ -833,8 +887,13 @@
             print(as.numeric(thresholds["MAXENT"]))
             weights["MAXENT"] <- max(c(eval1@auc, 0), na.rm=T)
             if (no.tests == F) {
-                cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
+                cat(paste("\n", "Evaluation with test data","\n\n", sep = ""))
                 TestData[,"MAXENT"] <- dismo::predict(object=results, x=TestData.vars)
+                if (PROBIT == T) {
+                    TestData[,"MAXENT.step1"] <- TestData[,"MAXENT"]
+                    if (TRUNC == T) {TestData[,"MAXENT.step1"] <- trunc(1000*TestData[,"MAXENT.step1"])}
+                    TestData[,"MAXENT"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"MAXENT"] <- trunc(1000*TestData[,"MAXENT"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"MAXENT"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MAXENT"]
@@ -856,13 +915,16 @@
                 evaluations$MAXENT.C <- eval1
                 evaluations$MAXENT.T <- eval2
             }
-            if (models.keep==T) {models$MAXENT <- results}
+            if (models.keep==T) {
+                models$MAXENT <- results
+                models$MAXENT.PROBIT <- results2
+            }
         }else{ cat(paste("\n", "WARNING: MAXENT calibration failed", "\n", "\n"))}
     }
     if (ws["GBM"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Generalized boosted regression modeling (package: gbm) \n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GBM.OLD) == T) {       
             tryCatch(results <- gbm(formula=GBM.formula, data=TrainData, weights=Yweights, distribution="bernoulli", 
                     interaction.depth=7, shrinkage=0.001, bag.fraction=0.5, train.fraction=1, 
@@ -873,8 +935,24 @@
             results <- GBM.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"GBM"] <- predict(object=results, newdata=TrainData.vars, n.trees=results$n.trees, type="response")
+            if (PROBIT == T) {
+                if(is.null(GBM.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ GBM"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- GBM.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"GBM.step1"] <- TrainData[,"GBM"]
+                if (TRUNC == T) {TrainData[,"GBM.step1"] <- trunc(1000*TrainData[,"GBM.step1"])}
+                TrainData[,"GBM"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "GBM"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"GBM"] <- trunc(1000*TrainData[,"GBM"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"GBM"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GBM"]
@@ -887,6 +965,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"GBM"] <- predict(object=results, newdata=TestData.vars, n.trees=results$n.trees, type="response")
+                if (PROBIT == T) {
+                    TestData[,"GBM.step1"] <- TestData[,"GBM"]
+                    if (TRUNC == T) {TestData[,"GBM.step1"] <- trunc(1000*TestData[,"GBM.step1"])}
+                    TestData[,"GBM"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"GBM"] <- trunc(1000*TestData[,"GBM"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"GBM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GBM"]
@@ -911,6 +994,7 @@
             }
             if (models.keep==T) {
                 models$GBM <- results
+                models$GBM.PROBIT <- results2
                 models$formulae$GBM.formula <- GBM.formula
             }
         }else{ cat(paste("\n", "WARNING: GBM calibration failed", "\n", "\n"))}
@@ -919,7 +1003,7 @@
         mc <- mc+1
         cat(paste("\n", mc, ". gbm step algorithm (package: dismo)\n", sep=""))
 #        require(gbm, quietly=T)        
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GBMSTEP.OLD) == T) {       
             tryCatch(results <- gbm.step(data=TrainData, gbm.y=1, gbm.x=GBMSTEP.gbm.x, family="bernoulli",
                     site.weights=Yweights, tree.complexity=GBMSTEP.tree.complexity, learning.rate = GBMSTEP.learning.rate, 
@@ -932,8 +1016,24 @@
         if (is.null(results) == F) {
             cat(paste("\n", "stepwise GBM trees (target > 1000)", "\n", sep = ""))
             print(results$n.trees)
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"GBMSTEP"] <- predict(object=results, newdata=TrainData.vars, n.trees=results$n.trees, type="response")
+            if (PROBIT == T) {
+                if(is.null(GBMSTEP.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ GBMSTEP"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- GBMSTEP.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"GBMSTEP.step1"] <- TrainData[,"GBMSTEP"]
+                if (TRUNC == T) {TrainData[,"GBMSTEP.step1"] <- trunc(1000*TrainData[,"GBMSTEP.step1"])}
+                TrainData[,"GBMSTEP"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "GBMSTEP"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"GBMSTEP"] <- trunc(1000*TrainData[,"GBMSTEP"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"GBMSTEP"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GBMSTEP"]
@@ -946,6 +1046,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"GBMSTEP"] <- predict(object=results, newdata=TestData.vars, n.trees=results$n.trees, type="response")
+                if (PROBIT == T) {
+                    TestData[,"GBMSTEP.step1"] <- TestData[,"GBMSTEP"]
+                    if (TRUNC == T) {TestData[,"GBMSTEP.step1"] <- trunc(1000*TestData[,"GBMSTEP.step1"])}
+                    TestData[,"GBMSTEP"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"GBMSTEP"] <- trunc(1000*TestData[,"GBMSTEP"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"GBMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GBMSTEP"]
@@ -968,13 +1073,16 @@
                 evaluations$GBMSTEP.C <- eval1
                 evaluations$GBMSTEP.T <- eval2
             }
-            if (models.keep==T) {models$GBMSTEP <- results}
+            if (models.keep==T) {
+                models$GBMSTEP <- results
+                models$GBMSTEP.PROBIT <- results2
+            }
         }else{ cat(paste("\n", "WARNING: stepwise GBM calibration failed", "\n", "\n"))}
     }
     if (ws["RF"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Random forest algorithm (package: randomForest)\n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(RF.OLD) == T) {        
             tryCatch(results <- randomForest(formula=RF.formula, ntree=RF.ntree, mtry=RF.mtry, data=TrainData, na.action=na.omit),
                 error= function(err) {print(paste("random forest calibration failed"))},
@@ -983,8 +1091,24 @@
             results <- RF.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"RF"] <- predict(object=results, newdata=TrainData.vars, type="response")
+            if (PROBIT == T) {
+                if(is.null(RF.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ RF"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- RF.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"RF.step1"] <- TrainData[,"RF"]
+                if (TRUNC == T) {TrainData[,"RF.step1"] <- trunc(1000*TrainData[,"RF.step1"])}
+                TrainData[,"RF"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "RF"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"RF"] <- trunc(1000*TrainData[,"RF"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"RF"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"RF"]
@@ -997,6 +1121,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"RF"] <- predict(object=results, newdata=TestData.vars, type="response")
+                if (PROBIT == T) {
+                    TestData[,"RF.step1"] <- TestData[,"RF"]
+                    if (TRUNC == T) {TestData[,"RF.step1"] <- trunc(1000*TestData[,"RF.step1"])}
+                    TestData[,"RF"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"RF"] <- trunc(1000*TestData[,"RF"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"RF"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"RF"]
@@ -1020,6 +1149,7 @@
             }
             if (models.keep==T) {
                 models$RF <- results
+                models$RF.PROBIT <- results2
                 models$formulae$RF.formula <- RF.formula
             }
         }else{ cat(paste("\n", "WARNING: random forest calibration failed", "\n", "\n"))}
@@ -1027,7 +1157,7 @@
     if (ws["GLM"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Generalized Linear Model \n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GLM.OLD) == T) { 
             tryCatch(results <- glm(formula=GLM.formula, family=GLM.family, data=TrainData, weights=Yweights, control=glm.control(maxit=maxit)),
                 error= function(err) {print(paste("GLM calibration failed"))},
@@ -1036,8 +1166,24 @@
             results <- GLM.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"GLM"] <- predict(object=results, newdata=TrainData.vars, type="response")
+            if (PROBIT == T) {
+                if(is.null(GLM.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ GLM"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- GLM.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"GLM.step1"] <- TrainData[,"GLM"]
+                if (TRUNC == T) {TrainData[,"GLM.step1"] <- trunc(1000*TrainData[,"GLM.step1"])}
+                TrainData[,"GLM"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "GLM"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"GLM"] <- trunc(1000*TrainData[,"GLM"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"GLM"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GLM"]
@@ -1050,6 +1196,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"GLM"] <- predict(object=results, newdata=TestData.vars, type="response")
+                if (PROBIT == T) {
+                    TestData[,"GLM.step1"] <- TestData[,"GLM"]
+                    if (TRUNC == T) {TestData[,"GLM.step1"] <- trunc(1000*TestData[,"GLM.step1"])}
+                    TestData[,"GLM"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"GLM"] <- trunc(1000*TestData[,"GLM"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"GLM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GLM"]
@@ -1073,6 +1224,7 @@
             }
             if (models.keep==T) {
                 models$GLM <- results
+                models$GLM.PROBIT <- results2
                 models$formulae$GLM.formula <- GLM.formula
             }
         }else{ cat(paste("\n", "WARNING: GLM calibration failed", "\n", "\n"))}
@@ -1093,10 +1245,27 @@
         }
         if (is.null(results2) == F) {
             results <- results2
+            results2 <- NULL
             cat(paste("\n", "stepwise GLM formula","\n\n",sep = ""))
             print(formula(results))
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"GLMSTEP"] <- predict(object=results, newdata=TrainData.vars, type="response")
+            if (PROBIT == T) {
+                if(is.null(GLMSTEP.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ GLMSTEP"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- GLMSTEP.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"GLMSTEP.step1"] <- TrainData[,"GLMSTEP"]
+                if (TRUNC == T) {TrainData[,"GLMSTEP.step1"] <- trunc(1000*TrainData[,"GLMSTEP.step1"])}
+                TrainData[,"GLMSTEP"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "GLMSTEP"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"GLMSTEP"] <- trunc(1000*TrainData[,"GLMSTEP"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"GLMSTEP"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GLMSTEP"]
@@ -1109,6 +1278,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"GLMSTEP"] <- predict(object=results, newdata=TestData.vars, type="response")
+                if (PROBIT == T) {
+                    TestData[,"GLMSTEP.step1"] <- TestData[,"GLMSTEP"]
+                    if (TRUNC == T) {TestData[,"GLMSTEP.step1"] <- trunc(1000*TestData[,"GLMSTEP.step1"])}
+                    TestData[,"GLMSTEP"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"GLMSTEP"] <- trunc(1000*TestData[,"GLMSTEP"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"GLMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GLMSTEP"]
@@ -1132,6 +1306,7 @@
             }
             if (models.keep==T) {
                 models$GLMSTEP <- results
+                models$GLMSTEP.PROBIT <- results2
                 models$formulae$STEP.formula <- STEP.formula
                 models$formulae$GLMSTEP.scope <- GLMSTEP.scope
             }
@@ -1145,7 +1320,7 @@
     if (ws["GAM"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Generalized Additive Model (package: gam)\n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GAM.OLD) == T) {
             tryCatch(results <- gam(formula=GAM.formula, family=GAM.family, data=TrainData, weights=Yweights, control=gam.control(maxit=maxit, bf.maxit=50)),
                 error= function(err) {print(paste("GAM calibration (gam package) failed"))},
@@ -1154,8 +1329,24 @@
             results <- GAM.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"GAM"] <- predict(object=results, newdata=TrainData.vars, type="response")
+            if (PROBIT == T) {
+                if(is.null(GAM.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ GAM"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- GAM.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"GAM.step1"] <- TrainData[,"GAM"]
+                if (TRUNC == T) {TrainData[,"GAM.step1"] <- trunc(1000*TrainData[,"GAM.step1"])}
+                TrainData[,"GAM"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "GAM"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"GAM"] <- trunc(1000*TrainData[,"GAM"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"GAM"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GAM"]
@@ -1168,6 +1359,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"GAM"] <- predict(object=results, newdata=TestData.vars, type="response")
+                if (PROBIT == T) {
+                    TestData[,"GAM.step1"] <- TestData[,"GAM"]
+                    if (TRUNC == T) {TestData[,"GAM.step1"] <- trunc(1000*TestData[,"GAM.step1"])}
+                    TestData[,"GAM"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"GAM"] <- trunc(1000*TestData[,"GAM"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"GAM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GAM"]
@@ -1191,6 +1387,7 @@
             }
             if (models.keep==T) {
                 models$GAM <- results
+                models$GAM.PROBIT <- results2
                 models$formulae$GAM.formula <- GAM.formula
             }
         }else{ cat(paste("\n", "WARNING: GAM calibration (gam package) failed", "\n", "\n"))}
@@ -1217,10 +1414,27 @@
         }
         if (is.null(results2) == F) {
             results <- results2
+            results2 <- NULL
             cat(paste("\n", "stepwise GAM formula (gam package)","\n\n",sep = ""))
             print(formula(results))
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"GAMSTEP"] <- predict(object=results, newdata=TrainData.vars, type="response")
+            if (PROBIT == T) {
+                if(is.null(GAMSTEP.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ GAMSTEP"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- GAMSTEP.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"GAMSTEP.step1"] <- TrainData[,"GAMSTEP"]
+                if (TRUNC == T) {TrainData[,"GAMSTEP.step1"] <- trunc(1000*TrainData[,"GAMSTEP.step1"])}
+                TrainData[,"GAMSTEP"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "GAMSTEP"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"GAMSTEP"] <- trunc(1000*TrainData[,"GAMSTEP"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"GAMSTEP"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GAMSTEP"]
@@ -1233,6 +1447,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n","\n", sep = ""))
                 TestData[,"GAMSTEP"] <- predict(object=results, newdata=TestData.vars, type="response")
+                if (PROBIT == T) {
+                    TestData[,"GAM.step1"] <- TestData[,"GAM"]
+                    if (TRUNC == T) {TestData[,"GAM.step1"] <- trunc(1000*TestData[,"GAM.step1"])}
+                    TestData[,"GAM"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"GAMSTEP"] <- trunc(1000*TestData[,"GAMSTEP"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"GAMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GAMSTEP"]
@@ -1256,6 +1475,7 @@
             }
             if (models.keep==T) {
                 models$GAMSTEP <- results
+                models$GAMSTEP.PROBIT <- results2
                 models$formulae$STEP.formula <- STEP.formula
                 models$formulae$GAMSTEP.scope <- GAMSTEP.scope
             }
@@ -1269,7 +1489,7 @@
     if (ws["MGCV"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Generalized Additive Model (package: mgcv)\n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(MGCV.OLD) == T) {
             tryCatch(results <- gam(formula=MGCV.formula, family=GAM.family, data=TrainData, weights=Yweights, 
                         select=MGCV.select, control=gam.control(maxit=maxit)),
@@ -1279,8 +1499,24 @@
             results <- MGCV.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"MGCV"] <- predict.mgcv(object=results, newdata=TrainData.vars)
+            if (PROBIT == T) {
+                if(is.null(MGCV.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ MGCV"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- MGCV.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"MGCV.step1"] <- TrainData[,"MGCV"]
+                if (TRUNC == T) {TrainData[,"MGCV.step1"] <- trunc(1000*TrainData[,"MGCV.step1"])}
+                TrainData[,"MGCV"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "MGCV"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"MGCV"] <- trunc(1000*TrainData[,"MGCV"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"MGCV"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"MGCV"]
@@ -1293,6 +1529,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"MGCV"] <- predict.mgcv(object=results, newdata=TestData.vars)
+                if (PROBIT == T) {
+                    TestData[,"MGCV.step1"] <- TestData[,"MGCV"]
+                    if (TRUNC == T) {TestData[,"MGCV.step1"] <- trunc(1000*TestData[,"MGCV.step1"])}
+                    TestData[,"MGCV"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"MGCV"] <- trunc(1000*TestData[,"MGCV"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"MGCV"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MGCV"]
@@ -1316,6 +1557,7 @@
             }
             if (models.keep==T) {
                 models$MGCV <- results
+                models$MGCV.PROBIT <- results2
                 models$formulae$MGCV.formula <- MGCV.formula
             }
         }else{ cat(paste("\n", "WARNING: GAM calibration (mgcv package) failed", "\n", "\n"))}
@@ -1323,7 +1565,7 @@
     if (ws["MGCVFIX"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". GAM with fixed d.f. regression splines (package: mgcv)\n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(MGCVFIX.OLD) == T) {
             tryCatch(results <- gam(formula=MGCVFIX.formula, family=GAM.family, data=TrainData, weights=Yweights, select=FALSE, control=gam.control(maxit=maxit)),
                 error= function(err) {print(paste("GAM calibration with fixed d.f. regression splines (mgcv package) failed"))},
@@ -1332,8 +1574,24 @@
             results <- MGCVFIX.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"MGCVFIX"] <- predict.mgcv(object=results, newdata=TrainData.vars)
+            if (PROBIT == T) {
+                if(is.null(MGCVFIX.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ MGCVFIX"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- MGCVFIX.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"MGCVFIX.step1"] <- TrainData[,"MGCVFIX"]
+                if (TRUNC == T) {TrainData[,"MGCVFIX.step1"] <- trunc(1000*TrainData[,"MGCVFIX.step1"])}
+                TrainData[,"MGCVFIX"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "MGCVFIX"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"MGCVFIX"] <- trunc(1000*TrainData[,"MGCVFIX"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"MGCVFIX"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"MGCVFIX"]
@@ -1346,6 +1604,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"MGCVFIX"] <- predict.mgcv(object=results, newdata=TestData)
+                if (PROBIT == T) {
+                    TestData[,"MGCVFIX.step1"] <- TestData[,"MGCVFIX"]
+                    if (TRUNC == T) {TestData[,"MGCVFIX.step1"] <- trunc(1000*TestData[,"MGCVFIX.step1"])}
+                    TestData[,"MGCVFIX"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"MGCVFIX"] <- trunc(1000*TestData[,"MGCVFIX"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"MGCVFIX"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MGCVFIX"]
@@ -1369,6 +1632,7 @@
             }
             if (models.keep==T) {
                 models$MGCVFIX <- results
+                models$MGCVFIX.PROBIT <- results2
                 models$formulae$MGCVFIX.formula <- MGCVFIX.formula
             }
         }else{ cat(paste("\n", "WARNING: MGCVFIX calibration (mgcv package) failed", "\n", "\n"))}
@@ -1379,7 +1643,7 @@
         if (!is.null(factors)) {
             cat(paste("\n", "NOTE: MARS evaluation (earth package) with factors probably requires dummy variables", "\n", sep=""))
         } 
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(EARTH.OLD) == T) {
             tryCatch(results <- earth(formula=EARTH.formula, glm=EARTH.glm, data=TrainData, degree=2),
                 error= function(err) {print(paste("MARS calibration (earth package) failed"))},
@@ -1388,8 +1652,24 @@
             results <- EARTH.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"EARTH"] <- predict.earth2(object=results, newdata=TrainData.vars)
+            if (PROBIT == T) {
+                if(is.null(EARTH.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ EARTH"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- EARTH.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"EARTH.step1"] <- TrainData[,"EARTH"]
+                if (TRUNC == T) {TrainData[,"EARTH.step1"] <- trunc(1000*TrainData[,"EARTH.step1"])}
+                TrainData[,"EARTH"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "EARTH"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"EARTH"] <- trunc(1000*TrainData[,"EARTH"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"EARTH"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"EARTH"]
@@ -1402,6 +1682,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"EARTH"] <- predict.earth2(object=results, newdata=TestData.vars)
+                if (PROBIT == T) {
+                    TestData[,"EARTH.step1"] <- TestData[,"EARTH"]
+                    if (TRUNC == T) {TestData[,"EARTH.step1"] <- trunc(1000*TestData[,"EARTH.step1"])}
+                    TestData[,"EARTH"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"EARTH"] <- trunc(1000*TestData[,"EARTH"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"EARTH"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"EARTH"]
@@ -1425,6 +1710,7 @@
             }
             if (models.keep==T) {
                 models$EARTH <- results
+                models$EARTH.PROBIT <- results2
                 models$formulae$EARTH.formula <- EARTH.formula
             }
         }else{ cat(paste("\n", "WARNING: MARS calibration (earth package) failed", "\n", "\n"))}
@@ -1432,7 +1718,7 @@
     if (ws["RPART"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Recursive Partitioning And Regression Trees (package: rpart)\n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(RPART.OLD) == T) {
             tryCatch(results <- rpart(formula=RPART.formula, data=TrainData, weights=Yweights,
                     control=rpart.control(xval=RPART.xval, minbucket=5, minsplit=5, cp=0.001, maxdepth=25)),
@@ -1442,8 +1728,24 @@
             results <- RPART.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"RPART"] <- predict(object=results, newdata=TrainData.vars, type="prob")[,2]
+            if (PROBIT == T) {
+                if(is.null(RPART.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ RPART"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- RPART.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"RPART.step1"] <- TrainData[,"RPART"]
+                if (TRUNC == T) {TrainData[,"RPART.step1"] <- trunc(1000*TrainData[,"RPART.step1"])}
+                TrainData[,"RPART"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "RPART"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"RPART"] <- trunc(1000*TrainData[,"RPART"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"RPART"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"RPART"]
@@ -1456,6 +1758,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"RPART"] <- predict(object=results, newdata=TestData.vars, type="prob")[,2]
+                if (PROBIT == T) {
+                    TestData[,"RPART.step1"] <- TestData[,"RPART"]
+                    if (TRUNC == T) {TestData[,"RPART.step1"] <- trunc(1000*TestData[,"RPART.step1"])}
+                    TestData[,"RPART"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"RPART"] <- trunc(1000*TestData[,"RPART"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"RPART"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"RPART"]
@@ -1480,6 +1787,7 @@
             }
             if (models.keep==T) {
                 models$RPART <- results
+                models$RPART.PROBIT <- results2
                 models$formulae$RPART.formula <- RPART.formula
             }
         }else{ cat(paste("\n", "WARNING: RPART calibration failed", "\n", "\n"))}
@@ -1487,7 +1795,7 @@
     if (ws["NNET"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Artificial Neural Network (package: nnet)\n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(NNET.OLD) == T) {
             tryCatch(results <- nnet(formula=NNET.formula, size=NNET.size, decay=NNET.decay, data=TrainData, weights=Yweights, 
                     rang=0.1, maxit=maxit, trace=F),
@@ -1497,8 +1805,24 @@
             results <- NNET.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"NNET"] <- predict.nnet2(object=results, newdata=TrainData.vars)
+            if (PROBIT == T) {
+                if(is.null(NNET.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ NNET"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- NNET.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"NNET.step1"] <- TrainData[,"NNET"]
+                if (TRUNC == T) {TrainData[,"NNET.step1"] <- trunc(1000*TrainData[,"NNET.step1"])}
+                TrainData[,"NNET"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "NNET"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"NNET"] <- trunc(1000*TrainData[,"NNET"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"NNET"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"NNET"]
@@ -1511,6 +1835,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"NNET"] <- predict.nnet2(object=results, newdata=TestData.vars)
+                if (PROBIT == T) {
+                    TestData[,"NNET.step1"] <- TestData[,"NNET"]
+                    if (TRUNC == T) {TestData[,"NNET.step1"] <- trunc(1000*TestData[,"NNET.step1"])}
+                    TestData[,"NNET"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"NNET"] <- trunc(1000*TestData[,"NNET"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"NNET"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"NNET"]
@@ -1534,6 +1863,7 @@
             }
             if (models.keep==T) {
                 models$NNET <- results
+                models$NNET.PROBIT <- results2
                 models$formulae$NNET.formula <- NNET.formula
             }
         }else{ cat(paste("\n", "WARNING: ANN calibration (nnet package) failed", "\n", "\n"))}
@@ -1541,7 +1871,7 @@
     if (ws["FDA"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Flexible Discriminant Analysis (package: mda)\n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(FDA.OLD) == T) {
             tryCatch(results <- fda(formula=FDA.formula, method=mars, data=TrainData, weights=Yweights),
                 error= function(err) {print(paste("FDA calibration failed"))},
@@ -1550,8 +1880,24 @@
             results <- FDA.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"FDA"] <- predict(object=results, newdata=TrainData.vars, type="posterior")[,2]
+            if (PROBIT == T) {
+                if(is.null(FDA.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ FDA"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- FDA.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"FDA.step1"] <- TrainData[,"FDA"]
+                if (TRUNC == T) {TrainData[,"FDA.step1"] <- trunc(1000*TrainData[,"FDA.step1"])}
+                TrainData[,"FDA"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "FDA"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"FDA"] <- trunc(1000*TrainData[,"FDA"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"FDA"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"FDA"]
@@ -1564,6 +1910,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"FDA"] <- predict(object=results, newdata=TestData.vars, type="posterior")[,2]
+                if (PROBIT == T) {
+                    TestData[,"FDA.step1"] <- TestData[,"FDA"]
+                    if (TRUNC == T) {TestData[,"FDA.step1"] <- trunc(1000*TestData[,"FDA.step1"])}
+                    TestData[,"FDA"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"FDA"] <- trunc(1000*TestData[,"FDA"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"FDA"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"FDA"]
@@ -1587,6 +1938,7 @@
             }
             if (models.keep==T) {
                 models$FDA <- results
+                models$FDA.PROBIT <- results2
                 models$formulae$FDA.formula <- FDA.formula
             }
         }else{ cat(paste("\n", "WARNING: FDA calibration failed", "\n", "\n"))}
@@ -1595,7 +1947,7 @@
         mc <- mc+1
         cat(paste("\n", mc, ". Support Vector Machines (package: kernlab)\n", sep=""))
         cat(paste("\n\n"))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(SVM.OLD) == T) {
             tryCatch(results <- ksvm(SVM.formula, data=TrainData, type="C-svc", prob.model=T),
                 error= function(err) {print(paste("SVM calibration failed"))},
@@ -1604,8 +1956,24 @@
             results <- SVM.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"SVM"] <- kernlab::predict(object=results, newdata=TrainData.vars, type="probabilities")[,2]
+            if (PROBIT == T) {
+                if(is.null(SVM.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ SVM"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- SVM.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"SVM.step1"] <- TrainData[,"SVM"]
+                if (TRUNC == T) {TrainData[,"SVM.step1"] <- trunc(1000*TrainData[,"SVM.step1"])}
+                TrainData[,"SVM"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "SVM"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"SVM"] <- trunc(1000*TrainData[,"SVM"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"SVM"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"SVM"]
@@ -1618,6 +1986,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"SVM"] <- kernlab::predict(object=results, newdata=TestData.vars, type="probabilities")[,2]
+                if (PROBIT == T) {
+                    TestData[,"SVM.step1"] <- TestData[,"SVM"]
+                    if (TRUNC == T) {TestData[,"SVM.step1"] <- trunc(1000*TestData[,"SVM.step1"])}
+                    TestData[,"SVM"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"SVM"] <- trunc(1000*TestData[,"SVM"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"SVM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"SVM"]
@@ -1641,6 +2014,7 @@
             }
             if (models.keep==T) {
                 models$SVM <- results
+                models$SVM.PROBIT <- results2
                 models$formulae$SVM.formula <- SVM.formula
             }
         }else{ cat(paste("\n", "WARNING: SVM calibration failed", "\n", "\n"))}
@@ -1648,7 +2022,7 @@
     if (ws["SVME"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Support Vector Machines (package: e1071)\n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(SVME.OLD) == T) {
             tryCatch(results <- svm(SVME.formula, data=TrainData, type="C-classification", kernel="polynomial", degree=3, probability=TRUE),
                 error= function(err) {print(paste("SVM calibration (e1071 package) failed"))},
@@ -1657,8 +2031,24 @@
             results <- SVME.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"SVME"] <- predict.svme(model=results, newdata=TrainData.vars)
+            if (PROBIT == T) {
+                if(is.null(SVME.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ SVME"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- SVME.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"SVME.step1"] <- TrainData[,"SVME"]
+                if (TRUNC == T) {TrainData[,"SVME.step1"] <- trunc(1000*TrainData[,"SVME.step1"])}
+                TrainData[,"SVME"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "SVME"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"SVME"] <- trunc(1000*TrainData[,"SVME"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"SVME"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"SVME"]
@@ -1671,6 +2061,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"SVME"] <- predict.svme(model=results, newdata=TestData.vars)
+                if (PROBIT == T) {
+                    TestData[,"SVME.step1"] <- TestData[,"SVME"]
+                    if (TRUNC == T) {TestData[,"SVME.step1"] <- trunc(1000*TestData[,"SVME.step1"])}
+                    TestData[,"SVME"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"SVME"] <- trunc(1000*TestData[,"SVME"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"SVME"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"SVME"]
@@ -1694,19 +2089,20 @@
             }
             if (models.keep==T) {
                 models$SVME <- results
+                models$SVME.PROBIT <- results2
                 models$formulae$SVME.formula <- SVME.formula
             }
         }else{ cat(paste("\n", "WARNING: SVM calibration (e1071 package) failed", "\n", "\n"))}
     }
     if (ws["BIOCLIM"] > 0 || ws["DOMAIN"] > 0 || ws["MAHAL"] > 0) {
-        if(is.null(factors)==F) {
+        if(is.null(factors) == F) {
             for (i in 1:length(factors)) {
                 TrainData.vars <- TrainData.vars[, which(colnames(TrainData.vars) != factors[i])]
                 TrainData.pres <- TrainData.pres[, which(colnames(TrainData.pres) != factors[i])]
                 TestData.vars <- TestData.vars[, which(colnames(TestData.vars) != factors[i])]
             }
         }
-        if(is.null(dummy.vars)==F) {
+        if(is.null(dummy.vars) == F) {
             for (i in 1:length(dummy.vars)) {
                 TrainData.vars <- TrainData.vars[, which(colnames(TrainData.vars) != dummy.vars[i])]
                 TrainData.pres <- TrainData.pres[, which(colnames(TrainData.pres) != dummy.vars[i])]
@@ -1717,7 +2113,7 @@
     if (ws["BIOCLIM"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". BIOCLIM algorithm (package: dismo)\n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(BIOCLIM.OLD) == T) {
             tryCatch(results <- bioclim(x=TrainData.pres),
                 error= function(err) {print(paste("BIOCLIM calibration failed"))},
@@ -1726,8 +2122,24 @@
             results <- BIOCLIM.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"BIOCLIM"] <- dismo::predict(object=results, x=TrainData.vars)
+            if (PROBIT == T) {
+                if(is.null(BIOCLIM.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ BIOCLIM"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- BIOCLIM.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"BIOCLIM.step1"] <- TrainData[,"BIOCLIM"]
+                if (TRUNC == T) {TrainData[,"BIOCLIM.step1"] <- trunc(1000*TrainData[,"BIOCLIM.step1"])}
+                TrainData[,"BIOCLIM"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "BIOCLIM"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"BIOCLIM"] <- trunc(1000*TrainData[,"BIOCLIM"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"BIOCLIM"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"BIOCLIM"]
@@ -1740,6 +2152,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"BIOCLIM"] <- dismo::predict(object=results, x=TestData.vars)
+                if (PROBIT == T) {
+                    TestData[,"BIOCLIM.step1"] <- TestData[,"BIOCLIM"]
+                    if (TRUNC == T) {TestData[,"BIOCLIM.step1"] <- trunc(1000*TestData[,"BIOCLIM.step1"])}
+                    TestData[,"BIOCLIM"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"BIOCLIM"] <- trunc(1000*TestData[,"BIOCLIM"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"BIOCLIM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"BIOCLIM"]
@@ -1761,13 +2178,16 @@
                 evaluations$BIOCLIM.C <- eval1
                 evaluations$BIOCLIM.T <- eval2
             }
-            if (models.keep==T) {models$BIOCLIM <- results}
+            if (models.keep==T) {
+                models$BIOCLIM <- results
+                models$BIOCLIM.PROBIT <- results2
+            }
         }else{ cat(paste("\n", "WARNING: BIOCLIM calibration failed", "\n", "\n"))}
     }
     if (ws["DOMAIN"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". DOMAIN algorithm (package: dismo)\n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(DOMAIN.OLD) == T) {
             tryCatch(results <- domain(x=TrainData.pres),
                 error= function(err) {print(paste("DOMAIN calibration failed"))},
@@ -1776,8 +2196,24 @@
             results <- DOMAIN.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"DOMAIN"] <- dismo::predict(object=results, x=TrainData.vars)
+            if (PROBIT == T) {
+                if(is.null(DOMAIN.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ DOMAIN"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- DOMAIN.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"DOMAIN.step1"] <- TrainData[,"DOMAIN"]
+                if (TRUNC == T) {TrainData[,"DOMAIN.step1"] <- trunc(1000*TrainData[,"DOMAIN.step1"])}
+                TrainData[,"DOMAIN"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "DOMAIN"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"DOMAIN"] <- trunc(1000*TrainData[,"DOMAIN"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"DOMAIN"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"DOMAIN"]
@@ -1790,6 +2226,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"DOMAIN"] <- dismo::predict(object=results, x=TestData.vars)
+                if (PROBIT == T) {
+                    TestData[,"DOMAIN.step1"] <- TestData[,"DOMAIN"]
+                    if (TRUNC == T) {TestData[,"DOMAIN.step1"] <- trunc(1000*TestData[,"DOMAIN.step1"])}
+                    TestData[,"DOMAIN"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"DOMAIN"] <- trunc(1000*TestData[,"DOMAIN"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"DOMAIN"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"DOMAIN"]
@@ -1811,13 +2252,16 @@
                 evaluations$DOMAIN.C <- eval1
                 evaluations$DOMAIN.T <- eval2
             }
-            if (models.keep==T) {models$DOMAIN <- results}
+            if (models.keep==T) {
+                models$DOMAIN <- results
+                models$DOMAIN.PROBIT <- results2
+            }
         }else{ cat(paste("\n", "WARNING: DOMAIN calibration failed", "\n", "\n"))}
     }
     if (ws["MAHAL"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Mahalanobis algorithm (package: dismo)\n", sep=""))
-        eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(MAHAL.OLD) == T) {
             tryCatch(results <- mahal(x=TrainData.pres),
                 error= function(err) {print(paste("Mahalanobis calibration failed"))},
@@ -1826,8 +2270,24 @@
             results <- MAHAL.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
             TrainData[,"MAHAL"] <- predict.mahal(model=results, newdata=TrainData.vars, MAHAL.shape=MAHAL.shape)
+            if (PROBIT == T) {
+                if(is.null(MAHAL.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ MAHAL"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- MAHAL.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"MAHAL.step1"] <- TrainData[,"MAHAL"]
+                if (TRUNC == T) {TrainData[,"MAHAL.step1"] <- trunc(1000*TrainData[,"MAHAL.step1"])}
+                TrainData[,"MAHAL"] <- predict(object=results2, newdata=TrainData, type="response")
+            }
+            pred1 <- TrainData[, "MAHAL"]
+            pred1[pred1 == 0] <- 0.0000000001
+            pred1[pred1 == 1] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             if (TRUNC == T) {TrainData[,"MAHAL"] <- trunc(1000*TrainData[,"MAHAL"])}
             TrainPres <- TrainData[TrainData[,"pb"]==1,"MAHAL"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"MAHAL"]
@@ -1840,6 +2300,11 @@
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
                 TestData[,"MAHAL"] <- predict.mahal(model=results, newdata=TestData.vars, MAHAL.shape=MAHAL.shape)
+                if (PROBIT == T) {
+                    TestData[,"MAHAL.step1"] <- TestData[,"MAHAL"]
+                    if (TRUNC == T) {TestData[,"MAHAL.step1"] <- trunc(1000*TestData[,"MAHAL.step1"])}
+                    TestData[,"MAHAL"] <- predict(object=results2, newdata=TestData, type="response")
+                }
                 if (TRUNC == T) {TestData[,"MAHAL"] <- trunc(1000*TestData[,"MAHAL"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"MAHAL"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MAHAL"]
@@ -1863,6 +2328,7 @@
             }
             if (models.keep==T) {
                 models$MAHAL <- results
+                models$MAHAL.PROBIT <- results2
                 models$formulae$MAHAL.shape <- MAHAL.shape
             }
         }else{ cat(paste("\n", "WARNING: Mahalanobis calibration failed", "\n", "\n"))}
@@ -1914,22 +2380,21 @@
     }
 #
     if (AUC.weights == T) {
-        if(length(ENSEMBLE.decay) > 1 || length(ENSEMBLE.interval.width) > 1 || length(ENSEMBLE.best) > 1 || length(ENSEMBLE.min) > 1) {ENSEMBLE.tune <- TRUE}
+        if(length(ENSEMBLE.exponent) > 1 || length(ENSEMBLE.best) > 1 || length(ENSEMBLE.min) > 1) {ENSEMBLE.tune <- TRUE}
     }
     if(ENSEMBLE.tune == F) {
         if (sum(ws, na.rm=T) > 0) {
             if (AUC.weights == T) {
                 cat(paste("\n", "Weights based on AUC", "\n", sep = ""))
                 print(weights)
-                weights <- ensemble.weights(weights=weights, decay=ENSEMBLE.decay, interval.width=ENSEMBLE.interval.width, 
-                    best=ENSEMBLE.best, min.weight=ENSEMBLE.min)
-                cat(paste("\n", "Weights based on parameters ENSEMBLE.min=", ENSEMBLE.min, ", ENSEMBLE.best=", ENSEMBLE.best, ", ENSEMBLE.decay=", 
-                    ENSEMBLE.decay, " and ENSEMBLE.interval.width=", ENSEMBLE.interval.width, "\n", sep = ""))
+                weights <- ensemble.weights(weights=weights, exponent=ENSEMBLE.exponent, best=ENSEMBLE.best, min.weight=ENSEMBLE.min)
+                cat(paste("\n", "Weights based on parameters ENSEMBLE.min=", ENSEMBLE.min, ", ENSEMBLE.best=", ENSEMBLE.best, 
+                    " and ENSEMBLE.exponent=", ENSEMBLE.exponent, "\n", sep = ""))
                 print(weights)
                 ws <- weights
                 cat(paste("\n", "Minimum input weight is 0.05", "\n", sep=""))
                 ws[ws < 0.05] <- 0
-                ws <- ensemble.weights(weights=ws, decay=1, best=0, min.weight=0)
+                ws <- ensemble.weights(weights=ws, exponent=1, best=0, min.weight=0)
                 cat(paste("\n", "Weights for ensemble forecasting", "\n", sep = ""))
                 print(ws)
             }else{
@@ -1943,13 +2408,13 @@
 # use different strategies for calculating the ensemble model
 # similar to using test data for calculating input AUC, use internal test data for calculating best ensemble
 # recalculating AUC does not require much computing time - initial calculations kept to spot problems for specific algorithms
-        strategy.results <- ensemble.strategy(TrainData=TrainData, 
-            ENSEMBLE.decay=ENSEMBLE.decay, ENSEMBLE.interval.width=ENSEMBLE.interval.width, ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min)
+        strategy.results <- ensemble.strategy(TrainData=TrainData, TestData=TestData,
+            ENSEMBLE.exponent=ENSEMBLE.exponent, ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min)
         ws <- strategy.results$weights
         if (sum(ws, na.rm=T) > 0) {
             cat(paste("\n", "Minimum input weight is 0.05", "\n", sep=""))
             ws[ws < 0.05] <- 0
-            ws <- ensemble.weights(weights=ws, decay=1, best=0, min.weight=0)
+            ws <- ensemble.weights(weights=ws, exponent=1, best=0, min.weight=0)
             cat(paste("\n", "Weights for ensemble forecasting", "\n", sep = ""))
             print(ws)
         }else{
@@ -1967,41 +2432,56 @@
             ws["RPART"]*TrainData[,"RPART"] + ws["NNET"]*TrainData[,"NNET"] + ws["FDA"]*TrainData[,"FDA"] +
             ws["SVM"]*TrainData[,"SVM"] + ws["SVME"]*TrainData[,"SVME"] + ws["BIOCLIM"]*TrainData[,"BIOCLIM"] +
             ws["DOMAIN"]*TrainData[,"DOMAIN"] + ws["MAHAL"]*TrainData[,"MAHAL"]
+        pred1 <- TrainData[, "ENSEMBLE"]
+        if (TRUNC == T) {pred1 <- pred1/1000}
+        pred1[pred1 == 0] <- 0.0000000001
+        pred1[pred1 == 1] <- 0.9999999999
         if (TRUNC == T) {TrainData[,"ENSEMBLE"] <- trunc(TrainData[,"ENSEMBLE"])}
-        TestData[,"ENSEMBLE"] <- ws["MAXENT"]*TestData[,"MAXENT"] + ws["GBM"]*TestData[,"GBM"] +
-            ws["GBMSTEP"]*TestData[,"GBMSTEP"] + ws["RF"]*TestData[,"RF"] + ws["GLM"]*TestData[,"GLM"] +
-            ws["GLMSTEP"]*TestData[,"GLMSTEP"] + ws["GAM"]*TestData[,"GAM"] + ws["GAMSTEP"]*TestData[,"GAMSTEP"] +
-            ws["MGCV"]*TestData[,"MGCV"] + ws["MGCVFIX"]*TestData[,"MGCVFIX"] + ws["EARTH"]*TestData[,"EARTH"] +
-            ws["RPART"]*TestData[,"RPART"] + ws["NNET"]*TestData[,"NNET"] + ws["FDA"]*TestData[,"FDA"] +
-            ws["SVM"]*TestData[,"SVM"] + ws["SVME"]*TestData[,"SVME"] + ws["BIOCLIM"]*TestData[,"BIOCLIM"] +
-            ws["DOMAIN"]*TestData[,"DOMAIN"] + ws["MAHAL"]*TestData[,"MAHAL"]
-        if (TRUNC == T) {TestData[,"ENSEMBLE"] <- trunc(TestData[,"ENSEMBLE"])}
+        if (no.tests == F) {
+            TestData[,"ENSEMBLE"] <- ws["MAXENT"]*TestData[,"MAXENT"] + ws["GBM"]*TestData[,"GBM"] +
+                ws["GBMSTEP"]*TestData[,"GBMSTEP"] + ws["RF"]*TestData[,"RF"] + ws["GLM"]*TestData[,"GLM"] +
+                ws["GLMSTEP"]*TestData[,"GLMSTEP"] + ws["GAM"]*TestData[,"GAM"] + ws["GAMSTEP"]*TestData[,"GAMSTEP"] +
+                ws["MGCV"]*TestData[,"MGCV"] + ws["MGCVFIX"]*TestData[,"MGCVFIX"] + ws["EARTH"]*TestData[,"EARTH"] +
+                ws["RPART"]*TestData[,"RPART"] + ws["NNET"]*TestData[,"NNET"] + ws["FDA"]*TestData[,"FDA"] +
+                ws["SVM"]*TestData[,"SVM"] + ws["SVME"]*TestData[,"SVME"] + ws["BIOCLIM"]*TestData[,"BIOCLIM"] +
+                ws["DOMAIN"]*TestData[,"DOMAIN"] + ws["MAHAL"]*TestData[,"MAHAL"]
+            if (TRUNC == T) {TestData[,"ENSEMBLE"] <- trunc(TestData[,"ENSEMBLE"])}
+        }
         mc <- mc+1
         cat(paste("\n\n", mc, ". Ensemble algorithm\n", sep=""))
         eval1 <- eval2 <- NULL
         cat(paste("\n", "Ensemble evaluation with calibration data", "\n\n", sep = ""))
+        cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
         TrainPres <- as.numeric(TrainData[TrainData[,"pb"]==1,"ENSEMBLE"])
         TrainAbs <- as.numeric(TrainData[TrainData[,"pb"]==0,"ENSEMBLE"])
-        eval1 <- evaluate(p=TrainPres, a=TrainAbs)
-        print(eval1)
-        thresholds["ENSEMBLE"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
-        cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
-        print(as.numeric(thresholds["ENSEMBLE"]))
-        if (models.keep == T) {models$thresholds <- thresholds}
-        if (no.tests == F) {
-            cat(paste("\n", "Ensemble evaluation with testing data", "\n\n", sep = ""))
-            TestPres <- as.numeric(TestData[TestData[,"pb"]==1,"ENSEMBLE"])
-            TestAbs <- as.numeric(TestData[TestData[,"pb"]==0,"ENSEMBLE"])
-            eval2 <- evaluate(p=TestPres, a=TestAbs)
-            print(eval2)
-            if(PLOTS==T) {
-                plot(eval2, "ROC") 
-                title(main="ENSEMBLE", cex=2, adj=0, col.main="blue")
+        if (sum(TrainPres, na.rm=T) <= 0 || sum(TrainAbs, na.rm=T) <= 0) {
+            cat(paste("\n", "NOTE: not possible to evaluate the ensemble model since calibration probabilities not available", "\n", sep = ""))
+        }else{
+            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            print(eval1)
+            thresholds["ENSEMBLE"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
+            print(as.numeric(thresholds["ENSEMBLE"]))
+            if (models.keep == T) {models$thresholds <- thresholds}
+            if (no.tests == F) {
+                cat(paste("\n", "Ensemble evaluation with testing data", "\n\n", sep = ""))
+                TestPres <- as.numeric(TestData[TestData[,"pb"]==1,"ENSEMBLE"])
+                TestAbs <- as.numeric(TestData[TestData[,"pb"]==0,"ENSEMBLE"])
+                if (sum(TestPres, na.rm=T) <= 0 || sum(TestAbs, na.rm=T) <= 0) {
+                    cat(paste("\n", "NOTE: not possible to evaluate the ensemble model since evaluation probabilities not available", "\n", sep = ""))
+                }else{
+                    eval2 <- evaluate(p=TestPres, a=TestAbs)
+                    print(eval2)
+                    if(PLOTS==T) {
+                        plot(eval2, "ROC") 
+                        title(main="ENSEMBLE", cex=2, adj=0, col.main="blue")
+                    }
+                }
             }
-        }
-        if(evaluations.keep==T) {
-            evaluations$ENSEMBLE.C <- eval1
-            evaluations$ENSEMBLE.T <- eval2
+            if(evaluations.keep==T) {
+                evaluations$ENSEMBLE.C <- eval1
+                evaluations$ENSEMBLE.T <- eval2
+            }
         }
     }
     if(models.keep==T) {
@@ -2026,13 +2506,12 @@
     remove(TrainData.vars, envir=.BiodiversityR)
     remove(TrainData.pres, envir=.BiodiversityR)
     remove(TestData.vars, envir=.BiodiversityR)
-    if (ws["MAXENT"] > 0 || MAXENT2 > 0) {remove(MAXENT.BackData, envir=.BiodiversityR)}
     if (models.save==T && models.keep==T) {
         ensemble.models <- models
         save(ensemble.models, file=paste(getwd(), "/models/", models$species.name, "_models", sep=""), compress="xz")
     }
     if (models.keep == F) {models <- NULL}     
-    result <- list(evaluations=evaluations, models=models, call=match.call() )
+    result <- list(evaluations=evaluations, models=models, VIF=newVIF, call=match.call() )
     cat(paste("\n\n"))
     if (SINK==T && OLD.SINK==F) {sink(file=NULL, append=T)}
     return(result)

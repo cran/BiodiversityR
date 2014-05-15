@@ -29,14 +29,14 @@ ensemble.test(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, ext = N
     models.list = NULL, models.keep = FALSE, 
     models.save = FALSE, species.name = "Species001",
     AUC.weights = TRUE, ENSEMBLE.tune = FALSE, 
-    ENSEMBLE.best = 0, ENSEMBLE.min = 0.7,
-    ENSEMBLE.decay = 1, ENSEMBLE.interval.width = 0.05,
+    ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1, 
     input.weights = NULL, 
     MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, 
     GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, 
     RPART = 1, NNET = 1, FDA = 1, SVM = 1 , SVME = 1,
     BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, 
     GEODIST = 0, 
+    PROBIT = FALSE,
     Yweights = "BIOMOD", 
     layer.drops = NULL, factors = NULL, dummy.vars = NULL,
     formulae.defaults = TRUE, maxit = 100,
@@ -76,13 +76,13 @@ ensemble.test.splits(x = NULL, p = NULL, a = NULL, an = 1000,
     species.name = "Species001",
     threshold.method = "spec_sens", threshold.sensitivity = 0.9,
     AUC.weights = TRUE, ENSEMBLE.tune = FALSE, 
-    ENSEMBLE.best = 0, ENSEMBLE.min = 0.7,
-    ENSEMBLE.decay = 1, ENSEMBLE.interval.width = 0.05, 
+    ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1,
     input.weights = NULL,
     MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, 
     GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, 
     RPART = 1, NNET = 1, FDA = 1, SVM = 1 , SVME = 1, 
     BIOCLIM = 1, DOMAIN = 1, MAHAL = 1,
+    PROBIT = FALSE,
     Yweights = "BIOMOD", 
     layer.drops = NULL, factors = NULL, dummy.vars = NULL,
     formulae.defaults = TRUE, maxit = 100,
@@ -132,7 +132,7 @@ ensemble.test.nnet(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE,
     layer.drops = NULL, factors = NULL, 
     formulae.defaults = TRUE, maxit = 100, 
     NNET.formula = NULL, 
-    sizes = c(2, 4, 6, 8), decays = c(0.1, 0.05, 0.01, 0.001))
+    sizes = c(2, 4, 6, 8), decays = c(0.1, 0.05, 0.01, 0.001) )
 
 ensemble.drop1(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, ext = NULL, 
     k = 0, pt = NULL, at = NULL, 
@@ -141,12 +141,13 @@ ensemble.drop1(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, ext = 
     SINK = FALSE, 
     species.name = "Species001",
     difference = FALSE, 
-    ENSEMBLE.decay = 1, ENSEMBLE.best = 0, ENSEMBLE.min = 0.7,
+    ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1,
     input.weights = NULL, 
     MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, 
     GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, 
     RPART = 1, NNET = 1, FDA = 1, SVM = 1, SVME = 1, 
     BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, 
+    PROBIT = FALSE,
     Yweights = "BIOMOD", 
     layer.drops = NULL, factors = NULL, dummy.vars = NULL, 
     maxit = 100,
@@ -168,14 +169,12 @@ ensemble.drop1(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, ext = 
 
 ensemble.weights(weights = c(0.9, 0.8, 0.7, 0.5), 
     best = 0, min.weight = 0, 
-    decay = 1.0, interval.width = 0.1,
-    digits = 4)
+    exponent = 1, digits = 4)
 
-ensemble.strategy(TrainData = NULL, 
-    strategy.k=4, strategy.runs=10, verbose = FALSE,
-    ENSEMBLE.best = c(1:19), ENSEMBLE.min = c(0.7),
-    ENSEMBLE.decay = c(1.0, 1.25, 1.5, 1.75, 2.0), 
-    ENSEMBLE.interval.width = c(0.05))
+ensemble.strategy(TrainData = NULL, TestData = NULL, 
+    verbose = FALSE,
+    ENSEMBLE.best = c(4:10), ENSEMBLE.min = c(0.7),
+    ENSEMBLE.exponent = c(1, 2, 4, 6, 8) )
 
 ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
 
@@ -210,8 +209,7 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{ENSEMBLE.tune}{ Determine weights for the ensemble model based on AUC values through internal cross-validation procedures (if \code{TRUE}). See details. }
   \item{ENSEMBLE.best}{ The number of individual suitability models to be used in the consensus suitability map (based on a weighted average). In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then all individual suitability models with positive input weights are included in the consensus suitability map. In case a vector is provided, \code{ensemble.strategy} is called internally to determine weights for the ensemble model. }
   \item{ENSEMBLE.min}{ The minimum input weight (assumed to correspond to evaluation indices of suitability models) for a model to be included in the ensemble. In case a vector is provided, function \code{ensemble.strategy} is called internally to determine weights for the ensemble model.  }
-  \item{ENSEMBLE.decay}{ Number by which the AUC values are multiplied, applied to AUC intervals determined by \code{ENSEMBLE.interval.width}. See details. }
-  \item{ENSEMBLE.interval.width}{ Witdh of the AUC interval to which the \code{ENSEMBLE.decay} is applied. See details. }
+  \item{ENSEMBLE.exponent}{ Exponent applied to AUC values to convert AUC values into weights (for example, an exponent of 2 converts input weights of 0.7, 0.8 and 0.9 into 0.7^2=0.49, 0.8^2=0.64 and 0.9^2=0.81). See details. }
   \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.test.splits} can be used. }
   \item{MAXENT}{ number: if larger than 0, then a maximum entropy model (\code{\link[dismo]{maxent}}) will be fitted among ensemble }
   \item{GBM}{ number: if larger than 0, then a boosted regression trees model (\code{\link[gbm]{gbm}}) will be fitted among ensemble }
@@ -232,6 +230,7 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{BIOCLIM}{ number: if larger than 0, then the BIOCLIM algorithm (\code{\link[dismo]{bioclim}}) will be fitted among ensemble }
   \item{DOMAIN}{ number: if larger than 0, then the DOMAIN algorithm (\code{\link[dismo]{domain}}) will be fitted among ensemble }
   \item{MAHAL}{ number: if larger than 0, then the Mahalanobis algorithm (\code{\link[dismo]{mahal}}) will be fitted among ensemble }
+  \item{PROBIT}{ If \code{TRUE}, then subsequently to the fitting of the individual algorithm (e.g. maximum entropy or GAM) a generalized linear model (\code{\link[stats]{glm}}) with probit link \code{family=binomial(link="probit")} will be fitted to transform the predictions, using the previous predictions as explanatory variable. This transformation results in all model predictions to be probability estimates.  }
   \item{GEODIST}{ number: if larger than 0, then the geoDist algorithm (\code{\link[dismo]{geoDist}}) will be fitted among ensemble (note that this algorithm does not use environmental layers, and is based only on the distance from presence points used to calibrate this algorithm) }
   \item{Yweights}{ chooses how cases of presence and background (absence) are weighted; \code{"BIOMOD"} results in equal weighting of all presence and all background cases, \code{"equal"} results in equal weighting of all cases. The user can supply a vector of weights similar to the number of cases in the calibration data set. }
   \item{layer.drops}{ vector that indicates which layers should be removed from RasterStack \code{x}. This argument is especially useful for the \code{ensemble.drop1} function. See also \code{\link[raster]{addLayer}}.  }
@@ -291,12 +290,9 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{weights}{ input weights for the \code{ensemble.weights} function }
   \item{best}{ The number of final weights. In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then this parameter is ignored. }
   \item{min.weight}{ The minimum input weight to be included in the output.  }
-  \item{decay}{ Number by which the AUC values are multiplied, applied to AUC intervals determined by \code{interval.width}. See details. }
-  \item{interval.width}{ Witdh of the AUC interval to which the \code{decay} is applied. See details. }
+  \item{exponent}{ Exponent applied to AUC values to convert AUC values into weights (for example, an exponent of 2 converts input weights of 0.7, 0.8 and 0.9 into 0.7^2=0.49, 0.8^2=0.64 and 0.9^2=0.81). See details. }
   \item{digits}{ Number of number of decimal places in the output weights; see also \code{\link[base]{round}}.  }
 
-  \item{strategy.k}{ Number of splits of the data set in cross-validation runs for \code{ensemble.strategy}) }
-  \item{strategy.runs}{ Number of cross-validation runs for \code{ensemble.strategy}) }
   \item{verbose}{ If \code{TRUE}, then provide intermediate results for \code{ensemble.strategy}) }
 
 }
@@ -310,9 +306,9 @@ Calibration of the maximum entropy (MAXENT) algorithm is not based on background
 
 As the Mahalanobis function (\code{\link[dismo]{mahal}}) does not always provide values within a range of 0 - 1, the output values are rescaled by first subtracting the value of \code{1 - MAHAL.shape} from each prediction, followed by calculating the absolute value, followed by calculating the reciprocal value and finally multiplying this reciprocal value with \code{MAHAL.shape}. As this rescaling method does not estimate probabilities, inclusion in the calculation of a (weighted) average of ensemble probabilities may be problematic (the same applies to other distance-based methods). 
 
-It is possible to increase the contribution to the ensemble model for models with higher AUC values through the \code{ENSEMBLE.decay} and \code{ENSEMBLE.interval.width} parameters. With \code{ENSEMBLE.decay = 2} and \code{ENSEMBLE.interval.width = 0.10}, AUC values within the range of [0, 0.10[ are multiplied by 1, AUC values within the range of [0.10, 0.20[ are multiplied by 1 * 2, AUC values within the range of [0.20, 0.30[ are multiplied by 1 * 2 * 2, AUC values within the range of[0.30, 0.40[ are multiplied by 1 * 2 * 2 * 2, ... With \code{ENSEMBLE.decay = 1.5} and \code{ENSEMBLE.interval.width = 0.05}, AUC values within the range of [0, 0.05[ are multiplied by 1, AUC values within the range of [0.05, 0.10[ are multiplied by 1.5, AUC values within the range of [0.10, 0.15[ are multiplied by 1.5 * 1.5, AUC values within the range of[0.15, 0.20[ are multiplied by 1.5 * 1.5 * 1.5, ... 
+With parameter \code{ENSEMBLE.best}, the subset of best models (evaluated by the individual AUC values) can be selected and only those models will be used for calculating the ensemble model (in other words, weights for models not included in the ensemble will be set to zero). It is possible to further increase the contribution to the ensemble model for models with higher AUC values through parameter \code{ENSEMBLE.exponent}. With \code{ENSEMBLE.exponent = 2}, AUC values of 0.7, 0.8 and 0.9 are converted into weights of 0.7^2=0.49, 0.8^2=0.64 and 0.9^2=0.81). With \code{ENSEMBLE.exponent = 4}, AUC values of 0.7, 0.8 and 0.9 are converted into weights of 0.7^4=0.2401, 0.8^4=0.4096 and 0.9^2=0.6561). 
 
-\code{ENSEMBLE.tune} will result in an internal crossvalidation procedure whereby the calibration (training) data set is split in \code{strategy.k} subsets and subsequently the AUC values of the subsets is used to determine the weights for the ensemble model. The procedure continues by calculating the average of the weights for each subset. The cross-validation procedure is repeated several times and finally average weights over all the runs are provided. When combined with different parameter values for \code{ENSEMBLE.min}, \code{ENSEMBLE.best}, \code{ENSEMBLE.decay} or \code{ENSEMBLE.interval.width}, the procedure identifies the ensemble model with best AUC for a specific cross-validation and the associated weights for this ensemble model. Essentially \code{ENSEMBLE.tune} explores how differences in weights of the submodels results in changes in the AUC of the ensemble model, and selects the weights that result in the ensemble model with highest weights. Note that the tuning procedure is only based on the training data set.  
+\code{ENSEMBLE.tune} will result in an internal procedure whereby the best selection of parameter values for \code{ENSEMBLE.min}, \code{ENSEMBLE.best} or \code{ENSEMBLE.exponent} can be identified. Through a factorial procedure, the ensemble model with best AUC for a specific combination of parameter values is identified. The procedure also provides the weights that correspond to the best ensemble.  
 
 Function \code{ensemble.test.splits} splits the presence and background locations in a user-defined (\code{k}) number of subsets (i.e. k-fold cross-validation), then sequentially calibrates individual suitability models with (\code{k-1}) combined subsets and evaluates those with the remaining one subset, whereby each subset is used once for evaluation in the user-defined number (\code{k}) of runs. For example, \code{k = 5} results in splitting the locations in 5 subsets, then using one of these subsets in turn for evaluations (see also \code{\link[dismo]{kfold}}). Note that for the maximum entropy (MAXENT) algorithm, the same background data will be used in each cross-validation run (this is based on the assumption that a large number (~10000) of background locations are used).
 
@@ -326,7 +322,7 @@ Function \code{ensemble.formulae} provides suggestions for formulae that can be 
 
 The \code{ensemble.weights} function is used internally by the \code{ensemble.test} and \code{\link{ensemble.raster}} functions, using the input weights for the different suitability modelling algorithms. Ties between input weights result in the same output weights.
 
-The \code{ensemble.strategy} function is used internally by the \code{ensemble.test} and \code{\link{ensemble.raster}} functions, using the train and test data sets with predictions of the different suitability modelling algorithms and different combinations of parameters \code{ENSEMBLE.decay}, \code{ENSEMBLE.interval.width},  \code{ENSEMBLE.best} and \code{ENSEMBLE.min}. The final ensemble model is based on the parameters that generate the best AUC.
+The \code{ensemble.strategy} function is used internally by the \code{ensemble.test} and \code{\link{ensemble.raster}} functions, using the train and test data sets with predictions of the different suitability modelling algorithms and different combinations of parameters \code{ENSEMBLE.best}, \code{ENSEMBLE.min} and \code{ENSEMBLE.exponent}. The final ensemble model is based on the parameters that generate the best AUC.
 }
 
 \value{
@@ -359,8 +355,9 @@ library(dismo)
 predictor.files <- list.files(path=paste(system.file(package="dismo"), '/ex', sep=''),
     pattern='grd', full.names=TRUE)
 predictors <- stack(predictor.files)
-predictors <- subset(predictors, subset=c("bio1", "bio5", 
-    "bio6", "bio7", "bio8", "bio12", "bio16", "bio17", "biome"))
+# subset based on Variance Inflation Factors
+predictors <- subset(predictors, subset=c("bio5", "bio6", 
+    "bio16", "bio17", "biome"))
 predictors
 predictors@title <- "base"
 
@@ -385,12 +382,10 @@ backg_test <- background[groupa == 1, ]
 # formulae for random forest and generalized linear model
 # compare with: ensemble.formulae(predictors, factors=c("biome"))
 
-rfformula <- as.formula(pb ~ bio1+bio5+bio6+bio7+bio8+bio12+bio16+bio17)
+rfformula <- as.formula(pb ~ bio5+bio6+bio16+bio17)
 
-glmformula <- as.formula(pb ~ bio1 + I(bio1^2) + I(bio1^3) +
-    bio5 + I(bio5^2) + I(bio5^3) + bio6 + I(bio6^2) + I(bio6^3) + 
-    bio7 + I(bio7^2) + I(bio7^3) + bio8 + I(bio8^2) + I(bio8^3) +
-    bio12 + I(bio12^2) + I(bio12^3) + bio16 + I(bio16^2) + I(bio16^3) + 
+glmformula <- as.formula(pb ~ bio5 + I(bio5^2) + I(bio5^3) + 
+    bio6 + I(bio6^2) + I(bio6^3) + bio16 + I(bio16^2) + I(bio16^3) + 
     bio17 + I(bio17^2) + I(bio17^3) )
 
 # fit four ensemble models (RF, GLM, BIOCLIM, DOMAIN)
@@ -422,6 +417,24 @@ ensemble.nofactors <- ensemble.test(x=predictors,
     PLOTS=FALSE, evaluations.keep=TRUE,
     formulae.defaults=TRUE)    
 
+# after fitting the individual algorithms (submodels),
+# transform predictions with a probit link.
+ensemble.nofactors <- ensemble.test(x=predictors,
+    p=pres_train, a=backg_train, 
+    pt=pres_test, at=backg_test,
+    layer.drops="biome",
+    species.name="Bradypus",
+    SINK=TRUE,
+    ENSEMBLE.min=0.6,
+    MAXENT=0, GBM=0, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=0, 
+    GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, NNET=0, FDA=0, 
+    SVM=0, SVME=0, BIOCLIM=1, DOMAIN=1, MAHAL=0,
+    PROBIT=TRUE,
+    Yweights="BIOMOD", factors="biome",
+    PLOTS=FALSE, evaluations.keep=TRUE,
+    formulae.defaults=TRUE)    
+
+
 # instead of providing presence and background locations, provide data.frames
 # because 'biome' is a factor, RasterStack and extent need to be provided
 # to check for levels in the Training and Testing data set
@@ -451,23 +464,21 @@ ensemble.factors2 <- ensemble.test(x=predictors, ext=ext,
     MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
-    ENSEMBLE.best=c(8:15), ENSEMBLE.decay=c(1.0, 1.1, 1.2, 1.3, 1.4, 1.5),
-    ENSEMBLE.interval.width=0.025,
+    ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
     Yweights="BIOMOD", factors="biome",
     PLOTS=FALSE, evaluations.keep=TRUE)
 
 # test performance of different suitability models
-# data are split in 3 subsets, each used once for evaluation
+# data are split in 4 subsets, each used once for evaluation
 ensemble.nofactors2 <- ensemble.test.splits(x=predictors, ext=ext,
-    p=pres, a=background, k=3, 
+    p=pres, a=background, k=4, 
     layer.drops=c("biome"),
     species.name="Bradypus",
     SINK=TRUE,
     MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
-    ENSEMBLE.best=c(8:15), ENSEMBLE.decay=c(1.0, 1.1, 1.2, 1.3, 1.4, 1.5),
-    ENSEMBLE.interval.width=0.025,
+    ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
     Yweights="BIOMOD", factors="biome",
     PLOTS=FALSE, formulae.defaults=TRUE,
     GBMSTEP.learning.rate=0.002)
@@ -486,7 +497,7 @@ ensemble.variables <- ensemble.drop1(x=predictors, ext=ext,
     MAXENT=0, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, BIOCLIM=0, DOMAIN=0, MAHAL=0,
-    ENSEMBLE.best=c(8:12), ENSEMBLE.decay=c(1.0, 1.1, 1.2, 1.3, 1.4, 1.5),
+    ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(2, 4, 6, 8),
     Yweights="BIOMOD", factors="biome",
     GBMSTEP.learning.rate=0.002)
 ensemble.variables

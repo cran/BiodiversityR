@@ -1503,8 +1503,8 @@ renyiGUI <- function(){
         var <- variables[as.numeric(tkcurselection(subsetBox))+1]
         sub <- tclvalue(subset)
         if (method=="accumulation") {
-            justDoIt(paste("persp.renyiaccum(", modelValue, ")", sep=""))
-            logger(paste("persp.renyiaccum(", modelValue, ")", sep=""))
+            justDoIt(paste("persp(", modelValue, ")", sep=""))
+            logger(paste("persp(", modelValue, ")", sep=""))
         }else{
             if (var == "all" || sub != ".") {
                 justDoIt(paste("renyiplot(", modelValue, ", evenness=", evenness, ", addit=", addit, ", rainbow=T, legend=F, pch=", pch, ",col='", col, "', cex=", cex, ylim, ")", sep=""))

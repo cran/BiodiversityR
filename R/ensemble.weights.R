@@ -1,7 +1,6 @@
 `ensemble.weights` <- function(
     weights=c(0.9, 0.8, 0.7, 0.5), 
-    best=0, min.weight=0, 
-    decay=1.0, interval.width=0.1,
+    best=0, min.weight=0, exponent=1.0,
     digits=4
 )
 {
@@ -26,30 +25,15 @@
     weights.sorted <- sort(weights, decreasing=T)   
     min.best <- weights.sorted[best]
     weights[weights < min.best] <- 0
-    weights.new <- weights
 #
-# create intervals
-    intervals <- as.numeric(c(-1,min.weight))
-    while ((max(intervals)+interval.width) <= 1.0) {intervals <- c(intervals, (max(intervals)+interval.width))}
+# apply exponents
+    weights <- weights^exponent 
 #
-    decays <- numeric(length=length(intervals))
-    decays[1] <- 0
-    decays[2] <- 1.0    
-    if (decay < 1.0) {decay <- 1.0}
-    if (length(decays) > 2) {
-        for (i in 3: length(decays)) {decays[i] <- decays[i-1] * decay}
-    }
-#
-    for (i in 1:length(weights)) {
-        for (j in 1:(length(intervals)-1)) {
-            if (intervals[j] <= weights[i] && weights[i] < intervals[j+1]) {weights.new[i] <- decays[j] * weights[i]}
-        }
-    }
-    weights <- weights.new
 # scaling to 1
     tot <- sum(weights)
     weights <- weights/tot
     weights <- round(weights, digits=digits)
 #
+    names(weights) <- names.weights
     return(weights)
 }

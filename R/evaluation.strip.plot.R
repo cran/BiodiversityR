@@ -19,8 +19,8 @@
             for (j in 1:nmodels) {
                 if (any(is.na(data[f, 2+vars+j])==F)) {models <- models + 1}
             }
-            dim1 <- ceiling(sqrt(models))
-            dim2 <- ceiling(models/dim1)
+            dim1 <- max(1, ceiling(sqrt(models)))
+            dim2 <- max(1, ceiling(models/dim1))
             par(mfrow=c(dim1,dim2))
             for (j in 1:models) {
                 if (any(is.na(data[v, 2+vars+j])==F)) {
@@ -42,8 +42,8 @@
             cat(paste("NOTE: No data for model: ",  model, "\n", sep = ""))
         }else{
             vars <- max(data[,1])
-            dim1 <- ceiling(sqrt(vars))
-            dim2 <- ceiling(vars/dim1)
+            dim1 <- max(1, ceiling(sqrt(models)))
+            dim2 <- max(1, ceiling(models/dim1))
             par(mfrow=c(dim1,dim2))
             for (i in 1:vars) {
                 f <- data[,1]==i

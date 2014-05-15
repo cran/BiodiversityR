@@ -81,6 +81,7 @@
     }
 # declare categorical layers for xn
     factors <- models.list$factors
+    categories <- NULL
     if(is.null(factors) == F) {
         for (i in 1:length(factors)) {
             j <- which(names(xn) == factors[i])
@@ -115,28 +116,52 @@
     }
     MAXENT.OLD <- GBM.OLD <- GBMSTEP.OLD <- RF.OLD <- GLM.OLD <- GLMSTEP.OLD <- GAM.OLD <- GAMSTEP.OLD <- MGCV.OLD <- NULL
     MGCVFIX.OLD <- EARTH.OLD <- RPART.OLD <- NNET.OLD <- FDA.OLD <- SVM.OLD <- SVME.OLD <- BIOCLIM.OLD <- DOMAIN.OLD <- MAHAL.OLD <- GEODIST.OLD <- NULL
+# probit models, NULL if no probit model fitted
+    MAXENT.PROBIT.OLD <- GBM.PROBIT.OLD <- GBMSTEP.PROBIT.OLD <- RF.PROBIT.OLD <- GLM.PROBIT.OLD <- GLMSTEP.PROBIT.OLD <- GAM.PROBIT.OLD <- GAMSTEP.PROBIT.OLD <- MGCV.PROBIT.OLD <- NULL
+    MGCVFIX.PROBIT.OLD <- EARTH.PROBIT.OLD <- RPART.PROBIT.OLD <- NNET.PROBIT.OLD <- FDA.PROBIT.OLD <- SVM.PROBIT.OLD <- SVME.PROBIT.OLD <- BIOCLIM.PROBIT.OLD <- DOMAIN.PROBIT.OLD <- MAHAL.PROBIT.OLD <- NULL
     if (is.null(models.list) == F) {
-        MAXENT.OLD <- models.list$MAXENT
-        GBM.OLD <- models.list$GBM
-        GBMSTEP.OLD <- models.list$GBMSTEP
-        RF.OLD <- models.list$RF
-        GLM.OLD <- models.list$GLM
-        GLMSTEP.OLD <- models.list$GLMSTEP
-        GAM.OLD <- models.list$GAM
-        GAMSTEP.OLD <- models.list$GAMSTEP
-        MGCV.OLD <- models.list$MGCV
-        MGCVFIX.OLD <- models.list$MGCVFIX
-        EARTH.OLD <- models.list$EARTH
-        RPART.OLD <- models.list$RPART
-        NNET.OLD <- models.list$NNET
-        FDA.OLD <- models.list$FDA
-        SVM.OLD <- models.list$SVM
-        SVME.OLD <- models.list$SVME
-        BIOCLIM.OLD <- models.list$BIOCLIM
-        DOMAIN.OLD <- models.list$DOMAIN
-        MAHAL.OLD <- models.list$MAHAL
-        GEODIST.OLD <- models.list$GEODIST
+        if (is.null(models.list$MAXENT) == F) {MAXENT.OLD <- models.list$MAXENT}
+        if (is.null(models.list$GBM) == F) {GBM.OLD <- models.list$GBM}
+        if (is.null(models.list$GBMSTEP) == F) {GBMSTEP.OLD <- models.list$GBMSTEP}
+        if (is.null(models.list$RF) == F) {RF.OLD <- models.list$RF}
+        if (is.null(models.list$GLM) == F) {GLM.OLD <- models.list$GLM}
+        if (is.null(models.list$GLMSTEP) == F) {GLMSTEP.OLD <- models.list$GLMSTEP}
+        if (is.null(models.list$GAM) == F) {GAM.OLD <- models.list$GAM}
+        if (is.null(models.list$GAMSTEP) == F) {GAMSTEP.OLD <- models.list$GAMSTEP}
+        if (is.null(models.list$MGCV) == F) {MGCV.OLD <- models.list$MGCV}
+        if (is.null(models.list$MGCVFIX) == F) {MGCVFIX.OLD <- models.list$MGCVFIX}
+        if (is.null(models.list$EARTH) == F) {EARTH.OLD <- models.list$EARTH}
+        if (is.null(models.list$RPART) == F) {RPART.OLD <- models.list$RPART}
+        if (is.null(models.list$NNET) == F) {NNET.OLD <- models.list$NNET}
+        if (is.null(models.list$FDA) == F) {FDA.OLD <- models.list$FDA}
+        if (is.null(models.list$SVM) == F) {SVM.OLD <- models.list$SVM}
+        if (is.null(models.list$SVME) == F) {SVME.OLD <- models.list$SVME}
+        if (is.null(models.list$BIOCLIM) == F) {BIOCLIM.OLD <- models.list$BIOCLIM}
+        if (is.null(models.list$DOMAIN) == F) {DOMAIN.OLD <- models.list$DOMAIN}
+        if (is.null(models.list$MAHAL) == F) {MAHAL.OLD <- models.list$MAHAL}
+        if (is.null(models.list$GEODIST) == F) {GEODIST.OLD <- models.list$GEODIST}
+# probit models
+        if (is.null(models.list$MAXENT.PROBIT) == F) {MAXENT.PROBIT.OLD <- models.list$MAXENT.PROBIT}
+        if (is.null(models.list$GBM.PROBIT) == F) {GBM.PROBIT.OLD <- models.list$GBM.PROBIT}
+        if (is.null(models.list$GBMSTEP.PROBIT) == F) {GBMSTEP.PROBIT.OLD <- models.list$GBMSTEP.PROBIT}
+        if (is.null(models.list$RF.PROBIT) == F) {RF.PROBIT.OLD <- models.list$RF.PROBIT}
+        if (is.null(models.list$GLM.PROBIT) == F) {GLM.PROBIT.OLD <- models.list$GLM.PROBIT}
+        if (is.null(models.list$GLMSTEP.PROBIT) == F) {GLMSTEP.PROBIT.OLD <- models.list$GLMSTEP.PROBIT}
+        if (is.null(models.list$GAM.PROBIT) == F) {GAM.PROBIT.OLD <- models.list$GAM.PROBIT}
+        if (is.null(models.list$GAMSTEP.PROBIT) == F) {GAMSTEP.PROBIT.OLD <- models.list$GAMSTEP.PROBIT}
+        if (is.null(models.list$MGCV.PROBIT) == F) {MGCV.PROBIT.OLD <- models.list$MGCV.PROBIT}
+        if (is.null(models.list$MGCVFIX.PROBIT) == F) {MGCVFIX.PROBIT.OLD <- models.list$MGCVFIX.PROBIT}
+        if (is.null(models.list$EARTH.PROBIT) == F) {EARTH.PROBIT.OLD <- models.list$EARTH.PROBIT}
+        if (is.null(models.list$RPART.PROBIT) == F) {RPART.PROBIT.OLD <- models.list$RPART.PROBIT}
+        if (is.null(models.list$NNET.PROBIT) == F) {NNET.PROBIT.OLD <- models.list$NNET.PROBIT}
+        if (is.null(models.list$FDA.PROBIT) == F) {FDA.PROBIT.OLD <- models.list$FDA.PROBIT}
+        if (is.null(models.list$SVM.PROBIT) == F) {SVM.PROBIT.OLD <- models.list$SVM.PROBIT}
+        if (is.null(models.list$SVME.PROBIT) == F) {SVME.PROBIT.OLD <- models.list$SVME.PROBIT}
+        if (is.null(models.list$BIOCLIM.PROBIT) == F) {BIOCLIM.PROBIT.OLD <- models.list$BIOCLIM.PROBIT}
+        if (is.null(models.list$DOMAIN.PROBIT) == F) {DOMAIN.PROBIT.OLD <- models.list$DOMAIN.PROBIT}
+        if (is.null(models.list$MAHAL.PROBIT) == F) {MAHAL.PROBIT.OLD <- models.list$MAHAL.PROBIT}
     }
+#
     if (MAXENT > 0) {
 	jar <- paste(system.file(package="dismo"), "/java/maxent.jar", sep='')
 	if (!file.exists(jar)) {stop('maxent program is missing: ', jar, '\nPlease download it here: http://www.cs.princeton.edu/~schapire/maxent/')}
@@ -197,7 +222,7 @@
     if (SVME > 0) {
         if (! require(e1071)) {stop("Please install the e1071 package")}
 #         get the probabilities from svm
-            predict.svme <- function(model, newdata) {
+            predict.svme <- function(model, newdata, probability=T) {
                 p <- predict(model, newdata, probability=T)
                 return(attr(p, "probabilities")[,1])
              }
@@ -277,6 +302,16 @@
             error= function(err) {print(paste("MAXENT prediction failed"))},
             silent=F)
         if (is.null(pmaxent) == F) {
+            results2 <- MAXENT.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pmaxent, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "MAXENT"
+                pmaxent <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pmaxent <- trunc(1000*pmaxent)
             writeRaster(x=pmaxent, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -316,6 +351,16 @@
             error= function(err) {print(paste("GBM prediction failed"))},
             silent=F)
         if (is.null(pgbm) == F) {
+            results2 <- GBM.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pgbm, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "GBM"
+                pgbm <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pgbm <- trunc(1000*pgbm)
             writeRaster(x=pgbm, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -355,6 +400,16 @@
             error= function(err) {print(paste("stepwise GBM prediction failed"))},
             silent=F)
         if (is.null(pgbms) == F) {
+            results2 <- GBMSTEP.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pgbms, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "GBMSTEP"
+                pgbms <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pgbms <- trunc(1000*pgbms)
             writeRaster(x=pgbms, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -390,6 +445,16 @@
             error= function(err) {print(paste("random forest prediction failed"))},
             silent=F)
         if (is.null(prf) == F) {
+            results2 <- RF.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=prf, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "RF"
+                prf <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             prf <- trunc(1000*prf)
             writeRaster(x=prf, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -425,6 +490,16 @@
             error= function(err) {print(paste("GLM prediction failed"))},
             silent=F)
         if (is.null(pglm) == F) {
+            results2 <- GLM.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pglm, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "GLM"
+                pglm <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pglm <- trunc(1000*pglm)
             writeRaster(x=pglm, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -460,6 +535,16 @@
             error= function(err) {print(paste("stepwise GLM prediction failed"))},
             silent=F)
         if (is.null(pglms) == F) {
+            results2 <- GLMSTEP.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pglms, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "GLMSTEP"
+                pglms <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pglms <- trunc(1000*pglms)
             writeRaster(x=pglms, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -500,6 +585,16 @@
             error= function(err) {print(paste("GAM prediction (gam package) failed"))},
             silent=F)
         if (is.null(pgam) == F) {
+            results2 <- GAM.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pgam, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "GAM"
+                pgam <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pgam <- trunc(1000*pgam)
             writeRaster(x=pgam, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -535,6 +630,16 @@
             error= function(err) {print(paste("stepwise GAM prediction (gam package) failed"))},
             silent=F)
         if (is.null(pgams) == F) {
+            results2 <- GAMSTEP.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pgams, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "GAMSTEP"
+                pgams <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pgams <- trunc(1000*pgams)
             writeRaster(x=pgams, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -578,6 +683,16 @@
             error= function(err) {print(paste("GAM prediction (mgcv package) failed"))},
             silent=F)
         if (is.null(pmgcv) == F) {
+            results2 <- MGCV.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pmgcv, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "MGCV"
+                pmgcv <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pmgcv <- trunc(1000*pmgcv)
             writeRaster(x=pmgcv, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -616,6 +731,16 @@
             error= function(err) {print(paste("MGCVFIX prediction (mgcv package) failed"))},
             silent=F)
         if (is.null(pmgcvf) == F) {
+            results2 <- MGCVFIX.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pmgcvf, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "MGCVFIX"
+                pmgcvf <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pmgcvf <- trunc(1000*pmgcvf)
             writeRaster(x=pmgcvf, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -654,6 +779,16 @@
             error= function(err) {print(paste("MARS prediction (earth package) failed"))},
             silent=F)
         if (is.null(pearth) == F) {
+            results2 <- EARTH.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pearth, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "EARTH"
+                pearth <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pearth <- trunc(1000*pearth)
             writeRaster(x=pearth, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -692,6 +827,16 @@
             error= function(err) {print(paste("RPART prediction failed"))},
             silent=F)
         if (is.null(prpart) == F) {
+            results2 <- RPART.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=prpart, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "RPART"
+                prpart <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             prpart <- trunc(1000*prpart)
             writeRaster(x=prpart, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -730,6 +875,16 @@
             error= function(err) {print(paste("ANN prediction (nnet package) failed"))},
             silent=F)
         if (is.null(pnnet) == F) {
+            results2 <- NNET.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pnnet, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "NNET"
+                pnnet <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pnnet <- trunc(1000*pnnet)
             writeRaster(x=pnnet, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -768,6 +923,16 @@
             error= function(err) {print(paste("FDA prediction failed"))},
             silent=F)
         if (is.null(pfda) == F) {
+            results2 <- FDA.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pfda, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "FDA"
+                pfda <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pfda <- trunc(1000*pfda)
             writeRaster(x=pfda, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -802,12 +967,22 @@
         results <- SVM.OLD
         psvm <- NULL
         fullname <- paste("models/", RASTER.species.name, "_SVM", sep="")
-        predfun <- as.function(kernlab::predict)
-        tryCatch(psvm <- raster::predict(object=xn, model=results, fun=predfun, na.rm=TRUE, type="probabilities", index=2, factors=categories,
+        predict.svm2 <- as.function(kernlab::predict)
+        tryCatch(psvm <- raster::predict(object=xn, model=results, fun=predict.svm2, na.rm=TRUE, type="probabilities", index=2, factors=categories,
                 filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format),
             error= function(err) {print(paste("SVM prediction (kernlab package) failed"))},
             silent=F)
         if (is.null(psvm) == F) {
+            results2 <- SVM.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=psvm, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "SVM"
+                psvm <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             psvm <- trunc(1000*psvm)
             writeRaster(x=psvm, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -848,6 +1023,16 @@
             warning= function(war) {print(paste("SVM prediction (e1071 package) failed"))},
             silent=F)
         if (is.null(psvme) == F) {
+            results2 <- SVME.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=psvme, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "SVME"
+                psvme <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             psvme <- trunc(1000*psvme)
             writeRaster(x=psvme, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -891,6 +1076,16 @@
             error= function(err) {print(paste("BIOCLIM prediction failed"))},
             silent=F)
         if (is.null(pbio) == F) {
+            results2 <- BIOCLIM.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pbio, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "BIOCLIM"
+                pbio <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pbio <- trunc(1000*pbio)
             writeRaster(x=pbio, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -926,6 +1121,16 @@
             error= function(err) {print(paste("DOMAIN prediction failed"))},
             silent=F)
         if (is.null(pdom) == F) {
+            results2 <- DOMAIN.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pdom, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "DOMAIN"
+                pdom <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pdom <- trunc(1000*pdom)
             writeRaster(x=pdom, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -965,6 +1170,16 @@
             pmahal <- pmahal - 1 - MAHAL.shape
             pmahal <- abs(pmahal)
             pmahal <- MAHAL.shape / pmahal
+            results2 <- MAHAL.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                writeRaster(x=pmahal, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                explan.stack <- stack(fullname2)
+                names(explan.stack) <- "MAHAL"
+                pmahal <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
+            }
             pmahal <- trunc(1000*pmahal)
             writeRaster(x=pmahal, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
@@ -1149,7 +1364,7 @@
     setMinMax(ensemble)
     ensemble.statistics["ensemble.min"] <- minValue(ensemble)
     ensemble.statistics["ensemble.max"] <- maxValue(ensemble)
-    names(ensemble) <- raster.title
+#    names(ensemble) <- raster.title
     writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
     if (KML.out == T) {
         thresholdx <- thresholds["ENSEMBLE"]
@@ -1161,7 +1376,7 @@
     setMinMax(enscount)
     ensemble.statistics["count.min"] <- minValue(enscount)
     ensemble.statistics["count.max"] <- maxValue(enscount)
-    names(enscount) <- paste(raster.title, "_count", sep="")
+#    names(enscount) <- paste(raster.title, "_count", sep="")
     writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     if (KML.out == T) {
         nmax <- sum(as.numeric(ws > 0))
@@ -1176,7 +1391,7 @@
     ensemble.statistics["ensemble.threshold"] <- thresholds["ENSEMBLE"]
     enspresence <- ensemble > thresholds["ENSEMBLE"]
     setMinMax(enspresence)
-    names(enspresence) <- paste(raster.title, "_presence", sep="")
+#    names(enspresence) <- paste(raster.title, "_presence", sep="")
     writeRaster(x=enspresence, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     if (KML.out == T) {
         KML(enspresence, filename=kmlpresence, col=c("grey", "green"),
@@ -1200,6 +1415,23 @@
     }
     cat(paste("\n", "End of modelling for organism: ", RASTER.species.orig, "\n", sep = ""))
     cat(paste("Predictions were made for RasterStack: ", stack.title, "\n\n", sep = ""))
+#
+#  avoid possible problems with saving of names of the raster layers
+    writeRaster(ensemble, filename="working.grd", overwrite=T)
+    working.raster <- raster("working.grd")
+    names(working.raster) <- raster.title
+    writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#
+    writeRaster(enscount, filename="working.grd", overwrite=T)
+    working.raster <- raster("working.grd")
+    names(working.raster) <- paste(raster.title, "_count", sep="")
+    writeRaster(working.raster, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#
+    writeRaster(enspresence, filename="working.grd", overwrite=T)
+    working.raster <- raster("working.grd")
+    names(working.raster) <- paste(raster.title, "_presence", sep="")
+    writeRaster(working.raster, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#
     result <- list(ensemble.statistics=ensemble.statistics, call=match.call() )
     if (SINK==T && OLD.SINK==F) {sink(file=NULL, append=T)}
     return(result)

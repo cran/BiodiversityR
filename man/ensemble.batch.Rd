@@ -22,12 +22,12 @@ ensemble.batch(x = NULL, xn = c(x), ext = NULL,
     KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
     models.save = FALSE,
     threshold.method = "spec_sens", threshold.sensitivity = 0.9,
-    ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, 
-    ENSEMBLE.decay = 1, ENSEMBLE.interval.width=0.05,
+    ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1,
     input.weights = NULL, 
     MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, 
     GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, RPART = 1, NNET = 1, 
     FDA = 1, SVM = 1, SVME = 1, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, 
+    PROBIT = FALSE,
     Yweights = "BIOMOD", 
     layer.drops = NULL, factors = NULL, dummy.vars = NULL,
     formulae.defaults = TRUE, maxit = 100,
@@ -53,11 +53,12 @@ ensemble.batch(x = NULL, xn = c(x), ext = NULL,
     MAHAL.shape = 1)
 
 ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
-    RASTER.extension = "grd", 
+    positive.filters = c("grd", "_ENSEMBLE_"), negative.filters = c("xml"), 
     RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
     KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
     p = NULL, a = NULL,
     pt = NULL, at = NULL,
+    threshold = -1,
     threshold.method = "spec_sens", threshold.sensitivity = 0.9)
 
 }
@@ -87,8 +88,7 @@ ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{threshold.sensitivity}{ Sensitivity value for \code{threshold.method = 'sensitivity'}. See \code{\link[dismo]{threshold}}.   }
   \item{ENSEMBLE.best}{ The number of individual suitability models to be used in the consensus suitability map (based on a weighted average). In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then all individual suitability models with positive input weights are included in the consensus suitability map.  }
   \item{ENSEMBLE.min}{ The minimum input weight (assumed to correspond to evaluation indices of suitability models) for a model to be included in the ensemble.  }
-  \item{ENSEMBLE.decay}{ Number by which the AUC values are multiplied, applied to AUC intervals determined by \code{ENSEMBLE.interval.width}. See \code{\link{ensemble.test}} for details.  }
-  \item{ENSEMBLE.interval.width}{ Witdh of the AUC interval to which the \code{ENSEMBLE.decay} is applied. See \code{\link{ensemble.test}} for details. }
+  \item{ENSEMBLE.exponent}{ Exponent applied to AUC values to convert AUC values into weights (for example, an exponent of 2 converts input weights of 0.7, 0.8 and 0.9 into 0.7^2=0.49, 0.8^2=0.64 and 0.9^2=0.81). See \code{\link{ensemble.test}} for details.  }
   \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.test.splits} can be used. }
   \item{MAXENT}{ Input weight for a maximum entropy model (\code{\link[dismo]{maxent}}). (Only weights > 0 will be used.)  }
   \item{GBM}{ Input weight for a boosted regression trees model (\code{\link[gbm]{gbm}}). (Only weights > 0 will be used.)  }
@@ -109,6 +109,7 @@ ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{BIOCLIM}{ Input weight for the BIOCLIM algorithm (\code{\link[dismo]{bioclim}}). (Only weights > 0 will be used.)  }
   \item{DOMAIN}{ Input weight for the DOMAIN algorithm (\code{\link[dismo]{domain}}). (Only weights > 0 will be used.)  }
   \item{MAHAL}{ Input weight for the Mahalonobis algorithm (\code{\link[dismo]{mahal}}). (Only weights > 0 will be used.)  }
+  \item{PROBIT}{ If \code{TRUE}, then subsequently to the fitting of the individual algorithm (e.g. maximum entropy or GAM) a generalized linear model (\code{\link[stats]{glm}}) with probit link \code{family=binomial(link="probit")} will be fitted to transform the predictions, using the previous predictions as explanatory variable. This transformation results in all model predictions to be probability estimates.  }
   \item{Yweights}{ chooses how cases of presence and background (absence) are weighted; \code{"BIOMOD"} results in equal weighting of all presence and all background cases, \code{"equal"} results in equal weighting of all cases. The user can supply a vector of weights similar to the number of cases in the calibration data set. }
   \item{layer.drops}{ vector that indicates which layers should be removed from RasterStack \code{x}. See also \code{\link[raster]{addLayer}}.  }
   \item{factors}{ vector that indicates which variables are factors; see also \code{\link[dismo]{prepareData}}  }
@@ -157,11 +158,13 @@ ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
 
   \item{RASTER.species.name}{ First part of the names of the raster files, expected to identify the modelled species (or organism). }
   \item{RASTER.stack.name}{ Last part of the names of the raster files, expected to identify the predictor stack used. }
-  \item{RASTER.extension}{ Extension of the files, expected to select subset of files to be selected. See also \code{\link[raster]{writeFormats}}.  }
+  \item{positive.filters}{ vector that indicates parts of filenames for files that will be included in the calculation of the mean probability values  }
+  \item{negative.filters}{ vector that indicates parts of filenames for files that will not be included in the calculation of the mean probability values  }
   \item{p}{ presence points used for calibrating the suitability models, typically available in 2-column (x, y) or (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{a}{ background points used for calibrating the suitability models, typically available in 2-column (x, y) or (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{pt}{ presence points used for evaluating the suitability models, typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}}  }
   \item{at}{ background points used for calibrating the suitability models, typicall available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
+  \item{threshold}{ Threshold value that will be used to distinguish between presence and absence. If < 0, then a threshold value will be calculated from the provided presence \code{p} and absence \code{a} locations.  }
 
 }
 
@@ -206,8 +209,9 @@ library(dismo)
 predictor.files <- list.files(path=paste(system.file(package="dismo"), '/ex', sep=''),
     pattern='grd', full.names=TRUE)
 predictors <- stack(predictor.files)
-predictors <- subset(predictors, subset=c("bio1", "bio5", 
-    "bio6", "bio7", "bio8", "bio12", "bio16", "bio17", "biome"))
+# subset based on Variance Inflation Factors
+predictors <- subset(predictors, subset=c("bio5", "bio6", 
+    "bio16", "bio17", "biome"))
 predictors
 predictors@title <- "base"
 
@@ -235,8 +239,8 @@ ensemble.nofactors <- ensemble.batch(x=predictors, ext=ext,
     n.ensembles=3, 
     SINK=TRUE,
     layer.drops=c("biome"),
-    ENSEMBLE.best=c(4:10), ENSEMBLE.decay=c(1.00, 1.05, 1.10, 1.15, 1.20), 
-    ENSEMBLE.min=0.6,
+    ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(1, 2, 4, 6, 8), 
+    ENSEMBLE.min=0.7,
     MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=0, MGCV=1, 
     EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
     Yweights="BIOMOD",

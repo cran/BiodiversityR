@@ -75,8 +75,9 @@ library(dismo)
 predictor.files <- list.files(path=paste(system.file(package="dismo"), '/ex', sep=''),
     pattern='grd', full.names=TRUE)
 predictors <- stack(predictor.files)
-predictors <- subset(predictors, subset=c("bio1", "bio5", 
-    "bio6", "bio7", "bio8", "bio12", "bio16", "bio17", "biome"))
+# subset based on Variance Inflation Factors
+predictors <- subset(predictors, subset=c("bio5", "bio6", 
+    "bio16", "bio17", "biome"))
 predictors
 predictors@title <- "base"
 
@@ -115,7 +116,7 @@ strip.data <- evaluation.strip.data(xn=predictors, ext=ext,
 
 
 # create graphs
-evaluation.strip.plot(data=strip.data, variable="bio1", type="o", col="red")
+evaluation.strip.plot(data=strip.data, variable="bio5", type="o", col="red")
 evaluation.strip.plot(data=strip.data, model="ENSEMBLE", type="o", col="red")
 
 }

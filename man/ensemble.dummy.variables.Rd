@@ -84,8 +84,7 @@ predictors
 names(predictors)
 
 # once dummy variables were created, avoid using the original categorical data layer
-predictors <- subset(predictors, subset=c("bio1", "bio5", 
-    "bio6", "bio7", "bio8", "bio12", "bio16", "bio17", 
+predictors <- subset(predictors, subset=c("bio5", "bio6", "bio16", "bio17", 
     "biome_1", "biome_2", "biome_7", "biome_8", "biome_13"))
 predictors
 predictors@title <- "base"

@@ -105,8 +105,10 @@ library(dismo)
 predictor.files <- list.files(path=paste(system.file(package="dismo"), '/ex', sep=''),
     pattern='grd', full.names=TRUE)
 predictors <- stack(predictor.files)
-predictors <- subset(predictors, subset=c("bio1", "bio5", 
-    "bio6", "bio7", "bio8", "bio12", "bio16", "bio17", "biome"))
+# subset based on Variance Inflation Factors
+predictors <- subset(predictors, subset=c("bio5", "bio6", 
+    "bio16", "bio17", "biome"))
+predictors
 predictors
 predictors@title <- "base"
 
@@ -132,17 +134,17 @@ getwd()
 # factor is not used as it is not certain whether correct levels will be used
 # it may therefore be better to use dummy variables
 
-# step 1: 3-fold cross-validation
+# step 1: 4-fold cross-validation
 ensemble.calibrate.step1 <- ensemble.test.splits(x=predictors, p=pres, a=background, 
     ext=ext,
-    k=3, 
+    k=4, 
     layer.drops=c("biome"),
     SINK=TRUE, species.name="Bradypus",
-    MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
+    MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
     ENSEMBLE.tune=TRUE,
-    ENSEMBLE.best=c(4:10), ENSEMBLE.decay=c(1.00, 1.1, 1.2, 1.3, 1.4, 1.5),
+    ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
     Yweights="BIOMOD", factors=c("biome"),
     PLOTS=FALSE, formulae.defaults=TRUE,
     GBMSTEP.learning.rate=0.002)
@@ -179,14 +181,14 @@ ensemble.nofactors1 <- ensemble.raster(xn=predictors, ext=ext,
 # are contrasted with a newly calibrated model (ensemble.nofactors2)
 ensemble.calibrate.step1 <- ensemble.test.splits(x=predictors, p=pres, a=background, 
     ext=ext,
-    k=3, 
+    k=4, 
     layer.drops=c("biome"),
     SINK=TRUE, species.name="Bradypus",
     MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
     ENSEMBLE.tune=TRUE,
-    ENSEMBLE.best=c(4:10), ENSEMBLE.decay=c(1.00, 1.1, 1.2, 1.3, 1.4, 1.5),
+    ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
     Yweights="BIOMOD", 
     PLOTS=FALSE, formulae.defaults=TRUE,
     GBMSTEP.learning.rate=0.002)

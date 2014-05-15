@@ -37,17 +37,25 @@
     filename1 <- filename(xcat)
     extension1 <- paste(".", file_ext(filename1),sep="")
 
-
 # create the new layers
     for (i in 1:length(new.categories)) {
         extension2 <- paste("_", new.categories[i], ".", file_ext(filename1), sep="")
-        filename <- gsub(pattern=extension1, replacement=extension2, x=filename1)
+        filename2 <- gsub(pattern=extension1, replacement=extension2, x=filename1)
+
+# use working file to be able to change names
+        extension3 <- paste("_working.", file_ext(filename1), sep="")
+        filename3 <- gsub(pattern=extension1, replacement=extension3, x=filename1)
         replace.frame1 <- replace.frame
         replace.frame1[replace.frame1[,1]==new.categories[i], 2] <- 1
-        colnames(replace.frame1)[2] <- paste(names(xcat), "_", new.categories[i], sep="")
-        new.x <- subs(xcat, replace.frame1, by=1, which=2, subsWithNA=FALSE, filename=filename, overwrite=overwrite, ...)
+        new.name <- paste(names(xcat)[1], "_", new.categories[i], sep="")
+        names(replace.frame1)[2] <- new.name
+        new.x <- raster::subs(xcat, replace.frame1, by="id", which=new.name, subsWithNA=TRUE, filename=filename3, overwrite=overwrite, ...)
+        names(new.x) <- new.name
+        writeRaster(new.x, filename=filename2, overwrite=overwrite, ...)
     }
 
+# remove the working file
+    cat(paste("\n", "Removing temporary file: ", filename3, "\n", sep = ""))
+    file.remove(filename3)
 }
-
 

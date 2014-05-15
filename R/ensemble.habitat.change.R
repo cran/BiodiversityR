@@ -50,8 +50,13 @@
         filename1 <- paste(change.folder, "/", raster.name, sep="")
         changes.raster <- overlay(x=base.raster, y=other.raster, fun = change.function, na.rm = FALSE)
         names(changes.raster) <- raster.name
-        writeRaster(changes.raster, filename=filename1,
-                format=RASTER.format, overwrite=TRUE, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        writeRaster(changes.raster, filename=filename1, progress='text', format=RASTER.format, overwrite=TRUE, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#  avoid possible problems with saving of names of the raster layers
+        writeRaster(changes.raster, filename="working.grd", overwrite=T)
+        working.raster <- raster("working.grd")
+        names(working.raster) <- raster.name
+        writeRaster(working.raster, filename=filename1, progress='text', format=RASTER.format, overwrite=TRUE, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#
         rownames(frequencies)[i+1] <- raster.name
         freq1 <- freq(changes.raster)
         freq1 <- freq1[is.na(freq1[,1])==F,]
