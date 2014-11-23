@@ -44,11 +44,11 @@ Tree diversity analysis: A manual and
 library(vegan)
 data(dune)
 data(dune.env)
-dune.env$Agrsto<- dune$Agrsto
-Count.model1 <- glm(Agrsto ~ Management + A1, family=quasipoisson(link=log), 
+dune.env$Agrostol <- dune$Agrostol
+Count.model1 <- glm(Agrostol ~ Management + A1, family=quasipoisson(link=log), 
     data=dune.env, na.action=na.omit)
 summary(Count.model1)
-deviancepercentage(Count.model1,dune.env)
+deviancepercentage(Count.model1, dune.env, digits=3)
 }
 
 \keyword{multivariate} 

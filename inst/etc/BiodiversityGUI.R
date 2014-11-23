@@ -115,14 +115,16 @@ communityDataSet <- function(dsname, flushModel=TRUE, flushDialogMemory=TRUE){
 #	Numeric(listNumeric())
 #	Factors(listFactors())
 #	TwoLevelFactors(listTwoLevelFactors())
-	RcmdrTclSet("dataSetName", paste(" ", dsname, " "))
+
+# changed 2014 all to #
+#	RcmdrTclSet("dataSetName", paste(" ", dsname, " "))
 	# -PhG tkconfigure(.dataSetLabel, foreground="blue")
-	if (!is.SciViews()) tkconfigure(getRcmdr("dataSetLabel"), foreground="blue") else refreshStatus() # +PhG
+#	if (!is.SciViews()) tkconfigure(getRcmdr("dataSetLabel"), foreground="blue") else refreshStatus() # +PhG
 # 	if (getRcmdr("attach.data.set")){
 # 		attach(get(dsname, envir=.GlobalEnv), name=dsname)
 # 		logger(paste("attach(", dsname, ")", sep=""))
 # 	}
-	if (is.SciViews()) refreshStatus() else if (flushModel) tkconfigure(getRcmdr("modelLabel"), foreground="red") # +PhG (& J.Fox, 25Dec04)
+#	if (is.SciViews()) refreshStatus() else if (flushModel) tkconfigure(getRcmdr("modelLabel"), foreground="red") # +PhG (& J.Fox, 25Dec04)
 	activateMenus()
 	dsname
 }
@@ -214,19 +216,19 @@ makecommunityGUI <- function(){
     modelFrame <- tkframe(top, relief="groove", borderwidth=2)
     model <- tkentry(modelFrame, width=40, textvariable=modelName)
     siteFrame <- tkframe(top, relief="groove", borderwidth=2)
-    siteBox <- tklistbox(siteFrame, width=27, height=3,
+    siteBox <- tklistbox(siteFrame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     siteScroll <- tkscrollbar(siteFrame, repeatinterval=5, command=function(...) tkyview(siteBox, ...))
     tkconfigure(siteBox, yscrollcommand=function(...) tkset(siteScroll, ...))
     for (x in fvariables) tkinsert(siteBox, "end", x)
     specFrame <- tkframe(top, relief="groove", borderwidth=2)
-    specBox <- tklistbox(specFrame, width=27, height=3,
+    specBox <- tklistbox(specFrame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     specScroll <- tkscrollbar(specFrame, repeatinterval=5, command=function(...) tkyview(specBox, ...))
     tkconfigure(specBox, yscrollcommand=function(...) tkset(specScroll, ...))
     for (x in fvariables) tkinsert(specBox, "end", x)
     valueFrame <- tkframe(top, relief="groove", borderwidth=2)
-    valueBox <- tklistbox(valueFrame, width=27, height=3,
+    valueBox <- tklistbox(valueFrame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     valueScroll <- tkscrollbar(valueFrame, repeatinterval=5, command=function(...) tkyview(valueBox, ...))
     tkconfigure(valueBox, yscrollcommand=function(...) tkset(valueScroll, ...))
@@ -234,7 +236,7 @@ makecommunityGUI <- function(){
     subsetFrame <- tkframe(top, relief="groove", borderwidth=2)
     subset1Frame <- tkframe(subsetFrame)
     subset2Frame <- tkframe(subsetFrame)
-    subsetBox <- tklistbox(subset1Frame, width=27, height=3,
+    subsetBox <- tklistbox(subset1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     subsetScroll <- tkscrollbar(subset1Frame, repeatinterval=5, command=function(...) tkyview(subsetBox, ...))
     tkconfigure(subsetBox, yscrollcommand=function(...) tkset(subsetScroll, ...))
@@ -344,18 +346,18 @@ importfromExcelGUI <- function() {
         logger(paste("library(RODBC)", sep=""))
         stacked <- tclvalue(stackedVariable) == "1"
         if (stacked==F) {
-            command <- paste("import.from.Excel('", file, "', data.type='community', sheet='community', sitenames='", sitesValue, "', cepnames=F)", sep="")
+            command <- paste("import.from.Excel('", file, "', data.type='community', sheet='community', sitenames='", sitesValue, "', cepnames=F, write.csv=F, csv.file='community.csv')", sep="")
         }else{
             if (factorValue=="all") { 
-                command <- paste("import.from.Excel('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', cepnames=F)", sep="")
+                command <- paste("import.from.Excel('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', cepnames=F, write.csv=F, csv.file='community.csv')", sep="")
             }else{
-                command <- paste("import.from.Excel('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', factor='", factorValue, "', level='", levelValue, "', cepnames=F)", sep="")
+                command <- paste("import.from.Excel('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', factor='", factorValue, "', level='", levelValue, "', cepnames=F, write.csv=F, csv.file='community.csv')", sep="")
             }
         }
         logger(paste(comdsnameValue, " <- ", command, sep=""))
         assign(comdsnameValue, justDoIt(command), envir=.GlobalEnv)
         communityDataSet(comdsnameValue)
-        command <- paste("import.from.Excel('", file, "', data.type='environmental', sheet='environmental', sitenames='", sitesValue, "')", sep="")
+        command <- paste("import.from.Excel('", file, "', data.type='environmental', sheet='environmental', sitenames='", sitesValue, "', write.csv=F, csv.file='environmental.csv')", sep="")
         logger(paste(envdsnameValue, " <- ", command, sep=""))
         assign(envdsnameValue, justDoIt(command), envir=.GlobalEnv)
         activeDataSet(envdsnameValue)
@@ -425,18 +427,18 @@ importfromExcel2007GUI <- function() {
         logger(paste("library(RODBC)", sep=""))
         stacked <- tclvalue(stackedVariable) == "1"
         if (stacked==F) {
-            command <- paste("import.from.Excel2007('", file, "', data.type='community', sheet='community', sitenames='", sitesValue, "', cepnames=F)", sep="")
+            command <- paste("import.from.Excel2007('", file, "', data.type='community', sheet='community', sitenames='", sitesValue, "', cepnames=F, write.csv=F, csv.file='community.csv')", sep="")
         }else{
             if (factorValue=="all") { 
-                command <- paste("import.from.Excel2007('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', cepnames=F)", sep="")
+                command <- paste("import.from.Excel2007('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', cepnames=F, write.csv=F, csv.file='community.csv')", sep="")
             }else{
-                command <- paste("import.from.Excel2007('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', factor='", factorValue, "', level='", levelValue, "', cepnames=F)", sep="")
+                command <- paste("import.from.Excel2007('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', factor='", factorValue, "', level='", levelValue, "', cepnames=F, write.csv=F, csv.file='community.csv')", sep="")
             }
         }
         logger(paste(comdsnameValue, " <- ", command, sep=""))
         assign(comdsnameValue, justDoIt(command), envir=.GlobalEnv)
         communityDataSet(comdsnameValue)
-        command <- paste("import.from.Excel2007('", file, "', data.type='environmental', sheet='environmental', sitenames='", sitesValue, "')", sep="")
+        command <- paste("import.from.Excel2007('", file, "', data.type='environmental', sheet='environmental', sitenames='", sitesValue, "', write.csv=F, csv.file='environmental.csv')", sep="")
         logger(paste(envdsnameValue, " <- ", command, sep=""))
         assign(envdsnameValue, justDoIt(command), envir=.GlobalEnv)
         activeDataSet(envdsnameValue)
@@ -634,7 +636,7 @@ importfromAccess2007GUI <- function() {
 
 samesitesGUI <- function(){
     top <- tktoplevel()
-    tkwm.title(top, "same rows for community and environmental")
+    tkwm.title(top, "Same rows for community and environmental")
     .activeDataSet <- ActiveDataSet()
     .communityDataSet <- CommunityDataSet()
     saveFrame <- tkframe(top, relief="groove", borderwidth=2)
@@ -673,6 +675,49 @@ samesitesGUI <- function(){
     tkgrab.set(top)
     tkwait.window(top)
 }
+
+removezeroes <- function(){
+    .communityDataSet <- CommunityDataSet()
+    command <- paste("removezerospecies(", .communityDataSet, ")", sep="")
+    logger(paste(.communityDataSet, " <- ", command, sep=""))
+    assign(.communityDataSet, justDoIt(command), envir=.GlobalEnv)
+    communityDataSet(.communityDataSet)
+    invisible()
+}
+
+vegemite.table <- function(){
+    .communityDataSet <- CommunityDataSet()
+    command <- paste("vegemite(", .communityDataSet, ", use=cca(", .communityDataSet, "), scale='Braun.Blanquet')", sep="")
+    doItAndPrint(paste(command))
+}
+
+tabasco.table <- function(){
+    .communityDataSet <- CommunityDataSet()
+    command <- paste("tabasco(", .communityDataSet, ", use=cca(", .communityDataSet, "))", sep="")
+    doItAndPrint(paste(command))
+}
+
+beals.smoothing <- function(){
+    .communityDataSet <- CommunityDataSet()
+    command <- paste("beals(", .communityDataSet, ", include=F)", sep="")
+    doItAndPrint(paste(command))
+}
+
+ind.power <- function(){
+    .communityDataSet <- CommunityDataSet()
+    command <- paste("indpower(", .communityDataSet, ", type=0)", sep="")
+    doItAndPrint(paste(command))
+}
+
+nested.checks <- function(){
+    .communityDataSet <- CommunityDataSet()
+    doItAndPrint(paste("nestedchecker(", .communityDataSet, ")", sep=""))
+    doItAndPrint(paste("nestedtemp(", .communityDataSet, ")", sep=""))
+    doItAndPrint(paste("nestednodf(", .communityDataSet, ")", sep=""))
+    doItAndPrint(paste("nestedbetasor(", .communityDataSet, ")", sep=""))
+    doItAndPrint(paste("nestedbetajac(", .communityDataSet, ")", sep=""))
+}
+
 
 viewcommunity <- function(){
     command <- justDoIt(paste("invisible(edit(", communityDataSet(), "))", sep=""))
@@ -763,11 +808,12 @@ disttransGUI <- function(){
     .activeDataSet <- ActiveDataSet()
     .communityDataSet <- CommunityDataSet()
     methodFrame <- tkframe(top, relief="groove", borderwidth=2)
-    methodBox <- tklistbox(methodFrame, width=27, height=3,
+    methodBox <- tklistbox(methodFrame, width=50, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(methodFrame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("hellinger","chord","profiles","chi.square","log","square","pa")
+    methods <- c("hellinger","chord","profiles","chi.square","log","square","pa",
+        "Braun.Blanquet", "Domin", "Hult", "Hill", "fix", "coverscale.log")
     for (x in methods) tkinsert(methodBox, "end", x)
     saveFrame <- tkframe(top, relief="groove", borderwidth=2)
     saveVariable <- tclVar("1")
@@ -950,11 +996,11 @@ accumGUI <- function(){
     methodFrame <- tkframe(choicesFrame)
     method1Frame <- tkframe(methodFrame)
     method2Frame <- tkframe(methodFrame)
-    methodBox <- tklistbox(method1Frame, width=27, height=3,
+    methodBox <- tklistbox(method1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("exact","exact (unconditioned)","random","rarefaction", "coleman","collector")
+    methods <- c("exact","exact (unconditioned)","random","rarefaction", "coleman","collector","poolaccum","estaccumR","drarefy")
     permVariable <- tclVar("100")
     permutation <- tkentry(method2Frame, width=10, textvariable=permVariable)
     for (x in methods) tkinsert(methodBox, "end", x)
@@ -974,7 +1020,7 @@ accumGUI <- function(){
     colour <- tclVar("1")
     colourEntry <- tkentry(optionFrame, width=10, textvariable=colour)
     option2Frame <- tkframe(choicesFrame)   
-    scaleBox <- tklistbox(option2Frame, width=27, height=4,
+    scaleBox <- tklistbox(option2Frame, width=27, height=6,
         selectmode="single", background="white", exportselection="FALSE") 
     scaleScroll <- tkscrollbar(option2Frame, repeatinterval=5, command=function(...) tkyview(scaleBox, ...))
     tkconfigure(scaleBox, yscrollcommand=function(...) tkset(scaleScroll, ...))
@@ -983,7 +1029,7 @@ accumGUI <- function(){
     subsetFrame <- tkframe(choicesFrame)
     subset1Frame <- tkframe(subsetFrame)
     subset2Frame <- tkframe(subsetFrame)
-    subsetBox <- tklistbox(subset1Frame, width=27, height=7,
+    subsetBox <- tklistbox(subset1Frame, width=27, height=8,
         selectmode="single", background="white", exportselection="FALSE") 
     subsetScroll <- tkscrollbar(subset1Frame, repeatinterval=5, command=function(...) tkyview(subsetBox, ...))
     tkconfigure(subsetBox, yscrollcommand=function(...) tkset(subsetScroll, ...))
@@ -1013,27 +1059,38 @@ accumGUI <- function(){
             scale <- paste(", scale='", var2, "'", sep="")
             xlab <- paste(", xlab='", var2, "'", sep="")
         }
-        if (var == "all") {
-            if (method == "exact (unconditioned)") {
-                command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", method='exact', conditioned =F, gamma = 'boot', permutations=", perm, scale, ")", sep="")
-            }else{
-                command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", method='", method, "', conditioned =T, gamma = 'boot', permutations=", perm, scale, ")", sep="")
-            }
-        }else{
-            var <- .variables[as.numeric(tkcurselection(subsetBox))]
-            if (sub == ".") {
+        if (method %in% c("exact","exact (unconditioned)","random","rarefaction", "coleman","collector")) {
+            if (var == "all") {
                 if (method == "exact (unconditioned)") {
-                    command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='exact', conditioned =F, gamma = 'boot', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ")", sep="")
+                    command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", method='exact', conditioned =F, gamma = 'boot', permutations=", perm, scale, ")", sep="")
                 }else{
-                    command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='", method, "', conditioned =T, gamma = 'boot', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ")", sep="")
+                    command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", method='", method, "', conditioned =T, gamma = 'boot', permutations=", perm, scale, ")", sep="")
                 }
             }else{
-                if (method == "exact (unconditioned)") {
-                    command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', method='exact', conditioned =F, gamma = 'boot' , permutations=", perm , scale, ")", sep="")
+                var <- .variables[as.numeric(tkcurselection(subsetBox))]
+                if (sub == ".") {
+                    if (method == "exact (unconditioned)") {
+                        command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='exact', conditioned =F, gamma = 'boot', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ")", sep="")
+                    }else{
+                        command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='", method, "', conditioned =T, gamma = 'boot', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ")", sep="")
+                    }
                 }else{
-                    command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', method='", method, "', conditioned =T, gamma = 'boot' , permutations=", perm , scale, ")", sep="")
+                    if (method == "exact (unconditioned)") {
+                        command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', method='exact', conditioned =F, gamma = 'boot' , permutations=", perm , scale, ")", sep="")
+                    }else{
+                        command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', method='", method, "', conditioned =T, gamma = 'boot' , permutations=", perm , scale, ")", sep="")
+                    }
                 }
             }
+        }
+        if (method == "poolaccum") {
+                command <- paste("poolaccum(", .communityDataSet, ", permutations=", perm, ", minsize=1)", sep="")
+        }
+        if (method == "estaccumR") {
+                command <- paste("estaccumR(", .communityDataSet, ", permutations=", perm, ")", sep="")
+        }
+        if (method == "drarefy") {
+                command <- paste("drarefy(", .communityDataSet, ", sample=round(nrow(", .communityDataSet, ")/4))", sep="")
         }
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
@@ -1041,6 +1098,7 @@ accumGUI <- function(){
     }
     onPlot <- function(){
         modelValue <- tclvalue(modelName)
+        method <- methods[as.numeric(tkcurselection(methodBox))+1]
         addit <- tclvalue(addVariable) == "1" 
         xlim <- tclvalue(xlist)
         if (xlim != "") {xlim <- paste(", xlim=c(", xlim, ")", sep="")}
@@ -1059,7 +1117,13 @@ accumGUI <- function(){
             var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
             xlab <- paste(", xlab='", var2, "'", sep="")
         }
-        doItAndPrint(paste("accumplot(",modelValue, ",addit=", addit, ", ci=", ci, ",ci.type='bar', col='", col, "', cex=", cex, xlab, ", ylab='species richness'", xlim, ylim, ", pch=", pch, ", labels='", sub ,"')", sep=""))
+        if (method %in% c("exact","exact (unconditioned)","random","rarefaction", "coleman","collector")) {
+            doItAndPrint(paste("accumplot(", modelValue, ", addit=", addit, ", ci=", ci, ", ci.type='bar', col='", col, "', cex=", cex, xlab, ", ylab='species richness'", xlim, ylim, ", pch=", pch, ", labels='", sub ,"')", sep=""))
+        }
+        if (method %in% c("poolaccum", "estaccumR")) {
+            doItAndPrint(paste("plot(", modelValue, ")", sep=""))
+        }
+
     }
     onCancel <- function() {
         tkgrab.release(top)
@@ -1128,19 +1192,19 @@ diversityGUI <- function(){
     model <- tkentry(modelFrame, width=40, textvariable=modelName)
     choicesFrame <- tkframe(top, relief="groove", borderwidth=2)
     indexFrame <- tkframe(choicesFrame)
-    indexBox <- tklistbox(indexFrame, width=27, height=3,
+    indexBox <- tklistbox(indexFrame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     indexScroll <- tkscrollbar(indexFrame, repeatinterval=5, command=function(...) tkyview(indexBox, ...))
     tkconfigure(indexBox, yscrollcommand=function(...) tkset(indexScroll, ...))
     indices <- c("richness","abundance","Shannon","Simpson","inverseSimpson","Logalpha","Berger","Jevenness","Eevenness",
-        "jack1","jack2","chao","boot")
+        "jack1","jack2","chao","boot","richness (contribdiv)", "simpson (contribdiv)", "eventstar")
     for (x in indices) tkinsert(indexBox, "end", x)
     methodFrame <- tkframe(choicesFrame)
-    methodBox <- tklistbox(methodFrame, width=27, height=3,
+    methodBox <- tklistbox(methodFrame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(methodFrame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("all","separate per site","mean","sd","jackknife")
+    methods <- c("all (pooled)","separate per site","mean","sd","jackknife")
     for (x in methods) tkinsert(methodBox, "end", x)
     optionFrame <- tkframe(choicesFrame)
     dataVariable <- tclVar("0")
@@ -1171,29 +1235,41 @@ diversityGUI <- function(){
         modelValue <- tclvalue(modelName)
         index <- indices[as.numeric(tkcurselection(indexBox))+1]
         method <- methods[as.numeric(tkcurselection(methodBox))+1]
+        if (method == "all (pooled)") {method <- "all"}
         data <- tclvalue(dataVariable) == "1"
         sortit <- tclvalue(sortVariable) == "1"
         if (data==T) {sortit <- F}
         var <- variables[as.numeric(tkcurselection(subsetBox))+1]
         sub <- tclvalue(subset)
-        if (var == "all") {
-            command <- paste("diversityresult(", .communityDataSet, ", index='", index,
-                "' ,method='", method, "', sortit=", sortit, ", digits=3)", sep="")
-        }else{
-            var <- .variables[as.numeric(tkcurselection(subsetBox))]
-            if (sub == "." && method !="separate per site") {
-                command <- paste("diversitycomp(", .communityDataSet, ", y=", .activeDataSet, ", factor1='", var, "', , index='", index,
+        if (index %in% c("richness","abundance","Shannon","Simpson","inverseSimpson","Logalpha","Berger","Jevenness","Eevenness",
+            "jack1","jack2","chao","boot")) {
+            if (var == "all") {
+                command <- paste("diversityresult(", .communityDataSet, ", index='", index,
                     "' ,method='", method, "', sortit=", sortit, ", digits=3)", sep="")
+            }else{
+                var <- .variables[as.numeric(tkcurselection(subsetBox))]
+                if (sub == ".") {
+                    command <- paste("diversitycomp(", .communityDataSet, ", y=", .activeDataSet, ", factor1='", var, "', factor2='', index='", index,
+                        "' ,method='", method, "', sortit=", sortit, ", digits=3)", sep="")
+                }else{
+                    command <- paste("diversityresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', index='", index,
+                        "' ,method='", method, "', sortit=", sortit, ", digits=3)", sep="")
+                }
             }
-            if (sub != "."){
-                command <- paste("diversityresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', index='", index,
-                    "' ,method='", method, "', sortit=", sortit, ", digits=3)", sep="")
-            }
+        }
+        if (index == "richness (contribdiv)") {
+                command <- paste("contribdiv(", .communityDataSet, ", index='richness')", sep="")
+        }
+        if (index == "simpson (contribdiv)") {
+                command <- paste("contribdiv(", .communityDataSet, ", index='simpson')", sep="")
+        }
+        if (index == "eventstar") {
+                command <- paste("eventstar(", .communityDataSet, ", qmax=5)", sep="")
         }
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
         doItAndPrint(paste(modelValue))
-        if (data==T && var=="all" && method=="separate per site") {
+        if (data==T && var=="all" && method=="separate per site" && index %in% c("richness","abundance","Shannon","Simpson","inverseSimpson","Logalpha","Berger","Jevenness","Eevenness","jack1","jack2","chao","boot")) {
             justDoIt(paste(.activeDataSet, "$", index, " <- diversityresult(", .communityDataSet, ", index='", index,"' ,method='", method,"')[,1]", sep=""))
             logger(paste(.activeDataSet, "$", index, " <- diversityresult(", .communityDataSet, ", index='", index,"' ,method='", method,"')[,1]", sep=""))
             activeDataSet(.activeDataSet)
@@ -1201,7 +1277,9 @@ diversityGUI <- function(){
     }
     onPlot <- function() {
         modelValue <- tclvalue(modelName)
+        index <- indices[as.numeric(tkcurselection(indexBox))+1]
         method <- methods[as.numeric(tkcurselection(methodBox))+1]
+        if (method == "all (pooled)") {method <- "all"}
         var <- variables[as.numeric(tkcurselection(subsetBox))+1]
         labelit <- tclvalue(labelVariable) == "1"
         addit <- tclvalue(addVariable) == "1" 
@@ -1209,22 +1287,20 @@ diversityGUI <- function(){
         if (ylim != "") {ylim <- paste(", ylim=c(", ylim, ")", sep="")}
         pch <- tclvalue(symbol)
         sub <- tclvalue(subset)
-        if (var!="all" && sub=="." && method!="separate per site") {
-            if (addit==F) {
-                justDoIt(paste("plot(rep(-90, nrow(", modelValue, ")) ~ as.factor(rownames(", modelValue, ")), xlab='", method, "', ylab=colnames(", modelValue, "), type='n'", ylim, ")", sep=""))
-                logger(paste("plot(rep(-90, nrow(", modelValue, ")) ~ as.factor(rownames(", modelValue, ")), xlab='", method, "', ylab=colnames(", modelValue, "), type='n'", ylim, ")", sep=""))
+        if (index %in% c("richness","abundance","Shannon","Simpson","inverseSimpson","Logalpha","Berger","Jevenness","Eevenness")) {
+            if (var!="all" && sub=="." && method!="separate per site") {
+                if (addit==F) {
+                    justDoIt(paste("plot(rep(-90, nrow(", modelValue, ")) ~ as.factor(rownames(", modelValue, ")), xlab='", method, "', ylab=colnames(", modelValue, "), type='n'", ylim, ")", sep=""))
+                    logger(paste("plot(rep(-90, nrow(", modelValue, ")) ~ as.factor(rownames(", modelValue, ")), xlab='", method, "', ylab=colnames(", modelValue, "), type='n'", ylim, ")", sep=""))
+                }
+                doItAndPrint(paste("points(", modelValue, "[,2] ~ c(1:nrow(", modelValue, ")), pch=", pch, ")", sep=""))                
+                if (labelit==T) {doItAndPrint(paste("text(c(1:nrow(", modelValue, "))," , modelValue, "[,2], labels=rownames(", modelValue, "), pos=3)", sep="")) }
+                if (labelit==T) {doItAndPrint(paste("text(c(1:nrow(", modelValue, "))," , modelValue, "[,2], labels=", modelValue, "[,1], pos=1)", sep="")) }
             }
-            doItAndPrint(paste("points(", modelValue, "[,2] ~ c(1:nrow(", modelValue, ")), pch=", pch, ")", sep=""))                
-            if (labelit==T) {doItAndPrint(paste("text(c(1:nrow(", modelValue, "))," , modelValue, "[,2], labels=rownames(", modelValue, "), pos=3)", sep="")) }
-            if (labelit==T) {doItAndPrint(paste("text(c(1:nrow(", modelValue, "))," , modelValue, "[,2], labels=", modelValue, "[,1], pos=1)", sep="")) }
-        }else{
-            if (addit==F) {
-                justDoIt(paste("plot(rep(-90, nrow(", modelValue, ")) ~ as.factor(rownames(", modelValue, ")), xlab='", method, "', ylab=colnames(", modelValue, "), type='n'", ylim, ")", sep=""))
-                logger(paste("plot(rep(-90, nrow(", modelValue, ")) ~ as.factor(rownames(", modelValue, ")), xlab='", method, "', ylab=colnames(", modelValue, "), type='n'", ylim, ")", sep=""))
-            }
-            doItAndPrint(paste("points(", modelValue, "[,1] ~ c(1:nrow(", modelValue, ")), pch=", pch, ")", sep=""))
-            if (labelit==T) {doItAndPrint(paste("text(c(1:nrow(", modelValue, "))," , modelValue, "[,1], labels=rownames(", modelValue, "), pos=3)", sep="")) }
         }
+        if (index %in% c("richness (contribdiv)", "simpson (contribdiv)")) {
+            doItAndPrint(paste("plot(", modelValue, ")", sep=""))
+        } 
     }
     onCancel <- function() {
         tkgrab.release(top)
@@ -1291,7 +1367,7 @@ rankabunGUI <- function(){
     optionFrame <- tkframe(choicesFrame)
     option1Frame <- tkframe(optionFrame)
     option2Frame <- tkframe(optionFrame)
-    scaleBox <- tklistbox(option1Frame, width=27, height=3,
+    scaleBox <- tklistbox(option1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     scaleScroll <- tkscrollbar(option1Frame, repeatinterval=5, command=function(...) tkyview(scaleBox, ...))
     tkconfigure(scaleBox, yscrollcommand=function(...) tkset(scaleScroll, ...))
@@ -1308,7 +1384,7 @@ rankabunGUI <- function(){
     subsetFrame <- tkframe(choicesFrame)
     subset1Frame <- tkframe(subsetFrame)
     subset2Frame <- tkframe(subsetFrame)
-    subsetBox <- tklistbox(subset1Frame, width=27, height=7,
+    subsetBox <- tklistbox(subset1Frame, width=27, height=9,
         selectmode="single", background="white", exportselection="FALSE") 
     subsetScroll <- tkscrollbar(subset1Frame, repeatinterval=5, command=function(...) tkyview(subsetBox, ...))
     tkconfigure(subsetBox, yscrollcommand=function(...) tkset(subsetScroll, ...))
@@ -1422,9 +1498,9 @@ renyiGUI <- function(){
     model <- tkentry(modelFrame, width=40, textvariable=modelName)
     choicesFrame <- tkframe(top, relief="groove", borderwidth=2)
     methodFrame <- tkframe(choicesFrame)
-    methodBox <- tklistbox(methodFrame, width=27, height=2,
+    methodBox <- tklistbox(methodFrame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
-    methodScroll <- tkscrollbar(methodFrame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
+    methodScroll <- tkscrollbar(methodFrame, repeatinterval=3, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
     methods <- c("all","separate per site","accumulation")
     for (x in methods) tkinsert(methodBox, "end", x)
@@ -1591,14 +1667,14 @@ countGUI <- function(){
     x4Frame <- tkframe(xFrame)
     x2Frame <- tkframe(x4Frame)
     x3Frame <- tkframe(x4Frame)
-    xBox <- tklistbox(x2Frame, width=28, height=min(3, length(.variables)),
+    xBox <- tklistbox(x2Frame, width=28, height=5,
         selectmode="single", background="white", exportselection="FALSE")
     xScroll <- tkscrollbar(x2Frame, repeatinterval=5, command=function(...) tkyview(xBox, ...))
     tkconfigure(xBox, yscrollcommand=function(...) tkset(xScroll, ...))
     for (x in variables) tkinsert(xBox, "end", x)
     resFrame <- tkframe(top, relief="groove", borderwidth=2)
     yFrame <- tkframe(resFrame)
-    yBox <- tklistbox(yFrame, width=27, height=min(3, length(.cvariables)),
+    yBox <- tklistbox(yFrame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE")
     yScroll <- tkscrollbar(yFrame, repeatinterval=5, command=function(...) tkyview(yBox, ...), width=18)
     tkconfigure(yBox, yscrollcommand=function(...) tkset(yScroll, ...))
@@ -1617,14 +1693,14 @@ countGUI <- function(){
     plotFrame <- tkframe(top, relief="groove", borderwidth=2)
     plot1Frame <- tkframe(plotFrame)
     plot2Frame <- tkframe(plotFrame)
-    typeBox <- tklistbox(plot1Frame, width=27, height=3,
+    typeBox <- tklistbox(plot1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
     types <- c("diagnostic plots","levene test (factor)","term plot","effect plot", "qq plot", "result plot (new)", 
         "result plot (add)","result plot (interpolate)", "cr plot","av plot","influence plot","multcomp (factor)","rpart")
     for (x in types) tkinsert(typeBox, "end", x)
-    axisBox <- tklistbox(plot2Frame, width=27, height=3,
+    axisBox <- tklistbox(plot2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     axisScroll <- tkscrollbar(plot2Frame, repeatinterval=5, command=function(...) tkyview(axisBox, ...))
     tkconfigure(axisBox, yscrollcommand=function(...) tkset(axisScroll, ...))
@@ -1632,7 +1708,7 @@ countGUI <- function(){
     optionFrame <- tkframe(top, relief="groove", borderwidth=2)
     option1Frame <- tkframe(optionFrame)
     option2Frame <- tkframe(optionFrame)
-    optionBox <- tklistbox(option1Frame, width=27, height=3,
+    optionBox <- tklistbox(option1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     optionScroll <- tkscrollbar(option1Frame, repeatinterval=5, command=function(...) tkyview(optionBox, ...))
     tkconfigure(optionBox, yscrollcommand=function(...) tkset(optionScroll, ...))
@@ -1826,21 +1902,21 @@ countGUI <- function(){
         if (sum==T) {
             doItAndPrint(paste("summary(", modelValue, ")", sep=""))
             if (option != "linear model" && option!="gam model"  && option!="gam negbinom model"  && option!="glmmPQL" && option!="rpart") {
-                doItAndPrint(paste("deviancepercentage(", modelValue, ",", .activeDataSet, ")", sep=""))
+                doItAndPrint(paste("deviancepercentage(", modelValue, ", na.omit(", .activeDataSet, "), digits=2)", sep=""))
             }
         }
         anov <- tclvalue(anovaVariable) == "1"
         if (anov==T && option!="glmmPQL" && option!="rpart") {
             doItAndPrint(paste("anova(", modelValue, ",test='F')", sep=""))
-                doItAndPrint(paste("vif(lm(", formula, ", data=na.omit(",.activeDataSet, ")))", sep=""))
+                doItAndPrint(paste("car::vif(lm(", formula, ", data=na.omit(",.activeDataSet, ")))", sep=""))
                 if (option=="linear model") {
                     doItAndPrint(paste("drop1(", modelValue, ",test='F')", sep=""))
-                    doItAndPrint(paste("Anova(", modelValue, ",type='II')", sep=""))
+                    doItAndPrint(paste("car::Anova(", modelValue, ",type='II')", sep=""))
                 }
                 if (option=="Poisson model"  || option=="quasi-Poisson model"  || option=="negative binomial model") {
                     doItAndPrint(paste("drop1(", modelValue, ",test='F')", sep=""))
-                    doItAndPrint(paste("Anova(", modelValue, ",type='II', test='F', error.estimate='deviance')", sep=""))
-                    doItAndPrint(paste("Anova(", modelValue, ",type='II', test='Wald')", sep=""))
+                    doItAndPrint(paste("car::Anova(", modelValue, ",type='II', test='F', error.estimate='deviance')", sep=""))
+                    doItAndPrint(paste("car::Anova(", modelValue, ",type='II', test='Wald')", sep=""))
                 }
         }        
         data <- tclvalue(dataVariable) =="1"
@@ -2105,14 +2181,14 @@ presabsGUI <- function(){
     x4Frame <- tkframe(xFrame)
     x2Frame <- tkframe(x4Frame)
     x3Frame <- tkframe(x4Frame)
-    xBox <- tklistbox(x2Frame, width=28, height=min(3, length(.variables)),
+    xBox <- tklistbox(x2Frame, width=28, height=5,
         selectmode="single", background="white", exportselection="FALSE")
     xScroll <- tkscrollbar(x2Frame, repeatinterval=5, command=function(...) tkyview(xBox, ...))
     tkconfigure(xBox, yscrollcommand=function(...) tkset(xScroll, ...))
     for (x in variables) tkinsert(xBox, "end", x)
     resFrame <- tkframe(top, relief="groove", borderwidth=2)
     yFrame <- tkframe(resFrame)
-    yBox <- tklistbox(yFrame, width=27, height=min(3, length(.cvariables)),
+    yBox <- tklistbox(yFrame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE")
     yScroll <- tkscrollbar(yFrame, repeatinterval=5, command=function(...) tkyview(yBox, ...), width=18)
     tkconfigure(yBox, yscrollcommand=function(...) tkset(yScroll, ...))
@@ -2131,14 +2207,14 @@ presabsGUI <- function(){
     plotFrame <- tkframe(top, relief="groove", borderwidth=2)
     plot1Frame <- tkframe(plotFrame)
     plot2Frame <- tkframe(plotFrame)
-    typeBox <- tklistbox(plot1Frame, width=27, height=3,
+    typeBox <- tklistbox(plot1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
     types <- c("tabular","diagnostic plots","levene test (factor)","term plot","effect plot","qq plot","result plot (new)", 
         "result plot (add)","result plot (interpolate)", "cr plot","av plot","influence plot","multcomp (factor)","rpart")
     for (x in types) tkinsert(typeBox, "end", x)
-    axisBox <- tklistbox(plot2Frame, width=27, height=3,
+    axisBox <- tklistbox(plot2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     axisScroll <- tkscrollbar(plot2Frame, repeatinterval=5, command=function(...) tkyview(axisBox, ...))
     tkconfigure(axisBox, yscrollcommand=function(...) tkset(axisScroll, ...))
@@ -2146,7 +2222,7 @@ presabsGUI <- function(){
     optionFrame <- tkframe(top, relief="groove", borderwidth=2)
     option1Frame <- tkframe(optionFrame)
     option2Frame <- tkframe(optionFrame)
-    optionBox <- tklistbox(option1Frame, width=27, height=3,
+    optionBox <- tklistbox(option1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     optionScroll <- tkscrollbar(option1Frame, repeatinterval=5, command=function(...) tkyview(optionBox, ...))
     tkconfigure(optionBox, yscrollcommand=function(...) tkset(optionScroll, ...))
@@ -2348,10 +2424,10 @@ presabsGUI <- function(){
         if (sum==T && option !="crosstab") {
             doItAndPrint(paste("summary(", modelValue, ")", sep=""))
             if (option=="binomial model") {
-                doItAndPrint(paste("deviancepercentage(", modelValue, ",", .activeDataSet, ", test='Chi')", sep=""))
+                doItAndPrint(paste("deviancepercentage(", modelValue, ", na.omit(", .activeDataSet, "), test='Chi', digits=2)", sep=""))
             }
             if (option=="quasi-binomial model") {
-                doItAndPrint(paste("deviancepercentage(", modelValue, ",", .activeDataSet, ", test='F')", sep=""))
+                doItAndPrint(paste("deviancepercentage(", modelValue, ", na.omit(", .activeDataSet, "), test='F', digits=2)", sep=""))
             }
         }
         if (sum==T && option=="crosstab") {        
@@ -2362,17 +2438,17 @@ presabsGUI <- function(){
         anov <- tclvalue(anovaVariable) == "1"
         if (anov==T && (option=="binomial model" || option=="gam model")) {
             doItAndPrint(paste("anova(", modelValue, ",test='Chi')", sep=""))
-                doItAndPrint(paste("vif(lm(", formula, ", data=na.omit(",.activeDataSet, ")))", sep=""))                  
+                doItAndPrint(paste("car::vif(lm(", formula, ", data=na.omit(",.activeDataSet, ")))", sep=""))                  
                 doItAndPrint(paste("drop1(", modelValue, ",test='Chi')", sep=""))
-                doItAndPrint(paste("Anova(", modelValue, ",type='II', test='F', error.estimate='deviance')", sep=""))
-                doItAndPrint(paste("Anova(", modelValue, ",type='II', test='Wald')", sep=""))
+                doItAndPrint(paste("car::Anova(", modelValue, ",type='II', test='F', error.estimate='deviance')", sep=""))
+                doItAndPrint(paste("car::Anova(", modelValue, ",type='II', test='Wald')", sep=""))
         } 
         if (anov==T && (option=="quasi-binomial model" || option=="gam quasi-binomial model")) {
             doItAndPrint(paste("anova(", modelValue, ",test='F')", sep=""))
-                doItAndPrint(paste("vif(lm(", formula, ", data=na.omit(",.activeDataSet, ")))", sep=""))                  
+                doItAndPrint(paste("car::vif(lm(", formula, ", data=na.omit(",.activeDataSet, ")))", sep=""))                  
                 doItAndPrint(paste("drop1(", modelValue, ",test='F')", sep=""))
-                doItAndPrint(paste("Anova(", modelValue, ",type='II', test='F', error.estimate='deviance')", sep=""))
-                doItAndPrint(paste("Anova(", modelValue, ",type='II', test='Wald')", sep=""))
+                doItAndPrint(paste("car::Anova(", modelValue, ",type='II', test='F', error.estimate='deviance')", sep=""))
+                doItAndPrint(paste("car::Anova(", modelValue, ",type='II', test='Wald')", sep=""))
         }       
         data <- tclvalue(dataVariable) =="1"
         if (data==T) {
@@ -2613,21 +2689,29 @@ distmatrixGUI <- function(){
     .communityDataSet <- CommunityDataSet()
     modelName <- tclVar("Distmatrix.1")
     modelFrame <- tkframe(top, relief="groove", borderwidth=2)
-    model <- tkentry(modelFrame, width=40, textvariable=modelName)
+    model <- tkentry(modelFrame, width=50, textvariable=modelName)
     method2Frame <- tkframe(top, relief="groove", borderwidth=2)
-    distBox <- tklistbox(method2Frame, width=27, height=3,
+    distBox <- tklistbox(method2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     distScroll <- tkscrollbar(method2Frame, repeatinterval=5, command=function(...) tkyview(distBox, ...))
     treatasdistVariable <- tclVar("0")
     treatasdistCheckBox <- tkcheckbutton(method2Frame, variable=treatasdistVariable)
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
-    distances <- c("euclidean","bray","kulczynski","manhattan","canberra","jaccard","gower","morisita","horn","mountford","raup","binomial")
+    distances <- c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+        "chao", "cao", "mahalanobis",
+        "w", "-1", "c", "wb", "r", "I", "e", "t", "me", "j", "sor", "m", "-2", "co", "cc", "g", "-3", "l", "19", "hk", "rlb", "sim", "gl", "z")
     for (x in distances) tkinsert(distBox, "end", x)
     onOK <- function(){
         dist <- distances[as.numeric(tkcurselection(distBox))+1]
         modelValue <- tclvalue(modelName)
-        logger(paste(modelValue, " <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
-        assign(modelValue, justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+        if (dist %in% c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+            "chao", "cao", "mahalanobis")) {
+            logger(paste(modelValue, " <- vegdist(", .communityDataSet, ", method='", dist, "', na.rm=T)", sep=""))
+            assign(modelValue, justDoIt(paste("vegdist(",.communityDataSet, ", method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+        }else{
+            logger(paste(modelValue, " <- betadiver(", .communityDataSet, ", method='", dist, "')", sep=""))
+            assign(modelValue, justDoIt(paste("betadiver(",.communityDataSet, ", method='",dist, "')", sep="")), envir=.GlobalEnv)
+        }
         doItAndPrint(paste(modelValue))
         doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
         treatasdist <- tclvalue(treatasdistVariable)==1
@@ -2683,17 +2767,18 @@ unconordiGUI <- function(){
     method2Frame <- tkframe(methodFrame)
     method3Frame <- tkframe(methodFrame)
     method4Frame <- tkframe(methodFrame)
-    methodBox <- tklistbox(method1Frame, width=27, height=3,
+    methodBox <- tklistbox(method1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("PCA","PCA (prcomp)", "PCoA","PCoA (Caillez)","CA","DCA","metaMDS","NMS (standard)")
+    methods <- c("PCA","PCA (prcomp)", "PCoA","PCoA (Caillez)","CA","DCA","metaMDS","wcmdscale","pcnm","NMS (standard)","isomap")
     for (x in methods) tkinsert(methodBox, "end", x)
-    distBox <- tklistbox(method2Frame, width=27, height=3,
+    distBox <- tklistbox(method2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     distScroll <- tkscrollbar(method2Frame, repeatinterval=5, command=function(...) tkyview(distBox, ...))
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
-    distances <- c("euclidean","bray","kulczynski","manhattan","canberra","jaccard","gower","morisita","horn","mountford","raup","binomial")
+    distances <- c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+            "chao", "cao", "mahalanobis")
     for (x in distances) tkinsert(distBox, "end", x)
     summaryVariable <- tclVar("1")
     summaryCheckBox <- tkcheckbutton(method4Frame, variable=summaryVariable)
@@ -2712,7 +2797,7 @@ unconordiGUI <- function(){
     plot2Frame <- tkframe(plotFrame)
     plot3Frame <- tkframe(plotFrame)
     plot4Frame <- tkframe(plotFrame)
-    typeBox <- tklistbox(plot1Frame, width=27, height=3,
+    typeBox <- tklistbox(plot1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
@@ -2721,14 +2806,14 @@ unconordiGUI <- function(){
         "envfit","ordihull (factor)", "ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordiellipse (factor)","ordisurf (continuous)",
         "ordibubble (continuous)","ordisymbol (factor)","ordisymbol (factor, legend)","ordivector (species)","ordivector interpretation",
         "ordicluster","ordicluster2","ordispantree","ordinearest","ordiequilibriumcircle","screeplot",
-        "distance displayed","coenocline","screeplot.cca","stressplot",
+        "distance displayed","coenocline","stressplot",
         "orditkplot sites","orditkplot species","orditkplot pointlabel")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
     choice <- tkentry(plot3Frame, width=10, textvariable=choicesVariable)
     dataVariable <- tclVar("0")
     dataCheckBox <- tkcheckbutton(plot3Frame, variable=dataVariable)
-    axisBox <- tklistbox(plot2Frame, width=27, height=3,
+    axisBox <- tklistbox(plot2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     axisScroll <- tkscrollbar(plot2Frame, repeatinterval=5, command=function(...) tkyview(axisBox, ...))
     tkconfigure(axisBox, yscrollcommand=function(...) tkset(axisScroll, ...))
@@ -2747,11 +2832,11 @@ unconordiGUI <- function(){
         addspec <- tclvalue(addspecVariable) == "1"
         if (method=="PCA") {
             command <- paste("rda(", .communityDataSet, ")", sep="")
-            doItAndPrint(paste("dist.eval(", .communityDataSet, ",'euc')", sep=""))
+            doItAndPrint(paste("dist.eval(", .communityDataSet, ",'euclidean')", sep=""))
         }
         if (method=="PCA (prcomp)") {
             command <- paste("prcomp(", .communityDataSet, ")", sep="")
-            doItAndPrint(paste("dist.eval(", .communityDataSet, ",'euc')", sep=""))
+            doItAndPrint(paste("dist.eval(", .communityDataSet, ",'euclidean')", sep=""))
         }
         if (method=="CA") {
             command <- paste("cca(", .communityDataSet, ")", sep="")
@@ -2786,22 +2871,55 @@ unconordiGUI <- function(){
             command <- paste("metaMDS(", .communityDataSet, ",distance='", dist, "', k=", k, ", trymax=", perm, ", autotransform=T, noshare=0.1, expand=T, trace=1, plot=F)", sep="")
             doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
         }
-        if (method=="NMS (standard)") {
+        if (method=="wcmdscale") {
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ", method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ", method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            command <- paste("NMSrandom(distmatrix,perm=",perm,",k=", k, ")", sep="")          
+            command <- paste("wcmdscale(distmatrix, k=", k, ", eig=T)", sep="")          
+        }
+        if (method=="pcnm") {
+            if(treatasdist==F){
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ", method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ", method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }else{
+                logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
+                assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("pcnm(distmatrix)", sep="")          
+        }
+        if (method=="NMS (standard)") {
+            if(treatasdist==F){
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ", method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ", method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }else{
+                logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
+                assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("NMSrandom(distmatrix, perm=", perm,", k=", k, ")", sep="")          
+        }
+        if (method=="isomap") {
+            if(treatasdist==F){
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ", method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ", method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }else{
+                logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
+                assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("isomap(distmatrix, k=4)", sep="")          
         }
         modelValue <- tclvalue(modelName)
-        if (!is.valid.name(modelValue)){
-            tkmessageBox(message=paste('"', modelValue, '" is not a valid name.', 
-                sep=""), icon="error", type="ok")
-        }        
+#        if (!is.valid.name(modelValue)){
+#            tkmessageBox(message=paste('"', modelValue, '" is not a valid name.', 
+#                sep=""), icon="error", type="ok")
+#        }        
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
         sum <- tclvalue(summaryVariable) == "1"
@@ -2826,15 +2944,17 @@ unconordiGUI <- function(){
             doItAndPrint(paste("check.ordiscores(", .communityDataSet, ",", modelValue, ", check.species=F)", sep=""))
         }
         if (sum==T) {
-            if (method == "PCA" || method == "CA" || method == "DCA") {
+            if (method %in% c("PCA", "CA", "DCA")) {
                 doItAndPrint(paste("summary(", modelValue, ", scaling=", scaling, ")", sep=""))
                 if (method=="PCA") {doItAndPrint(paste("PCAsignificance(", modelValue, ")", sep=""))}
                 doItAndPrint(paste("goodness(", modelValue, ", display='sites', choices=c(1:4), statistic='explained')", sep=""))
-                doItAndPrint(paste("inertcomp(", modelValue, ", display='sites', statistic='explained',proportional=F)", sep=""))            
-            }else{
+                doItAndPrint(paste("inertcomp(", modelValue, ", display='sites', statistic='explained', proportional=F)", sep=""))
+            }         
+            if (method %in% c("PCA (prcomp)", "PCoA","PCoA (Caillez)","metaMDS","wcmdscale","pcnm","NMS (standard)")) {
                 doItAndPrint(paste(modelValue, sep=""))
                 if (method=="metaMDS") {doItAndPrint(paste("goodness(", modelValue, ")", sep=""))}
             }
+            if (method=="isomap") {doItAndPrint(paste("summary(", modelValue, ")", sep=""))}
         }
     }
     onPlot <- function(){
@@ -2861,7 +2981,7 @@ unconordiGUI <- function(){
                 justDoIt(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "))", sep=""))
                 logger(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "))", sep=""))
             }
-            if (method=="PCoA" || method=="PCoA (Caillez)"  || method=="NMS (standard)") {
+            if (method=="PCoA" || method=="PCoA (Caillez)"  || method=="NMS (standard)" || method=="wcmdscale" || method=="pcnm") {
                 justDoIt(paste("plot1 <- plot(scores(", modelValue, ", display='sites', choices=c(", choices, ")))", sep=""))
                 logger(paste("plot1 <- plot(scores(", modelValue, ", display='sites', choices=c(", choices, ")))", sep=""))
                 if (addspec==T) {
@@ -2931,10 +3051,9 @@ unconordiGUI <- function(){
         if (plottype == "screeplot"){
             justDoIt(paste("par(cex=",cex,")", sep=""))
             logger(paste("par(cex=",cex,")", sep=""))
-            if (method=="PCA" || method=="PCA (prcomp)") {
-                justDoIt(paste("plot1 <- screeplot(", modelValue, ", bstick=T)", sep=""))
-                logger(paste("plot1 <- screeplot(", modelValue, ", bstick=T)", sep=""))
-            }
+#           if (method=="PCA" || method=="PCA (prcomp)") {
+                doItAndPrint(paste("plot1 <- screeplot(", modelValue, ", bstick=T)", sep=""))
+#            }
         }
         axisvar <- .variables[as.numeric(tkcurselection(axisBox))+1]
         varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", axisvar, ")", sep="")), envir=.GlobalEnv)
@@ -2943,25 +3062,25 @@ unconordiGUI <- function(){
             doItAndPrint(paste("plot(fitted, col='", col,"', cex=", cex, ")", sep=""))
         }
         if (plottype == "ordihull (factor)" && varfactor==T){
-            doItAndPrint(paste("ordihull(plot1,", axisvar, ",col='", col, "')", sep=""))
+            doItAndPrint(paste("ordihull(plot1,", axisvar, ", col='", col, "')", sep=""))
         }
         if (plottype == "ordiarrows (factor)" && varfactor==T){
-            doItAndPrint(paste("ordiarrows(plot1,", axisvar, ",col='", col, "')", sep=""))
+            doItAndPrint(paste("ordiarrows(plot1,", axisvar, ", col='", col, "')", sep=""))
         }
         if (plottype == "ordisegments (factor)" && varfactor==T){
-            doItAndPrint(paste("ordisegments(plot1,", axisvar, ",col='", col, "')", sep=""))
+            doItAndPrint(paste("ordisegments(plot1,", axisvar, ", col='", col, "')", sep=""))
         }
         if (plottype == "ordispider (factor)" && varfactor==T){
-            doItAndPrint(paste("ordispider(plot1,", axisvar, ",col='", col, "')", sep=""))
+            doItAndPrint(paste("ordispider(plot1,", axisvar, ", col='", col, "')", sep=""))
             }
         if (plottype == "ordiellipse (factor)" && varfactor==T){
-            doItAndPrint(paste("ordiellipse(plot1,", axisvar, ",col='", col, "')", sep=""))
+            doItAndPrint(paste("ordiellipse(plot1,", axisvar, ", col='", col, "', conf=0.9)", sep=""))
             }
         if (plottype == "ordisurf (continuous)" && varfactor==F){
-            doItAndPrint(paste("ordisurf(plot1,", axisvar, ",add=T)", sep=""))
+            doItAndPrint(paste("ordisurf(plot1,", axisvar, ", add=T)", sep=""))
             }
         if (plottype == "ordibubble (continuous)" && varfactor==F){
-            doItAndPrint(paste("ordibubble(plot1,", axisvar, ",fg='", col, "')", sep=""))
+            doItAndPrint(paste("ordibubble(plot1,", axisvar, ", fg='", col, "')", sep=""))
             }
         if (plottype == "ordisymbol (factor)" && varfactor==T){
             justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=F, rainbow=T, cex=", cex, ")", sep=""))
@@ -3041,9 +3160,6 @@ unconordiGUI <- function(){
         }
         if (plottype == "coenocline"){
             doItAndPrint(paste("ordicoeno(", .communityDataSet ,", ordiplot=plot1, axis=1, legend=T, cex=0.8, ncol=4)", sep=""))
-            }
-        if (plottype == "screeplot.cca"  && method == "PCA"){
-            doItAndPrint(paste("screeplot.cca(", modelValue ,",bstick=T)", sep=""))
             }
         if (plottype == "stressplot"  && method == "metaMDS"){
             doItAndPrint(paste("stressplot(", modelValue ,")", sep=""))
@@ -3172,17 +3288,18 @@ conordiGUI <- function(){
     method2Frame <- tkframe(methodFrame)
     method3Frame <- tkframe(methodFrame)
     method4Frame <- tkframe(methodFrame)
-    methodBox <- tklistbox(method1Frame, width=27, height=3,
+    methodBox <- tklistbox(method1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
     methods <- c("RDA","CCA","capscale","capscale(add)","CAPdiscrim","prc","multiconstrained (RDA)", "multiconstrained (CCA)", "multiconstrained (capscale)", "multiconstrained (capscale add)")
     for (x in methods) tkinsert(methodBox, "end", x)
-    distBox <- tklistbox(method2Frame, width=27, height=3,
+    distBox <- tklistbox(method2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     distScroll <- tkscrollbar(method2Frame, repeatinterval=5, command=function(...) tkyview(distBox, ...))
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
-    distances <- c("euclidean","bray","kulczynski","manhattan","canberra","jaccard","gower","morisita","horn","mountford","raup","binomial")
+    distances <- c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+            "chao", "cao", "mahalanobis")
     for (x in distances) tkinsert(distBox, "end", x)
     summaryVariable <- tclVar("1")
     summaryCheckBox <- tkcheckbutton(method3Frame, variable=summaryVariable)
@@ -3197,7 +3314,7 @@ conordiGUI <- function(){
     x4Frame <- tkframe(xFrame)
     x2Frame <- tkframe(x4Frame)
     x3Frame <- tkframe(x4Frame)
-    xBox <- tklistbox(x2Frame, width=28, height=min(3, length(.variables)),
+    xBox <- tklistbox(x2Frame, width=28, height=5,
         selectmode="single", background="white", exportselection="FALSE")
     xScroll <- tkscrollbar(x2Frame, repeatinterval=5, command=function(...) tkyview(xBox, ...))
     tkconfigure(xBox, yscrollcommand=function(...) tkset(xScroll, ...))
@@ -3209,7 +3326,7 @@ conordiGUI <- function(){
     plot2Frame <- tkframe(plotFrame)
     plot3Frame <- tkframe(plotFrame)
     plot4Frame <- tkframe(plotFrame)
-    typeBox <- tklistbox(plot1Frame, width=27, height=3,
+    typeBox <- tklistbox(plot1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
@@ -3218,13 +3335,13 @@ conordiGUI <- function(){
         "label sites","label species","label centroids","orditorp sites","orditorp species","orditorp centroids",
         "envfit","ordihull (factor)","ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordiellipse (factor)","ordisurf (continuous)",
         "ordibubble (continuous)","ordisymbol (factor)","ordisymbol (factor, legend)","ordivector (species)","ordivector interpretation","ordicluster","ordicluster2",
-        "ordinearest","ordispantree","ordiresids","distance displayed","coenocline","orditkplot sites","orditkplot species","orditkplot pointlabel")
+        "ordinearest","ordispantree","ordiresids","distance displayed","coenocline", "screeplot", "orditkplot sites","orditkplot species","orditkplot pointlabel")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
     choice <- tkentry(plot3Frame, width=10, textvariable=choicesVariable)
     dataVariable <- tclVar("0")
     dataCheckBox <- tkcheckbutton(plot3Frame, variable=dataVariable)
-    axisBox <- tklistbox(plot2Frame, width=27, height=3,
+    axisBox <- tklistbox(plot2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     axisScroll <- tkscrollbar(plot2Frame, repeatinterval=5, command=function(...) tkyview(axisBox, ...))
     tkconfigure(axisBox, yscrollcommand=function(...) tkset(axisScroll, ...))
@@ -3326,7 +3443,7 @@ conordiGUI <- function(){
         formula <- paste(.communityDataSet, tclvalue(rhsVariable), sep=" ~ ")
         if (method=="RDA") {
             command <- paste("rda(", formula, ",", .activeDataSet, ")", sep="")
-            doItAndPrint(paste("dist.eval(", .communityDataSet, ",'euc')", sep=""))
+            doItAndPrint(paste("dist.eval(", .communityDataSet, ",'euclidean')", sep=""))
         }
         if (method=="CCA") {
             command <- paste("cca(", formula, ",", .activeDataSet, ")", sep="")
@@ -3393,10 +3510,10 @@ conordiGUI <- function(){
             }
         }
         modelValue <- tclvalue(modelName)
-        if (!is.valid.name(modelValue)){
-            tkmessageBox(message=paste('"', modelValue, '" is not a valid name.', 
-                sep=""), icon="error", type="ok")
-            }        
+#        if (!is.valid.name(modelValue)){
+#            tkmessageBox(message=paste('"', modelValue, '" is not a valid name.', 
+#                sep=""), icon="error", type="ok")
+#            }        
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
         if (method == "RDA" || method == "CCA"  || method == "capscale" || method == "capscale(add)") {
@@ -3414,7 +3531,8 @@ conordiGUI <- function(){
                 doItAndPrint(paste("summary(", modelValue, ", scaling=", scaling, ")", sep=""))
             }
             if (method=="RDA" || method=="CCA"  || method=="capscale"  || method=="capscale(add)") {
-                doItAndPrint(paste("deviance(", modelValue, ")", sep=""))  
+                doItAndPrint(paste("RsquareAdj(", modelValue, ")", sep=""))
+                doItAndPrint(paste("deviance(", modelValue, ")", sep=""))
                 doItAndPrint(paste("vif.cca(", modelValue, ")", sep=""))
             }
             if (method=="RDA" || method=="CCA"  || method=="capscale"  || method=="capscale(add)") {            
@@ -3580,25 +3698,25 @@ conordiGUI <- function(){
             doItAndPrint(paste("plot(fitted, col='", col,"', cex=", cex, ")", sep=""))
         }
         if (plottype == "ordihull (factor)" && varfactor==T){
-            doItAndPrint(paste("ordihull(plot1,", axisvar, ",col='", col, "')", sep=""))
+            doItAndPrint(paste("ordihull(plot1,", axisvar, ", col='", col, "')", sep=""))
             }
         if (plottype == "ordiarrows (factor)" && varfactor==T){
-            doItAndPrint(paste("ordiarrows(plot1,", axisvar, ",col='", col, "')", sep=""))
+            doItAndPrint(paste("ordiarrows(plot1,", axisvar, ", col='", col, "')", sep=""))
             }
         if (plottype == "ordisegments (factor)" && varfactor==T){
-            doItAndPrint(paste("ordisegments(plot1,", axisvar, ",col='", col, "')", sep=""))
+            doItAndPrint(paste("ordisegments(plot1,", axisvar, ", col='", col, "')", sep=""))
             }
         if (plottype == "ordispider (factor)" && varfactor==T){
-            doItAndPrint(paste("ordispider(plot1,", axisvar, ",col='", col, "')", sep=""))
+            doItAndPrint(paste("ordispider(plot1,", axisvar, ", col='", col, "')", sep=""))
             }
         if (plottype == "ordiellipse (factor)" && varfactor==T){
-            doItAndPrint(paste("ordiellipse(plot1,", axisvar, ",col='", col, "')", sep=""))
+            doItAndPrint(paste("ordiellipse(plot1,", axisvar, ", col='", col, "', conf=0.9)", sep=""))
             }
         if (plottype == "ordisurf (continuous)" && varfactor==F){
-            doItAndPrint(paste("ordisurf(plot1,", axisvar, ",add=T)", sep=""))
+            doItAndPrint(paste("ordisurf(plot1,", axisvar, ", add=T)", sep=""))
             }
         if (plottype == "ordibubble (continuous)" && varfactor==F){
-            doItAndPrint(paste("ordibubble(plot1,", axisvar, ",fg='", col, "')", sep=""))
+            doItAndPrint(paste("ordibubble(plot1,", axisvar, ", fg='", col, "')", sep=""))
             } 
         if (plottype == "ordisymbol (factor)" && varfactor==T){
             justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=F, cex=", cex, ")", sep=""))
@@ -3675,7 +3793,13 @@ conordiGUI <- function(){
             }
         if (plottype == "coenocline"){
             doItAndPrint(paste("ordicoeno(", .communityDataSet, ", ordiplot=plot1, axis=1, legend=T, cex=0.8, ncol=4)", sep=""))
-            }                 
+            }
+        if (plottype == "screeplot"){
+            justDoIt(paste("par(cex=",cex,")", sep=""))
+            logger(paste("par(cex=",cex,")", sep=""))
+            justDoIt(paste("plot1 <- screeplot(", modelValue, ")", sep=""))
+            logger(paste("plot1 <- screeplot(", modelValue, ")", sep=""))
+        }              
         data <- tclvalue(dataVariable) =="1"
         if (data==T) {
             justDoIt(paste(.activeDataSet, "$", modelValue, ".ax1 <- scores(plot1,display='sites')[,1]", sep=""))
@@ -3774,6 +3898,8 @@ clusterGUI <- function(){
     tkwm.title(top, "Cluster analysis")
     .activeDataSet <- ActiveDataSet()
     .communityDataSet <- CommunityDataSet()
+    .variables <- Variables()
+    variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
     modelName <- tclVar("Cluster.1")
     modelFrame <- tkframe(top, relief="groove", borderwidth=2)
     model <- tkentry(modelFrame, width=40, textvariable=modelName)
@@ -3782,17 +3908,18 @@ clusterGUI <- function(){
     method2Frame <- tkframe(methodFrame)
     method3Frame <- tkframe(methodFrame)
     method4Frame <- tkframe(methodFrame)
-    methodBox <- tklistbox(method1Frame, width=27, height=3,
+    methodBox <- tklistbox(method1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
     methods <- c("hclust","agnes","diana","kmeans","cascadeKM","pam","clara","fanny")
     for (x in methods) tkinsert(methodBox, "end", x)
-    distBox <- tklistbox(method2Frame, width=27, height=3,
+    distBox <- tklistbox(method2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     distScroll <- tkscrollbar(method2Frame, repeatinterval=5, command=function(...) tkyview(distBox, ...))
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
-    distances <- c("euclidean","bray","kulczynski","manhattan","canberra","jaccard","gower","morisita","horn","mountford","raup","binomial")
+    distances <- c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+        "chao", "cao", "mahalanobis")
     for (x in distances) tkinsert(distBox, "end", x)
     treatasdistVariable <- tclVar("0")
     treatasdistCheckBox <- tkcheckbutton(method3Frame, variable=treatasdistVariable)
@@ -3804,7 +3931,7 @@ clusterGUI <- function(){
     clustersa <- tkentry(method3Frame, width=10, textvariable=clustersVariable)
     dataVariable <- tclVar("0")
     dataCheckBox <- tkcheckbutton(method3Frame, variable=dataVariable)
-    algoBox <- tklistbox(method4Frame, width=27, height=3,
+    algoBox <- tklistbox(method4Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     algoScroll <- tkscrollbar(method4Frame, repeatinterval=5, command=function(...) tkyview(algoBox, ...))
     tkconfigure(algoBox, yscrollcommand=function(...) tkset(algoScroll, ...))
@@ -3813,16 +3940,25 @@ clusterGUI <- function(){
     plotFrame <- tkframe(top, relief="groove", borderwidth=2)
     plot1Frame <- tkframe(plotFrame)
     plot2Frame <- tkframe(plotFrame)
-    typeBox <- tklistbox(plot1Frame, width=27, height=3,
+    plot3Frame <- tkframe(plotFrame)
+    plot4Frame <- tkframe(plotFrame)
+    typeBox <- tklistbox(plot1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
-    types <- c("dendrogram1","dendrogram2","rectangles","pruned dendrogram","kgs","cophenetic","cascadeKM")
+    types <- c("dendrogram1 (hang = -1)","dendrogram2 (hang = 0.1)", "dendrogram3 (horizontal)", 
+        "phylogram (ape package)", "cladogram (ape package)", "fan (ape package)", "unrooted (ape package)",    
+        "rectangles","pruned dendrogram","kgs","cophenetic","cascadeKM","reorder (variable)", "tiplabels (variable size)", "tiplabels (factor)")
     for (x in types) tkinsert(typeBox, "end", x)
     cexVariable <- tclVar("1")
-    cexa <- tkentry(plot2Frame, width=10, textvariable=cexVariable)
+    cexa <- tkentry(plot3Frame, width=8, textvariable=cexVariable)
     colVariable <- tclVar("blue")
-    cola <- tkentry(plot2Frame, width=10, textvariable=colVariable)
+    cola <- tkentry(plot4Frame, width=8, textvariable=colVariable)
+    axisBox <- tklistbox(plot2Frame, width=27, height=5,
+        selectmode="single", background="white", exportselection="FALSE") 
+    axisScroll <- tkscrollbar(plot2Frame, repeatinterval=5, command=function(...) tkyview(axisBox, ...))
+    tkconfigure(axisBox, yscrollcommand=function(...) tkset(axisScroll, ...))
+    for (x in variables) tkinsert(axisBox, "end", x)
     onOK <- function(){
         doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
         method <- methods[as.numeric(tkcurselection(methodBox))+1]
@@ -3830,6 +3966,7 @@ clusterGUI <- function(){
         algo <- algos[as.numeric(tkcurselection(algoBox))+1]
         treatasdist <- tclvalue(treatasdistVariable)==1
         clusters <- tclvalue(clustersVariable)
+        axisvar <- .variables[as.numeric(tkcurselection(axisBox))+1]
         if (method=="agnes" || method=="diana" || method=="pam" || method=="clara" || method=="fanny") {
             justDoIt(paste("library(cluster)"))
             logger(paste("library(cluster)"))
@@ -3857,7 +3994,7 @@ clusterGUI <- function(){
             command <- paste("kmeans(", .communityDataSet, ", centers=", clusters, ", iter.max=100)", sep="")
         }
         if (method=="cascadeKM") {
-            command <- paste("cascadeKM(", .communityDataSet, ", inf.gr=2, sup.gr=", clusters, ")", sep="")
+            command <- paste("cascadeKM(", .communityDataSet, ", inf.gr=2, sup.gr=", clusters, ", iter = 100, criterion = 'calinski')", sep="")
         }
         if (method=="pam") {
             command <- paste("pam(distmatrix, k=", clusters, ")", sep="")
@@ -3877,6 +4014,7 @@ clusterGUI <- function(){
             if (method=="kmeans" || method=="hclust" || method=="cascadeKM") {
                 doItAndPrint(paste(modelValue))
                 doItAndPrint(paste("attributes(", modelValue, ")", sep=""))
+                if (method=="hclust") {doItAndPrint(paste("treeheight(", modelValue, ")", sep=""))}
             }else{
                 doItAndPrint(paste("summary(", modelValue, ")", sep=""))
             }
@@ -3905,26 +4043,40 @@ clusterGUI <- function(){
         plottype <- types[as.numeric(tkcurselection(typeBox))+1]
         dist <- distances[as.numeric(tkcurselection(distBox))+1]
         clusters <- tclvalue(clustersVariable)
+        axisvar <- .variables[as.numeric(tkcurselection(axisBox))+1]
         col <- tclvalue(colVariable)
         cex <- tclvalue(cexVariable)
         justDoIt(paste("par(cex=",cex,")", sep=""))
         logger(paste("par(cex=",cex,")", sep=""))
-        if (plottype == "dendrogram1"){
-            if (method == "hclust") {
-                doItAndPrint(paste("plot(", modelValue, ", col='", col, "',main='',sub='',xlab='',ylab='')", sep=""))              
-                }
-            if (method == "agnes"  || method == "diana") {
-                doItAndPrint(paste("plot(", modelValue, ", which.plots=2, col='", col, "',main='',sub='',xlab='',ylab='')", sep=""))              
-                }
-            }
-        if (plottype == "dendrogram2"){
-            if (method == "hclust") {
-                doItAndPrint(paste("plot(", modelValue, ", col='", col, "',main='',sub='',xlab='',ylab='', hang=-1)", sep=""))              
-                }
-            if (method == "agnes"  || method == "diana") {
-                doItAndPrint(paste("plot(", modelValue, ", which.plots=2, col='", col, "',main='',sub='',xlab='',ylab='', hang=-1)", sep=""))              
-                }
-            }
+        if (plottype == "dendrogram1 (hang = -1)"){
+            doItAndPrint(paste("plot(as.dendrogram(", modelValue, ", hang = -1), horiz=F, edgePar=list(col='", col, "'), nodePar=list(pch=NA, lab.col='", col, "'), main='', sub='', xlab='', ylab='')", sep=""))              
+        }
+        if (plottype == "dendrogram2 (hang = 0.1)"){
+            doItAndPrint(paste("plot(as.dendrogram(", modelValue, ", hang = 0.1), horiz=F, edgePar=list(col='", col, "'), nodePar=list(pch=NA, lab.col='", col, "'), main='', sub='', xlab='', ylab='')", sep=""))              
+        }
+        if (plottype == "dendrogram3 (horizontal)"){
+            doItAndPrint(paste("plot(as.dendrogram(", modelValue, "), horiz=T, edgePar=list(col='", col, "'), nodePar=list(pch=NA, lab.col='", col, "'), main='', sub='', xlab='', ylab='')", sep=""))              
+        }
+        if (plottype == "phylogram (ape package)"){
+            justDoIt(paste("library(ape)", sep=""))
+            logger(paste("library(ape)", sep=""))
+            doItAndPrint(paste("plot(as.phylo(as.hclust(", modelValue, ")), type='phylogram', direction='rightwards', edge.color='", col, "', tip.color='", col, "', font=1)", sep=""))              
+        }
+        if (plottype == "cladogram (ape package)"){
+            justDoIt(paste("library(ape)", sep=""))
+            logger(paste("library(ape)", sep=""))
+            doItAndPrint(paste("plot(as.phylo(as.hclust(", modelValue, ")), type='cladogram', edge.color='", col, "', tip.color='", col, "', font=1)", sep=""))              
+        }
+        if (plottype == "fan (ape package)"){
+            justDoIt(paste("library(ape)", sep=""))
+            logger(paste("library(ape)", sep=""))
+            doItAndPrint(paste("plot(as.phylo(as.hclust(", modelValue, ")), type='fan', edge.color='", col, "', tip.color='", col, "', font=1)", sep=""))              
+        }
+        if (plottype == "unrooted (ape package)"){
+            justDoIt(paste("library(ape)", sep=""))
+            logger(paste("library(ape)", sep=""))
+            doItAndPrint(paste("plot(as.phylo(as.hclust(", modelValue, ")), type='unrooted', edge.color='", col, "', tip.color='", col, "', font=1)", sep=""))              
+        }
         if (plottype == "pruned dendrogram" && method == "hclust"){
             justDoIt(paste("library(maptree)", sep=""))
             logger(paste("library(maptree)", sep=""))
@@ -3933,7 +4085,7 @@ clusterGUI <- function(){
         if (plottype == "kgs" && method != "kmeans" && method != "cascadeKM" && method != "pam" && method != "clara" && method != "fanny"){
             justDoIt(paste("library(maptree)", sep=""))
             logger(paste("library(maptree)", sep=""))
-            doItAndPrint(paste("plot(kgs(", modelValue, ", distmatrix, maxclust=min(20,nrow(", .communityDataSet, "))))", sep=""))             
+            doItAndPrint(paste("plot(kgs(", modelValue, ", distmatrix, maxclust=min(20, nrow(", .communityDataSet, "))))", sep=""))             
         }        
         if (plottype == "rectangles" && method != "kmeans" && method != "cascadeKM" && method != "pam" && method != "clara" && method != "fanny"){
             justDoIt(paste("rect.hclust(", modelValue, ", k=", clusters, ", border='", col, "')", sep=""))             
@@ -3947,7 +4099,25 @@ clusterGUI <- function(){
         }
         if (plottype == "cascadeKM"){
             doItAndPrint(paste("plot(", modelValue, ")", sep=""))             
-        } 
+        }
+        if (plottype == "reorder (variable)"){
+            command <- paste("reorder(as.hclust(", modelValue, "), wts=as.numeric(", .activeDataSet, "$", axisvar, "))", sep="")
+            logger(paste(modelValue, " <- ", command, sep=""))
+            assign(modelValue, justDoIt(command), envir=.GlobalEnv)
+            doItAndPrint(paste("plot(as.dendrogram(", modelValue, ", hang = 0.1), horiz=F, edgePar=list(col='", col, "'), nodePar=list(pch=NA, lab.col='", col, "'), main='', sub='', xlab='', ylab='')", sep=""))              
+        }
+        if (plottype == "tiplabels (variable size)"){
+            justDoIt(paste("library(ape)", sep=""))
+            logger(paste("library(ape)", sep=""))
+            doItAndPrint(paste("plot(as.phylo(as.hclust(", modelValue, ")), type='phylogram', direction='rightwards', edge.color='", col, "', tip.color='", col, "', font=1, label.offset=0.05)", sep=""))
+            doItAndPrint(paste("tiplabels(pch=19, col='", col, "', cex=3*as.numeric(", .activeDataSet, "$", axisvar, ")/max(as.numeric(", .activeDataSet, "$", axisvar, ")))", sep=""))
+        }
+        if (plottype == "tiplabels (factor)"){
+            justDoIt(paste("library(ape)", sep=""))
+            logger(paste("library(ape)", sep=""))
+            doItAndPrint(paste("plot(as.phylo(as.hclust(", modelValue, ")), type='phylogram', direction='rightwards', edge.color='", col, "', tip.color='", col, "', font=1, label.offset=0.05)", sep=""))
+            doItAndPrint(paste("tiplabels(pch=19, cex=2, col=as.numeric(", .activeDataSet, "$", axisvar, "))", sep=""))
+        }
     }
     onCancel <- function() {
         tkgrab.release(top)
@@ -3967,18 +4137,21 @@ clusterGUI <- function(){
     tkgrid(summaryCheckBox, tklabel(method3Frame, text="cluster summary"), sticky="w")
     tkgrid(treatasdistCheckBox, tklabel(method3Frame, text="as.dist(Community)", width=15), sticky="w")
     tkgrid(copheneticCheckBox, tklabel(method3Frame, text="cophenetic correlation"), sticky="w")
-    tkgrid(tklabel(method3Frame, text="clusters", width=10), clustersa, sticky="w")
+    tkgrid(tklabel(method3Frame, text="clusters", width=8), clustersa, sticky="w")
     tkgrid(dataCheckBox, tklabel(method3Frame, text="save cluster membership"), sticky="w")
     tkgrid(tklabel(method4Frame, text="Cluster options"), sticky="w")
     tkgrid(algoBox, algoScroll, sticky="nw")
     tkgrid(method1Frame, tklabel(methodFrame, text="", width=1), method2Frame, sticky="w")
     tkgrid(method3Frame, tklabel(methodFrame, text="", width=1), method4Frame, sticky="w")
     tkgrid(methodFrame, sticky="w")
+    tkgrid(tklabel(plot1Frame, text="Plot options"), sticky="w")
     tkgrid(typeBox, typeScroll, sticky="nw")
-    tkgrid(tklabel(plot2Frame, text="cex", width=10), cexa, sticky="w")
-    tkgrid(tklabel(plot2Frame, text="colour", width=10), cola, sticky="w")
-    tkgrid(tklabel(plotFrame, text="Plot options"), sticky="w")
+    tkgrid(tklabel(plot2Frame, text="Plot variable"), sticky="w")
+    tkgrid(axisBox, axisScroll, sticky="nw")
+    tkgrid(tklabel(plot3Frame, text="cex", width=5), cexa, sticky="w")
+    tkgrid(tklabel(plot4Frame, text="colour", width=5), cola, sticky="w")
     tkgrid(plot1Frame, tklabel(plotFrame, text="", width=1), plot2Frame, sticky="w")
+    tkgrid(plot3Frame, tklabel(plotFrame, text="", width=1), plot4Frame, sticky="w")
     tkgrid(plotFrame, sticky="w")
     tkgrid(OKbutton, plotButton, cancelButton)
     tkgrid(buttonsFrame, sticky="w")
@@ -3986,10 +4159,12 @@ clusterGUI <- function(){
     tkgrid.configure(algoScroll, sticky="ns")
     tkgrid.configure(methodScroll, sticky="ns")
     tkgrid.configure(distScroll, sticky="ns")
+    tkgrid.configure(axisScroll, sticky="ns")
     tkselection.set(typeBox, 0)
     tkselection.set(methodBox, 0)
     tkselection.set(algoBox, 0)
     tkselection.set(distBox, 0)
+    tkselection.set(axisBox, 0)
     for (row in 0:6) tkgrid.rowconfigure(top, row, weight=0)
     for (col in 0:0) tkgrid.columnconfigure(top, col, weight=0)
     .Tcl("update idletasks")
@@ -4015,25 +4190,26 @@ mantelGUI <- function(){
     method4Frame <- tkframe(methodFrame)
     method5Frame <- tkframe(methodFrame)
     method6Frame <- tkframe(methodFrame)
-    testBox <- tklistbox(method1Frame, width=27, height=3,
+    testBox <- tklistbox(method1Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     testScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(testBox, ...))
     tkconfigure(testBox, yscrollcommand=function(...) tkset(testScroll, ...))
-    tests <- c("mantel","anosim (factor)","mrpp (factor)","rankindex")
+    tests <- c("mantel","anosim (factor)","mrpp (factor)","rankindex", "bioenv.numeric", "betadisper (factor)", "meandist (factor)", "simper (factor)")
     for (x in tests) tkinsert(testBox, "end", x)
-    dist1Box <- tklistbox(method3Frame, width=27, height=3,
+    dist1Box <- tklistbox(method3Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     dist1Scroll <- tkscrollbar(method3Frame, repeatinterval=5, command=function(...) tkyview(dist1Box, ...))
     tkconfigure(dist1Box, yscrollcommand=function(...) tkset(dist1Scroll, ...))
-    distances <- c("euclidean","bray","kulczynski","manhattan","canberra","jaccard","gower","morisita","horn","mountford","raup","binomial")
+    distances <- c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+        "chao", "cao", "mahalanobis")
     for (x in distances) tkinsert(dist1Box, "end", x)
-    dist2Box <- tklistbox(method2Frame, width=27, height=3,
+    dist2Box <- tklistbox(method2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     dist2Scroll <- tkscrollbar(method2Frame, repeatinterval=5, command=function(...) tkyview(dist2Box, ...))
     tkconfigure(dist2Box, yscrollcommand=function(...) tkset(dist2Scroll, ...))
     distances2 <- c("daisy (factor)",distances)
     for (x in distances2) tkinsert(dist2Box, "end", x)   
-    scaleBox <- tklistbox(method4Frame, width=27, height=3,
+    scaleBox <- tklistbox(method4Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     scaleScroll <- tkscrollbar(method4Frame, repeatinterval=5, command=function(...) tkyview(scaleBox, ...))
     tkconfigure(scaleBox, yscrollcommand=function(...) tkset(scaleScroll, ...))
@@ -4047,7 +4223,7 @@ mantelGUI <- function(){
     perma <- tkentry(method5Frame, width=10, textvariable=permVariable)
     methodBox <- tklistbox(method6Frame, width=27, height=3,
         selectmode="single", background="white", exportselection="FALSE") 
-    methodScroll <- tkscrollbar(method6Frame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
+    methodScroll <- tkscrollbar(method6Frame, repeatinterval=3, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
     methods <- c("pearson","spearman","kendall")
     for (x in methods) tkinsert(methodBox, "end", x)
@@ -4089,10 +4265,10 @@ mantelGUI <- function(){
                     assign("distmatrix2", justDoIt(paste("distmatrix2 <- daisy(", .activeDataSet, "[,'", var2, "',drop=F])", sep="")), envir=.GlobalEnv)
                 }else{
                     logger(paste("distmatrix2 <- vegdist(", .activeDataSet, "$", var2, ",method='",dist2, "')", sep=""))
-                    assign("distmatrix2", justDoIt(paste("vegdist(",.activeDataSet, "$", var2,", method='",dist2, "')", sep="")), envir=.GlobalEnv)
+                    assign("distmatrix2", justDoIt(paste("vegdist(", .activeDataSet, "$", var2,", method='",dist2, "')", sep="")), envir=.GlobalEnv)
                 }
             }
-            doItAndPrint(paste("mantel(distmatrix1,distmatrix2,method='", method, "',permutations=", permutations, ")",sep=""))
+            doItAndPrint(paste("mantel(distmatrix1, distmatrix2, method='", method, "', permutations=", permutations, ")",sep=""))
         }
         if (test == "anosim (factor)" && var2 != "all") {
             var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
@@ -4100,14 +4276,14 @@ mantelGUI <- function(){
             if (varfactor==T) {
                 doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
                 if(treatasdist==F){
-                    logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ",method='", dist1, "', na.rm=T)", sep=""))
-                    assign("distmatrix1", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist1, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                    logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ", method='", dist1, "', na.rm=T)", sep=""))
+                    assign("distmatrix1", justDoIt(paste("vegdist(", .communityDataSet, ", method='",dist1, "', na.rm=T)", sep="")), envir=.GlobalEnv)
                     doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist1, "')", sep=""))
                 }else{
                     logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))
                     assign("distmatrix1", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
                 }
-                doItAndPrint(paste("summary(anosim(distmatrix1,grouping=", .activeDataSet, "$", var2, ",permutations=", permutations, "))",sep=""))
+                doItAndPrint(paste("summary(anosim(distmatrix1, grouping=", .activeDataSet, "$", var2, ", permutations=", permutations, "))",sep=""))
             }
         }
         if (test == "mrpp (factor)" && var2 != "all") {
@@ -4117,22 +4293,69 @@ mantelGUI <- function(){
                 doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
                 if(treatasdist==F){
                     logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ",method='", dist1, "', na.rm=T)", sep=""))
-                    assign("distmatrix1", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist1, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                    assign("distmatrix1", justDoIt(paste("vegdist(",.communityDataSet, ", method='", dist1, "', na.rm=T)", sep="")), envir=.GlobalEnv)
                     doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist1, "')", sep=""))
                 }else{
                     logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))
                     assign("distmatrix1", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
                 }
-                doItAndPrint(paste("mrpp(distmatrix1,grouping=", .activeDataSet, "$", var2, ",permutations=", permutations, ")",sep=""))
+                doItAndPrint(paste("mrpp(distmatrix1, grouping=", .activeDataSet, "$", var2, ", permutations=", permutations, ")",sep=""))
             }
         }
         if (test == "rankindex") {
             doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
             if (var2 == "all") {
-                doItAndPrint(paste("rankindex(", .activeDataSet, ",", .communityDataSet, ", method='",method, "')", sep=""))
+                doItAndPrint(paste("rankindex(", .activeDataSet, ", ", .communityDataSet, ", method='",method, "')", sep=""))
             }else{
                 var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
-                doItAndPrint(paste("rankindex(", .activeDataSet, "$", var2, ",", .communityDataSet, ", method='", method, "')", sep=""))
+                doItAndPrint(paste("rankindex(", .activeDataSet, "$", var2, ", ", .communityDataSet, ", method='", method, "')", sep=""))
+            }
+        }
+        if (test == "bioenv.numeric") {
+            doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
+            doItAndPrint(paste("bioenv.numeric(", .communityDataSet, ", ", .activeDataSet, ", method='", method, "', index='", dist1, "', as.numeric=c())", sep=""))
+        }
+        if (test == "betadisper (factor)" && var2 != "all") {
+            var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
+            varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", var2, ")", sep="")), envir=.GlobalEnv)
+            if (varfactor==T) {
+                doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
+                if(treatasdist==F){
+                    logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ", method='", dist1, "', na.rm=T)", sep=""))
+                    assign("distmatrix1", justDoIt(paste("vegdist(", .communityDataSet, ", method='", dist1, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                    doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist1, "')", sep=""))
+                }else{
+                    logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))
+                    assign("distmatrix1", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+                }
+                doItAndPrint(paste("betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ")",sep=""))
+                doItAndPrint(paste("anova(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, "))",sep=""))
+            }
+        }
+        if (test == "meandist (factor)" && var2 != "all") {
+            var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
+            varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", var2, ")", sep="")), envir=.GlobalEnv)
+            if (varfactor==T) {
+                doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
+                if(treatasdist==F){
+                    logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ", method='", dist1, "', na.rm=T)", sep=""))
+                    assign("distmatrix1", justDoIt(paste("vegdist(", .communityDataSet, ", method='", dist1, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                    doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist1, "')", sep=""))
+                }else{
+                    logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))
+                    assign("distmatrix1", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+                }
+                doItAndPrint(paste("meandist(distmatrix1, grouping=", .activeDataSet, "$", var2, ")",sep=""))
+                doItAndPrint(paste("summary(meandist(distmatrix1, grouping=", .activeDataSet, "$", var2, "))",sep=""))
+            }
+        }
+        if (test == "simper (factor)" && var2 != "all") {
+            var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
+            varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", var2, ")", sep="")), envir=.GlobalEnv)
+            if (varfactor==T) {
+                doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
+                doItAndPrint(paste("simper(", .communityDataSet, ", group=", .activeDataSet, "$", var2, ", permutations=", permutations, ")",sep=""))
+                doItAndPrint(paste("summary(simper(", .communityDataSet, ", group=", .activeDataSet, "$", var2, ", permutations=", permutations, "))",sep=""))
             }
         }
         plotit <- tclvalue(plotVariable) == "1"
@@ -4152,7 +4375,7 @@ mantelGUI <- function(){
                 logger(paste("plot(distmatrix2, distmatrix1,xlab='environmental distance',ylab='ecological distance')", sep=""))
             }
         }
-        if (plotit==T && test!="mantel" && test!="rankindex" && var2!="all") {
+        if (plotit==T && test!="mantel" && test!="rankindex" && test!="bioenv.numeric" && var2!="all") {
             var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
             varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", var2, ")", sep="")), envir=.GlobalEnv)
             if (varfactor==T) {

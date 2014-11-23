@@ -14,8 +14,8 @@ function(x,method="random",n=5,xwidth=0.5,ywidth=0.5,xleft=0,ylower=0,xdist=0,yd
         for (i in 1:n) {
             result[i,1] <- minx-1
             result[i,2] <- miny-1
-            while((inout(cbind(result[i,1]-xwidth,result[i,2]-ywidth),x,bound=T)==F) || (inout(cbind(result[i,1]-xwidth,result[i,2]+ywidth),x,bound=T)==F) ||
-                    (inout(cbind(result[i,1]+xwidth,result[i,2]-ywidth),x,bound=T)==F) || (inout(cbind(result[i,1]+xwidth,result[i,2]+ywidth),x,bound=T)==F)) {
+            while((splancs::inout(cbind(result[i,1]-xwidth,result[i,2]-ywidth),x,bound=T)==F) || (splancs::inout(cbind(result[i,1]-xwidth,result[i,2]+ywidth),x,bound=T)==F) ||
+                    (splancs::inout(cbind(result[i,1]+xwidth,result[i,2]-ywidth),x,bound=T)==F) || (splancs::inout(cbind(result[i,1]+xwidth,result[i,2]+ywidth),x,bound=T)==F)) {
                 result[i,1] <- minx + (maxx-minx)*runif(1)
                 result[i,2] <- miny + (maxy-miny)*runif(1)
             }
@@ -37,7 +37,7 @@ function(x,method="random",n=5,xwidth=0.5,ywidth=0.5,xleft=0,ylower=0,xdist=0,yd
         }
         i <- 1
         while (i <= nrow(result)) {
-            if (inout(cbind(result[i,1]-xwidth,result[i,2]-ywidth),x,bound=T)==F) {
+            if (splancs::inout(cbind(result[i,1]-xwidth,result[i,2]-ywidth),x,bound=T)==F) {
                 result <- result[-i,]
             }else{
                 i <- i+1
@@ -45,7 +45,7 @@ function(x,method="random",n=5,xwidth=0.5,ywidth=0.5,xleft=0,ylower=0,xdist=0,yd
         }
         i <- 1
         while (i <= nrow(result)) {
-            if (inout(cbind(result[i,1]-xwidth,result[i,2]+ywidth),x,bound=T)==F) {
+            if (splancs::inout(cbind(result[i,1]-xwidth,result[i,2]+ywidth),x,bound=T)==F) {
                 result <- result[-i,]
             }else{
                 i <- i+1
@@ -53,7 +53,7 @@ function(x,method="random",n=5,xwidth=0.5,ywidth=0.5,xleft=0,ylower=0,xdist=0,yd
         }
         i <- 1
         while (i <= nrow(result)) {
-            if (inout(cbind(result[i,1]+xwidth,result[i,2]-ywidth),x,bound=T)==F) {
+            if (splancs::inout(cbind(result[i,1]+xwidth,result[i,2]-ywidth),x,bound=T)==F) {
                 result <- result[-i,]
             }else{
                 i <- i+1
@@ -61,7 +61,7 @@ function(x,method="random",n=5,xwidth=0.5,ywidth=0.5,xleft=0,ylower=0,xdist=0,yd
         }
         i <- 1
         while (i <= nrow(result)) {
-            if (inout(cbind(result[i,1]+xwidth,result[i,2]+ywidth),x,bound=T)==F) {
+            if (splancs::inout(cbind(result[i,1]+xwidth,result[i,2]+ywidth),x,bound=T)==F) {
                 result <- result[-i,]
             }else{
                 i <- i+1

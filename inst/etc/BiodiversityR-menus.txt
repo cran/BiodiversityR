@@ -1,5 +1,5 @@
-
     # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
+    # NOV 2014
 
     menu    biodivMenu      topMenu         ""                                              ""                          ""          ""
     menu    communMenu      biodivMenu      ""                                              ""                          ""          ""
@@ -8,13 +8,19 @@
     item    communMenu      command         "Import datasets from Excel2007..."             importfromExcel2007GUI      ""          ""
     item    communMenu      command         "Import datasets from Access..."                importfromAccessGUI         ""          ""
     item    communMenu      command         "Import datasets from Access2007..."            importfromAccess2007GUI     ""          ""
+    item    communMenu      command         "Make community data set..."                    makecommunityGUI            "activeDataSetP()"          ""
     item    communMenu      command         "View community data set"                       viewcommunity               "communityDataSetP()"          ""
     item    communMenu      command         "Edit community data set"                       editcommunity               "communityDataSetP()"          ""
     item    communMenu      command         "Check data sets"                               checkdatasets               "activeDataSetP() && communityDataSetP()"          ""
     item    communMenu      command         "Same sites for community/environmental..."     samesitesGUI                "activeDataSetP() && communityDataSetP()"          ""
-    item    communMenu      command         "Make community data set..."                    makecommunityGUI            "activeDataSetP()"          ""
+    item    communMenu      command         "Remove species with zero total abundance..."   removezeroes                "communityDataSetP()"          ""
     item    communMenu      command         "Remove NA from environmental data set..."      removeNAGUI                 "activeDataSetP() && communityDataSetP()"          ""
     item    communMenu      command         "Transform community matrix..."                 disttransGUI                "communityDataSetP()"          ""
+    item    communMenu      command         "Vegemite community table"                      vegemite.table              "communityDataSetP()"          ""
+    item    communMenu      command         "Tabasco community table plot"                  tabasco.table               "communityDataSetP()"          ""
+    item    communMenu      command         "Beals smoothing"                               beals.smoothing             "communityDataSetP()"          ""
+    item    communMenu      command         "Indicator power"                               ind.power                   "communityDataSetP()"          ""
+    item    communMenu      command         "Nestedness checks"                             nested.checks               "communityDataSetP()"          ""
     menu    enviroMenu      biodivMenu      ""                                              ""                          ""          ""
     item    enviroMenu      command         "Select environmental data set..."              selectActiveDataSet         "dataSetsP()"          ""
     item    enviroMenu      command         "View environmental data set"                   viewenvironmental           "activeDataSetP()"          ""
@@ -33,7 +39,7 @@
     item    ordinMenu       command         "Calculate distance matrix..."                  distmatrixGUI               "communityDataSetP()"          ""
     item    ordinMenu       command         "Unconstrained ordination..."                   unconordiGUI                "activeDataSetP() && communityDataSetP()"          ""
     item    ordinMenu       command         "Constrained ordination..."                     conordiGUI                  "activeDataSetP() && communityDataSetP()"          ""
-    item    ordinMenu       command         "Clustering..."                                 clusterGUI                  "communityDataSetP()"          ""
+    item    ordinMenu       command         "Clustering..."                                 clusterGUI                  "activeDataSetP() && communityDataSetP()"          ""
     item    ordinMenu       command         "Compare distance matrices..."                  mantelGUI                   "activeDataSetP() && communityDataSetP()"          ""
     menu    helpbioMenu     biodivMenu      ""                                              ""                          ""          ""
     item    helpbioMenu     command         "Help about BiodiversityR"                      helpBiodiversityR           ""          ""

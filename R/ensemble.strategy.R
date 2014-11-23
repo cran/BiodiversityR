@@ -32,13 +32,13 @@
         TrainPres <- TrainData[TrainData[,"pb"]==1, modelnames[i]]
         TrainAbs <- TrainData[TrainData[,"pb"]==0, modelnames[i]]
         if (sum(TrainPres, TrainAbs, na.rm=T) != 0) {
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             weights.cal[i+1] <- eval1@auc
         }
         TestPres <- TestData[TestData[,"pb"]==1, modelnames[i]]
         TestAbs <- TestData[TestData[,"pb"]==0, modelnames[i]]
         if (sum(TestPres, TestAbs, na.rm=T) != 0) {
-            eval2 <- evaluate(p=TestPres, a=TestAbs)
+            eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
             weights.eval[i+1] <- eval2@auc
         }
     }
@@ -67,7 +67,7 @@
         TrainAbs <- TrainData[TrainData[,"pb"]==0,"ENSEMBLE"]
         eval1 <- NULL
         if (sum(TrainPres, TrainAbs, na.rm=T) != 0) {
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             if (verbose == T) {
                 cat(paste("\n", "evaluation with train data", "\n", sep=""))
                 print(eval1)
@@ -89,7 +89,7 @@
         TestAbs <- TestData[TestData[,"pb"]==0,"ENSEMBLE"]
         eval2 <- NULL
         if (sum(TestPres, TestAbs, na.rm=T) != 0) {
-            eval2 <- evaluate(p=TestPres, a=TestAbs)
+            eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
             if (verbose == T) {
                 cat(paste("\n", "evaluation with test data", "\n", sep=""))
                 print(eval2)

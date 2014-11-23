@@ -14,15 +14,15 @@
     input.weights=NULL,
     MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0,
     EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=1, 
-    PROBIT=FALSE,
+    PROBIT=FALSE, AUC.weights=TRUE,
     Yweights="BIOMOD", 
     layer.drops=NULL, factors=NULL, dummy.vars=NULL, 
     formulae.defaults=TRUE, maxit=100,
     MAXENT.a=NULL, MAXENT.an=10000, MAXENT.BackData=NULL, MAXENT.path=paste(getwd(), "/models/maxent", sep=""),
     GBM.formula=NULL, GBM.n.trees=2001,
-    GBMSTEP.gbm.x=2:(1+nlayers(x)), GBMSTEP.tree.complexity=5, GBMSTEP.learning.rate=0.005, 
+    GBMSTEP.gbm.x=2:(1+raster::nlayers(x)), GBMSTEP.tree.complexity=5, GBMSTEP.learning.rate=0.005, 
     GBMSTEP.bag.fraction=0.5, GBMSTEP.step.size=100,
-    RF.formula=NULL, RF.ntree=751, RF.mtry=floor(sqrt(nlayers(x))), 
+    RF.formula=NULL, RF.ntree=751, RF.mtry=floor(sqrt(raster::nlayers(x))), 
     GLM.formula=NULL, GLM.family=binomial(link="logit"), 
     GLMSTEP.steps=1000, STEP.formula=NULL, GLMSTEP.scope=NULL, GLMSTEP.k=2,
     GAM.formula=NULL, GAM.family=binomial(link="logit"), 
@@ -127,9 +127,9 @@
         }
         if (is.null(species.absence)==T) {
             if (excludep == T) {
-                as <- randomPoints(x[[1]], n=an, p=ps, ext=ext, excludep=T)
+                as <- dismo::randomPoints(x[[1]], n=an, p=ps, ext=ext, excludep=T)
             }else{
-                as <- randomPoints(x[[1]], n=an, p=NULL, ext=ext, excludep=F)
+                as <- dismo::randomPoints(x[[1]], n=an, p=NULL, ext=ext, excludep=F)
             }
         }
 
@@ -151,6 +151,7 @@
         ENSEMBLE.tune=T,
         ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, 
         ENSEMBLE.exponent=ENSEMBLE.exponent,
+        species.name = RASTER.species.name1,
         threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity,
         input.weights=input.weights,
         MAXENT=MAXENT, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
@@ -185,8 +186,13 @@
     cat(paste("\n", "Final model calibrations for species: ", RASTER.species.name1,  "\n", sep = ""))
     cat(paste("\n", "Minimum input weight is 0.05", "\n", sep=""))
 
-    calibration.1$output.weights[calibration.1$output.weights < 0.05] <- 0
-    print(calibration.1$output.weights)
+    if (AUC.weights == TRUE) {
+        output.weights <- calibration.1$output.weights.AUC
+    }else{
+        output.weights <- calibration.1$output.weights
+    }
+    output.weights[output.weights < 0.05] <- 0
+    print(output.weights)
 
     calibration.2 <- ensemble.test(
         x=x, p=ps, a=as, ext=ext, k=k.test, pt=NULL, at=NULL,
@@ -194,7 +200,7 @@
         PLOTS=F,
         models.save=models.save, species.name=RASTER.species.name1,
         AUC.weights=F, ENSEMBLE.tune=F,
-        input.weights=calibration.1$output.weights,
+        input.weights=output.weights,
         threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity,
         RASTER.format=RASTER.format,
         PROBIT=PROBIT,

@@ -1,7 +1,6 @@
 `ensemble.test.nnet` <- function(
     x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, ext=NULL, k=5, 
     TrainData=NULL,
-    TRUNC=TRUE,
     VIF=FALSE, COR=FALSE,
     SINK=FALSE, PLOTS=FALSE, 
     species.name="Species001",
@@ -25,8 +24,8 @@
     if (is.null(TrainData) == T) {
         if(is.null(x) == T) {stop("value for parameter x is missing (RasterStack object)")}
         if(inherits(x,"RasterStack") == F) {stop("x is not a RasterStack object")}
-        if(projection(x)=="NA") {
-            projection(x) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+        if(raster::projection(x)=="NA") {
+            raster::projection(x) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
         }
         if(is.null(p) == T) {stop("presence locations are missing (parameter p)")}
     }
@@ -52,7 +51,7 @@
     if (is.null(TrainData) == F) {
         TrainData <- data.frame(TrainData)
         if (colnames(TrainData)[1] !="pb") {stop("first column for TrainData should be 'pb' containing presence (1) and absence (0) data")}
-        if ((is.null(x) == F) && (nlayers(x) != (ncol(TrainData)-1))) {
+        if ((is.null(x) == F) && (raster::nlayers(x) != (ncol(TrainData)-1))) {
             cat(paste("\n", "WARNING: different number of explanatory variables in rasterStack and TrainData", sep = ""))
         }
     }
@@ -62,7 +61,7 @@
         if (is.null(ext) == F) {
             if(length(x@title) == 0) {x@title <- "stack1"}
             title.old <- x@title
-            x <- crop(x, y=ext, snap="in")
+            x <- raster::crop(x, y=ext, snap="in")
             x@title <- title.old
         }
         if (is.null(layer.drops) == F) {
@@ -76,7 +75,7 @@
                     cat(paste("\n", "WARNING: variable to exclude '", layer.drops[i], "' not among grid layers", "\n", sep = ""))
                 }else{
                     cat(paste("\n", "NOTE: variable '", layer.drops[i], "' will not be included as explanatory variable", "\n", sep = ""))
-                    x <- dropLayer(x, which(names(x) %in% c(layer.drops[i]) ))
+                    x <- raster::dropLayer(x, which(names(x) %in% c(layer.drops[i]) ))
                     vars <- names(x)
                     if (is.null(factors) == F) {
                         factors <- factors[factors != layer.drops[i]]
@@ -114,8 +113,8 @@
             }
         }
         # set minimum and maximum values
-            for (i in 1:nlayers(x)) {
-                x[[i]] <- setMinMax(x[[i]])
+            for (i in 1:raster::nlayers(x)) {
+                x[[i]] <- raster::setMinMax(x[[i]])
             }
         # declare factor layers
         if(is.null(factors)==F) {
@@ -200,12 +199,12 @@
     }else{
         if (is.null(a)==T) {
             if (excludep == T) {
-                a <- randomPoints(x[[1]], n=an, p=p, ext=ext, excludep=T)
+                a <- dismo::randomPoints(x[[1]], n=an, p=p, ext=ext, excludep=T)
             }else{
-                a <- randomPoints(x[[1]], n=an, p=NULL, ext=ext, excludep=F)
+                a <- dismo::randomPoints(x[[1]], n=an, p=NULL, ext=ext, excludep=F)
             }        
         }
-        TrainData <- prepareData(x, p, b=a, factors=factors, xy=FALSE)
+        TrainData <- dismo::prepareData(x, p, b=a, factors=factors, xy=FALSE)
         if(any(is.na(TrainData[TrainData[,"pb"]==1,]))) {
             cat(paste("\n", "WARNING: presence locations with missing data removed from calibration data","\n\n",sep = ""))
         }
@@ -216,7 +215,7 @@
         }
         TrainValid <- complete.cases(TrainData[TrainData[,"pb"]==0,])
         a <- a[TrainValid,]
-        TrainData <- prepareData(x, p, b=a, factors=factors, xy=FALSE)
+        TrainData <- dismo::prepareData(x, p, b=a, factors=factors, xy=FALSE)
     }
     TrainData.orig <- TrainData
     assign("TrainData.orig", TrainData.orig, envir=.BiodiversityR)
@@ -229,7 +228,7 @@
     output[,"size"] <- rep(sizes, nd)
     output[,"decay"] <- rep(decays, each=ns) 
 #
-    groupp <- kfold(TrainData, k=k, by=TrainData[,"pb"])
+    groupp <- dismo::kfold(TrainData, k=k, by=TrainData[,"pb"])
     for (i in 1:k){
         cat(paste("\n", "EVALUATION RUN: ", i, "\n", "\n", sep = ""))
         TrainData.c <- TrainData[groupp != i,]
@@ -242,7 +241,6 @@
             cat(paste("\n", "size: ", NNET.size, ", decay: ", NNET.decay, "\n", sep=""))
             tests <- ensemble.test(x=x,
                 TrainData=TrainData.c, TestData=TestData.c, 
-                TRUNC=TRUNC,
                 VIF=VIF, COR=COR,
                 PLOTS=PLOTS, evaluations.keep=T,
                 MAXENT=0, GBM=0, GBMSTEP=0, RF=0, GLM=0, GLMSTEP=0, 

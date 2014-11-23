@@ -7,16 +7,16 @@ function(model,data,x,y,gam=F,npol=2,plotit=T,filled=F,bubble=F) {
     ypos <- data[,y]
     if (gam==T) {
         if (!require(mgcv)) {stop("Requires package mgcv")}
-        result <- gam(res~s(xpos)+s(ypos),family=gaussian)
+        result <- mgcv::gam(res~s(xpos)+s(ypos),family=gaussian)
     }else{
-        result <- surf.ls(npol,xpos,ypos,res)
+        result <- spatial::surf.ls(npol,xpos,ypos,res)
     }
     if (plotit==T) {
         fitted <- fitted(result)
         if (filled==F) {
-            contour(interp(xpos,ypos,fitted,duplicate="mean"),lwd=2)
+            contour(akima::interp(xpos,ypos,fitted,duplicate="mean"),lwd=2)
         }else{
-            filled.contour(interp(xpos,ypos,fitted,duplicate="mean"),color.palette=terrain.colors)
+            filled.contour(akima::interp(xpos,ypos,fitted,duplicate="mean"),color.palette=terrain.colors)
         }
         if (bubble==T && filled==F) {
             res2 <- abs(res)

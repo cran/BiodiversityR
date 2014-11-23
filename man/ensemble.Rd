@@ -21,7 +21,6 @@ The basic function \code{ensemble.test} allows to evaluate different algorithms 
 ensemble.test(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, ext = NULL, 
     k = 0, pt = NULL, at = NULL,
     TrainData = NULL, TestData = NULL, 
-    TRUNC = TRUE,
     VIF = FALSE, COR = FALSE,
     SINK = FALSE, PLOTS = TRUE, 
     threshold.method = "spec_sens", threshold.sensitivity = 0.9,
@@ -69,7 +68,6 @@ ensemble.test.splits(x = NULL, p = NULL, a = NULL, an = 1000,
     excludep = FALSE, ext = NULL, 
     k = 5, 
     TrainData = NULL,
-    TRUNC = TRUE,
     VIF = FALSE, COR = FALSE,
     SINK = FALSE, PLOTS = FALSE, 
     data.keep = FALSE,
@@ -111,7 +109,6 @@ ensemble.test.splits(x = NULL, p = NULL, a = NULL, an = 1000,
 ensemble.test.gbm(x, p, a = NULL, an = 1000, excludep = FALSE, ext = NULL, 
     k = 5, 
     TrainData = NULL,
-    TRUNC = TRUE,
     VIF = FALSE, COR = FALSE,
     SINK = FALSE, PLOTS = FALSE, 
     species.name = "Species001",
@@ -124,7 +121,6 @@ ensemble.test.gbm(x, p, a = NULL, an = 1000, excludep = FALSE, ext = NULL,
 ensemble.test.nnet(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, 
     ext = NULL, k = 5, 
     TrainData = NULL,
-    TRUNC = TRUE,
     VIF = FALSE, COR = FALSE,
     SINK = FALSE, PLOTS = FALSE, 
     species.name = "Species001",
@@ -192,13 +188,12 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{at}{ background points used for evaluating the suitability models, available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{TrainData}{ dataframe with first column 'pb' describing presence (1) and absence (0) and other columns containing explanatory variables; see also \code{\link[dismo]{prepareData}}. In case that this dataframe is provided, then locations p and a are not used. For the maximum entropy model (\code{\link[dismo]{maxent}}), a different dataframe is used for calibration; see parameter \code{MAXENT.TrainData}. }
   \item{TestData}{ dataframe with first column 'pb' describing presence (1) and absence (0) and other columns containing explanatory variables; see also \code{\link[dismo]{prepareData}}. In case that this dataframe is provided, then locations pt and at are not used. For \code{ensemble.strategy}, this dataframe should be a dataframe that contains predictions for various models - such dataframe can be provided by the \code{ensemble.test} or \code{\link{ensemble.raster}} functions.  }
-  \item{TRUNC}{ Multiply the predictions of each suitability model by 1000, and then truncate (if \code{TRUE}). The same transformation method (multiplication by 1000 and subsequent truncation) is used for predictions of raster layers (\code{\link{ensemble.raster}}). See also \code{\link[base]{Round}}.  }
   \item{VIF}{ Estimate the variance inflation factors based on a linear model calibrated on the training data  (if \code{TRUE}). Only background locations will be used and the response variable 'pb' will be replaced by a random variable. See also \code{\link[car]{vif}}.  }
   \item{COR}{ Provide information on the correlation between the numeric explanatory variables  (if \code{TRUE}). See also \code{\link[stats]{cor}}.  }
   \item{SINK}{ Append the results to a text file in subfolder 'outputs' (if \code{TRUE}). The name of file is based on argument \code{species.name}. In case the file already exists, then results are appended. See also \code{\link[base]{sink}}.  }
   \item{PLOTS}{ Plot the results of evaluation for the various suitability models (if \code{TRUE}). See also \code{\link[dismo]{evaluate}}.  }
-  \item{threshold.method}{ Method to calculate the threshold between predicted absence and presence; possibilities include \code{spec_sens} (highest sum of the true positive rate and the true negative rate), \code{kappa} (highest kappa value), \code{no_omission} (highest threshold that corresponds to no omission), \code{prevalence} (modeled prevalence is closest to observed prevalence) and \code{equal_sens_spec} (equal true positive rate and true negative rate). See \code{\link[dismo]{threshold}}.   }
-  \item{threshold.sensitivity}{ Sensitivity value for \code{threshold.method = 'sensitivity'}. See \code{\link[dismo]{threshold}}.   }
+  \item{threshold.method}{ Method to calculate the threshold between predicted absence and presence; possibilities include \code{spec_sens} (highest sum of the true positive rate and the true negative rate), \code{kappa} (highest kappa value), \code{no_omission} (highest threshold that corresponds to no omission), \code{prevalence} (modeled prevalence is closest to observed prevalence) and \code{equal_sens_spec} (equal true positive rate and true negative rate). See \code{\link[dismo]{threshold}}. Options specific to the BiodiversityR implementation are: \code{threshold.mean} (resulting in calculating the mean value of \code{spec_sens}, \code{equal_sens_spec} and \code{prevalence}) and \code{threshold.min} (resulting in calculating the minimum value of \code{spec_sens}, \code{equal_sens_spec} and \code{prevalence}).   }
+  \item{threshold.sensitivity}{ Sensitivity value for \code{threshold.method = 'sensitivity'}. See \code{\link[dismo]{threshold}}.  }
   \item{evaluations.keep}{ Keep the results of evaluations (if \code{TRUE}). See also \code{\link[dismo]{evaluate}}. }
   \item{models.list}{ list with 'old' model objects such as \code{MAXENT} or \code{RF}. }
   \item{models.keep}{ store the details for each suitability modelling algorithm (if \code{TRUE}). (This may be particularly useful when projecting to different possible future climates.)  }
@@ -312,6 +307,8 @@ With parameter \code{ENSEMBLE.best}, the subset of best models (evaluated by the
 
 Function \code{ensemble.test.splits} splits the presence and background locations in a user-defined (\code{k}) number of subsets (i.e. k-fold cross-validation), then sequentially calibrates individual suitability models with (\code{k-1}) combined subsets and evaluates those with the remaining one subset, whereby each subset is used once for evaluation in the user-defined number (\code{k}) of runs. For example, \code{k = 5} results in splitting the locations in 5 subsets, then using one of these subsets in turn for evaluations (see also \code{\link[dismo]{kfold}}). Note that for the maximum entropy (MAXENT) algorithm, the same background data will be used in each cross-validation run (this is based on the assumption that a large number (~10000) of background locations are used).
 
+Among the output from function \code{ensemble.test.splits} are suggested weights for an ensemble model (\code{output.weights} and \code{output.weights.AUC}), and information on the respective AUC values of the ensemble model with the suggested weights for each of the (\code{k}) subsets. Suggested weights \code{output.weights} are calculated as the average of the weights of the different algorithms (submodels) of the \code{k} ensembles. Suggested weights \code{output.weights.AUC} are calculated as the average of the AUC of the different algorithms of the for the \code{k} runs. 
+
 Function \code{ensemble.test.gbm} allows to test various combinations of parameters \code{tree.complexity} and \code{learning.rate} for the \code{\link[dismo]{gbm.step}} model.
 
 Function \code{ensemble.test.nnet} allows to test various combinations of parameters \code{size} and \code{decay} for the \code{\link[nnet]{nnet}} model.
@@ -348,7 +345,6 @@ Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in 
 \examples{
 \dontrun{
 # based on examples in the dismo package
-# simplified example of ensemble modelling with 4 modeling algorithms
 
 # get predictor variables
 library(dismo)
@@ -478,7 +474,8 @@ ensemble.nofactors2 <- ensemble.test.splits(x=predictors, ext=ext,
     MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
-    ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
+    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
+    ENSEMBLE.min=0.7,
     Yweights="BIOMOD", factors="biome",
     PLOTS=FALSE, formulae.defaults=TRUE,
     GBMSTEP.learning.rate=0.002)
@@ -497,7 +494,8 @@ ensemble.variables <- ensemble.drop1(x=predictors, ext=ext,
     MAXENT=0, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, BIOCLIM=0, DOMAIN=0, MAHAL=0,
-    ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(2, 4, 6, 8),
+    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
+    ENSEMBLE.min=0.7,
     Yweights="BIOMOD", factors="biome",
     GBMSTEP.learning.rate=0.002)
 ensemble.variables

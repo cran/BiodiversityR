@@ -31,7 +31,7 @@
     if (is.null(ext) == F) {
         if(length(xn@title) == 0) {xn@title <- "stack1"}
         title.old <- xn@title
-        xn <- crop(xn, y=ext, snap="in")
+        xn <- raster::crop(xn, y=ext, snap="in")
         xn@title <- title.old
     }
 
@@ -67,17 +67,17 @@
     for (i in 1:nv) {
         if (any(vars==vars.xn[i]) == F) {
             cat(paste("\n", "NOTE: RasterStack layer '", vars.xn[i], "' was not calibrated as explanatory variable", "\n", sep = ""))
-            xn <- dropLayer(xn, which(names(xn) %in% c(vars.xn[i]) ))
+            xn <- raster::dropLayer(xn, which(names(xn) %in% c(vars.xn[i]) ))
         }
     }
 
 #
 # set minimum and maximum values for xn
-    for (i in 1:nlayers(xn)) {
-        xn[[i]] <- setMinMax(xn[[i]])
+    for (i in 1:raster::nlayers(xn)) {
+        xn[[i]] <- raster::setMinMax(xn[[i]])
     }
-    if(projection(xn)=="NA") {
-        projection(xn) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+    if(raster::projection(xn)=="NA") {
+        raster::projection(xn) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
     }
 # declare categorical layers for xn
     factors <- models.list$factors
@@ -181,18 +181,21 @@
     if (GAM > 0  || GAMSTEP > 0) {
         cat(paste("\n"))
         try(detach(package:mgcv), silent=T)
+        suppressMessages(require(gam))
         if (! require(gam)) {stop("Please install the gam package")}
     }
     if (MGCV > 0 || MGCVFIX > 0) {
         cat(paste("\n"))
         try(detach(package:gam), silent=T)
         cat(paste("\n"))
+        options(warn=-1)
         if (! require(mgcv)) {stop("Please install the mgcv package")}
 #         get the probabilities from MGCV
             predict.mgcv <- function(object, newdata, type="response") {
                 p <- predict(object=object, newdata=newdata, type=type)
                 return(as.numeric(p))
-            } 
+            }
+        options(warn=0) 
     }
     if (EARTH > 0) {
         if (! require(earth)) {stop("Please install the earth package")}
@@ -279,10 +282,12 @@
 #
 # sometimes still error warnings for minimum and maximum values of the layers
 # set minimum and maximum values for xn
-    for (i in 1:nlayers(xn)) {
-        xn[[i]] <- setMinMax(xn[[i]])
+    for (i in 1:raster::nlayers(xn)) {
+        xn[[i]] <- raster::setMinMax(xn[[i]])
     }
 #
+# since raster layers are scaled 0 - 1000, multiply the thresholds by 1000
+    thresholds <- trunc(1000*thresholds)
 #
 # count models
     mc <- 0
@@ -306,27 +311,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pmaxent, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pmaxent, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "MAXENT"
                 pmaxent <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pmaxent <- trunc(1000*pmaxent)
-            writeRaster(x=pmaxent, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pmaxent, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pmaxent, p)
-                abs1 <- extract(pmaxent, a)
+                pres1 <- raster::extract(pmaxent, p)/1000
+                abs1 <- raster::extract(pmaxent, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pmaxent, pt)
-                abs1 <- extract(pmaxent, at)
+                pres1 <- raster::extract(pmaxent, pt)/1000
+                abs1 <- raster::extract(pmaxent, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -355,27 +360,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pgbm, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pgbm, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "GBM"
                 pgbm <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pgbm <- trunc(1000*pgbm)
-            writeRaster(x=pgbm, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pgbm, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pgbm, p)
-                abs1 <- extract(pgbm, a)
+                pres1 <- raster::extract(pgbm, p)/1000
+                abs1 <- raster::extract(pgbm, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pgbm, pt)
-                abs1 <- extract(pgbm, at)
+                pres1 <- raster::extract(pgbm, pt)/1000
+                abs1 <- raster::extract(pgbm, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -404,27 +409,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pgbms, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pgbms, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "GBMSTEP"
                 pgbms <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pgbms <- trunc(1000*pgbms)
-            writeRaster(x=pgbms, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pgbms, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pgbms, p)
-                abs1 <- extract(pgbms, a)
+                pres1 <- raster::extract(pgbms, p)/1000
+                abs1 <- raster::extract(pgbms, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pgbms, pt)
-                abs1 <- extract(pgbms, at)
+                pres1 <- raster::extract(pgbms, pt)/1000
+                abs1 <- raster::extract(pgbms, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -449,27 +454,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=prf, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=prf, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "RF"
                 prf <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             prf <- trunc(1000*prf)
-            writeRaster(x=prf, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=prf, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(prf, p)
-                abs1 <- extract(prf, a)
+                pres1 <- raster::extract(prf, p)/1000
+                abs1 <- raster::extract(prf, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(prf, pt)
-                abs1 <- extract(prf, at)
+                pres1 <- raster::extract(prf, pt)/1000
+                abs1 <- raster::extract(prf, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -494,27 +499,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pglm, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pglm, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "GLM"
                 pglm <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pglm <- trunc(1000*pglm)
-            writeRaster(x=pglm, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pglm, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pglm, p)
-                abs1 <- extract(pglm, a)
+                pres1 <- raster::extract(pglm, p)/1000
+                abs1 <- raster::extract(pglm, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pglm, pt)
-                abs1 <- extract(pglm, at)
+                pres1 <- raster::extract(pglm, pt)/1000
+                abs1 <- raster::extract(pglm, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -539,27 +544,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pglms, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pglms, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "GLMSTEP"
                 pglms <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pglms <- trunc(1000*pglms)
-            writeRaster(x=pglms, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pglms, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pglms, p)
-                abs1 <- extract(pglms, a)
+                pres1 <- raster::extract(pglms, p)/1000
+                abs1 <- raster::extract(pglms, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pglms, pt)
-                abs1 <- extract(pglms, at)
+                pres1 <- raster::extract(pglms, pt)/1000
+                abs1 <- raster::extract(pglms, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -572,6 +577,7 @@
     if (ws["GAM"] > 0 || ws["GAMSTEP"] > 0) {
         cat(paste("\n"))
         try(detach(package:mgcv), silent=T)
+        suppressMessages(require(gam))
         require(gam, quietly=T)
     }
     if (ws["GAM"] > 0) {
@@ -589,27 +595,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pgam, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pgam, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "GAM"
                 pgam <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pgam <- trunc(1000*pgam)
-            writeRaster(x=pgam, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pgam, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pgam, p)
-                abs1 <- extract(pgam, a)
+                pres1 <- raster::extract(pgam, p)/1000
+                abs1 <- raster::extract(pgam, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pgam, pt)
-                abs1 <- extract(pgam, at)
+                pres1 <- raster::extract(pgam, pt)/1000
+                abs1 <- raster::extract(pgam, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -634,27 +640,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pgams, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pgams, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "GAMSTEP"
                 pgams <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pgams <- trunc(1000*pgams)
-            writeRaster(x=pgams, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pgams, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pgams, p)
-                abs1 <- extract(pgams, a)
+                pres1 <- raster::extract(pgams, p)/1000
+                abs1 <- raster::extract(pgams, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pgams, pt)
-                abs1 <- extract(pgams, at)
+                pres1 <- raster::extract(pgams, pt)/1000
+                abs1 <- raster::extract(pgams, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -667,7 +673,9 @@
     if (ws["MGCV"] > 0 || ws["MGCVFIX"] > 0) {
         cat(paste("\n"))
         try(detach(package:gam), silent=T)
+        options(warn=-1)
         require(mgcv, quietly=T)
+        options(warn=0)
     }
     if (ws["MGCV"] > 0) {
         mc <- mc+1
@@ -687,27 +695,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pmgcv, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pmgcv, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "MGCV"
                 pmgcv <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pmgcv <- trunc(1000*pmgcv)
-            writeRaster(x=pmgcv, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pmgcv, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pmgcv, p)
-                abs1 <- extract(pmgcv, a)
+                pres1 <- raster::extract(pmgcv, p)/1000
+                abs1 <- raster::extract(pmgcv, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pmgcv, pt)
-                abs1 <- extract(pmgcv, at)
+                pres1 <- raster::extract(pmgcv, pt)/1000
+                abs1 <- raster::extract(pmgcv, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -735,27 +743,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pmgcvf, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pmgcvf, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "MGCVFIX"
                 pmgcvf <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pmgcvf <- trunc(1000*pmgcvf)
-            writeRaster(x=pmgcvf, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pmgcvf, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pmgcvf, p)
-                abs1 <- extract(pmgcvf, a)
+                pres1 <- raster::extract(pmgcvf, p)/1000
+                abs1 <- raster::extract(pmgcvf, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pmgcvf, pt)
-                abs1 <- extract(pmgcvf, at)
+                pres1 <- raster::extract(pmgcvf, pt)/1000
+                abs1 <- raster::extract(pmgcvf, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -783,27 +791,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pearth, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pearth, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "EARTH"
                 pearth <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pearth <- trunc(1000*pearth)
-            writeRaster(x=pearth, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pearth, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pearth, p)
-                abs1 <- extract(pearth, a)
+                pres1 <- raster::extract(pearth, p)/1000
+                abs1 <- raster::extract(pearth, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pearth, pt)
-                abs1 <- extract(pearth, at)
+                pres1 <- raster::extract(pearth, pt)/1000
+                abs1 <- raster::extract(pearth, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -831,27 +839,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=prpart, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=prpart, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "RPART"
                 prpart <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             prpart <- trunc(1000*prpart)
-            writeRaster(x=prpart, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=prpart, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(prpart, p)
-                abs1 <- extract(prpart, a)
+                pres1 <- raster::extract(prpart, p)/1000
+                abs1 <- raster::extract(prpart, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(prpart, pt)
-                abs1 <- extract(prpart, at)
+                pres1 <- raster::extract(prpart, pt)/1000
+                abs1 <- raster::extract(prpart, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -879,27 +887,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pnnet, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pnnet, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "NNET"
                 pnnet <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pnnet <- trunc(1000*pnnet)
-            writeRaster(x=pnnet, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pnnet, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pnnet, p)
-                abs1 <- extract(pnnet, a)
+                pres1 <- raster::extract(pnnet, p)/1000
+                abs1 <- raster::extract(pnnet, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pnnet, pt)
-                abs1 <- extract(pnnet, at)
+                pres1 <- raster::extract(pnnet, pt)/1000
+                abs1 <- raster::extract(pnnet, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -927,27 +935,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pfda, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pfda, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "FDA"
                 pfda <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pfda <- trunc(1000*pfda)
-            writeRaster(x=pfda, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pfda, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pfda, p)
-                abs1 <- extract(pfda, a)
+                pres1 <- raster::extract(pfda, p)/1000
+                abs1 <- raster::extract(pfda, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pfda, pt)
-                abs1 <- extract(pfda, at)
+                pres1 <- raster::extract(pfda, pt)/1000
+                abs1 <- raster::extract(pfda, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -977,27 +985,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=psvm, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=psvm, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "SVM"
                 psvm <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             psvm <- trunc(1000*psvm)
-            writeRaster(x=psvm, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=psvm, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(psvm, p)
-                abs1 <- extract(psvm, a)
+                pres1 <- raster::extract(psvm, p)/1000
+                abs1 <- raster::extract(psvm, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(psvm, pt)
-                abs1 <- extract(psvm, at)
+                pres1 <- raster::extract(psvm, pt)/1000
+                abs1 <- raster::extract(psvm, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1027,27 +1035,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=psvme, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=psvme, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "SVME"
                 psvme <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             psvme <- trunc(1000*psvme)
-            writeRaster(x=psvme, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=psvme, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(psvme, p)
-                abs1 <- extract(psvme, a)
+                pres1 <- raster::extract(psvme, p)/1000
+                abs1 <- raster::extract(psvme, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(psvme, pt)
-                abs1 <- extract(psvme, at)
+                pres1 <- raster::extract(psvme, pt)/1000
+                abs1 <- raster::extract(psvme, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1059,10 +1067,10 @@
     }
     if (BIOCLIM > 0 || DOMAIN > 0 || MAHAL > 0) {
         if(is.null(factors) == F) {
-            xn <- dropLayer(xn, which(names(xn) %in% factors))               
+            xn <- raster::dropLayer(xn, which(names(xn) %in% factors))               
         }
         if(is.null(dummy.vars) == F) {
-            xn <- dropLayer(xn, which(names(xn) %in% dummy.vars))               
+            xn <- raster::dropLayer(xn, which(names(xn) %in% dummy.vars))               
         }
     }
     if (ws["BIOCLIM"] > 0) {  
@@ -1080,27 +1088,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pbio, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pbio, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "BIOCLIM"
                 pbio <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pbio <- trunc(1000*pbio)
-            writeRaster(x=pbio, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pbio, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pbio, p)
-                abs1 <- extract(pbio, a)
+                pres1 <- raster::extract(pbio, p)/1000
+                abs1 <- raster::extract(pbio, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pbio, pt)
-                abs1 <- extract(pbio, at)
+                pres1 <- raster::extract(pbio, pt)/1000
+                abs1 <- raster::extract(pbio, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1125,27 +1133,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pdom, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pdom, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "DOMAIN"
                 pdom <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pdom <- trunc(1000*pdom)
-            writeRaster(x=pdom, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pdom, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pdom, p)
-                abs1 <- extract(pdom, a)
+                pres1 <- raster::extract(pdom, p)/1000
+                abs1 <- raster::extract(pdom, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pdom, pt)
-                abs1 <- extract(pdom, at)
+                pres1 <- raster::extract(pdom, pt)/1000
+                abs1 <- raster::extract(pdom, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1174,27 +1182,27 @@
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
-                writeRaster(x=pmahal, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+                raster::writeRaster(x=pmahal, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
                 explan.stack <- stack(fullname2)
                 names(explan.stack) <- "MAHAL"
                 pmahal <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
             }
             pmahal <- trunc(1000*pmahal)
-            writeRaster(x=pmahal, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            raster::writeRaster(x=pmahal, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- extract(pmahal, p)
-                abs1 <- extract(pmahal, a)
+                pres1 <- raster::extract(pmahal, p)/1000
+                abs1 <- raster::extract(pmahal, a)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- extract(pmahal, pt)
-                abs1 <- extract(pmahal, at)
+                pres1 <- raster::extract(pmahal, pt)/1000
+                abs1 <- raster::extract(pmahal, at)/1000
                 eval1 <- evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1215,201 +1223,219 @@
     mc <- mc+1
     cat(paste("\n\n", mc, ". Ensemble algorithm\n", sep=""))
     ensemble.statistics["n.models"] <- sum(as.numeric(ws > 0))
-    ensemble <- xn[[1]] == NAvalue(xn[[1]])
-    setMinMax(ensemble)
+    ensemble <- xn[[1]] == raster::NAvalue(xn[[1]])
+    raster::setMinMax(ensemble)
     names(ensemble) <- raster.title
-    writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+    raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
     enscount <- ensemble
-    setMinMax(enscount)
+    raster::setMinMax(enscount)
     names(enscount) <- paste(raster.title, "_count", sep="")
-    writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+    raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     enspresence <- ensemble
-    setMinMax(enspresence)
+    raster::setMinMax(enspresence)
     names(enspresence) <- paste(raster.title, "_presence", sep="")
-    writeRaster(x=enspresence, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+    raster::writeRaster(x=enspresence, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     if (ws["MAXENT"] > 0) {
         ensemble <- ensemble + ws["MAXENT"] * pmaxent
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
-        pmaxent <- pmaxent > thresholds["MAXENT"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
+        pmaxent <- pmaxent >= thresholds["MAXENT"]
         enscount <- enscount + pmaxent
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["GBM"] > 0) {
         ensemble <- ensemble + ws["GBM"] * pgbm
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
-        pgbm <- pgbm > thresholds["GBM"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+        pgbm <- pgbm >= thresholds["GBM"]
         enscount <- enscount + pgbm
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["GBMSTEP"] > 0) {
         ensemble <- ensemble + ws["GBMSTEP"] * pgbms
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
-        pgbms <- pgbms > thresholds["GBMSTEP"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+        pgbms <- pgbms >= thresholds["GBMSTEP"]
         enscount <- enscount + pgbms
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["RF"] > 0) {
         ensemble <- ensemble + ws["RF"] * prf
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
-        prf <- prf > thresholds["RF"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+        prf <- prf >= thresholds["RF"]
         enscount <- enscount + prf
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["GLM"] > 0) {
         ensemble <- ensemble + ws["GLM"] * pglm
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)    
-        pglm <- pglm > thresholds["GLM"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)    
+        pglm <- pglm >= thresholds["GLM"]
         enscount <- enscount + pglm
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["GLMSTEP"] > 0) {
         ensemble <- ensemble + ws["GLMSTEP"] * pglms
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
-        pglms <- pglms > thresholds["GLMSTEP"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+        pglms <- pglms >= thresholds["GLMSTEP"]
         enscount <- enscount + pglms
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["GAM"] > 0) {
         ensemble <- ensemble + ws["GAM"] * pgam
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        pgam <- pgam > thresholds["GAM"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        pgam <- pgam >= thresholds["GAM"]
         enscount <- enscount + pgam
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["GAMSTEP"] > 0) {
         ensemble <- ensemble + ws["GAMSTEP"] * pgams
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        pgams <- pgams > thresholds["GAMSTEP"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        pgams <- pgams >= thresholds["GAMSTEP"]
         enscount <- enscount + pgams
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["MGCV"] > 0) {
         ensemble <- ensemble + ws["MGCV"] * pmgcv
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        pmgcv <- pmgcv > thresholds["MGCV"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        pmgcv <- pmgcv >= thresholds["MGCV"]
         enscount <- enscount + pmgcv
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["MGCVFIX"] > 0) {
         ensemble <- ensemble + ws["MGCVFIX"] * pmgcvf
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        pmgcvf <- pmgcvf > thresholds["MGCVFIX"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        pmgcvf <- pmgcvf >= thresholds["MGCVFIX"]
         enscount <- enscount + pmgcvf
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["EARTH"] > 0) {
         ensemble <- ensemble + ws["EARTH"] * pearth
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        pearth <- pearth > thresholds["EARTH"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        pearth <- pearth >= thresholds["EARTH"]
         enscount <- enscount + pearth
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["RPART"] > 0) {
         ensemble <- ensemble + ws["RPART"] * prpart
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        prpart <- prpart > thresholds["RPART"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        prpart <- prpart >= thresholds["RPART"]
         enscount <- enscount + prpart
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["NNET"] > 0) {
         ensemble <- ensemble + ws["NNET"] * pnnet
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        pnnet <- pnnet > thresholds["NNET"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        pnnet <- pnnet >= thresholds["NNET"]
         enscount <- enscount + pnnet
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["FDA"] > 0) {
         ensemble <- ensemble + ws["FDA"] * pfda
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        pfda <- pfda > thresholds["FDA"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        pfda <- pfda >= thresholds["FDA"]
         enscount <- enscount + pfda
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["SVM"] > 0) {
         ensemble <- ensemble + ws["SVM"] * psvm
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        psvm <- psvm > thresholds["SVM"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        psvm <- psvm >= thresholds["SVM"]
         enscount <- enscount + psvm
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["SVME"] > 0) {
         ensemble <- ensemble + ws["SVME"] * psvme
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        psvme <- psvme > thresholds["SVME"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        psvme <- psvme >= thresholds["SVME"]
         enscount <- enscount + psvme
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["BIOCLIM"] > 0) {
         ensemble <- ensemble + ws["BIOCLIM"] * pbio
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        pbio <- pbio > thresholds["BIOCLIM"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        pbio <- pbio >= thresholds["BIOCLIM"]
         enscount <- enscount + pbio
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["DOMAIN"] > 0) {
         ensemble <- ensemble + ws["DOMAIN"] * pdom
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        pdom <- pdom > thresholds["DOMAIN"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        pdom <- pdom >= thresholds["DOMAIN"]
         enscount <- enscount + pdom
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (ws["MAHAL"] > 0) {
         ensemble <- ensemble + ws["MAHAL"] * pmahal
-        writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        pmahal <- pmahal > thresholds["MAHAL"]
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+        pmahal <- pmahal >= thresholds["MAHAL"]
         enscount <- enscount + pmahal
-        writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     ensemble <- trunc(ensemble)
-    setMinMax(ensemble)
-    ensemble.statistics["ensemble.min"] <- minValue(ensemble)
-    ensemble.statistics["ensemble.max"] <- maxValue(ensemble)
+    raster::setMinMax(ensemble)
+    ensemble.statistics["ensemble.min"] <- raster::minValue(ensemble)
+    ensemble.statistics["ensemble.max"] <- raster::maxValue(ensemble)
 #    names(ensemble) <- raster.title
-    writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#    raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#  avoid possible problems with saving of names of the raster layers
+    raster::writeRaster(ensemble, filename="working.grd", overwrite=T)
+    working.raster <- raster::raster("working.grd")
+    names(working.raster) <- raster.title
+    raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#
     if (KML.out == T) {
         thresholdx <- thresholds["ENSEMBLE"]
         seq1 <- seq(from = 0, to = thresholdx, length.out = 10)
         seq2 <- seq(from = thresholdx, to = 1000, length.out = 11)
-        KML(ensemble, filename=kmlfull, col = c(rainbow(n = 10, start = 0, end = 1/6), rainbow(n = 10, start = 3/6, end = 4/6)), colNA = 0, 
+        raster::KML(working.raster, filename=kmlfull, col = c(rainbow(n = 10, start = 0, end = 1/6), rainbow(n = 10, start = 3/6, end = 4/6)), colNA = 0, 
             blur=KML.blur, maxpixels=KML.maxpixels, overwrite=T, breaks = c(seq1, seq2))
     }
-    setMinMax(enscount)
-    ensemble.statistics["count.min"] <- minValue(enscount)
-    ensemble.statistics["count.max"] <- maxValue(enscount)
+    raster::setMinMax(enscount)
+    ensemble.statistics["count.min"] <- raster::minValue(enscount)
+    ensemble.statistics["count.max"] <- raster::maxValue(enscount)
 #    names(enscount) <- paste(raster.title, "_count", sep="")
-    writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#    raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#  avoid possible problems with saving of names of the raster layers
+    raster::writeRaster(enscount, filename="working.grd", overwrite=T)
+    working.raster <- raster::raster("working.grd")
+    names(working.raster) <- paste(raster.title, "_count", sep="")
+    raster::writeRaster(working.raster, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#
     if (KML.out == T) {
         nmax <- sum(as.numeric(ws > 0))
         if (nmax > 3) {
-            KML(enscount, filename=kmlcount, col=c("grey", rainbow(n=(nmax-1), start=0, end=1/3), "blue"),
+            raster::KML(working.raster, filename=kmlcount, col=c("grey", rainbow(n=(nmax-1), start=0, end=1/3), "blue"),
                 colNA=0, blur=10, overwrite=T, breaks=seq(from=-1, to=nmax, by=1))
         }else{
-            KML(enscount, filename=kmlcount, col=c("grey", rainbow(n=nmax, start=0, end=1/3)),
+            raster::KML(working.raster, filename=kmlcount, col=c("grey", rainbow(n=nmax, start=0, end=1/3)),
                 colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
         }
     }
     ensemble.statistics["ensemble.threshold"] <- thresholds["ENSEMBLE"]
-    enspresence <- ensemble > thresholds["ENSEMBLE"]
-    setMinMax(enspresence)
+    enspresence <- ensemble >= thresholds["ENSEMBLE"]
+    raster::setMinMax(enspresence)
 #    names(enspresence) <- paste(raster.title, "_presence", sep="")
-    writeRaster(x=enspresence, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#    raster::writeRaster(x=enspresence, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#  avoid possible problems with saving of names of the raster layers
+    raster::writeRaster(enspresence, filename="working.grd", overwrite=T)
+    working.raster <- raster::raster("working.grd")
+    names(working.raster) <- paste(raster.title, "_presence", sep="")
+    raster::writeRaster(working.raster, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#
     if (KML.out == T) {
-        KML(enspresence, filename=kmlpresence, col=c("grey", "green"),
+        raster::KML(working.raster, filename=kmlpresence, col=c("grey", "green"),
             colNA=0, blur=KML.blur, maxpixels=KML.maxpixels, overwrite=T)
     }
     if(evaluate == T) {
         eval1 <- NULL
         cat(paste("\n", "Evaluation of created ensemble raster layer (", rasterfull, ") at locations p and a", "\n\n", sep = ""))
-        pres_consensus <- extract(ensemble, p)
-        abs_consensus <- extract(ensemble, a)
+        pres_consensus <- raster::extract(ensemble, p)/1000
+        abs_consensus <- raster::extract(ensemble, a)/1000
         eval1 <- evaluate(p=pres_consensus, a=abs_consensus)
         print(eval1)
     }
     if(retest == T) {
         eval1 <- NULL
         cat(paste("\n", "Evaluation of created ensemble raster layer (", rasterfull, ") at locations pt and at", "\n\n", sep = ""))
-        pres_consensus <- extract(ensemble, pt)
-        abs_consensus <- extract(ensemble, at)
+        pres_consensus <- raster::extract(ensemble, pt)/1000
+        abs_consensus <- raster::extract(ensemble, at)/1000
         eval1 <- evaluate(p=pres_consensus, a=abs_consensus)
         print(eval1)
     }
@@ -1417,20 +1443,20 @@
     cat(paste("Predictions were made for RasterStack: ", stack.title, "\n\n", sep = ""))
 #
 #  avoid possible problems with saving of names of the raster layers
-    writeRaster(ensemble, filename="working.grd", overwrite=T)
-    working.raster <- raster("working.grd")
+    raster::writeRaster(ensemble, filename="working.grd", overwrite=T)
+    working.raster <- raster::raster("working.grd")
     names(working.raster) <- raster.title
-    writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+    raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
-    writeRaster(enscount, filename="working.grd", overwrite=T)
-    working.raster <- raster("working.grd")
+    raster::writeRaster(enscount, filename="working.grd", overwrite=T)
+    working.raster <- raster::raster("working.grd")
     names(working.raster) <- paste(raster.title, "_count", sep="")
-    writeRaster(working.raster, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+    raster::writeRaster(working.raster, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #
-    writeRaster(enspresence, filename="working.grd", overwrite=T)
-    working.raster <- raster("working.grd")
+    raster::writeRaster(enspresence, filename="working.grd", overwrite=T)
+    working.raster <- raster::raster("working.grd")
     names(working.raster) <- paste(raster.title, "_presence", sep="")
-    writeRaster(working.raster, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+    raster::writeRaster(working.raster, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #
     result <- list(ensemble.statistics=ensemble.statistics, call=match.call() )
     if (SINK==T && OLD.SINK==F) {sink(file=NULL, append=T)}

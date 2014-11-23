@@ -15,7 +15,7 @@
     if (is.null(ext) == F) {
         if(length(xn@title) == 0) {xn@title <- "stack1"}
         title.old <- xn@title
-        xn <- crop(xn, y=ext, snap="in")
+        xn <- raster::crop(xn, y=ext, snap="in")
         xn@title <- title.old
     }
 #
@@ -30,7 +30,7 @@
     for (i in 1:nv) {
         if (any(vars==vars.xn[i]) == F) {
             cat(paste("\n", "NOTE: RasterStack layer '", vars.xn[i], "' was not calibrated as explanatory variable", "\n", sep = ""))
-            xn <- dropLayer(xn, which(names(xn) %in% c(vars.xn[i]) ))
+            xn <- raster::dropLayer(xn, which(names(xn) %in% c(vars.xn[i]) ))
         }
     }
     if (is.null(factors) == T) {factors <- models.list$factors}
@@ -57,11 +57,11 @@
     }
 #
 # set minimum and maximum values for xn
-    for (i in 1:nlayers(xn)) {
-        xn[[i]] <- setMinMax(xn[[i]])
+    for (i in 1:raster::nlayers(xn)) {
+        xn[[i]] <- raster::setMinMax(xn[[i]])
     }
-    if(projection(xn)=="NA") {
-        projection(xn) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+    if(raster::projection(xn)=="NA") {
+        raster::projection(xn) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
     }
 # declare categorical layers for xn
     factors <- models.list$factors
@@ -232,7 +232,7 @@
     for (i in 1:nvars) {
         if(any(vars[i] == factors) == T) {
             il <- which(vars.xn == vars[i])       
-            tabulation <- data.frame(freq(xn[[il]]))
+            tabulation <- data.frame(raster::freq(xn[[il]]))
             NA.index <- !is.na(tabulation[,"value"])
             tabulation <- tabulation[NA.index,]           
             plot.data2 <- array(dim=c(nrow(tabulation), nvars+2), NA)
@@ -254,7 +254,7 @@
     for (i in 1:nvars) {
         if(any(vars[i] == factors) == F) {
             il <- which(vars.xn == vars[i]) 
-            plot.data[,i+2] <- rep(cellStats(xn[[il]], stat="mean"), nrows)
+            plot.data[,i+2] <- rep(raster::cellStats(xn[[il]], stat="mean"), nrows)
         }
     }
     j <- 0
@@ -266,8 +266,8 @@
             endpos <- (j-1)*steps+steps
             plot.data[startpos:endpos,1] <- rep(i, steps)
             plot.data[startpos:endpos,2] <- rep(0, steps)
-            minv <- minValue(xn[[il]])
-            maxv <- maxValue(xn[[il]])
+            minv <- raster::minValue(xn[[il]])
+            maxv <- raster::maxValue(xn[[il]])
             plot.data[startpos:endpos,i+2] <- seq(from=minv,to=maxv, length.out=steps)
          }
     }
@@ -293,8 +293,8 @@
 #
 # sometimes still error warnings for minimum and maximum values of the layers
 # set minimum and maximum values for xn
-    for (i in 1:nlayers(xn)) {
-        xn[[i]] <- setMinMax(xn[[i]])
+    for (i in 1:raster::nlayers(xn)) {
+        xn[[i]] <- raster::setMinMax(xn[[i]])
     }
 #
 # Different modelling algorithms
@@ -306,7 +306,6 @@
             silent=F)
         results2 <- MAXENT.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"MAXENT"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"MAXENT"] <- trunc(1000*plot.data[,"MAXENT"])
     }
     if (GBM > 0) {
         results <- GBM.OLD
@@ -315,7 +314,6 @@
             silent=F)
         results2 <- GBM.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"GBM"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"GBM"] <- trunc(1000*plot.data[,"GBM"])
     }
     if (GBMSTEP > 0) {
         results <- GBMSTEP.OLD
@@ -324,7 +322,6 @@
             silent=F)
         results2 <- GBMSTEP.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"GBMSTEP"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"GBMSTEP"] <- trunc(1000*plot.data[,"GBMSTEP"])
     }
     if (RF > 0) {
         results <- RF.OLD
@@ -333,7 +330,6 @@
             silent=F)
         results2 <- RF.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"RF"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"RF"] <- trunc(1000*plot.data[,"RF"])
     }
     if (GLM > 0) {
         results <- GLM.OLD
@@ -342,7 +338,6 @@
             silent=F)
         results2 <- GLM.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"GLM"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"GLM"] <- trunc(1000*plot.data[,"GLM"])
     }
     if (GLMSTEP > 0) {
         results <- GLMSTEP.OLD
@@ -351,7 +346,6 @@
             silent=F)
         results2 <- GLMSTEP.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"GLMSTEP"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"GLMSTEP"] <- trunc(1000*plot.data[,"GLMSTEP"])
     }
     if (GAM > 0 || GAMSTEP > 0) {
         cat(paste("\n\n"))
@@ -365,7 +359,6 @@
             silent=F)
         results2 <- GAM.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"GAM"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"GAM"] <- trunc(1000*plot.data[,"GAM"])
     }
     if (GAMSTEP > 0) {
         results <- GAMSTEP.OLD
@@ -374,7 +367,6 @@
             silent=F)
         results2 <- GAMSTEP.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"GAMSTEP"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"GAMSTEP"] <- trunc(1000*plot.data[,"GAMSTEP"])
     }
     if (MGCV > 0 || MGCVFIX > 0) {
         cat(paste("\n\n"))
@@ -388,7 +380,6 @@
             silent=F)
         results2 <- MGCV.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"MGCV"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"MGCV"] <- trunc(1000*plot.data[,"MGCV"])
     }
     if (MGCVFIX > 0) {
         results <- MGCVFIX.OLD
@@ -397,7 +388,6 @@
             silent=F)
         results2 <- MGCVFIX.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"MGCVFIX"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"MGCVFIX"] <- trunc(1000*plot.data[,"MGCVFIX"])
     }
     if (EARTH > 0) {
         results <- EARTH.OLD
@@ -406,7 +396,6 @@
             silent=F)
         results2 <- EARTH.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"EARTH"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"EARTH"] <- trunc(1000*plot.data[,"EARTH"])
     }
     if (RPART > 0) {
         results <- RPART.OLD
@@ -415,7 +404,6 @@
             silent=F)
         results2 <- RPART.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"RPART"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"RPART"] <- trunc(1000*plot.data[,"RPART"])
     }
     if (NNET > 0) {
         results <- NNET.OLD
@@ -424,7 +412,6 @@
             silent=F)
         results2 <- NNET.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"NNET"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"NNET"] <- trunc(1000*plot.data[,"NNET"])
     }
     if (FDA > 0) {
         results <- FDA.OLD
@@ -433,7 +420,6 @@
             silent=F)
         results2 <- FDA.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"FDA"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"FDA"] <- trunc(1000*plot.data[,"FDA"])
     }
     if (SVM > 0) {
         results <- SVM.OLD
@@ -442,7 +428,6 @@
             silent=F)
         results2 <- SVM.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"SVM"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"SVM"] <- trunc(1000*plot.data[,"SVM"])
     }
     if (SVME > 0) {
         results <- SVME.OLD
@@ -452,7 +437,6 @@
             silent=F)
         results2 <- SVME.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"SVME"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"SVME"] <- trunc(1000*plot.data[,"SVME"])
     }
     if (BIOCLIM > 0 || DOMAIN > 0 || MAHAL > 0) {
         if(is.null(factors)==F) {
@@ -474,7 +458,6 @@
             silent=F)
         results2 <- BIOCLIM.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"BIOCLIM"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"BIOCLIM"] <- trunc(1000*plot.data[,"BIOCLIM"])
     }
     if (DOMAIN > 0) {
         results <- DOMAIN.OLD
@@ -483,7 +466,6 @@
             silent=F)
         results2 <- DOMAIN.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"DOMAIN"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"DOMAIN"] <- trunc(1000*plot.data[,"DOMAIN"])
     }
     if (MAHAL > 0) {
         results <- MAHAL.OLD
@@ -492,7 +474,6 @@
             silent=F)
         results2 <- MAHAL.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"MAHAL"] <- predict(object=results2, newdata=plot.data, type="response")}
-        plot.data[,"MAHAL"] <- trunc(1000*plot.data[,"MAHAL"])
     }
 #
     plot.data[,"ENSEMBLE"] <- ws["MAXENT"]*plot.data[,"MAXENT"] + ws["GBM"]*plot.data[,"GBM"] +
@@ -502,7 +483,6 @@
         ws["RPART"]*plot.data[,"RPART"] + ws["NNET"]*plot.data[,"NNET"] + ws["FDA"]*plot.data[,"FDA"] +
         ws["SVM"]*plot.data[,"SVM"] + ws["SVME"]*plot.data[,"SVME"] + ws["BIOCLIM"]*plot.data[,"BIOCLIM"] +
         ws["DOMAIN"]*plot.data[,"DOMAIN"] + ws["MAHAL"]*plot.data[,"MAHAL"]
-    plot.data[,"ENSEMBLE"] <- trunc(plot.data[,"ENSEMBLE"])
 
     return(plot.data)
 }

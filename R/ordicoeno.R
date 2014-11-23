@@ -14,7 +14,7 @@ function(x, ordiplot, axis=1, legend=FALSE, cex=0.8, ncol=4, ...) {
     names(pchtypes) <- pchtypes
     pchtypes <- pchtypes - trunc(pchtypes/26)*26
 #
-    gammodel <- gam(sorted[,1]~s(ordiscore),data=sorted)
+    gammodel <- mgcv::gam(sorted[,1]~s(ordiscore),data=sorted)
     edfs[1] <- summary(gammodel)$edf
     newdata1 <- data.frame(seq(min(sorted$ordiscore), max(sorted$ordiscore), length = 1000))
     newdata2 <- data.frame(seq(min(sorted$ordiscore), max(sorted$ordiscore), length = 20))
@@ -25,7 +25,7 @@ function(x, ordiplot, axis=1, legend=FALSE, cex=0.8, ncol=4, ...) {
         col=1, pch=0, xlab="site score on ordination axis", ylab="species values", ...)
     points(newdata2$ordiscore, gamresult2, type="p", col=1, pch=pchtypes[1], cex=cex, ...)    
     for (i in 2:ncol(x)) {
-        gammodel <- gam(sorted[,i]~s(ordiscore), data=sorted)
+        gammodel <- mgcv::gam(sorted[,i]~s(ordiscore), data=sorted)
         gamresult1 <- predict(gammodel, newdata1)
         gamresult2 <- predict(gammodel, newdata2)
         edfs[i] <- summary(gammodel)$edf

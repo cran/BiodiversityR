@@ -35,7 +35,7 @@
 #
     if (is.null(layer.drops) == F) {
         layer.drops <- as.character(layer.drops)
-        if (is.null(x)==F) {x <- dropLayer(x, which(names(x) %in% layer.drops))}
+        if (is.null(x)==F) {x <- raster::dropLayer(x, which(names(x) %in% layer.drops))}
         factors <- as.character(factors)
         dummy.vars <- as.character(dummy.vars)
         nd <- length(layer.drops)
@@ -73,7 +73,7 @@
     loglik.calculation <- function(obs=NULL, preds=NULL) {
         preds[preds<=0] <- 0.0000000001
         preds[preds>=1] <- 0.9999999999
-        out <- calc.deviance(obs=obs, pred=preds, calc.mean=F)
+        out <- dismo::calc.deviance(obs=obs, pred=preds, calc.mean=F)
         return(out)
     }
 
@@ -86,7 +86,6 @@
         p=p, a=a, an=an, excludep=excludep, 
         k=k, pt=pt, at=at,
         TrainData=TrainData, TestData=TestData,
-        TRUNC=FALSE,
         PLOTS=FALSE, evaluations.keep=T, models.keep=F,
         VIF=VIF, COR=COR,
         formulae.defaults=T, maxit=maxit,
@@ -278,7 +277,6 @@
     tests <- ensemble.test(x=NULL, ext=ext,
         TrainData=TrainData2, TestData=TestData2, 
         PLOTS=FALSE, evaluations.keep=T,  
-        TRUNC=FALSE,
         VIF=VIF, COR=COR,
         formulae.defaults=T, maxit=maxit,
         AUC.weights=T,

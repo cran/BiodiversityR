@@ -2,7 +2,6 @@
     x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, ext=NULL, 
     k=0, pt=NULL, at=NULL,
     TrainData=NULL, TestData=NULL,
-    TRUNC=TRUE,
     VIF=FALSE, COR=FALSE,
     SINK=FALSE, PLOTS=TRUE, 
     threshold.method="spec_sens", threshold.sensitivity=0.9,
@@ -48,8 +47,8 @@
     if (is.null(TrainData) == T) {
         if(is.null(x) == T) {stop("value for parameter x is missing (RasterStack object)")}
         if(inherits(x,"RasterStack") == F) {stop("x is not a RasterStack object")}
-        if(projection(x)=="NA") {
-            projection(x) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
+        if(raster::projection(x)=="NA") {
+            raster::projection(x) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
         }
         if(is.null(p) == T) {stop("presence locations are missing (parameter p)")}
     }
@@ -78,7 +77,7 @@
     if (is.null(TrainData) == F) {
         TrainData <- data.frame(TrainData)
         if (colnames(TrainData)[1] !="pb") {stop("first column for TrainData should be 'pb' containing presence (1) and absence (0) data")}
-        if ((is.null(x) == F) && (nlayers(x) != (ncol(TrainData)-1))) {
+        if ((is.null(x) == F) && (raster::nlayers(x) != (ncol(TrainData)-1))) {
             cat(paste("\n", "WARNING: different number of explanatory variables in rasterStack and TrainData", sep = ""))
         }
     }
@@ -149,7 +148,7 @@
         if (is.null(ext) == F) {
             if(length(x@title) == 0) {x@title <- "stack1"}
             title.old <- x@title
-            x <- crop(x, y=ext, snap="in")
+            x <- raster::crop(x, y=ext, snap="in")
             x@title <- title.old
         }
 # same variables as TrainData in the rasterstack
@@ -170,7 +169,7 @@
                         cat(paste("\n", "WARNING: variable to exclude '", layer.drops[i], "' not among grid layers", "\n", sep = ""))
                     }else{
                         cat(paste("\n", "NOTE: variable '", layer.drops[i], "' will not be included as explanatory variable", "\n", sep = ""))
-                        x <- dropLayer(x, which(names(x) %in% c(layer.drops[i]) ))
+                        x <- raster::dropLayer(x, which(names(x) %in% c(layer.drops[i]) ))
                         vars <- names(x)
                         if (length(factors) > 0) {
                             factors <- factors[factors != layer.drops[i]]
@@ -212,8 +211,8 @@
             }
         }
         # set minimum and maximum values
-            for (i in 1:nlayers(x)) {
-                x[[i]] <- setMinMax(x[[i]])
+            for (i in 1:raster::nlayers(x)) {
+                x[[i]] <- raster::setMinMax(x[[i]])
             }
         # declare factor layers
         if(is.null(factors)==F) {
@@ -375,6 +374,7 @@
     if (ws["GAM"] > 0 || ws["GAMSTEP"] > 0) {
         cat(paste("\n\n"))
         try(detach(package:mgcv), silent=T)
+        suppressMessages(require(gam))
         if (! require(gam, quietly=T)) {stop("Please install the gam package")}
     }
     if (ws["GAM"] > 0) {
@@ -394,12 +394,14 @@
     if (ws["MGCV"] > 0 || ws["MGCVFIX"] > 0) {
         cat(paste("\n\n"))
         try(detach(package:gam), silent=T)
+        options(warn=-1)
         if (! require(mgcv, quietly=T)) {stop("Please install the mgcv package")}
 #         get the probabilities from MGCV
             predict.mgcv <- function(object, newdata, type="response") {
                 p <- predict(object=object, newdata=newdata, type=type)
                 return(as.numeric(p))
             }
+        options(warn=0)
     }
     if (ws["MGCV"] > 0) {
         if (is.null(MGCV.formula) == T && formulae.defaults == T) {MGCV.formula <- formulae$MGCV.formula}
@@ -485,7 +487,7 @@
         if(is.null(TestData) == T) {
             TestData <- TrainData
             if (k > 1) {
-                groupp <- kfold(TrainData, k=k, by=TrainData[,"pb"])
+                groupp <- dismo::kfold(TrainData, k=k, by=TrainData[,"pb"])
                 TrainData.c <- TrainData[groupp != 1,]
                 TestData <- TrainData[groupp == 1,]
                 TrainData <- TrainData.c
@@ -494,26 +496,26 @@
     }else{
         if (is.null(a)==T) {
             if (excludep == T) {
-                a <- randomPoints(x[[1]], n=an, p=p, excludep=T)
+                a <- dismo::randomPoints(x[[1]], n=an, p=p, excludep=T)
             }else{
-                a <- randomPoints(x[[1]], n=an, p=NULL, excludep=F)
+                a <- dismo::randomPoints(x[[1]], n=an, p=NULL, excludep=F)
             }        
         }
         if (is.null(pt)==T && is.null(TestData)) {pt <- p}
         if (k > 1 && identical(pt, p) == T) {
-            groupp <- kfold(p, k=k)
+            groupp <- dismo::kfold(p, k=k)
             pc <- p[groupp != 1,]
             pt <- p[groupp == 1,]
             p <- pc
         }
         if (is.null(at)==T && is.null(TestData)) {at <- a}
         if (k > 1 && identical(at, a) == T) {
-            groupa <- kfold(a, k=k)
+            groupa <- dismo::kfold(a, k=k)
             ac <- a[groupa != 1,]
             at <- a[groupa == 1,]
             a <- ac
         }
-        TrainData <- prepareData(x, p, b=a, factors=factors, xy=FALSE)
+        TrainData <- dismo::prepareData(x, p, b=a, factors=factors, xy=FALSE)
         if(any(is.na(TrainData[TrainData[,"pb"]==1,]))) {
             cat(paste("\n", "WARNING: presence locations with missing data removed from calibration data","\n\n",sep = ""))
         }
@@ -524,7 +526,7 @@
         }
         TrainValid <- complete.cases(TrainData[TrainData[,"pb"]==0,])
         a <- a[TrainValid,]
-        TrainData <- prepareData(x, p, b=a, factors=factors, xy=FALSE)
+        TrainData <- dismo::prepareData(x, p, b=a, factors=factors, xy=FALSE)
     }
     if (is.null(TestData) == F) {
         TestData <- data.frame(TestData)
@@ -535,7 +537,7 @@
         TestData <- TestData[TestValid,]
         if (all(colnames(TestData)!="pb") == T) {stop("one column needed of 'pb' with presence and absence for TestData")} 
     }else{
-        TestData <- prepareData(x, p=pt, b=at, factors=factors, xy=FALSE)
+        TestData <- dismo::prepareData(x, p=pt, b=at, factors=factors, xy=FALSE)
         if(any(is.na(TestData[TestData[,"pb"]==1,]))) {
             cat(paste("\n", "WARNING: presence locations with missing data removed from evaluation data","\n\n",sep = ""))
         }
@@ -546,7 +548,7 @@
         }
         TestValid <- complete.cases(TestData[TestData[,"pb"]==0,])
         at <- at[TestValid,]
-        TestData <- prepareData(x, p=pt, b=at, factors=factors, xy=FALSE)
+        TestData <- dismo::prepareData(x, p=pt, b=at, factors=factors, xy=FALSE)
     }
 #
 # check if TestData is different from TrainData
@@ -572,7 +574,7 @@
             names(categories) <- factors
         }
         for (i in 1:length(factors)) {
-            all.categories <- freq(x[[which(names(x) == factors[i])]])[,1]
+            all.categories <- raster::freq(x[[which(names(x) == factors[i])]])[,1]
             all.categories <- all.categories[is.na(all.categories) == F]
             all.categories <- as.character(all.categories)
             if(models.keep==T) {
@@ -591,14 +593,14 @@
                         }
                     }
 # step 2: stratified background sample
-                    strat1 <- sampleStratified(x[[which(names(x) == factors[i])]], size=1, exp=1, na.rm=TRUE, xy=FALSE)
+                    strat1 <- raster::sampleStratified(x[[which(names(x) == factors[i])]], size=1, exp=1, na.rm=TRUE, xy=FALSE)
                     strat1 <- strat1[which(strat1[,2] %in% new.categories), 1]
-                    xy1 <- xyFromCell(x[[which(names(x) == factors[i])]], cell=strat1, spatial=FALSE)
+                    xy1 <- raster::xyFromCell(x[[which(names(x) == factors[i])]], cell=strat1, spatial=FALSE)
                     a <- rbind(a, xy1)
-                    TrainData <- prepareData(x, p, b=a, factors=factors, xy=FALSE)
+                    TrainData <- dismo::prepareData(x, p, b=a, factors=factors, xy=FALSE)
                     TrainValid <- complete.cases(TrainData[TrainData[,"pb"]==0,])
                     a <- a[TrainValid,]
-                    TrainData <- prepareData(x, p, b=a, factors=factors, xy=FALSE)
+                    TrainData <- dismo::prepareData(x, p, b=a, factors=factors, xy=FALSE)
                     train.categories <- levels(TrainData[,factors[i]])
                     new.categories <- all.categories[is.na(match(all.categories, train.categories))]
                     if (length(new.categories) == 0) {
@@ -618,14 +620,14 @@
                     cat(paste("\n", "The following levels were initially not captured by TestData for factor '", factors[i], "'\n", sep = ""))
                     print(new.categories)
                     if (is.null(x)==F && is.null(pt)==F && is.null(at)==F) {
-                        strat1 <- sampleStratified(x[[which(names(x) == factors[i])]], size=1, exp=1, na.rm=TRUE, xy=FALSE)
+                        strat1 <- raster::sampleStratified(x[[which(names(x) == factors[i])]], size=1, exp=1, na.rm=TRUE, xy=FALSE)
                         strat1 <- strat1[which(strat1[,2] %in% new.categories), 1]
-                        xy1 <- xyFromCell(x[[which(names(x) == factors[i])]], cell=strat1, spatial=FALSE)
+                        xy1 <- raster::xyFromCell(x[[which(names(x) == factors[i])]], cell=strat1, spatial=FALSE)
                         at <- rbind(at, xy1)
-                        TestData <- prepareData(x, p=pt, b=at, factors=factors, xy=FALSE)
+                        TestData <- dismo::prepareData(x, p=pt, b=at, factors=factors, xy=FALSE)
                         TestValid <- complete.cases(TestData[TestData[,"pb"]==0,])
                         at <- at[TestValid,]
-                        TestData <- prepareData(x, p=pt, b=at, factors=factors, xy=FALSE)
+                        TestData <- dismo::prepareData(x, p=pt, b=at, factors=factors, xy=FALSE)
                         test.categories <- levels(TestData[,factors[i]])
                         new.categories <- all.categories[is.na(match(all.categories, test.categories))]
                         if (length(new.categories) == 0) {
@@ -701,9 +703,9 @@
             }else{
 # default option of MAXENT is to exclude presence locations
                 if (is.null(MAXENT.a) == T) {
-                    MAXENT.a <- randomPoints(x[[1]], n=MAXENT.an, p=p, excludep=T)
+                    MAXENT.a <- dismo::randomPoints(x[[1]], n=MAXENT.an, p=p, excludep=T)
                 }
-                MAXENT.BackData <- extract(x, y=MAXENT.a)
+                MAXENT.BackData <- raster::extract(x, y=MAXENT.a)
             }
         }
         MAXENT.BackData <- data.frame(MAXENT.BackData)
@@ -752,7 +754,7 @@
 # create possible response
         TrainDataNum[,"pb"] <- mean(as.numeric(TrainDataNum[,2]))
         vifresult <- NULL
-        tryCatch(vifresult <- vif(lm(formula=LM.formula, data=TrainDataNum)),
+        tryCatch(vifresult <- car::vif(lm(formula=LM.formula, data=TrainDataNum)),
             error= function(err) {print(paste("VIF evaluation (package: car) failed"))},
                     silent=F)
         if (is.null(vifresult) == F) {
@@ -838,6 +840,26 @@
 #
 # prepare for calculation of deviance
     obs1 <- TrainData[, "pb"]
+# new methods for calculating thresholds
+    threshold2 <- function(eval, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity) {
+        if (threshold.method == "threshold.min") {
+            t1 <- dismo::threshold(eval)[["spec_sens"]]
+            t2 <- dismo::threshold(eval)[["equal_sens_spec"]]            
+            t3 <- dismo::threshold(eval)[["prevalence"]]
+            thresholds <- as.numeric(c(t1, t2, t3))
+            thresholds <- thresholds[thresholds > 0]
+            return(min(thresholds))
+        }
+        if (threshold.method == "threshold.mean") {
+            t1 <- dismo::threshold(eval)[["spec_sens"]]
+            t2 <- dismo::threshold(eval)[["equal_sens_spec"]]            
+            t3 <- dismo::threshold(eval)[["prevalence"]]
+            thresholds <- as.numeric(c(t1, t2, t3))
+            thresholds <- thresholds[thresholds > 0]
+            return(mean(thresholds))
+        }
+        return(dismo::threshold(eval, sensitivity=threshold.sensitivity)[[threshold.method]])
+    }
 #
 # count models
     mc <- 0
@@ -852,7 +874,7 @@
         # the file 'maxent.jar' can be obtained from from http://www.cs.princeton.edu/~schapire/maxent/.
         jar <- paste(system.file(package="dismo"), "/java/maxent.jar", sep='')
         if(is.null(MAXENT.OLD) == T) {
-            tryCatch(results <- maxent(x=MAXENT.TrainData, p=MAXENT.pa, factors=factors, path=MAXENT.path),
+            tryCatch(results <- dismo::maxent(x=MAXENT.TrainData, p=MAXENT.pa, factors=factors, path=MAXENT.path),
                 error= function(err) {print(paste("MAXENT calibration failed"))},
                 silent=T)
         }else{ 
@@ -870,19 +892,18 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n", sep = ""))
                 TrainData[,"MAXENT.step1"] <- TrainData[,"MAXENT"]
-                if (TRUNC == T) {TrainData[,"MAXENT.step1"] <- trunc(1000*TrainData[,"MAXENT.step1"])}
                 TrainData[,"MAXENT"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "MAXENT"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"MAXENT"] <- trunc(1000*TrainData[,"MAXENT"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"MAXENT"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"MAXENT"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["MAXENT"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+#            thresholds["MAXENT"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["MAXENT"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["MAXENT"]))
             weights["MAXENT"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -891,13 +912,11 @@
                 TestData[,"MAXENT"] <- dismo::predict(object=results, x=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"MAXENT.step1"] <- TestData[,"MAXENT"]
-                    if (TRUNC == T) {TestData[,"MAXENT.step1"] <- trunc(1000*TestData[,"MAXENT.step1"])}
                     TestData[,"MAXENT"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"MAXENT"] <- trunc(1000*TestData[,"MAXENT"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"MAXENT"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MAXENT"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("MAXENT evaluation failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -926,7 +945,7 @@
         cat(paste("\n", mc, ". Generalized boosted regression modeling (package: gbm) \n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GBM.OLD) == T) {       
-            tryCatch(results <- gbm(formula=GBM.formula, data=TrainData, weights=Yweights, distribution="bernoulli", 
+            tryCatch(results <- gbm::gbm(formula=GBM.formula, data=TrainData, weights=Yweights, distribution="bernoulli", 
                     interaction.depth=7, shrinkage=0.001, bag.fraction=0.5, train.fraction=1, 
                     n.trees=GBM.n.trees, verbose=F, cv.folds=5),
                 error= function(err) {print(paste("GBM calibration failed"))},
@@ -946,19 +965,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"GBM.step1"] <- TrainData[,"GBM"]
-                if (TRUNC == T) {TrainData[,"GBM.step1"] <- trunc(1000*TrainData[,"GBM.step1"])}
                 TrainData[,"GBM"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "GBM"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"GBM"] <- trunc(1000*TrainData[,"GBM"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"GBM"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GBM"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["GBM"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["GBM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["GBM"]))
             weights["GBM"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -967,13 +984,11 @@
                 TestData[,"GBM"] <- predict(object=results, newdata=TestData.vars, n.trees=results$n.trees, type="response")
                 if (PROBIT == T) {
                     TestData[,"GBM.step1"] <- TestData[,"GBM"]
-                    if (TRUNC == T) {TestData[,"GBM.step1"] <- trunc(1000*TestData[,"GBM.step1"])}
                     TestData[,"GBM"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"GBM"] <- trunc(1000*TestData[,"GBM"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"GBM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GBM"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("GBM evaluation failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -1005,7 +1020,7 @@
 #        require(gbm, quietly=T)        
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GBMSTEP.OLD) == T) {       
-            tryCatch(results <- gbm.step(data=TrainData, gbm.y=1, gbm.x=GBMSTEP.gbm.x, family="bernoulli",
+            tryCatch(results <- dismo::gbm.step(data=TrainData, gbm.y=1, gbm.x=GBMSTEP.gbm.x, family="bernoulli",
                     site.weights=Yweights, tree.complexity=GBMSTEP.tree.complexity, learning.rate = GBMSTEP.learning.rate, 
                     bag.fraction=GBMSTEP.bag.fraction, step.size=GBMSTEP.step.size, verbose=F, silent=T, plot.main=F),
                 error= function(err) {print(paste("stepwise GBM calibration failed"))},
@@ -1027,19 +1042,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"GBMSTEP.step1"] <- TrainData[,"GBMSTEP"]
-                if (TRUNC == T) {TrainData[,"GBMSTEP.step1"] <- trunc(1000*TrainData[,"GBMSTEP.step1"])}
                 TrainData[,"GBMSTEP"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "GBMSTEP"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"GBMSTEP"] <- trunc(1000*TrainData[,"GBMSTEP"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"GBMSTEP"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GBMSTEP"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["GBMSTEP"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["GBMSTEP"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["GBMSTEP"]))
             weights["GBMSTEP"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1048,13 +1061,11 @@
                 TestData[,"GBMSTEP"] <- predict(object=results, newdata=TestData.vars, n.trees=results$n.trees, type="response")
                 if (PROBIT == T) {
                     TestData[,"GBMSTEP.step1"] <- TestData[,"GBMSTEP"]
-                    if (TRUNC == T) {TestData[,"GBMSTEP.step1"] <- trunc(1000*TestData[,"GBMSTEP.step1"])}
                     TestData[,"GBMSTEP"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"GBMSTEP"] <- trunc(1000*TestData[,"GBMSTEP"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"GBMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GBMSTEP"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("stepwise GBM evaluation failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -1084,7 +1095,7 @@
         cat(paste("\n", mc, ". Random forest algorithm (package: randomForest)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(RF.OLD) == T) {        
-            tryCatch(results <- randomForest(formula=RF.formula, ntree=RF.ntree, mtry=RF.mtry, data=TrainData, na.action=na.omit),
+            tryCatch(results <- randomForest::randomForest(formula=RF.formula, ntree=RF.ntree, mtry=RF.mtry, data=TrainData, na.action=na.omit),
                 error= function(err) {print(paste("random forest calibration failed"))},
                 silent=T)
         }else{ 
@@ -1102,19 +1113,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"RF.step1"] <- TrainData[,"RF"]
-                if (TRUNC == T) {TrainData[,"RF.step1"] <- trunc(1000*TrainData[,"RF.step1"])}
                 TrainData[,"RF"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "RF"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"RF"] <- trunc(1000*TrainData[,"RF"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"RF"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"RF"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["RF"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["RF"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["RF"]))
             weights["RF"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1123,13 +1132,11 @@
                 TestData[,"RF"] <- predict(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
                     TestData[,"RF.step1"] <- TestData[,"RF"]
-                    if (TRUNC == T) {TestData[,"RF.step1"] <- trunc(1000*TestData[,"RF.step1"])}
                     TestData[,"RF"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"RF"] <- trunc(1000*TestData[,"RF"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"RF"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"RF"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("RF evaluation failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -1177,19 +1184,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"GLM.step1"] <- TrainData[,"GLM"]
-                if (TRUNC == T) {TrainData[,"GLM.step1"] <- trunc(1000*TrainData[,"GLM.step1"])}
                 TrainData[,"GLM"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "GLM"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"GLM"] <- trunc(1000*TrainData[,"GLM"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"GLM"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GLM"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["GLM"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["GLM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["GLM"]))
             weights["GLM"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1198,13 +1203,11 @@
                 TestData[,"GLM"] <- predict(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
                     TestData[,"GLM.step1"] <- TestData[,"GLM"]
-                    if (TRUNC == T) {TestData[,"GLM.step1"] <- trunc(1000*TestData[,"GLM.step1"])}
                     TestData[,"GLM"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"GLM"] <- trunc(1000*TestData[,"GLM"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"GLM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GLM"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("GLM evaluation failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -1237,7 +1240,7 @@
             tryCatch(results <- glm(formula=STEP.formula, family=GLM.family, data=TrainData, weights=Yweights, control=glm.control(maxit=maxit)),
                 error= function(err) {print(paste("first step of stepwise GLM calibration failed"))},
                 silent=T)
-            tryCatch(results2 <- stepAIC(results, scope=GLMSTEP.scope, direction="both", trace=F, steps=GLMSTEP.steps, k=GLMSTEP.k),
+            tryCatch(results2 <- MASS::stepAIC(results, scope=GLMSTEP.scope, direction="both", trace=F, steps=GLMSTEP.steps, k=GLMSTEP.k),
                 error= function(err) {print(paste("stepwise GLM calibration failed"))},
                 silent=T)
         }else{ 
@@ -1259,19 +1262,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"GLMSTEP.step1"] <- TrainData[,"GLMSTEP"]
-                if (TRUNC == T) {TrainData[,"GLMSTEP.step1"] <- trunc(1000*TrainData[,"GLMSTEP.step1"])}
                 TrainData[,"GLMSTEP"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "GLMSTEP"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"GLMSTEP"] <- trunc(1000*TrainData[,"GLMSTEP"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"GLMSTEP"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GLMSTEP"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["GLMSTEP"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["GLMSTEP"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["GLMSTEP"]))
             weights["GLMSTEP"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1280,13 +1281,11 @@
                 TestData[,"GLMSTEP"] <- predict(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
                     TestData[,"GLMSTEP.step1"] <- TestData[,"GLMSTEP"]
-                    if (TRUNC == T) {TestData[,"GLMSTEP.step1"] <- trunc(1000*TestData[,"GLMSTEP.step1"])}
                     TestData[,"GLMSTEP"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"GLMSTEP"] <- trunc(1000*TestData[,"GLMSTEP"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"GLMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GLMSTEP"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("stepwise GLM evaluation failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -1315,6 +1314,7 @@
     if (ws["GAM"] > 0 || ws["GAMSTEP"] > 0) {
         cat(paste("\n\n"))
         try(detach(package:mgcv), silent=T)
+        suppressMessages(require(gam))
         require(gam, quietly=T)
     }
     if (ws["GAM"] > 0) {
@@ -1322,7 +1322,7 @@
         cat(paste("\n", mc, ". Generalized Additive Model (package: gam)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GAM.OLD) == T) {
-            tryCatch(results <- gam(formula=GAM.formula, family=GAM.family, data=TrainData, weights=Yweights, control=gam.control(maxit=maxit, bf.maxit=50)),
+            tryCatch(results <- gam::gam(formula=GAM.formula, family=GAM.family, data=TrainData, weights=Yweights, control=gam::gam.control(maxit=maxit, bf.maxit=50)),
                 error= function(err) {print(paste("GAM calibration (gam package) failed"))},
                 silent=T)
         }else{ 
@@ -1340,19 +1340,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"GAM.step1"] <- TrainData[,"GAM"]
-                if (TRUNC == T) {TrainData[,"GAM.step1"] <- trunc(1000*TrainData[,"GAM.step1"])}
                 TrainData[,"GAM"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "GAM"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"GAM"] <- trunc(1000*TrainData[,"GAM"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"GAM"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GAM"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["GAM"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["GAM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["GAM"]))
             weights["GAM"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1361,13 +1359,11 @@
                 TestData[,"GAM"] <- predict(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
                     TestData[,"GAM.step1"] <- TestData[,"GAM"]
-                    if (TRUNC == T) {TestData[,"GAM.step1"] <- trunc(1000*TestData[,"GAM.step1"])}
                     TestData[,"GAM"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"GAM"] <- trunc(1000*TestData[,"GAM"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"GAM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GAM"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("GAM evaluation failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -1397,13 +1393,13 @@
         cat(paste("\n", mc, ". Stepwise Generalized Additive Model (package: gam)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GAMSTEP.OLD) == T) {
-            tryCatch(results <- gam(formula=STEP.formula, family=GAM.family, data=TrainData, weights=Yweights, control=gam.control(maxit=maxit, bf.maxit=50)), 
+            tryCatch(results <- gam::gam(formula=STEP.formula, family=GAM.family, data=TrainData, weights=Yweights, control=gam::gam.control(maxit=maxit, bf.maxit=50)), 
                 error= function(err) {print(paste("first step of stepwise GAM calibration (gam package) failed"))},
                 silent=T)
             assign("TrainData", TrainData, pos=GAMSTEP.pos)
             assign("GAM.family", GAM.family, pos=GAMSTEP.pos)
             assign("maxit", maxit, pos=GAMSTEP.pos)   
-            tryCatch(results2 <- step.gam(results, scope=GAMSTEP.scope, direction="both", trace=F, steps=GAMSTEP.steps), 
+            tryCatch(results2 <- gam::step.gam(results, scope=GAMSTEP.scope, direction="both", trace=F, steps=GAMSTEP.steps), 
                 error= function(err) {print(paste("stepwise GAM calibration (gam package) failed"))},
                 silent=T)
             remove(TrainData, pos=GAMSTEP.pos)
@@ -1428,19 +1424,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"GAMSTEP.step1"] <- TrainData[,"GAMSTEP"]
-                if (TRUNC == T) {TrainData[,"GAMSTEP.step1"] <- trunc(1000*TrainData[,"GAMSTEP.step1"])}
                 TrainData[,"GAMSTEP"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "GAMSTEP"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"GAMSTEP"] <- trunc(1000*TrainData[,"GAMSTEP"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"GAMSTEP"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GAMSTEP"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["GAMSTEP"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["GAMSTEP"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["GAMSTEP"]))
             weights["GAMSTEP"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1449,13 +1443,11 @@
                 TestData[,"GAMSTEP"] <- predict(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
                     TestData[,"GAM.step1"] <- TestData[,"GAM"]
-                    if (TRUNC == T) {TestData[,"GAM.step1"] <- trunc(1000*TestData[,"GAM.step1"])}
                     TestData[,"GAM"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"GAMSTEP"] <- trunc(1000*TestData[,"GAMSTEP"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"GAMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GAMSTEP"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("stepwise GAM evaluation (gam package) failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -1484,15 +1476,17 @@
     if (ws["MGCV"] > 0 || ws["MGCVFIX"] > 0) {
         cat(paste("\n\n"))
         try(detach(package:gam), silent=T)
+        options(warn=-1)
         require(mgcv, quietly=T)
+        options(warn=0)
     }
     if (ws["MGCV"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Generalized Additive Model (package: mgcv)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(MGCV.OLD) == T) {
-            tryCatch(results <- gam(formula=MGCV.formula, family=GAM.family, data=TrainData, weights=Yweights, 
-                        select=MGCV.select, control=gam.control(maxit=maxit)),
+            tryCatch(results <- mgcv::gam(formula=MGCV.formula, family=GAM.family, data=TrainData, weights=Yweights, 
+                        select=MGCV.select, control=mgcv::gam.control(maxit=maxit)),
                 error= function(err) {print(paste("GAM calibration (mgcv package) failed"))},
                 silent=T)
         }else{ 
@@ -1510,19 +1504,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"MGCV.step1"] <- TrainData[,"MGCV"]
-                if (TRUNC == T) {TrainData[,"MGCV.step1"] <- trunc(1000*TrainData[,"MGCV.step1"])}
                 TrainData[,"MGCV"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "MGCV"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"MGCV"] <- trunc(1000*TrainData[,"MGCV"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"MGCV"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"MGCV"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["MGCV"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["MGCV"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["MGCV"]))
             weights["MGCV"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1531,13 +1523,11 @@
                 TestData[,"MGCV"] <- predict.mgcv(object=results, newdata=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"MGCV.step1"] <- TestData[,"MGCV"]
-                    if (TRUNC == T) {TestData[,"MGCV.step1"] <- trunc(1000*TestData[,"MGCV.step1"])}
                     TestData[,"MGCV"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"MGCV"] <- trunc(1000*TestData[,"MGCV"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"MGCV"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MGCV"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("GAM evaluation (mgcv package) failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -1567,7 +1557,7 @@
         cat(paste("\n", mc, ". GAM with fixed d.f. regression splines (package: mgcv)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(MGCVFIX.OLD) == T) {
-            tryCatch(results <- gam(formula=MGCVFIX.formula, family=GAM.family, data=TrainData, weights=Yweights, select=FALSE, control=gam.control(maxit=maxit)),
+            tryCatch(results <- mgcv::gam(formula=MGCVFIX.formula, family=GAM.family, data=TrainData, weights=Yweights, select=FALSE, control=mgcv::gam.control(maxit=maxit)),
                 error= function(err) {print(paste("GAM calibration with fixed d.f. regression splines (mgcv package) failed"))},
                 silent=T)
         }else{ 
@@ -1585,19 +1575,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"MGCVFIX.step1"] <- TrainData[,"MGCVFIX"]
-                if (TRUNC == T) {TrainData[,"MGCVFIX.step1"] <- trunc(1000*TrainData[,"MGCVFIX.step1"])}
                 TrainData[,"MGCVFIX"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "MGCVFIX"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"MGCVFIX"] <- trunc(1000*TrainData[,"MGCVFIX"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"MGCVFIX"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"MGCVFIX"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["MGCVFIX"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["MGCVFIX"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["MGCVFIX"]))
             weights["MGCVFIX"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1606,13 +1594,11 @@
                 TestData[,"MGCVFIX"] <- predict.mgcv(object=results, newdata=TestData)
                 if (PROBIT == T) {
                     TestData[,"MGCVFIX.step1"] <- TestData[,"MGCVFIX"]
-                    if (TRUNC == T) {TestData[,"MGCVFIX.step1"] <- trunc(1000*TestData[,"MGCVFIX.step1"])}
                     TestData[,"MGCVFIX"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"MGCVFIX"] <- trunc(1000*TestData[,"MGCVFIX"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"MGCVFIX"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MGCVFIX"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("GAMFIX evaluation (mgcv package) failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -1645,7 +1631,7 @@
         } 
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(EARTH.OLD) == T) {
-            tryCatch(results <- earth(formula=EARTH.formula, glm=EARTH.glm, data=TrainData, degree=2),
+            tryCatch(results <- earth::earth(formula=EARTH.formula, glm=EARTH.glm, data=TrainData, degree=2),
                 error= function(err) {print(paste("MARS calibration (earth package) failed"))},
                 silent=T)
         }else{ 
@@ -1663,19 +1649,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"EARTH.step1"] <- TrainData[,"EARTH"]
-                if (TRUNC == T) {TrainData[,"EARTH.step1"] <- trunc(1000*TrainData[,"EARTH.step1"])}
                 TrainData[,"EARTH"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "EARTH"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"EARTH"] <- trunc(1000*TrainData[,"EARTH"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"EARTH"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"EARTH"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["EARTH"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["EARTH"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["EARTH"]))
             weights["EARTH"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1684,13 +1668,11 @@
                 TestData[,"EARTH"] <- predict.earth2(object=results, newdata=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"EARTH.step1"] <- TestData[,"EARTH"]
-                    if (TRUNC == T) {TestData[,"EARTH.step1"] <- trunc(1000*TestData[,"EARTH.step1"])}
                     TestData[,"EARTH"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"EARTH"] <- trunc(1000*TestData[,"EARTH"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"EARTH"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"EARTH"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("MARS evaluation (earth package) failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -1720,8 +1702,8 @@
         cat(paste("\n", mc, ". Recursive Partitioning And Regression Trees (package: rpart)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(RPART.OLD) == T) {
-            tryCatch(results <- rpart(formula=RPART.formula, data=TrainData, weights=Yweights,
-                    control=rpart.control(xval=RPART.xval, minbucket=5, minsplit=5, cp=0.001, maxdepth=25)),
+            tryCatch(results <- rpart::rpart(formula=RPART.formula, data=TrainData, weights=Yweights,
+                    control=rpart::rpart.control(xval=RPART.xval, minbucket=5, minsplit=5, cp=0.001, maxdepth=25)),
                 error= function(err) {print(paste("RPART calibration failed"))},
                 silent=T)
         }else{ 
@@ -1739,19 +1721,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"RPART.step1"] <- TrainData[,"RPART"]
-                if (TRUNC == T) {TrainData[,"RPART.step1"] <- trunc(1000*TrainData[,"RPART.step1"])}
                 TrainData[,"RPART"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "RPART"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"RPART"] <- trunc(1000*TrainData[,"RPART"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"RPART"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"RPART"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["RPART"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["RPART"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["RPART"]))
             weights["RPART"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1760,17 +1740,15 @@
                 TestData[,"RPART"] <- predict(object=results, newdata=TestData.vars, type="prob")[,2]
                 if (PROBIT == T) {
                     TestData[,"RPART.step1"] <- TestData[,"RPART"]
-                    if (TRUNC == T) {TestData[,"RPART.step1"] <- trunc(1000*TestData[,"RPART.step1"])}
                     TestData[,"RPART"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"RPART"] <- trunc(1000*TestData[,"RPART"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"RPART"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"RPART"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("RPART evaluation failed"))},
                     silent=F)
                 if (is.null(TestPres) == F && is.null(TestAbs) == F) {
-                    eval2 <-  evaluate(p=TestPres, a=TestAbs)
+                    eval2 <-  dismo::evaluate(p=TestPres, a=TestAbs)
                     print(eval2)
                     weights["RPART"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
@@ -1797,7 +1775,7 @@
         cat(paste("\n", mc, ". Artificial Neural Network (package: nnet)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(NNET.OLD) == T) {
-            tryCatch(results <- nnet(formula=NNET.formula, size=NNET.size, decay=NNET.decay, data=TrainData, weights=Yweights, 
+            tryCatch(results <- nnet::nnet(formula=NNET.formula, size=NNET.size, decay=NNET.decay, data=TrainData, weights=Yweights, 
                     rang=0.1, maxit=maxit, trace=F),
                 error= function(err) {print(paste("ANN calibration (nnet package) failed"))},
                 silent=T)
@@ -1816,19 +1794,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"NNET.step1"] <- TrainData[,"NNET"]
-                if (TRUNC == T) {TrainData[,"NNET.step1"] <- trunc(1000*TrainData[,"NNET.step1"])}
                 TrainData[,"NNET"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "NNET"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"NNET"] <- trunc(1000*TrainData[,"NNET"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"NNET"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"NNET"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["NNET"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["NNET"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["NNET"]))
             weights["NNET"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1837,13 +1813,11 @@
                 TestData[,"NNET"] <- predict.nnet2(object=results, newdata=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"NNET.step1"] <- TestData[,"NNET"]
-                    if (TRUNC == T) {TestData[,"NNET.step1"] <- trunc(1000*TestData[,"NNET.step1"])}
                     TestData[,"NNET"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"NNET"] <- trunc(1000*TestData[,"NNET"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"NNET"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"NNET"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("ANN evaluation (nnet package) failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -1873,7 +1847,7 @@
         cat(paste("\n", mc, ". Flexible Discriminant Analysis (package: mda)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(FDA.OLD) == T) {
-            tryCatch(results <- fda(formula=FDA.formula, method=mars, data=TrainData, weights=Yweights),
+            tryCatch(results <- mda::fda(formula=FDA.formula, method=mda::mars, data=TrainData, weights=Yweights),
                 error= function(err) {print(paste("FDA calibration failed"))},
                 silent=T)
         }else{ 
@@ -1891,19 +1865,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"FDA.step1"] <- TrainData[,"FDA"]
-                if (TRUNC == T) {TrainData[,"FDA.step1"] <- trunc(1000*TrainData[,"FDA.step1"])}
                 TrainData[,"FDA"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "FDA"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"FDA"] <- trunc(1000*TrainData[,"FDA"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"FDA"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"FDA"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["FDA"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["FDA"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["FDA"]))
             weights["FDA"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1912,13 +1884,11 @@
                 TestData[,"FDA"] <- predict(object=results, newdata=TestData.vars, type="posterior")[,2]
                 if (PROBIT == T) {
                     TestData[,"FDA.step1"] <- TestData[,"FDA"]
-                    if (TRUNC == T) {TestData[,"FDA.step1"] <- trunc(1000*TestData[,"FDA.step1"])}
                     TestData[,"FDA"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"FDA"] <- trunc(1000*TestData[,"FDA"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"FDA"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"FDA"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("FDA evaluation failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -1949,7 +1919,7 @@
         cat(paste("\n\n"))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(SVM.OLD) == T) {
-            tryCatch(results <- ksvm(SVM.formula, data=TrainData, type="C-svc", prob.model=T),
+            tryCatch(results <- kernlab::ksvm(SVM.formula, data=TrainData, type="C-svc", prob.model=T),
                 error= function(err) {print(paste("SVM calibration failed"))},
                 silent=T)
         }else{ 
@@ -1967,19 +1937,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"SVM.step1"] <- TrainData[,"SVM"]
-                if (TRUNC == T) {TrainData[,"SVM.step1"] <- trunc(1000*TrainData[,"SVM.step1"])}
                 TrainData[,"SVM"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "SVM"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"SVM"] <- trunc(1000*TrainData[,"SVM"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"SVM"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"SVM"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["SVM"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["SVM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["SVM"]))
             weights["SVM"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1988,13 +1956,11 @@
                 TestData[,"SVM"] <- kernlab::predict(object=results, newdata=TestData.vars, type="probabilities")[,2]
                 if (PROBIT == T) {
                     TestData[,"SVM.step1"] <- TestData[,"SVM"]
-                    if (TRUNC == T) {TestData[,"SVM.step1"] <- trunc(1000*TestData[,"SVM.step1"])}
                     TestData[,"SVM"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"SVM"] <- trunc(1000*TestData[,"SVM"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"SVM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"SVM"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("SVM evaluation (kernlab package) failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -2024,7 +1990,7 @@
         cat(paste("\n", mc, ". Support Vector Machines (package: e1071)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(SVME.OLD) == T) {
-            tryCatch(results <- svm(SVME.formula, data=TrainData, type="C-classification", kernel="polynomial", degree=3, probability=TRUE),
+            tryCatch(results <- e1071::svm(SVME.formula, data=TrainData, type="C-classification", kernel="polynomial", degree=3, probability=TRUE),
                 error= function(err) {print(paste("SVM calibration (e1071 package) failed"))},
                 silent=T)
         }else{ 
@@ -2042,19 +2008,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"SVME.step1"] <- TrainData[,"SVME"]
-                if (TRUNC == T) {TrainData[,"SVME.step1"] <- trunc(1000*TrainData[,"SVME.step1"])}
                 TrainData[,"SVME"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "SVME"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"SVME"] <- trunc(1000*TrainData[,"SVME"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"SVME"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"SVME"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["SVME"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["SVME"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["SVME"]))
             weights["SVME"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -2063,13 +2027,11 @@
                 TestData[,"SVME"] <- predict.svme(model=results, newdata=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"SVME.step1"] <- TestData[,"SVME"]
-                    if (TRUNC == T) {TestData[,"SVME.step1"] <- trunc(1000*TestData[,"SVME.step1"])}
                     TestData[,"SVME"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"SVME"] <- trunc(1000*TestData[,"SVME"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"SVME"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"SVME"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("SVM evaluation (e1071 package) failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -2115,7 +2077,7 @@
         cat(paste("\n", mc, ". BIOCLIM algorithm (package: dismo)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(BIOCLIM.OLD) == T) {
-            tryCatch(results <- bioclim(x=TrainData.pres),
+            tryCatch(results <- dismo::bioclim(x=TrainData.pres),
                 error= function(err) {print(paste("BIOCLIM calibration failed"))},
                 silent=T)
         }else{ 
@@ -2133,19 +2095,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"BIOCLIM.step1"] <- TrainData[,"BIOCLIM"]
-                if (TRUNC == T) {TrainData[,"BIOCLIM.step1"] <- trunc(1000*TrainData[,"BIOCLIM.step1"])}
                 TrainData[,"BIOCLIM"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "BIOCLIM"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"BIOCLIM"] <- trunc(1000*TrainData[,"BIOCLIM"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"BIOCLIM"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"BIOCLIM"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["BIOCLIM"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["BIOCLIM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["BIOCLIM"]))
             weights["BIOCLIM"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -2154,13 +2114,11 @@
                 TestData[,"BIOCLIM"] <- dismo::predict(object=results, x=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"BIOCLIM.step1"] <- TestData[,"BIOCLIM"]
-                    if (TRUNC == T) {TestData[,"BIOCLIM.step1"] <- trunc(1000*TestData[,"BIOCLIM.step1"])}
                     TestData[,"BIOCLIM"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"BIOCLIM"] <- trunc(1000*TestData[,"BIOCLIM"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"BIOCLIM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"BIOCLIM"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("BIOCLIM evaluation failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -2189,7 +2147,7 @@
         cat(paste("\n", mc, ". DOMAIN algorithm (package: dismo)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(DOMAIN.OLD) == T) {
-            tryCatch(results <- domain(x=TrainData.pres),
+            tryCatch(results <- dismo::domain(x=TrainData.pres),
                 error= function(err) {print(paste("DOMAIN calibration failed"))},
                 silent=T)
         }else{ 
@@ -2207,19 +2165,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"DOMAIN.step1"] <- TrainData[,"DOMAIN"]
-                if (TRUNC == T) {TrainData[,"DOMAIN.step1"] <- trunc(1000*TrainData[,"DOMAIN.step1"])}
                 TrainData[,"DOMAIN"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "DOMAIN"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"DOMAIN"] <- trunc(1000*TrainData[,"DOMAIN"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"DOMAIN"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"DOMAIN"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["DOMAIN"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["DOMAIN"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["DOMAIN"]))
             weights["DOMAIN"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -2228,13 +2184,11 @@
                 TestData[,"DOMAIN"] <- dismo::predict(object=results, x=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"DOMAIN.step1"] <- TestData[,"DOMAIN"]
-                    if (TRUNC == T) {TestData[,"DOMAIN.step1"] <- trunc(1000*TestData[,"DOMAIN.step1"])}
                     TestData[,"DOMAIN"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"DOMAIN"] <- trunc(1000*TestData[,"DOMAIN"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"DOMAIN"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"DOMAIN"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("DOMAIN evaluation failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -2263,7 +2217,7 @@
         cat(paste("\n", mc, ". Mahalanobis algorithm (package: dismo)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(MAHAL.OLD) == T) {
-            tryCatch(results <- mahal(x=TrainData.pres),
+            tryCatch(results <- dismo::mahal(x=TrainData.pres),
                 error= function(err) {print(paste("Mahalanobis calibration failed"))},
                 silent=T)
         }else{ 
@@ -2281,19 +2235,17 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"MAHAL.step1"] <- TrainData[,"MAHAL"]
-                if (TRUNC == T) {TrainData[,"MAHAL.step1"] <- trunc(1000*TrainData[,"MAHAL.step1"])}
                 TrainData[,"MAHAL"] <- predict(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "MAHAL"]
             pred1[pred1 == 0] <- 0.0000000001
             pred1[pred1 == 1] <- 0.9999999999
-            cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            if (TRUNC == T) {TrainData[,"MAHAL"] <- trunc(1000*TrainData[,"MAHAL"])}
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
             TrainPres <- TrainData[TrainData[,"pb"]==1,"MAHAL"]
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"MAHAL"]
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["MAHAL"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["MAHAL"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["MAHAL"]))
             weights["MAHAL"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -2302,13 +2254,11 @@
                 TestData[,"MAHAL"] <- predict.mahal(model=results, newdata=TestData.vars, MAHAL.shape=MAHAL.shape)
                 if (PROBIT == T) {
                     TestData[,"MAHAL.step1"] <- TestData[,"MAHAL"]
-                    if (TRUNC == T) {TestData[,"MAHAL.step1"] <- trunc(1000*TestData[,"MAHAL.step1"])}
                     TestData[,"MAHAL"] <- predict(object=results2, newdata=TestData, type="response")
                 }
-                if (TRUNC == T) {TestData[,"MAHAL"] <- trunc(1000*TestData[,"MAHAL"])}
                 TestPres <- TestData[TestData[,"pb"]==1,"MAHAL"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MAHAL"]
-                tryCatch(eval2 <- evaluate(p=TestPres, a=TestAbs),
+                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
                     error= function(err) {print(paste("MAHAL evaluation failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -2338,27 +2288,27 @@
         cat(paste("\n", mc, ". geoDist algorithm (package: dismo)\n", sep=""))
         eval1 <- eval2 <- results <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GEODIST.OLD) == T) {
-            tryCatch(results <- geoDist(p=p, lonlat=TRUE),
+            tryCatch(results <- dismo::geoDist(p=p, lonlat=TRUE),
                 error= function(err) {print(paste("GEODIST calibration failed"))},
                 silent=F)
         }else{ 
             results <- GEODIST.OLD
         }
         if (is.null(results) == F) {
-            NAmask <- crop(x[[1]], x[[1]])
+            NAmask <- raster::crop(x[[1]], x[[1]])
             fullname <- paste("models/", species.name, "_GEO", sep="")
             pgeo <- dismo::predict(object=results, x=NAmask, mask=TRUE, 
                  filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)
             cat(paste("\n", "Evaluation with calibration data","\n\n",sep = ""))
-            pres_geo <- extract(pgeo, p)
-            abs_geo <- extract(pgeo, a)
-            eval1 <- evaluate(p=pres_geo, a=abs_geo, tr=quantile(pgeo, na.rm=T, probs=c(1:50/50), names=F))
+            pres_geo <- raster::extract(pgeo, p)
+            abs_geo <- raster::extract(pgeo, a)
+            eval1 <- dismo::evaluate(p=pres_geo, a=abs_geo, tr=quantile(pgeo, na.rm=T, probs=c(1:50/50), names=F))
             print(eval1)
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n","\n", sep = ""))
-                prest_geo <- extract(pgeo, pt)
-                abst_geo <- extract(pgeo, at)
-                tryCatch(eval2 <- evaluate(p=prest_geo, a=abst_geo, tr=quantile(pgeo, na.rm=T, probs=c(1:50/50), names=F)),
+                prest_geo <- raster::extract(pgeo, pt)
+                abst_geo <- raster::extract(pgeo, at)
+                tryCatch(eval2 <- dismo::evaluate(p=prest_geo, a=abst_geo, tr=quantile(pgeo, na.rm=T, probs=c(1:50/50), names=F)),
                     error= function(err) {print(paste("GEODIST evaluation failed"))},
                     silent=F)
                 if (is.null(eval2) == F) {
@@ -2433,10 +2383,8 @@
             ws["SVM"]*TrainData[,"SVM"] + ws["SVME"]*TrainData[,"SVME"] + ws["BIOCLIM"]*TrainData[,"BIOCLIM"] +
             ws["DOMAIN"]*TrainData[,"DOMAIN"] + ws["MAHAL"]*TrainData[,"MAHAL"]
         pred1 <- TrainData[, "ENSEMBLE"]
-        if (TRUNC == T) {pred1 <- pred1/1000}
         pred1[pred1 == 0] <- 0.0000000001
         pred1[pred1 == 1] <- 0.9999999999
-        if (TRUNC == T) {TrainData[,"ENSEMBLE"] <- trunc(TrainData[,"ENSEMBLE"])}
         if (no.tests == F) {
             TestData[,"ENSEMBLE"] <- ws["MAXENT"]*TestData[,"MAXENT"] + ws["GBM"]*TestData[,"GBM"] +
                 ws["GBMSTEP"]*TestData[,"GBMSTEP"] + ws["RF"]*TestData[,"RF"] + ws["GLM"]*TestData[,"GLM"] +
@@ -2445,21 +2393,20 @@
                 ws["RPART"]*TestData[,"RPART"] + ws["NNET"]*TestData[,"NNET"] + ws["FDA"]*TestData[,"FDA"] +
                 ws["SVM"]*TestData[,"SVM"] + ws["SVME"]*TestData[,"SVME"] + ws["BIOCLIM"]*TestData[,"BIOCLIM"] +
                 ws["DOMAIN"]*TestData[,"DOMAIN"] + ws["MAHAL"]*TestData[,"MAHAL"]
-            if (TRUNC == T) {TestData[,"ENSEMBLE"] <- trunc(TestData[,"ENSEMBLE"])}
         }
         mc <- mc+1
         cat(paste("\n\n", mc, ". Ensemble algorithm\n", sep=""))
         eval1 <- eval2 <- NULL
         cat(paste("\n", "Ensemble evaluation with calibration data", "\n\n", sep = ""))
-        cat(paste("Residual deviance (dismo package): ", calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
+        cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
         TrainPres <- as.numeric(TrainData[TrainData[,"pb"]==1,"ENSEMBLE"])
         TrainAbs <- as.numeric(TrainData[TrainData[,"pb"]==0,"ENSEMBLE"])
         if (sum(TrainPres, na.rm=T) <= 0 || sum(TrainAbs, na.rm=T) <= 0) {
             cat(paste("\n", "NOTE: not possible to evaluate the ensemble model since calibration probabilities not available", "\n", sep = ""))
         }else{
-            eval1 <- evaluate(p=TrainPres, a=TrainAbs)
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["ENSEMBLE"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["ENSEMBLE"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["ENSEMBLE"]))
             if (models.keep == T) {models$thresholds <- thresholds}
@@ -2470,7 +2417,7 @@
                 if (sum(TestPres, na.rm=T) <= 0 || sum(TestAbs, na.rm=T) <= 0) {
                     cat(paste("\n", "NOTE: not possible to evaluate the ensemble model since evaluation probabilities not available", "\n", sep = ""))
                 }else{
-                    eval2 <- evaluate(p=TestPres, a=TestAbs)
+                    eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                     print(eval2)
                     if(PLOTS==T) {
                         plot(eval2, "ROC") 

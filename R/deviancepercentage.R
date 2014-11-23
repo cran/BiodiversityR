@@ -3,7 +3,7 @@ function(x,data,test="F",digits=2){
     nexpl <- x$deviance
     tot <- x$null.deviance
     expl <- tot-nexpl
-    ratio <- round((expl/tot*100),digits=digits)
+    ratio <- round((expl/tot*100),digits=1)
     expl <- round(expl,digits=digits)
     tot <- round(tot,digits=digits)
     cat("Deviance explained: ",expl,"/",tot,"(",ratio, "percent)\n\n")

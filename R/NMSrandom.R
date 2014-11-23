@@ -4,8 +4,8 @@ function(x,perm=100,k=2,stressresult=F,method="isoMDS"){
     minstress <- 100
     stress <- array(dim=perm)
     for (j in 1:perm) {
-        if (method=="isoMDS") {result <- isoMDS(x,initMDS(x,k=k),k=k,maxit=1000,trace=F)}
-        if (method=="sammon") {result <- sammon(x,initMDS(x,k=k),k=k,niter=1000,trace=F)}
+        if (method=="isoMDS") {result <- MASS::isoMDS(x,initMDS(x,k=k),k=k,maxit=1000,trace=F)}
+        if (method=="sammon") {result <- MASS::sammon(x,initMDS(x,k=k),k=k,niter=1000,trace=F)}
         stress[j] <- result$stress
         if (result$stress < minstress) {
             minstress <- result$stress

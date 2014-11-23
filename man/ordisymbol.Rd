@@ -81,7 +81,7 @@ distmatrix <- vegdist(dune, method='bray')
 cluster <- hclust(distmatrix, method='single')
 ordicluster2(plot2, cluster)
 ordinearest(plot2, distmatrix, col=2)
-ordivector(plot2, "Agrsto", lty=2)
+ordivector(plot2, "Agrostol", lty=2)
 }
 
 \keyword{multivariate} 

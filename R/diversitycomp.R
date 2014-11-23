@@ -10,8 +10,12 @@ function(x,y="",factor1,factor2="",index="Shannon",method="all",sortit=F,...) {
         names(dimnames(result)) <- c(factor1,"")
         for (i in 1:m) {
             if (method=="all"  || method=="mean"  || method=="sd") {result[i,2] <- diversityresult(x,y,factor1,level=levels[i],method=method,index=index,...)[1,1]}
-            if (method=="jackknife") {result[i,2] <- diversityresult(x,y,factor1,level=levels[i],method=method,index=index,...)$jack.estimate}
-            if (method!="all" && method!="mean" && method!="sd" && method!="jackknife") {stop(paste("method is not allowed for this function"))}
+            if (method=="jackknife") {
+                resultx <- list(jack.values=NA, jack.estimate=NA)
+                resultx <- diversityresult(x, y, factor1, level=levels[i], method="jackknife", index=index,...)
+                if (is.na(resultx$jack.estimate) == F) {result[i,2] <- resultx$jack.estimate}
+            }
+            if (method!="all" && method!="mean" && method!="sd" && method!="jackknife") {stop(paste("method ", method, " is not allowed for diversitycomp function", sep=""))}
         }
         if (sortit==T) {
             result2 <- result
@@ -38,7 +42,7 @@ function(x,y="",factor1,factor2="",index="Shannon",method="all",sortit=F,...) {
             y1 <- y[subs,,drop=F]
             for (i in 1:m2) {
                 if (method=="all" || method=="mean"  || method=="sd") {result[j,i,2] <- diversityresult(x1,y1,factor2,level=levels2[i],method=method,index=index,...)[1,1]}
-                if (method=="jackknife") {result[j,i,2] <- diversityresult(x1,y1,factor2,level=levels2[i],method=method,index=index,...)$jack.estimate}
+                if (method!="all" && method!="mean" && method!="sd") {stop(paste("method ", method, " is not allowed for diversitycomp function", sep=""))}
             }
         }
         return(result)

@@ -1,7 +1,6 @@
 `ensemble.test.splits` <- function(
     x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, ext=NULL, k=5, 
     TrainData=NULL,
-    TRUNC=TRUE,
     VIF=FALSE, COR=FALSE,
     SINK=FALSE, PLOTS=FALSE, 
     data.keep=FALSE,
@@ -48,7 +47,7 @@
 #
     if (is.null(layer.drops) == F) {
         layer.drops <- as.character(layer.drops)
-        if (is.null(x)==F) {x <- dropLayer(x, which(names(x) %in% layer.drops))}
+        if (is.null(x)==F) {x <- raster::dropLayer(x, which(names(x) %in% layer.drops))}
         factors <- as.character(factors)
         dummy.vars <- as.character(dummy.vars)
         nd <- length(layer.drops)
@@ -103,7 +102,6 @@
     tests <- ensemble.test(x=x, ext=ext,
         p=p, a=a, an=an, excludep=excludep, k=0, 
         TrainData=TrainData, 
-        TRUNC=TRUNC,
         VIF=F, COR=F,
         PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
         AUC.weights=F, ENSEMBLE.tune=F,
@@ -139,10 +137,10 @@
     if (length(factors2) > 0) {
         p.all <- tests$evaluations$p
         a.all <- tests$evaluations$a
-        groupp <- kfold(p.all, k=k)
-        groupa <- kfold(a.all, k=k)
+        groupp <- dismo::kfold(p.all, k=k)
+        groupa <- dismo::kfold(a.all, k=k)
     }else{
-        groupd <- kfold(TrainData1, k=k, by=TrainData1[,"pb"])
+        groupd <- dismo::kfold(TrainData1, k=k, by=TrainData1[,"pb"])
     }
 
 # Start cross-validations
@@ -159,7 +157,6 @@
             tests <- ensemble.test(x=x, ext=ext,
                 TrainData=NULL, TestData=NULL,
                 p=p1, a=a1, pt=p2, at=a2,
-                TRUNC=TRUNC,
                 VIF=VIF, COR=COR,
                 threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity,
                 PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
@@ -202,7 +199,6 @@
 
             tests <- ensemble.test(x=x, ext=ext,
                 TrainData=TrainData2, TestData=TestData2,
-                TRUNC=TRUNC,
                 VIF=VIF, COR=COR,
                 threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity,
                 PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
@@ -290,7 +286,10 @@
     if(ENSEMBLE.tune == T) {
         output[,2*k+2] <- rowMeans(output[,c((k+2):(2*k+1))], na.rm=T)
         output[is.na(output[,2*k+2]),(2*k+2)] <- 0
+        output.weights.T <- output[,"MEAN.T"]
+        output.weights.T <- output.weights.T[names(output.weights.T) != "ENSEMBLE"]
     }
+#
     output.weights <- output[,"MEAN"]
     output.weights <- output.weights[names(output.weights) != "ENSEMBLE"]
     output.weights <- ensemble.weights(output.weights, exponent=1, best=0, min.weight=0)
@@ -301,6 +300,37 @@
         cat(paste("column MEAN shows the mean of these weights", "\n\n", sep = ""))
     }
     print(output)
+#
+    if(ENSEMBLE.tune == T) {
+        cat(paste("\n", "suggested input weights for ensemble modelling (based on MEAN.T column)",  sep = ""))
+        cat(paste("\n", "ENSEMBLE.exponent=2; ENSEMBLE.best=0; ENSEMBLE.min=0.7",  "\n\n", sep = ""))
+        output.weights.T <- ensemble.weights(weights=output.weights.T, exponent=2, best=0, min.weight=0.7)
+        print(output.weights.T)
+    # test with suggested weights
+        output3 <- numeric(length=k+1)
+        names(output3)[1:k] <- paste("T_", c(1:k), sep="")
+        names(output3)[k+1] <- c("MEAN.T")
+        ws <- output.weights.T
+        for (i in 1:k) {
+            TestData <- TestData.all[[i]]
+            TestData[,"ENSEMBLE"] <- ws["MAXENT"]*TestData[,"MAXENT"] + ws["GBM"]*TestData[,"GBM"] +
+                ws["GBMSTEP"]*TestData[,"GBMSTEP"] + ws["RF"]*TestData[,"RF"] + ws["GLM"]*TestData[,"GLM"] +
+                ws["GLMSTEP"]*TestData[,"GLMSTEP"] + ws["GAM"]*TestData[,"GAM"] + ws["GAMSTEP"]*TestData[,"GAMSTEP"] +
+                ws["MGCV"]*TestData[,"MGCV"] + ws["MGCVFIX"]*TestData[,"MGCVFIX"] + ws["EARTH"]*TestData[,"EARTH"] +
+                ws["RPART"]*TestData[,"RPART"] + ws["NNET"]*TestData[,"NNET"] + ws["FDA"]*TestData[,"FDA"] +
+                ws["SVM"]*TestData[,"SVM"] + ws["SVME"]*TestData[,"SVME"] + ws["BIOCLIM"]*TestData[,"BIOCLIM"] +
+                ws["DOMAIN"]*TestData[,"DOMAIN"] + ws["MAHAL"]*TestData[,"MAHAL"]
+            eval1 <- eval2 <- NULL
+            TestPres <- as.numeric(TestData[TestData[,"pb"]==1,"ENSEMBLE"])
+            TestAbs <- as.numeric(TestData[TestData[,"pb"]==0,"ENSEMBLE"])
+            eval1 <- dismo::evaluate(p=TestPres, a=TestAbs)
+            output3[i] <- eval1@auc
+        }
+        output3[k+1] <- mean(output3[1:k])
+        cat(paste("\n", "AUC for ensemble models based on suggested input weights",  "\n\n", sep = ""))
+        print(output3)
+    }
+#
     cat(paste("\n", "suggested input weights for ensemble modelling (based on MEAN column)",  "\n\n", sep = ""))
     print(output.weights)
     cat(paste("\n", "Minimum input weight is 0.05", "\n", sep=""))
@@ -310,8 +340,9 @@
     print(output.weights)
 
 # test with suggested weights
-    output2 <- numeric(length=k)
-    names(output2) <- paste("T_", c(1:k), sep="")
+    output2 <- numeric(length=k+1)
+    names(output2)[1:k] <- paste("T_", c(1:k), sep="")
+    names(output2)[k+1] <- c("MEAN.T")
     ws <- output.weights
     for (i in 1:k) {
         TestData <- TestData.all[[i]]
@@ -322,22 +353,27 @@
             ws["RPART"]*TestData[,"RPART"] + ws["NNET"]*TestData[,"NNET"] + ws["FDA"]*TestData[,"FDA"] +
             ws["SVM"]*TestData[,"SVM"] + ws["SVME"]*TestData[,"SVME"] + ws["BIOCLIM"]*TestData[,"BIOCLIM"] +
             ws["DOMAIN"]*TestData[,"DOMAIN"] + ws["MAHAL"]*TestData[,"MAHAL"]
-        TestData[,"ENSEMBLE"] <- trunc(TestData[,"ENSEMBLE"])
         eval1 <- eval2 <- NULL
         TestPres <- as.numeric(TestData[TestData[,"pb"]==1,"ENSEMBLE"])
         TestAbs <- as.numeric(TestData[TestData[,"pb"]==0,"ENSEMBLE"])
-        eval1 <- evaluate(p=TestPres, a=TestAbs)
+        eval1 <- dismo::evaluate(p=TestPres, a=TestAbs)
         output2[i] <- eval1@auc
     }
+    output2[k+1] <- mean(output2[1:k])
     cat(paste("\n", "AUC for ensemble models based on suggested input weights",  "\n\n", sep = ""))
     print(output2)
     if (SINK==T && OLD.SINK==F) {sink(file=NULL, append=T)}
     if (data.keep == F) {
         cat(paste("\n\n"))
-        return(list(table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, call=match.call()))
+        return(list(table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, 
+            output.weights.AUC=output.weights.T, AUC.with.suggested.weights2=output3, 
+            call=match.call()))
     }else{
         cat(paste("\n", "(note that output data are integer values representing probabilities multiplied by 1000)",  "\n\n", sep = ""))
-        return(list(table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, data=TestData.all, call=match.call()))
+        return(list(table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, 
+            output.weights.AUC=output.weights.T, AUC.with.suggested.weights.T=output3, 
+            data=TestData.all, call=match.call()))
     }
 }
+
 

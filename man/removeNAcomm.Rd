@@ -31,11 +31,13 @@ subsetcomm(x, y, factor, level, returncomm = TRUE)
 #ifdef windows
 import.from.Excel(file = file.choose(), data.type = "community", sheet = NULL, 
     sitenames = "sites", column = "species", value = "abundance", 
-    factor = "", level = "", cepnames = FALSE)
+    factor = "", level = "", cepnames = FALSE,
+    write.csv = FALSE, csv.file = paste(data.type, ".csv", sep=""))
 
 import.from.Excel2007(file = file.choose(), data.type = "community", sheet = NULL, 
     sitenames = "sites", column = "species", value = "abundance", 
-    factor = "", level = "", cepnames = FALSE)
+    factor = "", level = "", cepnames = FALSE,
+    write.csv = FALSE, csv.file = paste(data.type, ".csv", sep=""))
 
 import.from.Access(file = file.choose(), data.type = "community", table = NULL, 
     sitenames = "sites", column = "species", value = "abundance", 
@@ -45,6 +47,7 @@ import.from.Access2007(file = file.choose(), data.type = "community", table = NU
     sitenames = "sites", column = "species", value = "abundance", 
     factor = "", level = "", cepnames = FALSE)
 #endif
+
 }
 
 \arguments{
@@ -66,6 +69,8 @@ import.from.Access2007(file = file.choose(), data.type = "community", table = NU
   \item{column}{ Name of the categorical variable for the columns of the crosstabulation (typically indicating species); passed to \code{\link{makecommunitydataset}}. }
   \item{value}{ Name of numerical variable for the cells of the crosstabulation (typically indicating abundance). The cells provide the sum of all values in the data frame; passed to \code{\link{makecommunitydataset}}. }
   \item{cepnames}{ Should the names of columns be abbreviated via \code{\link[vegan]{make.cepnames}} (TRUE) or not (FALSE). }
+  \item{write.csv}{ Create a comma-delimited text file in the working directory (if \code{TRUE}). }
+  \item{csv.file}{ Name of the comma-delimited text file to be created. }
 #endif
 
 

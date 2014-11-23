@@ -7,7 +7,7 @@
     if(inherits(xcat,"RasterLayer") == F) {stop("parameter xcat is expected to be a RasterLayer")}
 
 # get all categories of the layer
-    freqs <- freq(xcat)
+    freqs <- raster::freq(xcat)
     freqs <- freqs[is.na(freqs[,1])==F, ]
     all.categories <- freqs[,1]
     replace.frame <- data.frame(id=all.categories, v=rep(0, length(all.categories)))
@@ -34,16 +34,16 @@
 # filename of original layer
 
     if (! require(tools)) {stop("tools package not available")}
-    filename1 <- filename(xcat)
-    extension1 <- paste(".", file_ext(filename1),sep="")
+    filename1 <- raster::filename(xcat)
+    extension1 <- paste(".", tools::file_ext(filename1),sep="")
 
 # create the new layers
     for (i in 1:length(new.categories)) {
-        extension2 <- paste("_", new.categories[i], ".", file_ext(filename1), sep="")
+        extension2 <- paste("_", new.categories[i], ".", tools::file_ext(filename1), sep="")
         filename2 <- gsub(pattern=extension1, replacement=extension2, x=filename1)
 
 # use working file to be able to change names
-        extension3 <- paste("_working.", file_ext(filename1), sep="")
+        extension3 <- paste("_working.", tools::file_ext(filename1), sep="")
         filename3 <- gsub(pattern=extension1, replacement=extension3, x=filename1)
         replace.frame1 <- replace.frame
         replace.frame1[replace.frame1[,1]==new.categories[i], 2] <- 1
@@ -51,7 +51,7 @@
         names(replace.frame1)[2] <- new.name
         new.x <- raster::subs(xcat, replace.frame1, by="id", which=new.name, subsWithNA=TRUE, filename=filename3, overwrite=overwrite, ...)
         names(new.x) <- new.name
-        writeRaster(new.x, filename=filename2, overwrite=overwrite, ...)
+        raster::writeRaster(new.x, filename=filename2, overwrite=overwrite, ...)
     }
 
 # remove the working file

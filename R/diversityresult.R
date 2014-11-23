@@ -1,20 +1,6 @@
 `diversityresult` <-
 function(x,y="",factor,level,index="Shannon",method="all",sortit=F,digits=8){
-    jackknife2=function (x, theta, ...) {
-        call <- match.call()
-        n <- nrow(x)
-        u <- rep(0, n)
-        for (i in 1:n) {
-## changed , in following line from original jackknife of bootstrap library
-            u[i] <- theta(x[-i,], ...)
-        }
-        thetahat <- theta(x, ...)
-        jack.bias <- (n - 1) * (mean(u) - thetahat)
-        jack.estimate <- thetahat-jack.bias
-        jack.se <- sqrt(((n - 1)/n) * sum((u - mean(u))^2))
-        return(jack.estimate, jack.se, jack.bias, jack.val = u, call = call)
-    }
-    diversityresult0=function(x,index="Shannon",method="all"){
+    diversityresult0=function(x, index="Shannon", method="all"){
         x <- as.matrix(x)
         marg <- 1
         if (method=="all" && index!="jack1" && index!="jack2" && index!="chao" && index!="boot") {
@@ -104,8 +90,19 @@ function(x,y="",factor,level,index="Shannon",method="all",sortit=F,digits=8){
         method <- "all"
     }
     if (method=="jackknife") {
-        result2 <- jackknife2(x,diversityresult0,index=index)
-    }else{
+        if (! require(bootstrap)) {stop("Please install the bootstrap package")}
+        thetadiv <- function(x,xdata,index) {
+            xdata2 <- xdata[x,1:ncol(xdata)] 
+            diversityresult0(xdata2, index=index, method="all")
+        }
+        if (nrow(x) > 1) {
+            result2 <- bootstrap::jackknife(1:nrow(x), thetadiv, x, index=index)
+            result2$jack.estimate <- mean(as.numeric(result2$jack.values), na.rm=T)
+        }else{
+            result2 <- list(jack.values=NA, jack.estimate=NA)
+        }
+    }
+    if (method!="jackknife") {
         result <- diversityresult0(x,index=index,method=method)
     }
     if (method=="mean") {
@@ -119,8 +116,8 @@ function(x,y="",factor,level,index="Shannon",method="all",sortit=F,digits=8){
         result[1] <- sd(result2)
     }
     if (sortit==T && method!="jackknife" && method!="all") {result <- sort(result)}
-    if (method!= "jackknife") {
-        result2 <- round(result,digits=digits)
+    if (method!="jackknife") {
+        result2 <- round(result, digits=digits)
         result2 <- data.frame(result2)
         colnames(result2) <- index
     }

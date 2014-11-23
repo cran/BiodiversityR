@@ -1,23 +1,23 @@
-import(stats, Rcmdr)
+import(stats, Rcmdr, vegan)
 
 importFrom(tcltk, tkfont.create, tkbutton)
 
 export(BiodiversityRGUI,check.datasets,check.ordiscores,spatialsample,makecommunitydataset,
     removeNAcomm,removeNAenv,subsetcomm,removezerospecies,balanced.specaccum,accumresult,accumplot,accumcomp,
     diversityresult,diversitycomp,rankabundance,radfitresult,rankabunplot,rankabuncomp,renyiresult,renyiplot,
-    renyiaccumresult, renyicomp,
+    renyiaccumresult, renyicomp, importancevalue, importancevalue.comp, 
+    bioenv.numeric, bioenv.numeric.default, summary.bioenv.numeric,
     deviancepercentage,residualssurface,crosstabanalysis,dist.zeroes,dist.eval,PCAsignificance,add.spec.scores,
     NMSrandom,nnetrandom,ordibubble,ordisymbol,ordicluster2,ordinearest,ordivector,ordiequilibriumcircle,distdisplayed,
     ordicoeno,CAPdiscrim,caprescale,multiconstrained,disttransform,same.sites,loaded.citations,nested.anova.dbrda,
     nested.npmanova,ensemble.raster,ensemble.test,ensemble.formulae,ensemble.test.splits,ensemble.test.gbm,ensemble.test.nnet,
     ensemble.drop1,ensemble.batch,evaluation.strip.data,evaluation.strip.plot,ensemble.weights,ensemble.strategy,
     ensemble.simplified.categories,ensemble.accepted.categories,ensemble.dummy.variables,ensemble.habitat.change,
-    ensemble.mean)
+    ensemble.mean, .onAttach)
 
 if(tools:::.OStype() == "windows") {
     export(import.from.Excel,import.from.Access,import.from.Excel2007,import.from.Access2007)
 }
-
 
 
 

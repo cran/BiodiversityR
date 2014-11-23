@@ -4,7 +4,7 @@ function(formula,data,tries=10,leave.one.out=F,...){
         optimal <- Inf
         values <- numeric(length=tries)
         for (i in 1:tries) {
-            temp.result <- nnet(formula=formula,...)
+            temp.result <- nnet::nnet(formula=formula,...)
             values[i] <- temp.result$value
             if (temp.result$value < optimal) {
                 final.result <- temp.result

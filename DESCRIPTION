@@ -1,22 +1,22 @@
 Package: BiodiversityR
 Type: Package
 Title: GUI for biodiversity, suitability and community ecology analysis
-Version: 2.4-4
-Date: 2014-05-12
+Version: 2.5-1
+Date: 2014-11-20
 Author: Roeland Kindt
 Maintainer: Roeland Kindt <R.KINDT@CGIAR.ORG>
 Description: This package provides a GUI (Graphical User Interface, via the R-Commander) and some utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website. In 2012, methods for (ensemble) suitability modelling and mapping were expanded in the package.
 License: GPL-2
 URL: http://www.r-project.org,
         http://www.worldagroforestry.org/resources/databases/tree-diversity-analysis
-Depends: R (>= 3.0.0), tcltk
-Imports: Rcmdr (>= 1.9-4)
-Suggests: vegan (>= 1.17-12), permute, lattice, MASS, mgcv, cluster,
-        car, RODBC, rpart, effects, multcomp, ellipse, maptree, sp,
-        splancs, spatial, akima, nnet, dismo, raster (>= 2.0-31),
-        rgdal, gbm, randomForest, gam, earth, mda, kernlab, e1071,
-        tools, methods
-Packaged: 2014-05-15 09:34:11 UTC; RKINDT
+Depends: R (>= 3.0.0), tcltk, vegan (>= 2.2-0)
+Imports: Rcmdr (>= 2.1-4)
+Suggests: permute, lattice, MASS, mgcv, cluster, car, RODBC, rpart,
+        effects, multcomp, ellipse, maptree, sp, splancs, spatial,
+        akima, nnet, dismo, raster (>= 2.0-31), rgdal, gbm,
+        randomForest, gam, earth, mda, kernlab, e1071, tools, methods,
+        bootstrap
+Packaged: 2014-11-23 07:05:41 UTC; RKINDT
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2014-05-15 12:53:00
+Date/Publication: 2014-11-23 08:33:47

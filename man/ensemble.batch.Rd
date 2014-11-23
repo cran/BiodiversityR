@@ -27,17 +27,17 @@ ensemble.batch(x = NULL, xn = c(x), ext = NULL,
     MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, 
     GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, RPART = 1, NNET = 1, 
     FDA = 1, SVM = 1, SVME = 1, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, 
-    PROBIT = FALSE,
+    PROBIT = FALSE, AUC.weights = TRUE,
     Yweights = "BIOMOD", 
     layer.drops = NULL, factors = NULL, dummy.vars = NULL,
     formulae.defaults = TRUE, maxit = 100,
     MAXENT.a = NULL, MAXENT.an = 10000, MAXENT.BackData = NULL, 
     MAXENT.path = paste(getwd(), "/models/maxent", sep=""),
     GBM.formula = NULL, GBM.n.trees = 2001, 
-    GBMSTEP.gbm.x = 2:(1 + nlayers(x)), 
+    GBMSTEP.gbm.x = 2:(1 + raster::nlayers(x)), 
     GBMSTEP.tree.complexity = 5, GBMSTEP.learning.rate = 0.005, 
     GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100,
-    RF.formula = NULL, RF.ntree = 751, RF.mtry = floor(sqrt(nlayers(x))), 
+    RF.formula = NULL, RF.ntree = 751, RF.mtry = floor(sqrt(raster::nlayers(x))), 
     GLM.formula = NULL, GLM.family = binomial(link = "logit"), 
     GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, GLMSTEP.k = 2, 
     GAM.formula = NULL, GAM.family = binomial(link = "logit"), 
@@ -84,7 +84,7 @@ ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
   \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
   \item{models.save}{ Save the list with model details to a file (if \code{TRUE}). The filename will be \code{species.name} with extension \code{.models}; this file will be saved in subfolder of \code{models}. When loading this file, model results will be available as \code{ensemble.models}. }
-  \item{threshold.method}{ Method to calculate the threshold between predicted absence and presence; possibilities include \code{spec_sens} (highest sum of the true positive rate and the true negative rate), \code{kappa} (highest kappa value), \code{no_omission} (highest threshold that corresponds to no omission), \code{prevalence} (modeled prevalence is closest to observed prevalence) and \code{equal_sens_spec} (equal true positive rate and true negative rate). See \code{\link[dismo]{threshold}}.   }
+  \item{threshold.method}{ Method to calculate the threshold between predicted absence and presence; possibilities include \code{spec_sens} (highest sum of the true positive rate and the true negative rate), \code{kappa} (highest kappa value), \code{no_omission} (highest threshold that corresponds to no omission), \code{prevalence} (modeled prevalence is closest to observed prevalence) and \code{equal_sens_spec} (equal true positive rate and true negative rate). See \code{\link[dismo]{threshold}}. Options specific to the BiodiversityR implementation are: \code{threshold.mean} (resulting in calculating the mean value of \code{spec_sens}, \code{equal_sens_spec} and \code{prevalence}) and \code{threshold.min} (resulting in calculating the minimum value of \code{spec_sens}, \code{equal_sens_spec} and \code{prevalence}).   }
   \item{threshold.sensitivity}{ Sensitivity value for \code{threshold.method = 'sensitivity'}. See \code{\link[dismo]{threshold}}.   }
   \item{ENSEMBLE.best}{ The number of individual suitability models to be used in the consensus suitability map (based on a weighted average). In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then all individual suitability models with positive input weights are included in the consensus suitability map.  }
   \item{ENSEMBLE.min}{ The minimum input weight (assumed to correspond to evaluation indices of suitability models) for a model to be included in the ensemble.  }
@@ -110,6 +110,7 @@ ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{DOMAIN}{ Input weight for the DOMAIN algorithm (\code{\link[dismo]{domain}}). (Only weights > 0 will be used.)  }
   \item{MAHAL}{ Input weight for the Mahalonobis algorithm (\code{\link[dismo]{mahal}}). (Only weights > 0 will be used.)  }
   \item{PROBIT}{ If \code{TRUE}, then subsequently to the fitting of the individual algorithm (e.g. maximum entropy or GAM) a generalized linear model (\code{\link[stats]{glm}}) with probit link \code{family=binomial(link="probit")} will be fitted to transform the predictions, using the previous predictions as explanatory variable. This transformation results in all model predictions to be probability estimates.  }
+  \item{AUC.weights}{ If \code{TRUE}, then use the average of the AUC for the different submodels in the different crossvalidation runs as weights for the 'full' ensemble model. See \code{\link{ensemble.test.splits}} for details.  }
   \item{Yweights}{ chooses how cases of presence and background (absence) are weighted; \code{"BIOMOD"} results in equal weighting of all presence and all background cases, \code{"equal"} results in equal weighting of all cases. The user can supply a vector of weights similar to the number of cases in the calibration data set. }
   \item{layer.drops}{ vector that indicates which layers should be removed from RasterStack \code{x}. See also \code{\link[raster]{addLayer}}.  }
   \item{factors}{ vector that indicates which variables are factors; see also \code{\link[dismo]{prepareData}}  }
@@ -177,7 +178,7 @@ This function allows for batch processing of different species and different env
 
 \code{\link{ensemble.raster}} is the final step whereby raster layers are produced for the ensemble model.
 
-Function \code{ensemble.mean} results in raster layers that are based on the summary of several ensemble layers: the new ensemble has probability values that are the mean of the probabilities of the different raster layers, the presence-absence threshold is derived for this new ensemble layer, whereas the count reflects the number of ensemble layers where presence was predicted.
+Function \code{ensemble.mean} results in raster layers that are based on the summary of several ensemble layers: the new ensemble has probability values that are the mean of the probabilities of the different raster layers, the presence-absence threshold is derived for this new ensemble layer, whereas the count reflects the number of ensemble layers where presence was predicted. Note the assumption that input probabilities are scaled between 0 and 1000 (as the output from \code{\link{ensemble.raster}}), whereas thresholds are based on actual probabilities (scaled between 0 and 1).
 
 }
 
@@ -202,7 +203,6 @@ Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in 
 \examples{
 \dontrun{
 # based on examples in the dismo package
-# simplified example of ensemble modelling with 4 modeling algorithms
 
 # get predictor variables
 library(dismo)
@@ -239,7 +239,7 @@ ensemble.nofactors <- ensemble.batch(x=predictors, ext=ext,
     n.ensembles=3, 
     SINK=TRUE,
     layer.drops=c("biome"),
-    ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(1, 2, 4, 6, 8), 
+    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 4, 6, 8), 
     ENSEMBLE.min=0.7,
     MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=0, MGCV=1, 
     EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,

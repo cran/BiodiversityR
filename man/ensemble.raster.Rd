@@ -27,7 +27,7 @@ ensemble.habitat.change(base.map=file.choose(),
     other.maps=choose.files(),
     change.folder="ensembles/change",
     RASTER.format = "raster", RASTER.datatype = "INT1U", RASTER.NAflag = 255,
-    KML.out = FALSE, KML.folder = "KML/change",
+    KML.out = FALSE, KML.folder = "kml/change",
     KML.maxpixels = 100000, KML.blur = 10)
 }
 
@@ -55,8 +55,8 @@ ensemble.habitat.change(base.map=file.choose(),
 
   \item{base.map}{ filename with baseline map used to produce maps that show changes in suitable habitat }
   \item{other.maps}{ files with other maps used to produce maps that show changes in suitable habitat from a defined base.map  }
-  \item{change.folder}{ folder where new maps documenting changes in suitable habitat will be stored  }
-  \item{KML.folder}{ folder where new maps (in Google Earth format) documenting changes in suitable habitat will be stored  }
+  \item{change.folder}{ folder where new maps documenting changes in suitable habitat will be stored. NOTE: please ensure that the base folder (eg: ../ensembles) exists already.  }
+  \item{KML.folder}{ folder where new maps (in Google Earth format) documenting changes in suitable habitat will be stored. NOTE: please ensure that the base folder (eg: ../kml) exists already.   }
 
 }
 
@@ -92,13 +92,12 @@ Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in 
 
 
 \seealso{
-\code{\link{evaluation.strip.plot}}, \code{\link{ensemble.test}}, \code{\link{ensemble.test.splits}}
+\code{\link{evaluation.strip.plot}}, \code{\link{ensemble.test}}, \code{\link{ensemble.test.splits}}, \code{\link{ensemble.batch}}
 }
 
 \examples{
 \dontrun{
 # based on examples in the dismo package
-# simplified example of ensemble modelling with 4 modeling algorithms
 
 # get predictor variables
 library(dismo)
@@ -143,8 +142,9 @@ ensemble.calibrate.step1 <- ensemble.test.splits(x=predictors, p=pres, a=backgro
     MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
-    ENSEMBLE.tune=TRUE,
-    ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
+    ENSEMBLE.tune=TRUE, PROBIT=TRUE,
+    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
+    ENSEMBLE.min=0.7,
     Yweights="BIOMOD", factors=c("biome"),
     PLOTS=FALSE, formulae.defaults=TRUE,
     GBMSTEP.learning.rate=0.002)
@@ -152,16 +152,16 @@ ensemble.calibrate.step1 <- ensemble.test.splits(x=predictors, p=pres, a=backgro
 # step 2: create the models that will be used for the raster predictions
 # models with input.weights < 0.05 are excluded
 
-ensemble.calibrate.step1$output.weights[
-    ensemble.calibrate.step1$output.weights < 0.05] <- 0
+output.weights <- ensemble.calibrate.step1$output.weights.AUC
+output.weights[output.weights < 0.05] <- 0
 
 ensemble.calibrate.step2 <- ensemble.test(x=predictors, p=pres, a=background, 
     ext=ext,
     layer.drops=c("biome"),
     SINK=TRUE, species.name="Bradypus",
     models.keep=TRUE,
-    input.weights=ensemble.calibrate.step1$output.weights,
-    AUC.weights=FALSE, ENSEMBLE.tune=FALSE,
+    input.weights=output.weights,
+    AUC.weights=FALSE, ENSEMBLE.tune=FALSE, PROBIT=TRUE,
     Yweights="BIOMOD", factors=c("biome"),
     PLOTS=FALSE, formulae.defaults=TRUE,
     GBMSTEP.learning.rate=0.002)
@@ -169,7 +169,7 @@ ensemble.calibrate.step2 <- ensemble.test(x=predictors, p=pres, a=background,
 # step 3: use previously calibrated models
 ensemble.nofactors1 <- ensemble.raster(xn=predictors, ext=ext,
     models.list=ensemble.calibrate.step2$models, 
-    input.weights=ensemble.calibrate.step2$models$output.weights,
+    input.weights=output.weights,
     thresholds=ensemble.calibrate.step2$models$thresholds,
     SINK=TRUE,
     RASTER.species.name="Bradypus", RASTER.stack.name="base")
@@ -187,29 +187,30 @@ ensemble.calibrate.step1 <- ensemble.test.splits(x=predictors, p=pres, a=backgro
     MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
-    ENSEMBLE.tune=TRUE,
-    ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
+    ENSEMBLE.tune=TRUE, PROBIT=TRUE,
+    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
+    ENSEMBLE.min=0.7,
     Yweights="BIOMOD", 
     PLOTS=FALSE, formulae.defaults=TRUE,
     GBMSTEP.learning.rate=0.002)
 
-ensemble.calibrate.step1$output.weights[
-    ensemble.calibrate.step1$output.weights < 0.05] <- 0
+output.weights <- ensemble.calibrate.step1$output.weights.AUC
+output.weights[output.weights < 0.05] <- 0
 
 ensemble.calibrate.step2 <- ensemble.test(x=predictors, p=pres, a=background, 
     ext=ext,
     layer.drops=c("biome"),
     SINK=TRUE, species.name="Bradypus",
     models.keep=TRUE,
-    input.weights=ensemble.calibrate.step1$output.weights,
-    AUC.weights=FALSE, ENSEMBLE.tune=FALSE,
+    input.weights=output.weights,
+    AUC.weights=FALSE, ENSEMBLE.tune=FALSE, PROBIT=TRUE,
     Yweights="BIOMOD", 
     PLOTS=FALSE, formulae.defaults=TRUE,
     GBMSTEP.learning.rate=0.002)
 
 ensemble.nofactors2 <- ensemble.raster(xn=predictors, ext=ext,
     models.list=ensemble.calibrate.step2$models, 
-    input.weights=ensemble.calibrate.step2$models$output.weights,
+    input.weights=output.weights,
     thresholds=ensemble.calibrate.step2$models$thresholds,
     SINK=TRUE,
     RASTER.species.name="Bradypus", RASTER.stack.name="recalibrated")
