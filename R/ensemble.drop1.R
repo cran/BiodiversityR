@@ -31,7 +31,7 @@
 {
 
     .BiodiversityR <- new.env()
-    if (! require(dismo)) {stop("Please install the dismo package")}
+#    if (! require(dismo)) {stop("Please install the dismo package")}
 #
     if (is.null(layer.drops) == F) {
         layer.drops <- as.character(layer.drops)

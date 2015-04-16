@@ -1,31 +1,23 @@
 \name{dist.eval}
 \alias{dist.eval}
-\alias{bioenv.numeric}
-\alias{bioenv.numeric.default}
-\alias{summary.bioenv.numeric}
+\alias{prepare.bioenv}
+
 
 \title{Distance Matrix Evaluation}
 
 \description{
-Function \code{dist.eval} provides one test of a distance matrix, and then continues with \code{\link[vegan]{distconnected}} (\pkg{vegan}). Function \code{bioenv.numeric} applies \code{\link[vegan]{bioenv}} (\pkg{vegan}), but allows to convert variables to numeric variables and excludes all categorical variables from the environmental data set.
+Function \code{dist.eval} provides one test of a distance matrix, and then continues with \code{\link[vegan]{distconnected}} (\pkg{vegan}). Function \code{prepare.bioenv} converts selected variables to numeric variables and then excludes all categorical variables in preparation of applying \code{\link[vegan]{bioenv}} (\pkg{vegan}).
 }
 
 \usage{
-dist.eval(x,dist)
-\method{bioenv.numeric}{default}(comm, env, method = "spearman", index = "bray", 
-       as.numeric = c(),
-       upto = ncol(env), trace = FALSE, partial = NULL, ...)
+dist.eval(x, dist)
+prepare.bioenv(env, as.numeric = c())
 }
 
 \arguments{
-  \item{x, comm}{ Community data frame with sites as rows, species as columns and species abundance as cell values. }
+  \item{x}{ Community data frame with sites as rows, species as columns and species abundance as cell values. }
   \item{env}{ Environmental data frame with sites as rows and variables as columns. }
-  \item{dist, index}{ Method for calculating ecological distance with function \code{\link[vegan]{vegdist}}: partial match to "manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "morisita", "horn" or "mountford". }
-  \item{method}{ The correlation method. See also \code{\link[stats]{cor}} and \code{\link[vegan]{bioenv}}. }
-  \item{upto}{ Maximum number of parameters in studied subsets. See also \code{\link[vegan]{bioenv}}. }
-  \item{trace}{ Trace the calculations. See also \code{\link[vegan]{bioenv}}. }
-  \item{partial}{ Dissimilarities partialled out. See also \code{\link[vegan]{bioenv}}. }
-  \item{...}{ Other arguments passed. See also \code{\link[stats]{cor}} and \code{\link[vegan]{bioenv}}. }
+  \item{dist}{ Method for calculating ecological distance with function \code{\link[vegan]{vegdist}}: partial match to "manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "morisita", "horn" or "mountford". }
   \item{as.numeric}{ Vector with names of variables in the environmental data set to be converted to numeric variables. }
 
 }
@@ -37,7 +29,7 @@ Function \code{dist.eval} provides two tests of a distance matrix:
 
 (ii) The second test is the one implemented by the \code{\link[vegan]{distconnected}} function (\pkg{vegan}). The  distconnected test is only calculated for distances that calculate a value of 1 if sites share no species (i.e. not manhattan or euclidean), using the threshold of 1 as an indication that the sites do not share any species. Interpretation of analysis of distance matrices that provided these warnings should be cautious.
 
-Function \code{bioenv.numeric} provides some simple methods of dealing with categorical variables prior to applying \code{\link[vegan]{bioenv}}.
+Function \code{prepare.bioenv} provides some simple methods of dealing with categorical variables prior to applying \code{\link[vegan]{bioenv}}.
 
 }
 
@@ -61,6 +53,20 @@ library(vegan)
 data(dune)
 dist.eval(dune,"euclidean")
 dist.eval(dune,"bray")
+
+\dontrun{
+data(dune.env)
+dune.env2 <- dune.env[,c('A1', 'Moisture', 'Manure')]
+dune.env2$Moisture <- as.numeric(dune.env2$Moisture)
+dune.env2$Manure <- as.numeric(dune.env2$Manure)
+sol <- bioenv(dune ~ A1 + Moisture + Manure, dune.env2)
+sol
+summary(sol)
+dune.env3 <- prepare.bioenv(dune.env, as.numeric=c('Moisture', 'Manure'))
+bioenv(dune, dune.env3)
+}
+
+
 }
 
 \keyword{multivariate} 

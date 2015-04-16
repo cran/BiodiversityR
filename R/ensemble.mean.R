@@ -10,7 +10,7 @@
 )
 {
     .BiodiversityR <- new.env()
-    if (! require(dismo)) {stop("Please install the dismo package")}
+#    if (! require(dismo)) {stop("Please install the dismo package")}
     if (threshold < 0) {
         if (is.null(p)==T || is.null(a)==T) {stop(paste("Please provide locations p and a to calculate thresholds", "\n", sep = ""))}
     }
@@ -86,10 +86,26 @@
     filename1 <- paste(getwd(), "//ensembles//", species_focus, "_MEAN", RASTER.stack.name2, sep="")
     raster::writeRaster(x=ensemble.mean, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
-#  avoid possible problems with saving of names of the raster layers
+# avoid possible problems with saving of names of the raster layers
     raster::writeRaster(ensemble.mean, filename="working.grd", overwrite=T)
     working.raster <- raster::raster("working.grd")
     names(working.raster) <- paste(species_focus, "_MEAN", RASTER.stack.name2, sep="")
+    raster::writeRaster(working.raster, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#
+# standard deviation
+    ensemble.sd <- raster::calc(ensemble.stack, fun=sd)
+    ensemble.sd <- trunc(1.0 * ensemble.sd)
+#    raster::setMinMax(ensemble.mean)
+    names(ensemble.sd) <- paste(species_focus, "_SD", RASTER.stack.name2, sep="")
+    cat(paste("\n", "Standard deviation for ensemble (truncated)", "\n\n", sep = ""))
+    print(ensemble.sd)
+    filename1 <- paste(getwd(), "//ensembles//", species_focus, "_SD", RASTER.stack.name2, sep="")
+    raster::writeRaster(x=ensemble.sd, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#
+#  avoid possible problems with saving of names of the raster layers
+    raster::writeRaster(ensemble.sd, filename="working.grd", overwrite=T)
+    working.raster <- raster::raster("working.grd")
+    names(working.raster) <- paste(species_focus, "_SD", RASTER.stack.name2, sep="")
     raster::writeRaster(working.raster, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
 # thresholds apply to probabilities
@@ -123,6 +139,11 @@
         filename2 <- paste(getwd(), "//kml//", species_focus, "_MEAN", RASTER.stack.name2, sep="")
         raster::KML(ensemble.mean, filename=filename2, col = c(rainbow(n = 10, start = 0, end = 1/6), rainbow(n = 10, start = 3/6, end = 4/6)), colNA = 0, 
             blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE, breaks = c(seq1, seq2))
+        sd.max <- raster::cellStats(ensemble.sd, stat='max')
+        seq1 <- seq(from = 0, to = sd.max, length.out = 20)
+        filename2b <- paste(getwd(), "//kml//", species_focus, "_SD", RASTER.stack.name2, sep="")
+        raster::KML(ensemble.sd, filename=filename2b, col = rainbow(n = 19, start = 0, end = 4/6), colNA = 0, 
+            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE, breaks = seq1)
     }
 #
 # presence-absence maps based on the mean maps

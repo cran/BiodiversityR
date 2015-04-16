@@ -47,7 +47,7 @@
     }
     n.ensembles <- as.integer(n.ensembles)
     if (n.ensembles < 1) {n.ensembles <- 1}
-    if (! require(dismo)) {stop("Please install the dismo package")}
+#    if (! require(dismo)) {stop("Please install the dismo package")}
     if (is.null(xn) == T) {
         cat(paste("\n", "NOTE: new rasterStack assumed to be equal to the base rasterStack", sep = ""))
         xn <- x
@@ -90,7 +90,7 @@
 
 # 
 # process species by species
-    species.names <- levels(factor(species.presence[,1,drop=T]))
+    species.names <- levels(droplevels(factor(species.presence[,1])))
 
     for (s in 1:length(species.names)) {
         focal.species <- species.names[s]

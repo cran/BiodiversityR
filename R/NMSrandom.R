@@ -1,6 +1,6 @@
 `NMSrandom` <-
 function(x,perm=100,k=2,stressresult=F,method="isoMDS"){
-    if (!require(MASS)) {stop("Requires package MASS")}
+#    if (!require(MASS)) {stop("Requires package MASS")}
     minstress <- 100
     stress <- array(dim=perm)
     for (j in 1:perm) {

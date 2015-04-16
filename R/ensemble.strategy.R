@@ -5,7 +5,7 @@
     ENSEMBLE.exponent=c(1, 2, 4, 6, 8) 
 )
 {
-    if (! require(dismo)) {stop("Please install the dismo package")}
+#    if (! require(dismo)) {stop("Please install the dismo package")}
 #   input AUC
     modelnames <- c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
         "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL")

@@ -3,12 +3,12 @@
     filename=NULL, overwrite=TRUE, ...
 )
 {
-    if (! require(dismo)) {stop("Please install the dismo package")}
+#    if (! require(dismo)) {stop("Please install the dismo package")}
     if(inherits(xcat,"RasterLayer") == F) {stop("parameter xcat is expected to be a RasterLayer")}
     if(is.null(categories) == T) {stop("accepted categories are missing")}
     if(is.null(filename) == T) {
         cat(paste("\n", "No new filename was provided", sep = ""))
-        if (! require(tools)) {stop("tools package not available")}
+#        if (! require(tools)) {stop("tools package not available")}
         filename1 <- filename(xcat)
         extension1 <- paste(".", tools::file_ext(filename1), sep="")
         extension2 <- paste("_new.", tools::file_ext(filename1), sep="")

@@ -90,7 +90,7 @@ function(x,y="",factor,level,index="Shannon",method="all",sortit=F,digits=8){
         method <- "all"
     }
     if (method=="jackknife") {
-        if (! require(bootstrap)) {stop("Please install the bootstrap package")}
+#        if (! require(bootstrap)) {stop("Please install the bootstrap package")}
         thetadiv <- function(x,xdata,index) {
             xdata2 <- xdata[x,1:ncol(xdata)] 
             diversityresult0(xdata2, index=index, method="all")

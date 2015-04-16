@@ -47,10 +47,10 @@
                 gamscope[[as.name(vars[i])]] <- as.formula(paste("~1 +", vars[i], sep=""))
             }else{
                 glmvars[i] <- paste(vars[i], "+ I(", vars[i], "^2) + I(", vars[i], "^3)", sep="")
-                gamvars[i] <- paste("s(", vars[i], ",4)", sep="")
+                gamvars[i] <- paste("gam::s(", vars[i], ", 4)", sep="")
                 mgcvvars[i] <- paste("s(", vars[i], ", k=4)", sep="")
                 mgcvfixvars[i] <- paste("s(", vars[i], ", k=4, fx=T)", sep="")
-                gamscope[[as.name(vars[i])]] <- as.formula(paste("~1 + ", vars[i], "+ s(", vars[i], ", 4)", sep=""))
+                gamscope[[as.name(vars[i])]] <- as.formula(paste("~1 + ", vars[i], "+ gam::s(", vars[i], ", 4)", sep=""))
             }
         }
     }

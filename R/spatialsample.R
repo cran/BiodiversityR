@@ -1,6 +1,6 @@
 `spatialsample` <-
 function(x,method="random",n=5,xwidth=0.5,ywidth=0.5,xleft=0,ylower=0,xdist=0,ydist=0,plotit=T,plothull=F){
-    if (!require(splancs)) {stop("Requires package splancs")}
+#    if (!require(splancs)) {stop("Requires package splancs")}
     xpos <- x[,1]
     ypos <- x[,2]
     minx <- min(xpos)

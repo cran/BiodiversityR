@@ -2,7 +2,7 @@ if(.Platform$OS.type == "windows") {
 
 `import.from.Access` <-
 function(file=file.choose(), data.type="community", table=NULL, sitenames="sites", column="species", value="abundance", factor="", level="", cepnames=FALSE) {
-    if (!require(RODBC)) {stop("Requires package RODBC")}
+#    if (!require(RODBC)) {stop("Requires package RODBC")}
     dataplace <- RODBC::odbcConnectAccess(file)
     if (is.null(data.type) == TRUE) {data.type <- table}
     TYPES <- c("community", "environmental", "stacked")
@@ -26,7 +26,7 @@ function(file=file.choose(), data.type="community", table=NULL, sitenames="sites
 
 `import.from.Access2007` <-
 function(file=file.choose(), data.type="community", table=NULL, sitenames="sites", column="species", value="abundance", factor="", level="", cepnames=FALSE) {
-    if (!require(RODBC)) {stop("Requires package RODBC")}
+#    if (!require(RODBC)) {stop("Requires package RODBC")}
     dataplace <- RODBC::odbcConnectAccess2007(file)
     if (is.null(data.type) == TRUE) {data.type <- table}
     TYPES <- c("community", "environmental", "stacked")

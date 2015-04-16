@@ -5,8 +5,7 @@ importFrom(tcltk, tkfont.create, tkbutton)
 export(BiodiversityRGUI,check.datasets,check.ordiscores,spatialsample,makecommunitydataset,
     removeNAcomm,removeNAenv,subsetcomm,removezerospecies,balanced.specaccum,accumresult,accumplot,accumcomp,
     diversityresult,diversitycomp,rankabundance,radfitresult,rankabunplot,rankabuncomp,renyiresult,renyiplot,
-    renyiaccumresult, renyicomp, importancevalue, importancevalue.comp, 
-    bioenv.numeric, bioenv.numeric.default, summary.bioenv.numeric,
+    renyiaccumresult, renyicomp, importancevalue, importancevalue.comp, prepare.bioenv,
     deviancepercentage,residualssurface,crosstabanalysis,dist.zeroes,dist.eval,PCAsignificance,add.spec.scores,
     NMSrandom,nnetrandom,ordibubble,ordisymbol,ordicluster2,ordinearest,ordivector,ordiequilibriumcircle,distdisplayed,
     ordicoeno,CAPdiscrim,caprescale,multiconstrained,disttransform,same.sites,loaded.citations,nested.anova.dbrda,
@@ -18,6 +17,3 @@ export(BiodiversityRGUI,check.datasets,check.ordiscores,spatialsample,makecommun
 if(tools:::.OStype() == "windows") {
     export(import.from.Excel,import.from.Access,import.from.Excel2007,import.from.Access2007)
 }
-
-
-

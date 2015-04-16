@@ -5,7 +5,7 @@ function (comm, permutations=100, strata=strata, grouped=TRUE, reps=0, scale=NUL
     }
     stratified.sample <- function(factor,grouped=TRUE,reps=0) {
         n <- length(factor)
-        levs <- levels(factor)
+        levs <- levels(droplevels(factor))
         minimum <- min(summary(factor))
         if (reps > 0) {
             alllevs <- summary(factor)
@@ -60,7 +60,7 @@ function (comm, permutations=100, strata=strata, grouped=TRUE, reps=0, scale=NUL
     class(out) <- "specaccum"
     if (is.null(scale)!=TRUE) {
         n <- length(strata)
-        levs <- levels(strata)
+        levs <- levels(droplevels(strata))
         if (reps > 0) {
             alllevs <- summary(strata)
             goodlevs <- alllevs > (reps-1)

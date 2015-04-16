@@ -3,12 +3,12 @@
     filename=NULL, overwrite=TRUE, ...
 )
 {
-    if (! require(dismo)) {stop("Please install the dismo package")}
+#    if (! require(dismo)) {stop("Please install the dismo package")}
     if(inherits(xcat,"RasterLayer") == F) {stop("parameter xcat is expected to be a RasterLayer")}
     if(is.null(p) == T) {stop("presence locations are missing (parameter p)")}
     if(is.null(filename) == T) {
         cat(paste("\n", "No new filename was provided", sep = ""))
-        if (! require(tools)) {stop("tools package not available")}
+#        if (! require(tools)) {stop("tools package not available")}
         filename1 <- filename(xcat)
         extension1 <- paste(".", tools::file_ext(filename1),sep="")
         extension2 <- paste("_new.", tools::file_ext(filename1),sep="")
@@ -20,7 +20,7 @@
     a <- dismo::randomPoints(xcat, n=10)
     TrainData <- dismo::prepareData(stack(xcat), p, b=a, factors=names(xcat), xy=FALSE)
     TrainData <- TrainData[TrainData[,"pb"]==1,]
-    presence.categories <- levels(as.factor(TrainData[,names(xcat)]))
+    presence.categories <- levels(droplevels(factor(TrainData[,names(xcat)])))
     presence.categories <- as.numeric(presence.categories)
     cat(paste("\n", "categories with presence points", "\n", sep = ""))
     print(presence.categories)

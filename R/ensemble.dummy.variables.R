@@ -3,7 +3,7 @@
     overwrite=TRUE, ...
 )
 {
-    if (! require(dismo)) {stop("Please install the dismo package")}
+#    if (! require(dismo)) {stop("Please install the dismo package")}
     if(inherits(xcat,"RasterLayer") == F) {stop("parameter xcat is expected to be a RasterLayer")}
 
 # get all categories of the layer
@@ -33,7 +33,7 @@
 
 # filename of original layer
 
-    if (! require(tools)) {stop("tools package not available")}
+#    if (! require(tools)) {stop("tools package not available")}
     filename1 <- raster::filename(xcat)
     extension1 <- paste(".", tools::file_ext(filename1),sep="")
 

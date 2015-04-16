@@ -8,7 +8,7 @@
 )
 {
     .BiodiversityR <- new.env()
-    if (! require(dismo)) {stop("Please install the dismo package")}
+#    if (! require(dismo)) {stop("Please install the dismo package")}
     if (is.null(xn) == T) {stop("value for parameter xn is missing (RasterStack object)")}
     if (is.null(models.list) == T) {stop("provide 'models.list' as models will not be recalibrated and retested")}
     if (is.null(input.weights) == T) {input.weights <- models.list$output.weights}
@@ -147,35 +147,36 @@
 	if (!file.exists(jar)) {stop('maxent program is missing: ', jar, '\nPlease download it here: http://www.cs.princeton.edu/~schapire/maxent/')}
     }
     if (GBM > 0) {
-        if (! require(gbm)) {stop("Please install the gbm package")}
+        if (! requireNamespace("gbm")) {stop("Please install the gbm package")}
+	requireNamespace("splines")
     }
     if (GBMSTEP > 0) {
-        if (! require(gbm)) {stop("Please install the gbm package")}
+#        if (! require(gbm)) {stop("Please install the gbm package")}
     }
     if (RF > 0) {
-        if (! require(randomForest)) {stop("Please install the randomForest package")}
+#        if (! require(randomForest)) {stop("Please install the randomForest package")}
     }
     if (GLMSTEP > 0) {
-        if (! require(MASS)) {stop("Please install the MASS package")}
+#        if (! require(MASS)) {stop("Please install the MASS package")}
     }
     if (GAM > 0  || GAMSTEP > 0) {
-        cat(paste("\n"))
-        try(detach(package:mgcv), silent=T)
-        if (! require(gam)) {stop("Please install the gam package")}
+#        cat(paste("\n"))
+#        try(detach(package:mgcv), silent=T)
+#        if (! require(gam)) {stop("Please install the gam package")}
     }
     if (MGCV > 0 || MGCVFIX > 0) {
-        cat(paste("\n"))
-        try(detach(package:gam), silent=T)
-        cat(paste("\n"))
-        if (! require(mgcv)) {stop("Please install the mgcv package")}
+#        cat(paste("\n"))
+#        try(detach(package:gam), silent=T)
+#        cat(paste("\n"))
+#        if (! require(mgcv)) {stop("Please install the mgcv package")}
 #         get the probabilities from MGCV
             predict.mgcv <- function(object, newdata, type="response") {
-                p <- predict(object=object, newdata=newdata, type=type)
+                p <- mgcv::predict.gam(object=object, newdata=newdata, type=type)
                 return(as.numeric(p))
             } 
     }
     if (EARTH > 0) {
-        if (! require(earth)) {stop("Please install the earth package")}
+#        if (! require(earth)) {stop("Please install the earth package")}
 #         get the probabilities from earth
             predict.earth2 <- function(object, newdata, type="response") {
                 p <- predict(object=object, newdata=newdata, type=type)
@@ -183,10 +184,10 @@
             }
     }
     if (RPART > 0) {
-        if (! require(rpart)) {stop("Please install the rpart package")}
+#        if (! require(rpart)) {stop("Please install the rpart package")}
     }
     if (NNET > 0) {
-        if (! require(nnet)) {stop("Please install the nnet package")}
+#        if (! require(nnet)) {stop("Please install the nnet package")}
 #         get the probabilities from nnet
             predict.nnet2 <- function(object, newdata, type="raw") {
                 p <- predict(object=object, newdata=newdata, type=type)
@@ -194,13 +195,13 @@
             }
     }
     if (FDA > 0) {
-        if (! require(mda)) {stop("Please install the mda package")}
+#        if (! require(mda)) {stop("Please install the mda package")}
     }
     if (SVM > 0) {
-        if (! require(kernlab)) {stop("Please install the kernlab package")}
+#        if (! require(kernlab)) {stop("Please install the kernlab package")}
     }
     if (SVME > 0) {
-        if (! require(e1071)) {stop("Please install the e1071 package")}
+#        if (! require(e1071)) {stop("Please install the e1071 package")}
 #         get the probabilities from svm
             predict.svme <- function(model, newdata) {
                 p <- predict(model, newdata, probability=T)
@@ -309,7 +310,7 @@
     }
     if (GBM > 0) {
         results <- GBM.OLD
-        tryCatch(plot.data[,"GBM"] <- predict(object=results, newdata=plot.data.vars, n.trees=results$n.trees, type="response"),
+        tryCatch(plot.data[,"GBM"] <- gbm::predict.gbm(object=results, newdata=plot.data.vars, n.trees=results$n.trees, type="response"),
             error= function(err) {print(paste("GBM prediction failed"))},
             silent=F)
         results2 <- GBM.PROBIT.OLD
@@ -317,7 +318,7 @@
     }
     if (GBMSTEP > 0) {
         results <- GBMSTEP.OLD
-        tryCatch(plot.data[,"GBMSTEP"] <- predict(object=results, newdata=plot.data.vars, n.trees=results$n.trees, type="response"),
+        tryCatch(plot.data[,"GBMSTEP"] <- gbm::predict.gbm(object=results, newdata=plot.data.vars, n.trees=results$n.trees, type="response"),
             error= function(err) {print(paste("stepwise GBM prediction failed"))},
             silent=F)
         results2 <- GBMSTEP.PROBIT.OLD
@@ -348,13 +349,13 @@
         if (is.null(results2) == F) {plot.data[,"GLMSTEP"] <- predict(object=results2, newdata=plot.data, type="response")}
     }
     if (GAM > 0 || GAMSTEP > 0) {
-        cat(paste("\n\n"))
-        try(detach(package:mgcv), silent=T)
-        require(gam, quietly=T)
+#        cat(paste("\n\n"))
+#        try(detach(package:mgcv), silent=T)
+#        require(gam, quietly=T)
     }
     if (GAM > 0) {
         results <- GAM.OLD
-        tryCatch(plot.data[,"GAM"] <- predict(object=results, newdata=plot.data.vars, type="response"),
+        tryCatch(plot.data[,"GAM"] <- gam::predict.gam(object=results, newdata=plot.data.vars, type="response"),
             error= function(err) {print(paste("GAM prediction (gam package) failed"))},
             silent=F)
         results2 <- GAM.PROBIT.OLD
@@ -362,16 +363,16 @@
     }
     if (GAMSTEP > 0) {
         results <- GAMSTEP.OLD
-        tryCatch(plot.data[,"GAMSTEP"] <- predict(object=results, newdata=plot.data.vars, type="response"),
+        tryCatch(plot.data[,"GAMSTEP"] <- gam::predict.gam(object=results, newdata=plot.data.vars, type="response"),
             error= function(err) {print(paste("stepwise GAM prediction (gam package) failed"))},
             silent=F)
         results2 <- GAMSTEP.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"GAMSTEP"] <- predict(object=results2, newdata=plot.data, type="response")}
     }
     if (MGCV > 0 || MGCVFIX > 0) {
-        cat(paste("\n\n"))
-        try(detach(package:gam), silent=T)
-        require(mgcv, quietly=T)
+#        cat(paste("\n\n"))
+#        try(detach(package:gam), silent=T)
+#        require(mgcv, quietly=T)
     }
     if (MGCV > 0) {
         results <- MGCV.OLD

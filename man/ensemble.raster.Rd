@@ -154,6 +154,7 @@ ensemble.calibrate.step1 <- ensemble.test.splits(x=predictors, p=pres, a=backgro
 
 output.weights <- ensemble.calibrate.step1$output.weights.AUC
 output.weights[output.weights < 0.05] <- 0
+output.weights
 
 ensemble.calibrate.step2 <- ensemble.test(x=predictors, p=pres, a=background, 
     ext=ext,
@@ -196,6 +197,7 @@ ensemble.calibrate.step1 <- ensemble.test.splits(x=predictors, p=pres, a=backgro
 
 output.weights <- ensemble.calibrate.step1$output.weights.AUC
 output.weights[output.weights < 0.05] <- 0
+output.weights
 
 ensemble.calibrate.step2 <- ensemble.test(x=predictors, p=pres, a=background, 
     ext=ext,

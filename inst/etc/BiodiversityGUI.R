@@ -1976,8 +1976,8 @@ countGUI <- function(){
         if (plottype == "effect plot" && option !="rpart") {
             justDoIt(paste("library(effects)", sep=""))
             logger(paste("library(effects)", sep=""))
-            doItAndPrint(paste("as.data.frame(effect('", axisvar, "',", modelValue, "))", sep=""))
-            doItAndPrint(paste("plot(effect('", axisvar, "',", modelValue, "))", sep=""))
+            doItAndPrint(paste("as.data.frame(effect('", axisvar, "', ", modelValue, "))", sep=""))
+            doItAndPrint(paste("plot(effect('", axisvar, "', ", modelValue, ", xlevels=500))", sep=""))
         }
         if (plottype == "result plot (new)" || plottype =="result plot (add)" || plottype == "result plot (interpolate)"){
             if (plottype == "result plot (new)"){
@@ -2506,8 +2506,8 @@ presabsGUI <- function(){
         if (plottype == "effect plot" && option !="crosstab" && option !="rpart" && option !="nnetrandom") {
             justDoIt(paste("library(effects)", sep=""))
             logger(paste("library(effects)", sep=""))
-            doItAndPrint(paste("as.data.frame(effect('", axisvar, "',", modelValue, "))", sep=""))
-            doItAndPrint(paste("plot(effect('", axisvar, "',", modelValue, "))", sep=""))
+            doItAndPrint(paste("as.data.frame(effect('", axisvar, "', ", modelValue, "))", sep=""))
+            doItAndPrint(paste("plot(effect('", axisvar, "', ", modelValue, ", xlevels=500))", sep=""))
         }
         if (plottype == "qq plot" && option !="crosstab" && option !="rpart" && option !="nnetrandom") {
             doItAndPrint(paste("qqPlot(residuals(", modelValue, "))", sep=""))
@@ -4194,7 +4194,7 @@ mantelGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     testScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(testBox, ...))
     tkconfigure(testBox, yscrollcommand=function(...) tkset(testScroll, ...))
-    tests <- c("mantel","anosim (factor)","mrpp (factor)","rankindex", "bioenv.numeric", "betadisper (factor)", "meandist (factor)", "simper (factor)")
+    tests <- c("mantel","anosim (factor)","mrpp (factor)","rankindex", "bioenv", "betadisper (factor)", "meandist (factor)", "simper (factor)")
     for (x in tests) tkinsert(testBox, "end", x)
     dist1Box <- tklistbox(method3Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
@@ -4311,9 +4311,9 @@ mantelGUI <- function(){
                 doItAndPrint(paste("rankindex(", .activeDataSet, "$", var2, ", ", .communityDataSet, ", method='", method, "')", sep=""))
             }
         }
-        if (test == "bioenv.numeric") {
+        if (test == "bioenv") {
             doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
-            doItAndPrint(paste("bioenv.numeric(", .communityDataSet, ", ", .activeDataSet, ", method='", method, "', index='", dist1, "', as.numeric=c())", sep=""))
+            doItAndPrint(paste("bioenv(", .communityDataSet, ", prepare.bioenv(", .activeDataSet, ", as.numeric=c()), method='", method, "', index='", dist1, "'", sep=""))
         }
         if (test == "betadisper (factor)" && var2 != "all") {
             var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
@@ -4375,7 +4375,7 @@ mantelGUI <- function(){
                 logger(paste("plot(distmatrix2, distmatrix1,xlab='environmental distance',ylab='ecological distance')", sep=""))
             }
         }
-        if (plotit==T && test!="mantel" && test!="rankindex" && test!="bioenv.numeric" && var2!="all") {
+        if (plotit==T && test!="mantel" && test!="rankindex" && test!="bioenv" && var2!="all") {
             var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
             varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", var2, ")", sep="")), envir=.GlobalEnv)
             if (varfactor==T) {

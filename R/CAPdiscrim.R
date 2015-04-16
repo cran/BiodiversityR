@@ -1,6 +1,6 @@
 `CAPdiscrim` <-
 function(formula,data,dist="bray",axes=4,m=0,permutations=0) {
-    if (!require(MASS)) {stop("Requires package MASS")}
+#    if (!require(MASS)) {stop("Requires package MASS")}
     CAPresult=function(points,y,group,axes=4,m=1,eig) {
         lda1 <- MASS::lda(y[,group]~points[,1:m],CV=T)
         lda2 <- MASS::lda(y[,group]~points[,1:m])

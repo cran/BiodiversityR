@@ -9,11 +9,11 @@ function(x, site="plotID", species="species",
     if (any(names(x) == count) == F) {stop ("count variable not defined")}
     if (any(names(x) == basal) == F) {stop ("basal area variable not defined")}
     if (factor != "") {
-        if (any(levels(as.factor(x[, factor])) == level) == F) {stop ("specified level not among factor levels")}
+        if (any(levels(droplevels(factor(x[, factor]))) == level) == F) {stop ("specified level not among factor levels")}
         subs <- x[, factor]==level
         x <- x[subs, ,drop=F]
     }
-    species.names <- levels(factor(x[, species]))
+    species.names <- levels(droplevels(factor(x[, species])))
     p <- length(species.names)
     result <- array(dim=c(p, 7))
     colnames(result) <- c("frequency", "density", "dominance", "frequency.percent", "density.percent", "dominance.percent", "importance.value")

@@ -1,6 +1,6 @@
 `ordicoeno` <-
 function(x, ordiplot, axis=1, legend=FALSE, cex=0.8, ncol=4, ...) {
-    if (!require(mgcv)) {stop("Requires package mgcv")}
+#    if (!require(mgcv)) {stop("Requires package mgcv")}
     ordiscore <- scores(ordiplot,display="sites")[,axis]
     original <- cbind(x,ordiscore)
     sorted <- original

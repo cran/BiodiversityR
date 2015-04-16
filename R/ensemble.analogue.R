@@ -3,7 +3,7 @@
 
 # modified from the Bioclim methods of Robert J. Hijmans
 
-if (require(raster) == T) {
+#if (require(raster) == T) {
 
 setClass('Climsurf',
     representation (
@@ -152,7 +152,7 @@ setMethod('predict', signature(object='Climsurf'),
         output2[, c(6:(5+vars))] <- model$target.values      
         output3 <- rbind(output2, output1)
 	return(output3)
-}
+#}
 
 
 }

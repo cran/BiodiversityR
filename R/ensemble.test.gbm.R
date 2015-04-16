@@ -12,8 +12,8 @@
 )
 {
     .BiodiversityR <- new.env()
-    if (! require(dismo)) {stop("Please install the dismo package")}
-    if (! require(gbm)) {stop("Please install the gbm package")}
+#   if (! require(dismo)) {stop("Please install the dismo package")}
+#    if (! require(gbm)) {stop("Please install the gbm package")}
     k <- as.integer(k)
     if (k < 2) {
         cat(paste("\n", "NOTE: parameter k was set to be smaller than 2", sep = ""))

@@ -1,7 +1,7 @@
 `distdisplayed` <-
 function(x,ordiplot,distx="bray",plotit=T,addit=F,method="spearman",permutations=100,abline=F,gam=T,...) {
     if (gam==T) {
-        if (!require(mgcv)) {stop("Requires package mgcv")}
+#        if (!require(mgcv)) {stop("Requires package mgcv")}
     }
     if (inherits(x, "dist")) {
         dist1 <- x

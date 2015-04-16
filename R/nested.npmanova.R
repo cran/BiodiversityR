@@ -2,7 +2,7 @@
 function(formula,data,method="euc",permutations=100,warnings=FALSE){
     randomize=function(data,toplev,lowlev){
         newdata <- data
-        orig.levs <- levels(data[,lowlev])
+        orig.levs <- levels(droplevels(data[,lowlev]))
         nl <- length(orig.levs)
         new.levs <- orig.levs[sample(nl)]
         for (i in 1:nl) {
@@ -17,7 +17,7 @@ function(formula,data,method="euc",permutations=100,warnings=FALSE){
     }
     randomize2=function(data,strata){
         newdata <- data
-        orig.levs <- levels(data[,strata])
+        orig.levs <- levels(droplevels(data[,strata]))
         nl <- length(orig.levs)
         for (i in 1:nl) {
             subs <- data[, strata] == orig.levs[i]

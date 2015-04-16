@@ -41,7 +41,7 @@
 )
 {
     .BiodiversityR <- new.env()
-    if (! require(dismo)) {stop("Please install the dismo package")}
+#    if (! require(dismo)) {stop("Please install the dismo package")}
     k <- as.integer(k)
 # check data
     if (is.null(TrainData) == T) {
@@ -341,16 +341,17 @@
         }
     }
     if (ws["GBM"] > 0) {
-        if (! require(gbm)) {stop("Please install the gbm package")}
+        if (! requireNamespace("gbm")) {stop("Please install the gbm package")}
+	requireNamespace("splines")
         if (is.null(GBM.formula) == T && formulae.defaults == T) {GBM.formula <- formulae$GBM.formula}
         if (is.null(GBM.formula) == T) {stop("Please provide the GBM.formula (hint: use ensemble.formulae function)")}
         environment(GBM.formula) <- .BiodiversityR
     }
     if (ws["GBMSTEP"] > 0) {
-        if (! require(gbm)) {stop("Please install the gbm package")}
+#        if (! require(gbm)) {stop("Please install the gbm package")}
     }
     if (ws["RF"] > 0) {
-        if (! require(randomForest)) {stop("Please install the randomForest package")}
+#        if (! require(randomForest)) {stop("Please install the randomForest package")}
         if (is.null(RF.formula) == T && formulae.defaults == T) {RF.formula <- formulae$RF.formula}
         if (is.null(RF.formula) == T) {stop("Please provide the RF.formula (hint: use ensemble.formulae function)")}
         environment(RF.formula) <- .BiodiversityR
@@ -363,7 +364,7 @@
         assign("GLM.family", GLM.family, envir=.BiodiversityR)
     }
     if (ws["GLMSTEP"] > 0) {
-        if (! require(MASS)) {stop("Please install the MASS package")}
+#        if (! require(MASS)) {stop("Please install the MASS package")}
         if (is.null(STEP.formula) == T && formulae.defaults == T) {STEP.formula <- formulae$STEP.formula}
         if (is.null(GLMSTEP.scope) == T && formulae.defaults == T) {GLMSTEP.scope <- formulae$GLMSTEP.scope}
         if (is.null(STEP.formula) == T) {stop("Please provide the STEP.formula (hint: use ensemble.formulae function)")}
@@ -373,9 +374,9 @@
     }
     if (ws["GAM"] > 0 || ws["GAMSTEP"] > 0) {
         cat(paste("\n\n"))
-        try(detach(package:mgcv), silent=T)
-        suppressMessages(require(gam))
-        if (! require(gam, quietly=T)) {stop("Please install the gam package")}
+#        try(detach(package:mgcv), silent=T)
+#        suppressMessages(require(gam))
+#         if (! require("gam", quietly=T)) {stop("Please install the gam package")}
     }
     if (ws["GAM"] > 0) {
         if (is.null(GAM.formula) == T && formulae.defaults == T) {GAM.formula <- formulae$GAM.formula}
@@ -393,15 +394,15 @@
     }
     if (ws["MGCV"] > 0 || ws["MGCVFIX"] > 0) {
         cat(paste("\n\n"))
-        try(detach(package:gam), silent=T)
-        options(warn=-1)
-        if (! require(mgcv, quietly=T)) {stop("Please install the mgcv package")}
+#        try(detach(package:gam), silent=T)
+#        options(warn=-1)
+#        if (! require(mgcv, quietly=T)) {stop("Please install the mgcv package")}
 #         get the probabilities from MGCV
             predict.mgcv <- function(object, newdata, type="response") {
-                p <- predict(object=object, newdata=newdata, type=type)
+                p <- mgcv::predict.gam(object=object, newdata=newdata, type=type)
                 return(as.numeric(p))
             }
-        options(warn=0)
+#        options(warn=0)
     }
     if (ws["MGCV"] > 0) {
         if (is.null(MGCV.formula) == T && formulae.defaults == T) {MGCV.formula <- formulae$MGCV.formula}
@@ -416,7 +417,7 @@
         assign("GAM.family", GAM.family, envir=.BiodiversityR)
     }
     if (ws["EARTH"] > 0) {
-        if (! require(earth)) {stop("Please install the earth package")}
+#        if (! require(earth)) {stop("Please install the earth package")}
         if (is.null(EARTH.formula) == T && formulae.defaults == T) {EARTH.formula <- formulae$EARTH.formula}
         if (is.null(EARTH.formula) == T) {stop("Please provide the EARTH.formula (hint: use ensemble.formulae function)")}
         environment(EARTH.formula) <- .BiodiversityR
@@ -427,13 +428,13 @@
             }
     }
     if (ws["RPART"] > 0) {
-        if (! require(rpart)) {stop("Please install the rpart package")}
+#        if (! require(rpart)) {stop("Please install the rpart package")}
         if (is.null(RPART.formula) == T && formulae.defaults == T) {RPART.formula <- formulae$RPART.formula}
         if (is.null(RPART.formula) == T) {stop("Please provide the RPART.formula (hint: use ensemble.formulae function)")}
         environment(RPART.formula) <- .BiodiversityR
     }
     if (ws["NNET"] > 0) {
-        if (! require(nnet)) {stop("Please install the nnet package")}
+#        if (! require(nnet)) {stop("Please install the nnet package")}
         if (is.null(NNET.formula) == T && formulae.defaults == T) {NNET.formula <- formulae$NNET.formula}
         if (is.null(NNET.formula) == T) {stop("Please provide the NNET.formula (hint: use ensemble.formulae function)")}
         environment(NNET.formula) <- .BiodiversityR
@@ -444,19 +445,19 @@
             }
     }
     if (ws["FDA"] > 0) {
-        if (! require(mda)) {stop("Please install the mda package")}
+#        if (! require(mda)) {stop("Please install the mda package")}
         if (is.null(FDA.formula) == T && formulae.defaults == T) {FDA.formula <- formulae$FDA.formula}
         if (is.null(FDA.formula) == T) {stop("Please provide the FDA.formula (hint: use ensemble.formulae function)")}
         environment(FDA.formula) <- .BiodiversityR
     }
     if (ws["SVM"] > 0) {
-        if (! require(kernlab)) {stop("Please install the kernlab package")}
+#        if (! require(kernlab)) {stop("Please install the kernlab package")}
         if (is.null(SVM.formula) == T && formulae.defaults == T) {SVM.formula <- formulae$SVM.formula}
         if (is.null(SVM.formula) == T) {stop("Please provide the SVM.formula (hint: use ensemble.formulae function)")}
         environment(SVM.formula) <- .BiodiversityR
     }
     if (ws["SVME"] > 0) {
-        if (! require(e1071)) {stop("Please install the e1071 package")}
+#        if (! require(e1071)) {stop("Please install the e1071 package")}
         if (is.null(SVME.formula) == T && formulae.defaults == T) {SVME.formula <- formulae$SVME.formula}
         if (is.null(SVME.formula) == T) {stop("Please provide the SVME.formula (hint: use ensemble.formulae function)")}
         environment(SVME.formula) <- .BiodiversityR
@@ -558,11 +559,11 @@
 # include all possible factor levels in TrainData (especially important if models are kept)
     if (is.null(factors)==F && is.null(x)==T) {
         for (i in 1:length(factors)) {
-            if (identical(levels(TrainData[,factors[i]]), levels(TestData[,factors[i]]))==F) {
+            if (identical(levels(droplevels(TrainData[,factors[i]])), levels(droplevels(TestData[,factors[i]])))==F) {
                 cat(paste("\n", "WARNING: differences in factor levels between calibration and evaluation data (variable ", factors[i], ")", "\n", sep = ""))
                 cat(paste("Same levels set for both data sets to avoid problems with some evaluations", "\n", sep = ""))
                 cat(paste("However, some predictions may still fail", "\n", sep = ""))
-                uniquelevels <- unique(c(levels(TrainData[,factors[i]]), levels(TestData[,factors[i]])))
+                uniquelevels <- unique(c(levels(droplevels(TrainData[,factors[i]])), levels(droplevels(TestData[,factors[i]]))))
                 levels(TrainData[,factors[i]]) <- uniquelevels
                 levels(TestData[,factors[i]]) <- uniquelevels
             }
@@ -580,7 +581,7 @@
             if(models.keep==T) {
                 categories[[as.name(factors[i])]] <- all.categories
             }
-            train.categories <- levels(TrainData[,factors[i]])
+            train.categories <- levels(droplevels(TrainData[,factors[i]]))
             new.categories <- c(all.categories[is.na(match(all.categories, train.categories))])
             if (length(new.categories) > 0) {
                 cat(paste("\n", "The following levels were initially not captured by TrainData for factor '", factors[i], "'\n", sep = ""))
@@ -601,7 +602,7 @@
                     TrainValid <- complete.cases(TrainData[TrainData[,"pb"]==0,])
                     a <- a[TrainValid,]
                     TrainData <- dismo::prepareData(x, p, b=a, factors=factors, xy=FALSE)
-                    train.categories <- levels(TrainData[,factors[i]])
+                    train.categories <- levels(droplevels(TrainData[,factors[i]]))
                     new.categories <- all.categories[is.na(match(all.categories, train.categories))]
                     if (length(new.categories) == 0) {
                         cat(paste("All levels have now been included as background data for TrainData for factor '", factors[i], "'\n", sep = ""))
@@ -614,7 +615,7 @@
             }
 # step 3: also modify test data
             if (no.tests == F) {
-                test.categories <- levels(TestData[,factors[i]])
+                test.categories <- levels(droplevels(TestData[,factors[i]]))
                 new.categories <- c(all.categories[is.na(match(all.categories, test.categories))])
                 if (length(new.categories) > 0) {
                     cat(paste("\n", "The following levels were initially not captured by TestData for factor '", factors[i], "'\n", sep = ""))
@@ -628,7 +629,7 @@
                         TestValid <- complete.cases(TestData[TestData[,"pb"]==0,])
                         at <- at[TestValid,]
                         TestData <- dismo::prepareData(x, p=pt, b=at, factors=factors, xy=FALSE)
-                        test.categories <- levels(TestData[,factors[i]])
+                        test.categories <- levels(droplevels(TestData[,factors[i]]))
                         new.categories <- all.categories[is.na(match(all.categories, test.categories))]
                         if (length(new.categories) == 0) {
                             cat(paste("All levels have now been included as background data for TestData for factor '", factors[i], "'\n", sep = ""))
@@ -747,7 +748,7 @@
 #
     newVIF <- NULL
     if (VIF == T  && length(names(TrainData.vars)) > 1 ) {
-        if (! require(car)) {stop("Please install the car package")}
+#        if (! require(car)) {stop("Please install the car package")}
 # only use background data
         TrainDataNum <- TrainData[TrainData[,"pb"]==0,]
         LM.formula <- ensemble.formulae(TrainData, factors=factors)$RF.formula
@@ -892,7 +893,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n", sep = ""))
                 TrainData[,"MAXENT.step1"] <- TrainData[,"MAXENT"]
-                TrainData[,"MAXENT"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"MAXENT"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "MAXENT"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -912,7 +913,7 @@
                 TestData[,"MAXENT"] <- dismo::predict(object=results, x=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"MAXENT.step1"] <- TestData[,"MAXENT"]
-                    TestData[,"MAXENT"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"MAXENT"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"MAXENT"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MAXENT"]
@@ -955,7 +956,7 @@
         }
         if (is.null(results) == F) {
             cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
-            TrainData[,"GBM"] <- predict(object=results, newdata=TrainData.vars, n.trees=results$n.trees, type="response")
+            TrainData[,"GBM"] <- gbm::predict.gbm(object=results, newdata=TrainData.vars, n.trees=results$n.trees, type="response")
             if (PROBIT == T) {
                 if(is.null(GBM.PROBIT.OLD) == T) { 
                     probit.formula <- as.formula(paste("pb ~ GBM"))
@@ -965,7 +966,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"GBM.step1"] <- TrainData[,"GBM"]
-                TrainData[,"GBM"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"GBM"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "GBM"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -981,10 +982,10 @@
             weights["GBM"] <- max(c(eval1@auc, 0), na.rm=T)
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
-                TestData[,"GBM"] <- predict(object=results, newdata=TestData.vars, n.trees=results$n.trees, type="response")
+                TestData[,"GBM"] <- gbm::predict.gbm(object=results, newdata=TestData.vars, n.trees=results$n.trees, type="response")
                 if (PROBIT == T) {
                     TestData[,"GBM.step1"] <- TestData[,"GBM"]
-                    TestData[,"GBM"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"GBM"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GBM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GBM"]
@@ -1032,7 +1033,7 @@
             cat(paste("\n", "stepwise GBM trees (target > 1000)", "\n", sep = ""))
             print(results$n.trees)
             cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
-            TrainData[,"GBMSTEP"] <- predict(object=results, newdata=TrainData.vars, n.trees=results$n.trees, type="response")
+            TrainData[,"GBMSTEP"] <- gbm::predict.gbm(object=results, newdata=TrainData.vars, n.trees=results$n.trees, type="response")
             if (PROBIT == T) {
                 if(is.null(GBMSTEP.PROBIT.OLD) == T) { 
                     probit.formula <- as.formula(paste("pb ~ GBMSTEP"))
@@ -1042,7 +1043,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"GBMSTEP.step1"] <- TrainData[,"GBMSTEP"]
-                TrainData[,"GBMSTEP"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"GBMSTEP"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "GBMSTEP"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1058,10 +1059,10 @@
             weights["GBMSTEP"] <- max(c(eval1@auc, 0), na.rm=T)
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
-                TestData[,"GBMSTEP"] <- predict(object=results, newdata=TestData.vars, n.trees=results$n.trees, type="response")
+                TestData[,"GBMSTEP"] <- gbm::predict.gbm(object=results, newdata=TestData.vars, n.trees=results$n.trees, type="response")
                 if (PROBIT == T) {
                     TestData[,"GBMSTEP.step1"] <- TestData[,"GBMSTEP"]
-                    TestData[,"GBMSTEP"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"GBMSTEP"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GBMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GBMSTEP"]
@@ -1113,7 +1114,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"RF.step1"] <- TrainData[,"RF"]
-                TrainData[,"RF"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"RF"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "RF"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1132,7 +1133,7 @@
                 TestData[,"RF"] <- predict(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
                     TestData[,"RF.step1"] <- TestData[,"RF"]
-                    TestData[,"RF"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"RF"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"RF"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"RF"]
@@ -1174,7 +1175,7 @@
         }
         if (is.null(results) == F) {
             cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
-            TrainData[,"GLM"] <- predict(object=results, newdata=TrainData.vars, type="response")
+            TrainData[,"GLM"] <- predict.glm(object=results, newdata=TrainData.vars, type="response")
             if (PROBIT == T) {
                 if(is.null(GLM.PROBIT.OLD) == T) { 
                     probit.formula <- as.formula(paste("pb ~ GLM"))
@@ -1184,7 +1185,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"GLM.step1"] <- TrainData[,"GLM"]
-                TrainData[,"GLM"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"GLM"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "GLM"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1200,10 +1201,10 @@
             weights["GLM"] <- max(c(eval1@auc, 0), na.rm=T)
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
-                TestData[,"GLM"] <- predict(object=results, newdata=TestData.vars, type="response")
+                TestData[,"GLM"] <- predict.glm(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
                     TestData[,"GLM.step1"] <- TestData[,"GLM"]
-                    TestData[,"GLM"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"GLM"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GLM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GLM"]
@@ -1252,7 +1253,7 @@
             cat(paste("\n", "stepwise GLM formula","\n\n",sep = ""))
             print(formula(results))
             cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
-            TrainData[,"GLMSTEP"] <- predict(object=results, newdata=TrainData.vars, type="response")
+            TrainData[,"GLMSTEP"] <- predict.glm(object=results, newdata=TrainData.vars, type="response")
             if (PROBIT == T) {
                 if(is.null(GLMSTEP.PROBIT.OLD) == T) { 
                     probit.formula <- as.formula(paste("pb ~ GLMSTEP"))
@@ -1262,7 +1263,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"GLMSTEP.step1"] <- TrainData[,"GLMSTEP"]
-                TrainData[,"GLMSTEP"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"GLMSTEP"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "GLMSTEP"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1278,10 +1279,10 @@
             weights["GLMSTEP"] <- max(c(eval1@auc, 0), na.rm=T)
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
-                TestData[,"GLMSTEP"] <- predict(object=results, newdata=TestData.vars, type="response")
+                TestData[,"GLMSTEP"] <- predict.glm(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
                     TestData[,"GLMSTEP.step1"] <- TestData[,"GLMSTEP"]
-                    TestData[,"GLMSTEP"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"GLMSTEP"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GLMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GLMSTEP"]
@@ -1313,9 +1314,9 @@
     }
     if (ws["GAM"] > 0 || ws["GAMSTEP"] > 0) {
         cat(paste("\n\n"))
-        try(detach(package:mgcv), silent=T)
-        suppressMessages(require(gam))
-        require(gam, quietly=T)
+#        try(detach(package:mgcv), silent=T)
+#        suppressMessages(require(gam))
+#        require(gam, quietly=T)
     }
     if (ws["GAM"] > 0) {
         mc <- mc+1
@@ -1324,13 +1325,13 @@
         if(is.null(GAM.OLD) == T) {
             tryCatch(results <- gam::gam(formula=GAM.formula, family=GAM.family, data=TrainData, weights=Yweights, control=gam::gam.control(maxit=maxit, bf.maxit=50)),
                 error= function(err) {print(paste("GAM calibration (gam package) failed"))},
-                silent=T)
+                silent=F)
         }else{ 
             results <- GAM.OLD
         }
         if (is.null(results) == F) {
             cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
-            TrainData[,"GAM"] <- predict(object=results, newdata=TrainData.vars, type="response")
+            TrainData[,"GAM"] <- gam::predict.gam(object=results, newdata=TrainData.vars, type="response")
             if (PROBIT == T) {
                 if(is.null(GAM.PROBIT.OLD) == T) { 
                     probit.formula <- as.formula(paste("pb ~ GAM"))
@@ -1340,7 +1341,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"GAM.step1"] <- TrainData[,"GAM"]
-                TrainData[,"GAM"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"GAM"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "GAM"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1356,10 +1357,10 @@
             weights["GAM"] <- max(c(eval1@auc, 0), na.rm=T)
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
-                TestData[,"GAM"] <- predict(object=results, newdata=TestData.vars, type="response")
+                TestData[,"GAM"] <- gam::predict.gam(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
                     TestData[,"GAM.step1"] <- TestData[,"GAM"]
-                    TestData[,"GAM"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"GAM"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GAM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GAM"]
@@ -1414,7 +1415,7 @@
             cat(paste("\n", "stepwise GAM formula (gam package)","\n\n",sep = ""))
             print(formula(results))
             cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
-            TrainData[,"GAMSTEP"] <- predict(object=results, newdata=TrainData.vars, type="response")
+            TrainData[,"GAMSTEP"] <- gam::predict.gam(object=results, newdata=TrainData.vars, type="response")
             if (PROBIT == T) {
                 if(is.null(GAMSTEP.PROBIT.OLD) == T) { 
                     probit.formula <- as.formula(paste("pb ~ GAMSTEP"))
@@ -1424,7 +1425,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"GAMSTEP.step1"] <- TrainData[,"GAMSTEP"]
-                TrainData[,"GAMSTEP"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"GAMSTEP"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "GAMSTEP"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1440,10 +1441,10 @@
             weights["GAMSTEP"] <- max(c(eval1@auc, 0), na.rm=T)
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n","\n", sep = ""))
-                TestData[,"GAMSTEP"] <- predict(object=results, newdata=TestData.vars, type="response")
+                TestData[,"GAMSTEP"] <- gam::predict.gam(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
                     TestData[,"GAM.step1"] <- TestData[,"GAM"]
-                    TestData[,"GAM"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"GAM"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GAMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GAMSTEP"]
@@ -1475,10 +1476,10 @@
     }
     if (ws["MGCV"] > 0 || ws["MGCVFIX"] > 0) {
         cat(paste("\n\n"))
-        try(detach(package:gam), silent=T)
-        options(warn=-1)
-        require(mgcv, quietly=T)
-        options(warn=0)
+#        try(detach(package:gam), silent=T)
+#        options(warn=-1)
+#        require(mgcv, quietly=T)
+#        options(warn=0)
     }
     if (ws["MGCV"] > 0) {
         mc <- mc+1
@@ -1504,7 +1505,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"MGCV.step1"] <- TrainData[,"MGCV"]
-                TrainData[,"MGCV"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"MGCV"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "MGCV"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1523,7 +1524,7 @@
                 TestData[,"MGCV"] <- predict.mgcv(object=results, newdata=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"MGCV.step1"] <- TestData[,"MGCV"]
-                    TestData[,"MGCV"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"MGCV"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"MGCV"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MGCV"]
@@ -1575,7 +1576,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"MGCVFIX.step1"] <- TrainData[,"MGCVFIX"]
-                TrainData[,"MGCVFIX"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"MGCVFIX"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "MGCVFIX"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1594,7 +1595,7 @@
                 TestData[,"MGCVFIX"] <- predict.mgcv(object=results, newdata=TestData)
                 if (PROBIT == T) {
                     TestData[,"MGCVFIX.step1"] <- TestData[,"MGCVFIX"]
-                    TestData[,"MGCVFIX"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"MGCVFIX"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"MGCVFIX"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MGCVFIX"]
@@ -1649,7 +1650,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"EARTH.step1"] <- TrainData[,"EARTH"]
-                TrainData[,"EARTH"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"EARTH"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "EARTH"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1668,7 +1669,7 @@
                 TestData[,"EARTH"] <- predict.earth2(object=results, newdata=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"EARTH.step1"] <- TestData[,"EARTH"]
-                    TestData[,"EARTH"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"EARTH"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"EARTH"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"EARTH"]
@@ -1721,7 +1722,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"RPART.step1"] <- TrainData[,"RPART"]
-                TrainData[,"RPART"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"RPART"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "RPART"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1740,7 +1741,7 @@
                 TestData[,"RPART"] <- predict(object=results, newdata=TestData.vars, type="prob")[,2]
                 if (PROBIT == T) {
                     TestData[,"RPART.step1"] <- TestData[,"RPART"]
-                    TestData[,"RPART"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"RPART"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"RPART"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"RPART"]
@@ -1794,7 +1795,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"NNET.step1"] <- TrainData[,"NNET"]
-                TrainData[,"NNET"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"NNET"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "NNET"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1813,7 +1814,7 @@
                 TestData[,"NNET"] <- predict.nnet2(object=results, newdata=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"NNET.step1"] <- TestData[,"NNET"]
-                    TestData[,"NNET"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"NNET"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"NNET"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"NNET"]
@@ -1865,7 +1866,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"FDA.step1"] <- TrainData[,"FDA"]
-                TrainData[,"FDA"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"FDA"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "FDA"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1884,7 +1885,7 @@
                 TestData[,"FDA"] <- predict(object=results, newdata=TestData.vars, type="posterior")[,2]
                 if (PROBIT == T) {
                     TestData[,"FDA.step1"] <- TestData[,"FDA"]
-                    TestData[,"FDA"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"FDA"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"FDA"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"FDA"]
@@ -1937,7 +1938,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"SVM.step1"] <- TrainData[,"SVM"]
-                TrainData[,"SVM"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"SVM"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "SVM"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -1956,7 +1957,7 @@
                 TestData[,"SVM"] <- kernlab::predict(object=results, newdata=TestData.vars, type="probabilities")[,2]
                 if (PROBIT == T) {
                     TestData[,"SVM.step1"] <- TestData[,"SVM"]
-                    TestData[,"SVM"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"SVM"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"SVM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"SVM"]
@@ -2008,7 +2009,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"SVME.step1"] <- TrainData[,"SVME"]
-                TrainData[,"SVME"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"SVME"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "SVME"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -2027,7 +2028,7 @@
                 TestData[,"SVME"] <- predict.svme(model=results, newdata=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"SVME.step1"] <- TestData[,"SVME"]
-                    TestData[,"SVME"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"SVME"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"SVME"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"SVME"]
@@ -2095,7 +2096,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"BIOCLIM.step1"] <- TrainData[,"BIOCLIM"]
-                TrainData[,"BIOCLIM"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"BIOCLIM"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "BIOCLIM"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -2114,7 +2115,7 @@
                 TestData[,"BIOCLIM"] <- dismo::predict(object=results, x=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"BIOCLIM.step1"] <- TestData[,"BIOCLIM"]
-                    TestData[,"BIOCLIM"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"BIOCLIM"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"BIOCLIM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"BIOCLIM"]
@@ -2165,7 +2166,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"DOMAIN.step1"] <- TrainData[,"DOMAIN"]
-                TrainData[,"DOMAIN"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"DOMAIN"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "DOMAIN"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -2184,7 +2185,7 @@
                 TestData[,"DOMAIN"] <- dismo::predict(object=results, x=TestData.vars)
                 if (PROBIT == T) {
                     TestData[,"DOMAIN.step1"] <- TestData[,"DOMAIN"]
-                    TestData[,"DOMAIN"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"DOMAIN"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"DOMAIN"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"DOMAIN"]
@@ -2235,7 +2236,7 @@
                 }
                 cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
                 TrainData[,"MAHAL.step1"] <- TrainData[,"MAHAL"]
-                TrainData[,"MAHAL"] <- predict(object=results2, newdata=TrainData, type="response")
+                TrainData[,"MAHAL"] <- predict.glm(object=results2, newdata=TrainData, type="response")
             }
             pred1 <- TrainData[, "MAHAL"]
             pred1[pred1 == 0] <- 0.0000000001
@@ -2254,7 +2255,7 @@
                 TestData[,"MAHAL"] <- predict.mahal(model=results, newdata=TestData.vars, MAHAL.shape=MAHAL.shape)
                 if (PROBIT == T) {
                     TestData[,"MAHAL.step1"] <- TestData[,"MAHAL"]
-                    TestData[,"MAHAL"] <- predict(object=results2, newdata=TestData, type="response")
+                    TestData[,"MAHAL"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"MAHAL"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MAHAL"]

@@ -1,12 +1,12 @@
 `residualssurface` <-
 function(model,data,x,y,gam=F,npol=2,plotit=T,filled=F,bubble=F) {
-    if (!require(spatial)) {stop("Requires package spatial")}
-    if (!require(akima)) {stop("Requires package akima")}
+#    if (!require(spatial)) {stop("Requires package spatial")}
+#    if (!require(akima)) {stop("Requires package akima")}
     res <- na.omit(residuals(model))
     xpos <- data[,x]
     ypos <- data[,y]
     if (gam==T) {
-        if (!require(mgcv)) {stop("Requires package mgcv")}
+#        if (!require(mgcv)) {stop("Requires package mgcv")}
         result <- mgcv::gam(res~s(xpos)+s(ypos),family=gaussian)
     }else{
         result <- spatial::surf.ls(npol,xpos,ypos,res)

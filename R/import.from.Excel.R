@@ -5,7 +5,7 @@ function(file=file.choose(), data.type="community", sheet=NULL, sitenames="sites
     column="species", value="abundance", factor="", level="", cepnames=FALSE, 
     write.csv=FALSE, csv.file=paste(data.type, ".csv", sep="") )
 {
-    if (!require(RODBC)) {stop("Requires package RODBC")}
+#    if (!require(RODBC)) {stop("Requires package RODBC")}
     dataplace <- RODBC::odbcConnectExcel(file)
     if (is.null(data.type) == TRUE) {data.type <- sheet}
     TYPES <- c("community", "environmental", "stacked")
@@ -34,7 +34,7 @@ function(file=file.choose(), data.type="community", sheet=NULL, sitenames="sites
     column="species", value="abundance", factor="", level="", cepnames=FALSE, 
     write.csv=FALSE, csv.file=paste(data.type, ".csv", sep="") )
 {
-    if (!require(RODBC)) {stop("Requires package RODBC")}
+#    if (!require(RODBC)) {stop("Requires package RODBC")}
     dataplace <- RODBC::odbcConnectExcel2007(file)
     if (is.null(data.type) == TRUE) {data.type <- sheet}
     TYPES <- c("community", "environmental", "stacked")

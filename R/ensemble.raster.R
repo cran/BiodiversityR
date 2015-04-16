@@ -13,7 +13,7 @@
 )
 {
     .BiodiversityR <- new.env()
-    if (! require(dismo)) {stop("Please install the dismo package")}
+#    if (! require(dismo)) {stop("Please install the dismo package")}
     if (is.null(xn) == T) {stop("value for parameter xn is missing (RasterStack object)")}
     if (is.null(models.list) == T) {stop("provide 'models.list' as models will not be recalibrated and retested")}
     if (is.null(input.weights) == T) {input.weights <- models.list$output.weights}
@@ -167,38 +167,39 @@
 	if (!file.exists(jar)) {stop('maxent program is missing: ', jar, '\nPlease download it here: http://www.cs.princeton.edu/~schapire/maxent/')}
     }
     if (GBM > 0) {
-        if (! require(gbm)) {stop("Please install the gbm package")}
+        if (! requireNamespace("gbm")) {stop("Please install the gbm package")}
+	requireNamespace("splines")
     }
     if (GBMSTEP > 0) {
-        if (! require(gbm)) {stop("Please install the gbm package")}
+#        if (! require(gbm)) {stop("Please install the gbm package")}
     }
     if (RF > 0) {
-        if (! require(randomForest)) {stop("Please install the randomForest package")}
+#        if (! require(randomForest)) {stop("Please install the randomForest package")}
     }
     if (GLMSTEP > 0) {
-        if (! require(MASS)) {stop("Please install the MASS package")}
+#        if (! require(MASS)) {stop("Please install the MASS package")}
     }
     if (GAM > 0  || GAMSTEP > 0) {
-        cat(paste("\n"))
-        try(detach(package:mgcv), silent=T)
-        suppressMessages(require(gam))
-        if (! require(gam)) {stop("Please install the gam package")}
+#        cat(paste("\n"))
+#        try(detach(package:mgcv), silent=T)
+#        suppressMessages(require(gam))
+#        if (! require(gam)) {stop("Please install the gam package")}
     }
     if (MGCV > 0 || MGCVFIX > 0) {
-        cat(paste("\n"))
-        try(detach(package:gam), silent=T)
-        cat(paste("\n"))
-        options(warn=-1)
-        if (! require(mgcv)) {stop("Please install the mgcv package")}
+#        cat(paste("\n"))
+#        try(detach(package:gam), silent=T)
+#        cat(paste("\n"))
+#        options(warn=-1)
+#        if (! require(mgcv)) {stop("Please install the mgcv package")}
 #         get the probabilities from MGCV
             predict.mgcv <- function(object, newdata, type="response") {
-                p <- predict(object=object, newdata=newdata, type=type)
+                p <- mgcv::predict.gam(object=object, newdata=newdata, type=type)
                 return(as.numeric(p))
             }
-        options(warn=0) 
+#        options(warn=0) 
     }
     if (EARTH > 0) {
-        if (! require(earth)) {stop("Please install the earth package")}
+#        if (! require(earth)) {stop("Please install the earth package")}
 #         get the probabilities from earth
             predict.earth2 <- function(object, newdata, type="response") {
                 p <- predict(object=object, newdata=newdata, type=type)
@@ -206,10 +207,10 @@
             }
     }
     if (RPART > 0) {
-        if (! require(rpart)) {stop("Please install the rpart package")}
+#        if (! require(rpart)) {stop("Please install the rpart package")}
     }
     if (NNET > 0) {
-        if (! require(nnet)) {stop("Please install the nnet package")}
+#        if (! require(nnet)) {stop("Please install the nnet package")}
 #         get the probabilities from nnet
             predict.nnet2 <- function(object, newdata, type="raw") {
                 p <- predict(object=object, newdata=newdata, type=type)
@@ -217,13 +218,13 @@
             }
     }
     if (FDA > 0) {
-        if (! require(mda)) {stop("Please install the mda package")}
+#        if (! require(mda)) {stop("Please install the mda package")}
     }
     if (SVM > 0) {
-        if (! require(kernlab)) {stop("Please install the kernlab package")}
+#        if (! require(kernlab)) {stop("Please install the kernlab package")}
     }
     if (SVME > 0) {
-        if (! require(e1071)) {stop("Please install the e1071 package")}
+#        if (! require(e1071)) {stop("Please install the e1071 package")}
 #         get the probabilities from svm
             predict.svme <- function(model, newdata, probability=T) {
                 p <- predict(model, newdata, probability=T)
@@ -350,7 +351,7 @@
         results <- GBM.OLD
         pgbm <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GBM", sep="")
-        tryCatch(pgbm <- raster::predict(object=xn, model=results, na.rm=TRUE, factors=categories,
+        tryCatch(pgbm <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=categories,
                 n.trees=results$n.trees, type="response", 
                 filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format),
             error= function(err) {print(paste("GBM prediction failed"))},
@@ -399,7 +400,7 @@
         results <- GBMSTEP.OLD
         pgbms <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GBMSTEP", sep="")
-        tryCatch(pgbms <- raster::predict(object=xn, model=results, na.rm=TRUE, factors=categories,
+        tryCatch(pgbms <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=categories,
                 n.trees=results$n.trees, type="response", 
                 filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format),
             error= function(err) {print(paste("stepwise GBM prediction failed"))},
@@ -575,10 +576,10 @@
         } 
     }
     if (ws["GAM"] > 0 || ws["GAMSTEP"] > 0) {
-        cat(paste("\n"))
-        try(detach(package:mgcv), silent=T)
-        suppressMessages(require(gam))
-        require(gam, quietly=T)
+#        cat(paste("\n"))
+#        try(detach(package:mgcv), silent=T)
+#        suppressMessages(require(gam))
+#        require(gam, quietly=T)
     }
     if (ws["GAM"] > 0) {
         mc <- mc+1
@@ -586,7 +587,7 @@
         results <- GAM.OLD
         pgam <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GAM", sep="")
-        tryCatch(pgam <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=categories,
+        tryCatch(pgam <- raster::predict(object=xn, model=results, fun=gam::predict.gam, na.rm=TRUE, type="response", factors=categories,
                 filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format),
             error= function(err) {print(paste("GAM prediction (gam package) failed"))},
             silent=F)
@@ -631,7 +632,7 @@
         results <- GAMSTEP.OLD
         pgams <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GAMSTEP", sep="")
-        tryCatch(pgams <- raster::predict(object=xn, model=results, type="response", na.rm=TRUE, factors=categories,
+        tryCatch(pgams <- raster::predict(object=xn, model=results, fun=gam::predict.gam, type="response", na.rm=TRUE, factors=categories,
                 filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format),
             error= function(err) {print(paste("stepwise GAM prediction (gam package) failed"))},
             silent=F)
@@ -671,11 +672,11 @@
         } 
     }
     if (ws["MGCV"] > 0 || ws["MGCVFIX"] > 0) {
-        cat(paste("\n"))
-        try(detach(package:gam), silent=T)
-        options(warn=-1)
-        require(mgcv, quietly=T)
-        options(warn=0)
+#        cat(paste("\n"))
+#        try(detach(package:gam), silent=T)
+#        options(warn=-1)
+#        require(mgcv, quietly=T)
+#        options(warn=0)
     }
     if (ws["MGCV"] > 0) {
         mc <- mc+1
@@ -686,7 +687,7 @@
         results <- MGCV.OLD
         pmgcv <- NULL
         fullname <- paste("models/", RASTER.species.name, "_MGCV", sep="")
-        tryCatch(pmgcv <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=categories,
+        tryCatch(pmgcv <- raster::predict(object=xn, model=results, fun=predict.mgcv, na.rm=TRUE, type="response", factors=categories,
                 filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format),
             error= function(err) {print(paste("GAM prediction (mgcv package) failed"))},
             silent=F)
@@ -734,7 +735,7 @@
         results <- MGCVFIX.OLD
         pmgcvf <- NULL
         fullname <- paste("models/", RASTER.species.name, "_MGCVFIX", sep="")
-        tryCatch(pmgcvf <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=categories,
+        tryCatch(pmgcvf <- raster::predict(object=xn, model=results, fun=predict.mgcv, na.rm=TRUE, type="response", factors=categories,
                 filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format),
             error= function(err) {print(paste("MGCVFIX prediction (mgcv package) failed"))},
             silent=F)
