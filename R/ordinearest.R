@@ -4,7 +4,7 @@ function (ordiplot,dist,...) {
     dist <- as.matrix(dist)
     diag(dist) <- Inf
     nabo <- apply(dist, 1, which.min)
-    arrows(ord[,1], ord[,2], ord[nabo,1], ord[nabo,2], ...)
+    graphics::arrows(ord[,1], ord[,2], ord[nabo,1], ord[nabo,2], ...)
     invisible()
 }
 

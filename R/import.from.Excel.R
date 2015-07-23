@@ -25,7 +25,7 @@ function(file=file.choose(), data.type="community", sheet=NULL, sitenames="sites
     }else{
         colnames(result) <- make.names(colnames(result),unique=T)
     }
-    if (write.csv == TRUE) {write.table(x=result, file=csv.file, row.names=T, col.names=T, sep=',')}
+    if (write.csv == TRUE) {utils::write.table(x=result, file=csv.file, row.names=T, col.names=T, sep=',')}
     return(result)
 }
 
@@ -53,7 +53,7 @@ function(file=file.choose(), data.type="community", sheet=NULL, sitenames="sites
     }else{
         colnames(result) <- make.names(colnames(result),unique=T)
     }
-    if (write.csv == TRUE) {write.table(x=result, file=csv.file, row.names=T, col.names=T, sep=',')}
+    if (write.csv == TRUE) {utils::write.table(x=result, file=csv.file, row.names=T, col.names=T, sep=',')}
     return(result)
 }
 

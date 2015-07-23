@@ -1,6 +1,6 @@
 `ensemble.habitat.change` <- function(
     base.map=file.choose(), 
-    other.maps=choose.files(),
+    other.maps=utils::choose.files(),
     change.folder="ensembles/change",
     RASTER.format="raster", RASTER.datatype="INT1U", RASTER.NAflag=255,
     KML.out=FALSE, KML.folder="kml/change",

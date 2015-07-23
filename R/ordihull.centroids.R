@@ -57,11 +57,13 @@ function (ordmod, ordiplot, groups, draw = c("lines",
         gr <- out[groups == is]
         if (length(gr) > 1) {
             X <- pts[gr, ]
-            hpts <- chull(X)
+            hpts <- grDevices::chull(X)
             hpts <- c(hpts, hpts[1])
-            if (draw == "lines") 
-                lines(X[hpts, ], ...)
-            else polygon(X[hpts, ], ...)
+            if (draw == "lines"){ 
+                graphics::lines(X[hpts, ], ...)
+            }else{ 
+                graphics::polygon(X[hpts, ], ...)
+            }
         }
     }
     if (return.outliers == T) {

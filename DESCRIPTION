@@ -1,8 +1,8 @@
 Package: BiodiversityR
 Type: Package
 Title: Package for Community Ecology and Suitability Analysis
-Version: 2.5-2
-Date: 2015-04-09
+Version: 2.5-3
+Date: 2015-07-22
 Author: Roeland Kindt
 Maintainer: Roeland Kindt <R.KINDT@CGIAR.ORG>
 Description: Graphical User Interface (via the R-Commander) and utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website. In 2012, methods for (ensemble) suitability modelling and mapping were expanded in the package.
@@ -16,7 +16,7 @@ Suggests: permute, lattice, MASS, mgcv, cluster, car, RODBC, rpart,
         akima, nnet, dismo, raster (>= 2.0-31), rgdal, gbm,
         randomForest, gam, earth, mda, kernlab, e1071, tools, methods,
         bootstrap
-Packaged: 2015-04-16 05:00:45 UTC; RKINDT
+Packaged: 2015-07-23 03:34:26 UTC; RKINDT
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2015-04-16 08:44:29
+Date/Publication: 2015-07-23 06:56:58

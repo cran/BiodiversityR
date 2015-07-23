@@ -313,7 +313,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pmaxent, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "MAXENT"
                 pmaxent <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -362,7 +362,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pgbm, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "GBM"
                 pgbm <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -411,7 +411,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pgbms, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "GBMSTEP"
                 pgbms <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -456,7 +456,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=prf, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "RF"
                 prf <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -501,7 +501,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pglm, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "GLM"
                 pglm <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -546,7 +546,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pglms, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "GLMSTEP"
                 pglms <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -597,7 +597,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pgam, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "GAM"
                 pgam <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -642,7 +642,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pgams, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "GAMSTEP"
                 pgams <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -697,7 +697,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pmgcv, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "MGCV"
                 pmgcv <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -745,7 +745,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pmgcvf, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "MGCVFIX"
                 pmgcvf <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -793,7 +793,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pearth, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "EARTH"
                 pearth <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -841,7 +841,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=prpart, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "RPART"
                 prpart <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -889,7 +889,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pnnet, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "NNET"
                 pnnet <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -937,7 +937,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pfda, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "FDA"
                 pfda <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -987,7 +987,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=psvm, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "SVM"
                 psvm <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -1037,7 +1037,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=psvme, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "SVME"
                 psvme <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -1090,7 +1090,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pbio, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "BIOCLIM"
                 pbio <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -1135,7 +1135,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pdom, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "DOMAIN"
                 pdom <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -1184,7 +1184,7 @@
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pmahal, filename=fullname2, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-                explan.stack <- stack(fullname2)
+                explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "MAHAL"
                 pmahal <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
                     filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format)                
@@ -1385,7 +1385,7 @@
         thresholdx <- thresholds["ENSEMBLE"]
         seq1 <- seq(from = 0, to = thresholdx, length.out = 10)
         seq2 <- seq(from = thresholdx, to = 1000, length.out = 11)
-        raster::KML(working.raster, filename=kmlfull, col = c(rainbow(n = 10, start = 0, end = 1/6), rainbow(n = 10, start = 3/6, end = 4/6)), colNA = 0, 
+        raster::KML(working.raster, filename=kmlfull, col = c(grDevices::rainbow(n = 10, start = 0, end = 1/6), grDevices::rainbow(n = 10, start = 3/6, end = 4/6)), colNA = 0, 
             blur=KML.blur, maxpixels=KML.maxpixels, overwrite=T, breaks = c(seq1, seq2))
     }
     raster::setMinMax(enscount)
@@ -1402,10 +1402,10 @@
     if (KML.out == T) {
         nmax <- sum(as.numeric(ws > 0))
         if (nmax > 3) {
-            raster::KML(working.raster, filename=kmlcount, col=c("grey", rainbow(n=(nmax-1), start=0, end=1/3), "blue"),
+            raster::KML(working.raster, filename=kmlcount, col=c("grey", grDevices::rainbow(n=(nmax-1), start=0, end=1/3), "blue"),
                 colNA=0, blur=10, overwrite=T, breaks=seq(from=-1, to=nmax, by=1))
         }else{
-            raster::KML(working.raster, filename=kmlcount, col=c("grey", rainbow(n=nmax, start=0, end=1/3)),
+            raster::KML(working.raster, filename=kmlcount, col=c("grey", grDevices::rainbow(n=nmax, start=0, end=1/3)),
                 colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
         }
     }

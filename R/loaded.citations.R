@@ -11,6 +11,6 @@ function() {
         if (any (loaded.packages[i] == standard.packages)) {non.standard[i] <- F}
     }
     loaded.packages <- loaded.packages[non.standard]
-    for (i in 1:length(loaded.packages)) {print(citation(loaded.packages[i]))}
+    for (i in 1:length(loaded.packages)) {print(utils::citation(loaded.packages[i]))}
 }
 

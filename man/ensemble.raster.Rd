@@ -24,7 +24,7 @@ ensemble.raster(xn = NULL, ext = NULL,
     pt = models.list$pt, at = models.list$at)
 
 ensemble.habitat.change(base.map=file.choose(), 
-    other.maps=choose.files(),
+    other.maps=utils::choose.files(),
     change.folder="ensembles/change",
     RASTER.format = "raster", RASTER.datatype = "INT1U", RASTER.NAflag = 255,
     KML.out = FALSE, KML.folder = "kml/change",

@@ -19,35 +19,35 @@
         ylim <- c(m,0)
     }
     if(addit==F) {
-        plot(names,rep(pos,p),xlab=xlab,ylab=ylab,ylim=ylim,bty="l",...)
+        graphics::plot(names, rep(pos,p), xlab=xlab, ylab=ylab, ylim=ylim, bty="l",...)
     }
     if (n > 25) {
         warning("Symbol size was kept constant as there were more than 25 profiles (> number of symbols that are currently used in R)")
         rainbow <- T
     }
     if (rainbow==T && n > 1) {
-        palette(rainbow(n))
+        grDevices::palette(rainbow(n))
         for (i in 1:n) {
-            if (n<26) {points(c(1:p),x[i,],pch=i,col=i,cex=cex,type="o")}
-            if (n>25) {points(c(1:p),x[i,],pch=19,col=i,cex=cex,type="o")}
+            if (n<26) {graphics::points(c(1:p), x[i,], pch=i, col=i, cex=cex, type="o")}
+            if (n>25) {graphics::points(c(1:p), x[i,], pch=19, col=i, cex=cex, type="o")}
             if (labelit==T) {
-                text(1,x[i,1],labels=rownames(x)[i],pos=2,col=i,cex=cex)
-                text(p,x[i,p],labels=rownames(x)[i],pos=4,col=i,cex=cex)
+                graphics::text(1, x[i,1], labels=rownames(x)[i], pos=2, col=i, cex=cex)
+                graphics::text(p, x[i,p], labels=rownames(x)[i], pos=4, col=i, cex=cex)
             }
         }
-        if (legend==T && n<26) {legend(locator(1),legend=rownames(x),pch=c(1:n),col=c(1:n))}
-        if (legend==T && n>25) {legend(locator(1),legend=rownames(x),pch=rep(19,n),col=c(1:n))}
+        if (legend==T && n<26) {legend(graphics::locator(1), legend=rownames(x), pch=c(1:n), col=c(1:n))}
+        if (legend==T && n>25) {legend(graphics::locator(1), legend=rownames(x), pch=rep(19,n), col=c(1:n))}
     }else{
         for (i in 1:n) {
-            points(c(1:p),x[i,],pch=pch,col=col,cex=cex,type="o")
+            graphics::points(c(1:p), x[i,], pch=pch, col=col, cex=cex, type="o")
             if (labelit==T) {
-                text(1,x[i,1],labels=rownames(x)[i],pos=2,col=col,cex=cex)
-                text(p,x[i,p],labels=rownames(x)[i],pos=4,col=col,cex=cex)
+                graphics::text(1, x[i,1], labels=rownames(x)[i], pos=2, col=col, cex=cex)
+                graphics::text(p, x[i,p], labels=rownames(x)[i],pos=4, col=col, cex=cex)
             }
         }
-        if (legend==T) {legend(locator(1),legend=rownames(x),pch=c(1:n))}
+        if (legend==T) {legend(graphics::locator(1), legend=rownames(x), pch=c(1:n))}
     }
-    palette("default")
+    grDevices::palette("default")
 }
 
 

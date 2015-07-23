@@ -14,8 +14,8 @@ function(x,y="",factor,level,plotit=T){
     result1 <- radfit(x)
     result2 <- fisherfit(x)
     result3 <- prestonfit(x)
-    if(plotit==T) {plot(result1)}
-    result <- list(radfit=result1,fisherfit=result2,prestonfit=result3)
+    if(plotit==T) {graphics::plot(result1)}
+    result <- list(radfit=result1, fisherfit=result2, prestonfit=result3)
     return(result)
 }
 

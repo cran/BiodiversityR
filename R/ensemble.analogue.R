@@ -35,7 +35,7 @@ setMethod('climsurface', signature(ref.location='data.frame', future.stack='Rast
               names(norm.values) <- names(current.stack)
             }
             if (method == "sd") {
-              norm.values <- cellStats(current.stack, stat="sd")
+              norm.values <- raster::cellStats(current.stack, stat="sd")
             }
             if (method == "none") {
               norm.values <- rep(1, length=length(names(current.stack)))

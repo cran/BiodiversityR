@@ -18,7 +18,7 @@
     }
 # get categories of presence points
     a <- dismo::randomPoints(xcat, n=10)
-    TrainData <- dismo::prepareData(stack(xcat), p, b=a, factors=names(xcat), xy=FALSE)
+    TrainData <- dismo::prepareData(raster::stack(xcat), p, b=a, factors=names(xcat), xy=FALSE)
     TrainData <- TrainData[TrainData[,"pb"]==1,]
     presence.categories <- levels(droplevels(factor(TrainData[,names(xcat)])))
     presence.categories <- as.numeric(presence.categories)

@@ -362,6 +362,10 @@
     output2[k+1] <- mean(output2[1:k])
     cat(paste("\n", "AUC for ensemble models based on suggested input weights",  "\n\n", sep = ""))
     print(output2)
+    if(ENSEMBLE.tune == F) {
+        output.weights.T <- output.weights
+        output3 <- output2
+    }
     if (SINK==T && OLD.SINK==F) {sink(file=NULL, append=T)}
     if (data.keep == F) {
         cat(paste("\n\n"))
@@ -375,5 +379,4 @@
             data=TestData.all, call=match.call()))
     }
 }
-
 

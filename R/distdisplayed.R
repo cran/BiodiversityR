@@ -30,7 +30,7 @@ function(x,ordiplot,distx="bray",plotit=T,addit=F,method="spearman",permutations
     }
     if (plotit==T) {
         if (addit==F) {
-            plot(dist1,dist2,xlab=xlab,ylab=ylab)
+            graphics::plot(dist1, dist2, xlab=xlab, ylab=ylab)
         }
         if (abline==T) {abline(0,1)}
         if (gam==T){
@@ -42,7 +42,7 @@ function(x,ordiplot,distx="bray",plotit=T,addit=F,method="spearman",permutations
             newdata <- data.frame(seq(min(sorted[,1]), max(sorted[,1]), length = 1000))
             colnames(newdata) <- "dist1"
             gamresult2 <- predict(gamresult,newdata) 
-            points(newdata$dist1,gamresult2,type="l",lwd=2,col="red")
+            graphics::points(newdata$dist1,gamresult2,type="l",lwd=2,col="red")
         }
     }
     result2 <- mantel(dist1,dist2,method=method,permutations=permutations,...)

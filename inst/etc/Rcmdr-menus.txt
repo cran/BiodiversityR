@@ -222,6 +222,7 @@
     menu    distributionsMenu topMenu       ""                                              ""                          ""          ""
     menu    continuousMenu  distributionsMenu ""                                            ""                          ""          ""
     menu    discreteMenu    distributionsMenu ""                                            ""                          ""           ""
+
     item    distributionsMenu command       "Set random number generator seed..."           setRandomSeed                                 ""          ""
 
     # Normal distribution
@@ -399,7 +400,7 @@
     item    topMenu         cascade         "Help"                                          helpMenu                    ""          ""
 
     # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
-    # NOV 2014
+    # JUL 2015
 
     menu    biodivMenu      topMenu         ""                                              ""                          ""          ""
     menu    communMenu      biodivMenu      ""                                              ""                          ""          ""
@@ -413,6 +414,7 @@
     item    communMenu      command         "Edit community data set"                       editcommunity               "communityDataSetP()"          ""
     item    communMenu      command         "Check data sets"                               checkdatasets               "activeDataSetP() && communityDataSetP()"          ""
     item    communMenu      command         "Same sites for community/environmental..."     samesitesGUI                "activeDataSetP() && communityDataSetP()"          ""
+    item    communMenu      command         "Replace NA with 0"                             replaceNAs               "communityDataSetP()"          ""
     item    communMenu      command         "Remove species with zero total abundance..."   removezeroes                "communityDataSetP()"          ""
     item    communMenu      command         "Remove NA from environmental data set..."      removeNAGUI                 "activeDataSetP() && communityDataSetP()"          ""
     item    communMenu      command         "Transform community matrix..."                 disttransGUI                "communityDataSetP()"          ""
@@ -453,3 +455,6 @@
     item    biodivMenu      cascade         "Analysis of species as response"               countsMenu                  ""          ""
     item    biodivMenu      cascade         "Analysis of ecological distance"               ordinMenu                   ""          ""
     item    biodivMenu      cascade         "Help about BiodiversityR"                      helpbioMenu                 ""          ""
+
+
+

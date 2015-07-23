@@ -5,7 +5,7 @@ function (ordmod, ordiplot, groups, w = weights(ordiplot,
     if (inherits(ordiplot, "cca") && missing(groups)) {
         lc <- scores(ordiplot, display = "lc", ...)
         wa <- scores(ordiplot, display = "wa", ...)
-        segments(lc[, 1], lc[, 2], wa[, 1], wa[, 2], ...)
+        graphics::segments(lc[, 1], lc[, 2], wa[, 1], wa[, 2], ...)
         return(invisible())
     }
 	display <- "sites"
@@ -103,7 +103,7 @@ function (ordmod, ordiplot, groups, w = weights(ordiplot,
             W <- w[gr]
             ave1 <- origcentres[origrow,1]
             ave2 <- origcentres[origrow,2]
-            segments(ave1, ave2, X[, 1], X[, 2], ...)
+            graphics::segments(ave1, ave2, X[, 1], X[, 2], ...)
         }
     }
     if (return.outliers == T) {

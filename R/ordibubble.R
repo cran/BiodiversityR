@@ -9,7 +9,7 @@ function(ordiplot,var,...) {
             y2[i] <- NA
         }
     }
-    if (sum(var,na.rm=T) > 0) {symbols(ordiscores[,1],ordiscores[,2],circles=var,add=T,...)}
-    if (sum(y2,na.rm=T) > 0) {symbols(ordiscores[,1],ordiscores[,2],squares=y2,add=T,...)}
+    if (sum(var,na.rm=T) > 0) {graphics::symbols(ordiscores[,1], ordiscores[,2], circles=var, add=T,...)}
+    if (sum(y2,na.rm=T) > 0) {graphics::symbols(ordiscores[,1], ordiscores[,2], squares=y2, add=T,...)}
 }
 

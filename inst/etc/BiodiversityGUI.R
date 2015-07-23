@@ -685,6 +685,15 @@ removezeroes <- function(){
     invisible()
 }
 
+replaceNAs <- function(){
+    .communityDataSet <- CommunityDataSet()
+    command <- paste("replaceNAcomm(", .communityDataSet, ")", sep="")
+    logger(paste(.communityDataSet, " <- ", command, sep=""))
+    assign(.communityDataSet, justDoIt(command), envir=.GlobalEnv)
+    communityDataSet(.communityDataSet)
+    invisible()
+}
+
 vegemite.table <- function(){
     .communityDataSet <- CommunityDataSet()
     command <- paste("vegemite(", .communityDataSet, ", use=cca(", .communityDataSet, "), scale='Braun.Blanquet')", sep="")

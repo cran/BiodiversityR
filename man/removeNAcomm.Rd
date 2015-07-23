@@ -4,6 +4,7 @@
 \alias{same.sites}
 \alias{check.datasets}
 \alias{check.ordiscores}
+\alias{replaceNAcomm}
 \alias{removezerospecies}
 \alias{subsetcomm}
 #ifdef windows
@@ -85,6 +86,8 @@ Function \code{check.datasets} checks whether the community and environmental da
 Function \code{check.ordiscores} checks whether the community data set and the ordination result have the same number of rows (sites) and columns (species, optional for \code{check.species==TRUE}), and (if this was the case) whether the row and column names of both data sets are the same. Site and species scores for the ordination result are obtained via function \code{\link[vegan]{scores}} (\pkg{vegan}).
  
 Functions \code{removeNAcomm} and \code{removeNAenv} provide a new data frame that does not contain \code{NA} for the specified variable. The specifed variable is part of the environmental data set. These functions are particularly useful when using community and environmental datasets, as new community and environmental datasets can be calculated that contain information from the same sample plots (sites). An additional result of \code{removeNAenv} is that factor levels of any categorical variable that do not occur any longer in the new data set are removed from the levels of the categorical variable.
+
+Function \code{replaceNAcomm} substitutes cells containing NA with 0 in the community data set.
  
 Function \code{removezerospecies} removes species from a community dataset that have total abundance that is smaller or equal to zero.
 

@@ -71,14 +71,25 @@ library(MASS)
 data(dune)
 data(dune.env)
 Ordination.model1 <- CAPdiscrim(dune~Management, data=dune.env,
-    dist="bray",axes=2,m=0)
+    dist="bray", axes=2, m=0)
 Ordination.model1
 plot1 <- ordiplot(Ordination.model1)
 ordisymbol(plot1,dune.env,"Management",legend=FALSE)
 ## CLICK IN THE GRAPH TO INDICATE THE POSITION FOR THE LEGEND
 ## IN CASE THAT THE OPTION WAS LEGEND=TRUE.
+
+# plot change in classification success against m
+plot(seq(1:14), rep(-1000, 14), xlim=c(1, 14), ylim=c(0, 100), xlab="m", 
+    ylab="classification success (percent)", type="n")
+for (mseq in 1:14) {
+    CAPdiscrim.result <- CAPdiscrim(dune~Management, data=dune.env, 
+        dist="bray", axes=2, m=mseq)
+    points(mseq, CAPdiscrim.result$percent)
+}
+
+#
+
 }
 
 \keyword{multivariate} 
-
 

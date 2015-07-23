@@ -71,7 +71,7 @@
     }
     cat(paste("\n", "Files used to create mean ensemble", "\n\n", sep = ""))
     print(ensemble.files)
-    ensemble.stack <- stack(ensemble.files)
+    ensemble.stack <- raster::stack(ensemble.files)
     cat(paste("\n", "RasterStack used to create mean ensemble", "\n\n", sep = ""))
     print(ensemble.stack)
     ensemble.mean <- raster::mean(ensemble.stack)
@@ -137,12 +137,12 @@
         seq1 <- seq(from = 0, to = threshold.mean, length.out = 10)
         seq2 <- seq(from = threshold.mean, to = 1, length.out = 11)
         filename2 <- paste(getwd(), "//kml//", species_focus, "_MEAN", RASTER.stack.name2, sep="")
-        raster::KML(ensemble.mean, filename=filename2, col = c(rainbow(n = 10, start = 0, end = 1/6), rainbow(n = 10, start = 3/6, end = 4/6)), colNA = 0, 
+        raster::KML(ensemble.mean, filename=filename2, col = c(grDevices::rainbow(n = 10, start = 0, end = 1/6), grDevices::rainbow(n = 10, start = 3/6, end = 4/6)), colNA = 0, 
             blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE, breaks = c(seq1, seq2))
         sd.max <- raster::cellStats(ensemble.sd, stat='max')
         seq1 <- seq(from = 0, to = sd.max, length.out = 20)
         filename2b <- paste(getwd(), "//kml//", species_focus, "_SD", RASTER.stack.name2, sep="")
-        raster::KML(ensemble.sd, filename=filename2b, col = rainbow(n = 19, start = 0, end = 4/6), colNA = 0, 
+        raster::KML(ensemble.sd, filename=filename2b, col = grDevices::rainbow(n = 19, start = 0, end = 4/6), colNA = 0, 
             blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE, breaks = seq1)
     }
 #
@@ -180,7 +180,7 @@
         presence.files <- presence.files[grepl(pattern=negative.filters[i], x=presence.files) == FALSE]
     }
 
-    ensemble.stack <- stack(presence.files)
+    ensemble.stack <- raster::stack(presence.files)
     cat(paste("\n", "RasterStack (presence-absence) used to create mean ensemble (count)", "\n\n", sep = ""))
     print(ensemble.stack)
     ensemble.count <- sum(ensemble.stack)
@@ -201,10 +201,10 @@
         filename6 <- paste(getwd(), "//kml//count//", species_focus, "_MEAN", RASTER.stack.name2, sep="")
         nmax <- length(presence.files)
         if (nmax > 3) {
-            raster::KML(ensemble.count, filename=filename6, col=c("grey", rainbow(n=(nmax-1), start=0, end=1/3), "blue"),
+            raster::KML(ensemble.count, filename=filename6, col=c("grey", grDevices::rainbow(n=(nmax-1), start=0, end=1/3), "blue"),
                 colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
         }else{
-            raster::KML(ensemble.count, filename=filename6, col=c("grey", rainbow(n=nmax, start=0, end=1/3)),
+            raster::KML(ensemble.count, filename=filename6, col=c("grey", grDevices::rainbow(n=nmax, start=0, end=1/3)),
                 colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
         }
     }

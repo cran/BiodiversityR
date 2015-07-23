@@ -13,7 +13,7 @@ function (method ="capscale", formula, data, distance = "bray", comm = NULL, add
     if(multicomp=="") {multicomp <- all.vars(formula)[2]}
     levels <- names(table(data[,multicomp]))
     l <- length(levels)
-    pairs <- combn(l,2)
+    pairs <- utils::combn(l,2)
     p <- ncol(pairs)
     df <- chi <- Fval <- nperm <- Pval <- numeric(p)
     result <- data.frame(df,chi,Fval,nperm,Pval)

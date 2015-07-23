@@ -1,5 +1,5 @@
 `spatialsample` <-
-function(x,method="random",n=5,xwidth=0.5,ywidth=0.5,xleft=0,ylower=0,xdist=0,ydist=0,plotit=T,plothull=F){
+function(x,method="random", n=5, xwidth=0.5, ywidth=0.5, xleft=0, ylower=0, xdist=0, ydist=0, plotit=T, plothull=F){
 #    if (!require(splancs)) {stop("Requires package splancs")}
     xpos <- x[,1]
     ypos <- x[,2]
@@ -14,8 +14,8 @@ function(x,method="random",n=5,xwidth=0.5,ywidth=0.5,xleft=0,ylower=0,xdist=0,yd
         for (i in 1:n) {
             result[i,1] <- minx-1
             result[i,2] <- miny-1
-            while((splancs::inout(cbind(result[i,1]-xwidth,result[i,2]-ywidth),x,bound=T)==F) || (splancs::inout(cbind(result[i,1]-xwidth,result[i,2]+ywidth),x,bound=T)==F) ||
-                    (splancs::inout(cbind(result[i,1]+xwidth,result[i,2]-ywidth),x,bound=T)==F) || (splancs::inout(cbind(result[i,1]+xwidth,result[i,2]+ywidth),x,bound=T)==F)) {
+            while((splancs::inout(cbind(result[i,1]-xwidth, result[i,2]-ywidth), x, bound=T)==F) || (splancs::inout(cbind(result[i,1]-xwidth, result[i,2]+ywidth), x, bound=T)==F) ||
+                    (splancs::inout(cbind(result[i,1]+xwidth, result[i,2]-ywidth), x, bound=T)==F) || (splancs::inout(cbind(result[i,1]+xwidth, result[i,2]+ywidth), x, bound=T)==F)) {
                 result[i,1] <- minx + (maxx-minx)*runif(1)
                 result[i,2] <- miny + (maxy-miny)*runif(1)
             }
@@ -37,7 +37,7 @@ function(x,method="random",n=5,xwidth=0.5,ywidth=0.5,xleft=0,ylower=0,xdist=0,yd
         }
         i <- 1
         while (i <= nrow(result)) {
-            if (splancs::inout(cbind(result[i,1]-xwidth,result[i,2]-ywidth),x,bound=T)==F) {
+            if (splancs::inout(cbind(result[i,1]-xwidth, result[i,2]-ywidth), x, bound=T)==F) {
                 result <- result[-i,]
             }else{
                 i <- i+1
@@ -45,7 +45,7 @@ function(x,method="random",n=5,xwidth=0.5,ywidth=0.5,xleft=0,ylower=0,xdist=0,yd
         }
         i <- 1
         while (i <= nrow(result)) {
-            if (splancs::inout(cbind(result[i,1]-xwidth,result[i,2]+ywidth),x,bound=T)==F) {
+            if (splancs::inout(cbind(result[i,1]-xwidth, result[i,2]+ywidth), x, bound=T)==F) {
                 result <- result[-i,]
             }else{
                 i <- i+1
@@ -53,7 +53,7 @@ function(x,method="random",n=5,xwidth=0.5,ywidth=0.5,xleft=0,ylower=0,xdist=0,yd
         }
         i <- 1
         while (i <= nrow(result)) {
-            if (splancs::inout(cbind(result[i,1]+xwidth,result[i,2]-ywidth),x,bound=T)==F) {
+            if (splancs::inout(cbind(result[i,1]+xwidth, result[i,2]-ywidth), x, bound=T)==F) {
                 result <- result[-i,]
             }else{
                 i <- i+1
@@ -61,20 +61,20 @@ function(x,method="random",n=5,xwidth=0.5,ywidth=0.5,xleft=0,ylower=0,xdist=0,yd
         }
         i <- 1
         while (i <= nrow(result)) {
-            if (splancs::inout(cbind(result[i,1]+xwidth,result[i,2]+ywidth),x,bound=T)==F) {
+            if (splancs::inout(cbind(result[i,1]+xwidth, result[i,2]+ywidth), x, bound=T)==F) {
                 result <- result[-i,]
             }else{
                 i <- i+1
             }
         }
-        if (n < nrow(result) && method=="random grid") {result <- result[(sample(nrow(result),n)),]}
+        if (n < nrow(result) && method=="random grid") {result <- result[(sample(nrow(result), n)),]}
     }
     if (plotit==T) {  
-        rect(result[,1]-xwidth,result[,2]-ywidth,result[,1]+xwidth,result[,2]+ywidth)
+        graphics::rect(result[,1]-xwidth, result[,2]-ywidth, result[,1]+xwidth, result[,2]+ywidth)
         if (plothull==T) {
-            points2 <- chull(result)
-            points3 <- c(points2,points2[1])
-            lines(result[points3,])
+            points2 <- grDevices::chull(result)
+            points3 <- c(points2, points2[1])
+            graphics::lines(result[points3,])
         }
     }
     return(result)

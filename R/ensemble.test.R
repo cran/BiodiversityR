@@ -55,6 +55,9 @@
 # geoDist requires presence locations
     if ((GEODIST > 0) && (is.null(p) == T)) {stop("presence locations are missing for geoDist")}
 
+#
+    if(models.save==T) {dir.create("models", showWarnings = F)}
+
 # create output file
     dir.create("outputs", showWarnings = F)
     paste.file <- paste(getwd(), "/outputs/", species.name, "_output.txt", sep="")
@@ -924,8 +927,8 @@
                     print(eval2)
                     weights["MAXENT"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="MAXENT", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="MAXENT", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: MAXENT evaluation failed","\n\n",sep = ""))
@@ -996,8 +999,8 @@
                     print(eval2)
                     weights["GBM"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="BRT (gbm)", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="BRT (gbm)", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: GBM evaluation failed","\n\n",sep = ""))
@@ -1073,8 +1076,8 @@
                     print(eval2)
                     weights["GBMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="BRT (gbm.step)", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="BRT (gbm.step)", cex=2, adj=0, col.main="blue")
                    }
                 }else{
                     cat(paste("\n", "WARNING: stepwise GBM evaluation failed","\n\n",sep = ""))
@@ -1144,8 +1147,8 @@
                     print(eval2)
                     weights["RF"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="RF", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="RF", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: RF evaluation failed","\n\n",sep = ""))
@@ -1215,8 +1218,8 @@
                     print(eval2)
                     weights["GLM"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="GLM", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="GLM", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: GLM evaluation failed","\n\n",sep = ""))
@@ -1293,8 +1296,8 @@
                     print(eval2)
                     weights["GLMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="STEPWISE GLM", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="STEPWISE GLM", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: stepwise GLM evaluation failed","\n\n",sep = ""))
@@ -1371,8 +1374,8 @@
                     print(eval2)
                     weights["GAM"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="GAM (gam)", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="GAM (gam)", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: GAM evaluation (gam package) failed","\n\n",sep = ""))
@@ -1443,8 +1446,8 @@
                 cat(paste("\n", "Evaluation with test data","\n\n","\n", sep = ""))
                 TestData[,"GAMSTEP"] <- gam::predict.gam(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
-                    TestData[,"GAM.step1"] <- TestData[,"GAM"]
-                    TestData[,"GAM"] <- predict.glm(object=results2, newdata=TestData, type="response")
+                    TestData[,"GAMSTEP.step1"] <- TestData[,"GAMSTEP"]
+                    TestData[,"GAMSTEP"] <- predict.glm(object=results2, newdata=TestData, type="response")
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GAMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GAMSTEP"]
@@ -1455,8 +1458,8 @@
                     print(eval2)
                     weights["GAMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="STEPWISE GAM (gam)", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="STEPWISE GAM (gam)", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: stepwise GAM evaluation (gam package) failed","\n\n",sep = ""))
@@ -1535,8 +1538,8 @@
                     print(eval2)
                     weights["MGCV"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="GAM (mgcv)", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="GAM (mgcv)", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: GAM evaluation (mgcv package) failed","\n\n",sep = ""))
@@ -1606,8 +1609,8 @@
                     print(eval2)
                     weights["MGCVFIX"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="GAM (mgcv)", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="GAM (mgcv)", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: GAM with fixed d.f. regression splines evaluation (mgcv package) failed","\n\n",sep = ""))
@@ -1680,8 +1683,8 @@
                     print(eval2)
                     weights["EARTH"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="MARS (earth)", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="MARS (earth)", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: MARS evaluation (earth package) failed","\n\n",sep = ""))
@@ -1753,8 +1756,8 @@
                     print(eval2)
                     weights["RPART"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="RPART", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="RPART", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: RPART evaluation failed","\n\n",sep = ""))
@@ -1825,8 +1828,8 @@
                     print(eval2)
                     weights["NNET"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="NNET", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="NNET", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: ANN evaluation (nnet package) failed","\n\n",sep = ""))
@@ -1896,8 +1899,8 @@
                     print(eval2)
                     weights["FDA"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="FDA", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="FDA", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: FDA evaluation failed","\n\n",sep = ""))
@@ -1968,8 +1971,8 @@
                     print(eval2)
                     weights["SVM"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="SVM (kernlab package)", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="SVM (kernlab package)", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: SVM evaluation (kernlab package) failed","\n\n",sep = ""))
@@ -2039,8 +2042,8 @@
                     print(eval2)
                     weights["SVME"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="SVM (e1017 package)", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="SVM (e1017 package)", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: SVM evaluation (e1071 package) failed","\n\n",sep = ""))
@@ -2126,8 +2129,8 @@
                     print(eval2)
                     weights["BIOCLIM"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="BIOCLIM", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="BIOCLIM", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: BIOCLIM evaluation failed","\n\n",sep = ""))
@@ -2196,8 +2199,8 @@
                     print(eval2)
                     weights["DOMAIN"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="DOMAIN", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="DOMAIN", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: DOMAIN evaluation failed","\n\n",sep = ""))
@@ -2266,8 +2269,8 @@
                     print(eval2)
                     weights["MAHAL"] <- max(c(eval2@auc, 0), na.rm=T)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="MAHAL", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="MAHAL", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: Mahalanobis evaluation failed","\n\n",sep = ""))
@@ -2315,8 +2318,8 @@
                 if (is.null(eval2) == F) {
                     print(eval2)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="GEODIST", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="GEODIST", cex=2, adj=0, col.main="blue")
                     }
                 }else{
                     cat(paste("\n", "WARNING: GEODIST evaluation failed","\n\n",sep = ""))
@@ -2421,8 +2424,8 @@
                     eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                     print(eval2)
                     if(PLOTS==T) {
-                        plot(eval2, "ROC") 
-                        title(main="ENSEMBLE", cex=2, adj=0, col.main="blue")
+                        graphics::plot(eval2, "ROC") 
+                        graphics::title(main="ENSEMBLE", cex=2, adj=0, col.main="blue")
                     }
                 }
             }

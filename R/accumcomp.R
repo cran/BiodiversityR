@@ -29,17 +29,17 @@ function(x,y="",factor,scale="",method="exact",permutations=100,conditioned=T,ga
                     labels <- ""
                 }
                 if (rainbow==T) {
-                    palette(rainbow(m))
+                    grDevices::palette(rainbow(m))
                     accumplot(result1,addit=addit,xlab=xlab,ylab=ylab,xlim=xlim,ylim=ylim,labels=labels,col=i,pch=i,type=type,...)
                 }else{
                     accumplot(result1,addit=addit,xlab=xlab,ylab=ylab,xlim=xlim,ylim=ylim,labels=labels,pch=i,type=type,...)
                 }
             }
         }
-        if (rainbow==T && legend==T) {legend(locator(1),legend=levels,pch=c(1:m),col=c(1:m))}
-        if (rainbow==F && legend==T) {legend(locator(1),legend=levels,pch=c(1:m))}
+        if (rainbow==T && legend==T) {legend(graphics::locator(1),legend=levels,pch=c(1:m),col=c(1:m))}
+        if (rainbow==F && legend==T) {legend(graphics::locator(1),legend=levels,pch=c(1:m))}
     }
-    palette("default")
+    grDevices::palette("default")
     return(result)
 }
 

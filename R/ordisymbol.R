@@ -10,7 +10,7 @@ function(ordiplot, y, factor, col=1, rainbow=TRUE,
         rainbow <- T
     }
     levels <- names(groups)
-    if (rainbow == T) {palette(rainbow(m))}
+    if (rainbow == T) {grDevices::palette(rainbow(m))}
     for (i in 1:m) {
         subs <- y[,factor]==levels[i]
         for (q in 1:length(subs)) {
@@ -18,13 +18,13 @@ function(ordiplot, y, factor, col=1, rainbow=TRUE,
         }
         scores <- ordiscores[subs,,drop=F]
         if (rainbow == T && m < 26) {
-            points(scores[,1],scores[,2],pch=i,col=i,...)
+            graphics::points(scores[,1], scores[,2], pch=i, col=i,...)
         }
         if (rainbow == T && m > 25) {
-            points(scores[,1],scores[,2],pch=19,col=i,...)
+            graphics::points(scores[,1], scores[,2], pch=19, col=i,...)
         }
         if (rainbow == F) {
-            points(scores[,1],scores[,2],pch=i,col=col,...)
+            graphics::points(scores[,1], scores[,2], pch=i, col=col,...)
         }
     }
     if (legend==T) {
@@ -32,6 +32,6 @@ function(ordiplot, y, factor, col=1, rainbow=TRUE,
         if (rainbow==T && m>25) {legend(x=legend.x, legend=levels, pch=rep(19,m), col=c(1:m), ncol=legend.ncol)}
         if (rainbow==F) {legend(x=legend.x, legend=levels, pch=c(1:m))}
     }
-    palette("default")
+    grDevices::palette("default")
 }
 
