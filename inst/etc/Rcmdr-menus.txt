@@ -1,6 +1,6 @@
 # R Commander Menu Definitions
 
-# last modified 2014-10-08 by J. Fox
+# last modified 2015-04-22 by J. Fox
 
 #   type    menu/item      operation/parent  label                                          command/menu                activation  install?
 
@@ -59,8 +59,10 @@
     item    importMenu      command         "from SAS xport file..."                        importSAS                   ""           "packageAvailable('foreign')"
     item    importMenu      command         "from Minitab data set..."                      importMinitab               ""          "packageAvailable('foreign')"
     item    importMenu      command         "from STATA data set..."                        importSTATA                 ""          "packageAvailable('foreign')"
-    item    importMenu      command         "from Excel, Access or dBase data set..."       importRODBCtable            ""          "WindowsP() && packageAvailable('RODBC') && (.Platform$r_arch == 'i386')"
-    item    importMenu      command         "from Excel file..."                            importExcel                 ""      "packageAvailable('XLConnect') && (!WindowsP() | (.Platform$r_arch != 'i386')) && hasJava()"
+#    item    importMenu      command         "from Excel, Access or dBase data set..."       importRODBCtable            ""          "WindowsP() && packageAvailable('RODBC') && (.Platform$r_arch == 'i386')"
+#    item    importMenu      command         "from Excel file..."                            importExcel                 ""      "packageAvailable('XLConnect') && (!WindowsP() | (.Platform$r_arch != 'i386')) && hasJava()"
+    item    importMenu      command         "from Excel file..."                            importExcel                 ""      "packageAvailable('readxl')"
+
     item    dataMenu        cascade         "Import data"                                   importMenu                  ""          ""
     menu    packagesMenu    dataMenu        ""                                              ""                          ""          ""
     item    packagesMenu    command         "List data sets in packages"                    listDataSetsInPackages      ""          ""
@@ -157,6 +159,7 @@
     item    graphsMenu      command         "Color palette..."                              setPalette                  ""          ""
     item    graphsMenu      separator       ""                                              ""                          ""          ""
     item    graphsMenu      command         "Index plot..."                                 indexPlot                   "numericP()"          "packageAvailable('RcmdrMisc')"
+    item    graphsMenu      command         "Dot plot..."                                   DotPlot                     "numericP()"          "packageAvailable('RcmdrMisc')"
     item    graphsMenu      command         "Histogram..."                                  Histogram                   "numericP()"          "packageAvailable('RcmdrMisc')"
     item    graphsMenu      command         "Density estimate..."                           DensityPlot         "numericP()"          ""
     item    graphsMenu      command         "Stem-and-leaf display..."                      stemAndLeaf                 "numericP()"  "packageAvailable('aplpack')"
@@ -383,7 +386,8 @@
     item    toolsMenu       command         "Load Rcmdr plug-in(s)..."                        loadPlugins             "length(listPlugins()) > 0" ""
     item    toolsMenu       command         "Options..."                                    Options                     ""          ""
     item    toolsMenu       command         "Save Rcmdr options..."                         saveOptions                 ""          ""
-    item    toolsMenu       command         "Manage Mac OS X app nap for R.app..."          appNap                      ""    "RappP()  && mavericksP()"
+    item    toolsMenu       command         "Manage Mac OS X app nap for R.app..."          appNap                      ""          "RappP()  && mavericksP()"
+    item    toolsMenu       command         "Install auxiliary software..."                 installSoftware             ""          "any(!unlist(getRcmdr('capabilities')))"
     item    topMenu         cascade         "Tools"                                         toolsMenu                   ""          ""
     menu    helpMenu        topMenu         ""                                              ""                          ""          ""
     item    helpMenu        command         "Commander help"                                helpCommander               ""          ""
@@ -400,7 +404,7 @@
     item    topMenu         cascade         "Help"                                          helpMenu                    ""          ""
 
     # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
-    # JUL 2015
+    # AUG 2015
 
     menu    biodivMenu      topMenu         ""                                              ""                          ""          ""
     menu    communMenu      biodivMenu      ""                                              ""                          ""          ""
@@ -414,7 +418,7 @@
     item    communMenu      command         "Edit community data set"                       editcommunity               "communityDataSetP()"          ""
     item    communMenu      command         "Check data sets"                               checkdatasets               "activeDataSetP() && communityDataSetP()"          ""
     item    communMenu      command         "Same sites for community/environmental..."     samesitesGUI                "activeDataSetP() && communityDataSetP()"          ""
-    item    communMenu      command         "Replace NA with 0"                             replaceNAs               "communityDataSetP()"          ""
+    item    communMenu      command         "Replace NA with 0"                             replaceNAs                  "communityDataSetP()"          ""
     item    communMenu      command         "Remove species with zero total abundance..."   removezeroes                "communityDataSetP()"          ""
     item    communMenu      command         "Remove NA from environmental data set..."      removeNAGUI                 "activeDataSetP() && communityDataSetP()"          ""
     item    communMenu      command         "Transform community matrix..."                 disttransGUI                "communityDataSetP()"          ""
@@ -432,11 +436,13 @@
     menu    diversityMenu   biodivMenu      ""                                              ""                          ""          ""
     item    diversityMenu   command         "Species accumulation curves..."                accumGUI                    "activeDataSetP() && communityDataSetP()"          ""
     item    diversityMenu   command         "Diversity indices..."                          diversityGUI                "activeDataSetP() && communityDataSetP()"          ""
+    item    diversityMenu   command         "Add diversity variables to data set"           diversityvars               "activeDataSetP() && communityDataSetP()"          ""
     item    diversityMenu   command         "Rank abundance..."                             rankabunGUI                 "activeDataSetP() && communityDataSetP()"          ""
     item    diversityMenu   command         "Renyi profile..."                              renyiGUI                    "activeDataSetP() && communityDataSetP()"          ""
     menu    countsMenu      biodivMenu      ""                                              ""                          ""          ""
     item    countsMenu      command         "Species abundance as response..."              countGUI                    "activeDataSetP() && communityDataSetP()"          ""
     item    countsMenu      command         "Species presence-absence as response..."       presabsGUI                  "activeDataSetP() && communityDataSetP()"          ""
+    item    countsMenu      command         "Set up diversity as response"                  diversityresponse           "activeDataSetP() && communityDataSetP()"          ""
     menu    ordinMenu       biodivMenu      ""                                              ""                          ""          ""
     item    ordinMenu       command         "Calculate distance matrix..."                  distmatrixGUI               "communityDataSetP()"          ""
     item    ordinMenu       command         "Unconstrained ordination..."                   unconordiGUI                "activeDataSetP() && communityDataSetP()"          ""
@@ -455,6 +461,5 @@
     item    biodivMenu      cascade         "Analysis of species as response"               countsMenu                  ""          ""
     item    biodivMenu      cascade         "Analysis of ecological distance"               ordinMenu                   ""          ""
     item    biodivMenu      cascade         "Help about BiodiversityR"                      helpbioMenu                 ""          ""
-
 
 

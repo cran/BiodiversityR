@@ -1,5 +1,5 @@
     # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
-    # JUL 2015
+    # AUG 2015
 
     menu    biodivMenu      topMenu         ""                                              ""                          ""          ""
     menu    communMenu      biodivMenu      ""                                              ""                          ""          ""
@@ -31,11 +31,13 @@
     menu    diversityMenu   biodivMenu      ""                                              ""                          ""          ""
     item    diversityMenu   command         "Species accumulation curves..."                accumGUI                    "activeDataSetP() && communityDataSetP()"          ""
     item    diversityMenu   command         "Diversity indices..."                          diversityGUI                "activeDataSetP() && communityDataSetP()"          ""
+    item    diversityMenu   command         "Add diversity variables to data set"           diversityvars               "activeDataSetP() && communityDataSetP()"          ""
     item    diversityMenu   command         "Rank abundance..."                             rankabunGUI                 "activeDataSetP() && communityDataSetP()"          ""
     item    diversityMenu   command         "Renyi profile..."                              renyiGUI                    "activeDataSetP() && communityDataSetP()"          ""
     menu    countsMenu      biodivMenu      ""                                              ""                          ""          ""
     item    countsMenu      command         "Species abundance as response..."              countGUI                    "activeDataSetP() && communityDataSetP()"          ""
     item    countsMenu      command         "Species presence-absence as response..."       presabsGUI                  "activeDataSetP() && communityDataSetP()"          ""
+    item    countsMenu      command         "Set up diversity as response"                  diversityresponse           "activeDataSetP() && communityDataSetP()"          ""
     menu    ordinMenu       biodivMenu      ""                                              ""                          ""          ""
     item    ordinMenu       command         "Calculate distance matrix..."                  distmatrixGUI               "communityDataSetP()"          ""
     item    ordinMenu       command         "Unconstrained ordination..."                   unconordiGUI                "activeDataSetP() && communityDataSetP()"          ""
@@ -54,3 +56,4 @@
     item    biodivMenu      cascade         "Analysis of species as response"               countsMenu                  ""          ""
     item    biodivMenu      cascade         "Analysis of ecological distance"               ordinMenu                   ""          ""
     item    biodivMenu      cascade         "Help about BiodiversityR"                      helpbioMenu                 ""          ""
+

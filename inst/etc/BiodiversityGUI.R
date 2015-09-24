@@ -1132,7 +1132,8 @@ accumGUI <- function(){
         if (method %in% c("poolaccum", "estaccumR")) {
             doItAndPrint(paste("plot(", modelValue, ")", sep=""))
         }
-
+        activateMenus()
+        tkfocus(CommanderWindow())
     }
     onCancel <- function() {
         tkgrab.release(top)
@@ -1357,6 +1358,14 @@ diversityGUI <- function(){
     tkgrab.set(top)
     tkfocus(methodBox)
     tkwait.window(top)
+}
+
+diversityvars <- function(){
+    .communityDataSet <- CommunityDataSet()
+    .activeDataSet <- ActiveDataSet()
+    justDoIt(paste(.activeDataSet, " <- diversityvariables(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
+    logger(paste(.activeDataSet, " <- diversityvariables(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
+    activeDataSet(.activeDataSet)
 }
 
 
@@ -2690,6 +2699,16 @@ presabsGUI <- function(){
     tkwait.window(top)
 } 
 
+diversityresponse <- function(){
+    .communityDataSet <- CommunityDataSet()
+    .activeDataSet <- ActiveDataSet()
+    justDoIt(paste(.activeDataSet, " <- diversityvariables(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
+    logger(paste(.activeDataSet, " <- diversityvariables(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
+    activeDataSet(.activeDataSet)
+    communityDataSet(.activeDataSet)
+    logger(paste("environmental data set (with added diversity variables) is now also the community data set", sep=""))
+    logger(paste("use menu option of 'Species abundance as response...' now to analyze diversity as response", sep=""))
+}
 
 distmatrixGUI <- function(){
     top <- tktoplevel()
@@ -3957,7 +3976,7 @@ clusterGUI <- function(){
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
     types <- c("dendrogram1 (hang = -1)","dendrogram2 (hang = 0.1)", "dendrogram3 (horizontal)", 
         "phylogram (ape package)", "cladogram (ape package)", "fan (ape package)", "unrooted (ape package)",    
-        "rectangles","pruned dendrogram","kgs","cophenetic","cascadeKM","reorder (variable)", "tiplabels (variable size)", "tiplabels (factor)")
+        "rectangles","pruned dendrogram","silhouette","kgs","cophenetic","cascadeKM","reorder (variable)", "tiplabels (variable size)", "tiplabels (factor)")
     for (x in types) tkinsert(typeBox, "end", x)
     cexVariable <- tclVar("1")
     cexa <- tkentry(plot3Frame, width=8, textvariable=cexVariable)
@@ -4086,11 +4105,14 @@ clusterGUI <- function(){
             logger(paste("library(ape)", sep=""))
             doItAndPrint(paste("plot(as.phylo(as.hclust(", modelValue, ")), type='unrooted', edge.color='", col, "', tip.color='", col, "', font=1)", sep=""))              
         }
-        if (plottype == "pruned dendrogram" && method == "hclust"){
+        if (plottype == "pruned dendrogram"){
             justDoIt(paste("library(maptree)", sep=""))
             logger(paste("library(maptree)", sep=""))
-            doItAndPrint(paste("plot(clip.clust(", modelValue,", data=", .communityDataSet, ", k=", clusters, "))", sep=""))              
-        } 
+            doItAndPrint(paste("plot(clip.clust(as.hclust(", modelValue,"), data=", .communityDataSet, ", k=", clusters, "))", sep=""))              
+        }
+        if (plottype == "silhouette"){
+            doItAndPrint(paste("plot(silhouette(cutree(as.hclust(", modelValue,"), k=", clusters, "), distmatrix))", sep=""))
+        }  
         if (plottype == "kgs" && method != "kmeans" && method != "cascadeKM" && method != "pam" && method != "clara" && method != "fanny"){
             justDoIt(paste("library(maptree)", sep=""))
             logger(paste("library(maptree)", sep=""))

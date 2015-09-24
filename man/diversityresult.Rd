@@ -1,6 +1,7 @@
 \name{diversityresult}
 \alias{diversityresult}
 \alias{diversitycomp}
+\alias{diversityvariables}
 
 \title{Alternative Diversity Results}
 
@@ -9,8 +10,9 @@ Provides alternative methods of obtaining results on diversity statistics than p
 }
 
 \usage{
-diversityresult(x,y="",factor,level,index="Shannon",method="all",sortit=F,
+diversityresult(x, y="", factor, level, index="Shannon", method="all", sortit=F,
     digits=8)
+diversityvariables(x, y, digits=8)
 diversitycomp(x,y="",factor1,factor2="",index="Shannon",
     method="all",sortit=F,...)
 }
@@ -31,6 +33,8 @@ diversitycomp(x,y="",factor1,factor2="",index="Shannon",
 
 \details{
 These functions provide some alternative methods of obtaining results with diversity statistics, although functions \code{\link[vegan]{diversity}}, \code{\link[vegan:diversity]{fisher.alpha}}, \code{\link[vegan]{specpool}}, \code{\link[vegan:specpool]{estimateR}} and \code{\link[vegan:diversity]{specnumber}} (all from \pkg{vegan}) are called to calculate the various statistics.
+
+Function \code{diversityvariables} adds variables to the environmental dataset (richness, Shannon, Simpson, inverseSimpson, Logalpha, Berger, Jevenness, Eevenness).
 
 The reciprocal Berger-Parker diversity index is the reciprocal of the proportional abundance of the most dominant species.
 

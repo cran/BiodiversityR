@@ -1,5 +1,5 @@
-7b1a495424c047bff56a87008fc39615 *DESCRIPTION
-f0cf8d659ff385c7cf1a60603ecfb6ea *NAMESPACE
+ec2ec7767ffb9c593e065f9870f95b6f *DESCRIPTION
+30d69c9b49682d714e2a1c1ce469d4ce *NAMESPACE
 58a11630b07df5adadbd393f38811d3b *R/BiodiversityRGUI.R
 db1b7cd9c5771e150445539fa93b07ac *R/CAPdiscrim.R
 753f212ee5a90ce6c67fc2862741d43e *R/NMSrandom.R
@@ -20,6 +20,7 @@ df65b5e57c9ae65f8f1665da875a74ed *R/dist.eval.R
 dc6927a5291538b06275dc0d5afeeaf5 *R/disttransform.R
 c4f5d7b3a9bef053c6e8ee9cbf6d898e *R/diversitycomp.R
 2f18fa8d404845840b729870c6c0e3ef *R/diversityresult.R
+bb645ea0360c663f909d592d18525c16 *R/diversityvariables.R
 b6f8a3877c7b08755e21be8085cbca57 *R/ensemble.accepted.categories.R
 257d5813bb93776ba34f15ef44f1c9a0 *R/ensemble.analogue.R
 ed3543cb6b1c8beab4953b3e4a9a3bd5 *R/ensemble.batch.R
@@ -82,14 +83,14 @@ b843662ae71f93a8afb8b0f4d3e1692b *data/ifri.txt.gz
 37351079a5ac672b82707ef8e4c36719 *data/warcom.txt.gz
 93b84b8b327e4963bd31bc89f9d10154 *data/warenv.txt.gz
 c2e89e25151ea992f2f15b7e22d67e53 *inst/CITATION
-666fc6f6f54385cef0b51222e3f5068f *inst/etc/BiodiversityGUI.R
-35f74c9ea5e8d237321984794d71a0a9 *inst/etc/BiodiversityR-menus.txt
+f0301ff7add2d06e293c86e0e453d2ee *inst/etc/BiodiversityGUI.R
+2eea049cacb93f08e1ce71d3284a9e14 *inst/etc/BiodiversityR-menus.txt
 22a8a26570fc6d836ed86e2f124b668b *inst/etc/Nations.txt
 2a1ecb07b4897fb1f7de5be3704d5d2b *inst/etc/R-logo.gif
 0174d0ff84847f9f73741c1e5d121164 *inst/etc/R-logo.ico
 c2128aa27494eb3df882dadd7ed576da *inst/etc/Rcmdr-Markdown-Template.Rmd
 3ce4fee044b7cd447276fa41c65125db *inst/etc/Rcmdr-knitr-Template.Rnw
-e0f80f00654cf586be6f30726cf53976 *inst/etc/Rcmdr-menus.txt
+50b0bcec58fcf52be870d887a9f65653 *inst/etc/Rcmdr-menus.txt
 fa78c02ed480d3d08dcdca26a8515e1a *inst/etc/Rcmdr.xbm
 df9255d1f7ced44df68c65ef7d9e2c42 *inst/etc/apply.gif
 f80f0f625d1ab499497068dc27b6334d *inst/etc/blank.gif
@@ -135,7 +136,7 @@ f0e804f5f3b822a452f28c3f289b0b20 *man/caprescale.Rd
 1043c583451d0a8ce1b3a8990c8a4a7e *man/dist.zeroes.Rd
 347b06886c88c3dd5d2cd8d93590e23a *man/distdisplayed.Rd
 b6651af71fe4a1c4b806bcccdd5d390e *man/disttransform.Rd
-ccf79cc104e6160f277634f62ba57361 *man/diversityresult.Rd
+bf0fc57f271ba7c06350a38189517c9f *man/diversityresult.Rd
 c73a3c1c1ed072f00969b00b34f71ef9 *man/ensemble.Rd
 06731ef16b9c47cd0d901b8cb0a5efa8 *man/ensemble.batch.Rd
 223aa0d7c063edd6f90cfc74962d7cc5 *man/ensemble.dummy.variables.Rd

@@ -4,7 +4,8 @@ importFrom(tcltk, tkfont.create, tkbutton)
 
 export(BiodiversityRGUI,check.datasets,check.ordiscores,spatialsample,makecommunitydataset,
     removeNAcomm,replaceNAcomm,removeNAenv,subsetcomm,removezerospecies,balanced.specaccum,accumresult,accumplot,accumcomp,
-    diversityresult,diversitycomp,rankabundance,radfitresult,rankabunplot,rankabuncomp,renyiresult,renyiplot,
+    diversityresult,diversitycomp,diversityvariables,
+    rankabundance,radfitresult,rankabunplot,rankabuncomp,renyiresult,renyiplot,
     renyiaccumresult, renyicomp, importancevalue, importancevalue.comp, prepare.bioenv,
     deviancepercentage,residualssurface,crosstabanalysis,dist.zeroes,dist.eval,PCAsignificance,add.spec.scores,
     NMSrandom,nnetrandom,ordibubble,ordisymbol,ordicluster2,ordinearest,ordivector,ordiequilibriumcircle,distdisplayed,
