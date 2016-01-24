@@ -1,5 +1,5 @@
 `ensemble.test.nnet` <- function(
-    x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, ext=NULL, k=5, 
+    x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, ext=NULL, k=4, 
     TrainData=NULL,
     VIF=FALSE, COR=FALSE,
     SINK=FALSE, PLOTS=FALSE, 

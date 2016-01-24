@@ -19,11 +19,12 @@ The basic function \code{ensemble.test} allows to evaluate different algorithms 
 
 \usage{
 ensemble.test(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, ext = NULL, 
-    k = 0, pt = NULL, at = NULL,
+    k = 0, pt = NULL, at = NULL, CIRCLES.at = FALSE, CIRCLES.d = 100000, 
     TrainData = NULL, TestData = NULL, 
     VIF = FALSE, COR = FALSE,
     SINK = FALSE, PLOTS = TRUE, 
-    threshold.method = "spec_sens", threshold.sensitivity = 0.9,
+    threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
+    threshold.PresenceAbsence = FALSE,
     evaluations.keep = FALSE, 
     models.list = NULL, models.keep = FALSE, 
     models.save = FALSE, species.name = "Species001",
@@ -65,14 +66,16 @@ ensemble.test(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, ext = N
     RASTER.format = "raster")
 
 ensemble.test.splits(x = NULL, p = NULL, a = NULL, an = 1000, 
+    CIRCLES.at = FALSE, CIRCLES.d = 100000, 
     excludep = FALSE, ext = NULL, 
-    k = 5, 
+    k = 4, 
     TrainData = NULL,
     VIF = FALSE, COR = FALSE,
     SINK = FALSE, PLOTS = FALSE, 
     data.keep = FALSE,
     species.name = "Species001",
-    threshold.method = "spec_sens", threshold.sensitivity = 0.9,
+    threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
+    threshold.PresenceAbsence = FALSE,
     AUC.weights = TRUE, ENSEMBLE.tune = FALSE, 
     ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1,
     input.weights = NULL,
@@ -106,8 +109,8 @@ ensemble.test.splits(x = NULL, p = NULL, a = NULL, an = 1000,
     SVME.formula = NULL, 
     MAHAL.shape = 1)
 
-ensemble.test.gbm(x, p, a = NULL, an = 1000, excludep = FALSE, ext = NULL, 
-    k = 5, 
+ensemble.test.gbm(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, ext = NULL, 
+    k = 4, 
     TrainData = NULL,
     VIF = FALSE, COR = FALSE,
     SINK = FALSE, PLOTS = FALSE, 
@@ -119,7 +122,7 @@ ensemble.test.gbm(x, p, a = NULL, an = 1000, excludep = FALSE, ext = NULL,
     GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100)
 
 ensemble.test.nnet(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, 
-    ext = NULL, k = 5, 
+    ext = NULL, k = 4, 
     TrainData = NULL,
     VIF = FALSE, COR = FALSE,
     SINK = FALSE, PLOTS = FALSE, 
@@ -131,7 +134,7 @@ ensemble.test.nnet(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE,
     sizes = c(2, 4, 6, 8), decays = c(0.1, 0.05, 0.01, 0.001) )
 
 ensemble.drop1(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, ext = NULL, 
-    k = 0, pt = NULL, at = NULL, 
+    k = 0, pt = NULL, at = NULL, CIRCLES.at = FALSE, CIRCLES.d = 100000, 
     TrainData = NULL, TestData = NULL,
     VIF = FALSE, COR = FALSE,
     SINK = FALSE, 
@@ -183,9 +186,11 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{an}{ number of background points for calibration to be selected with \code{\link[dismo]{randomPoints}} in case argument \code{a} is missing}
   \item{excludep}{ parameter that indicates (if \code{TRUE}) that presence points will be excluded from the background points; see also \code{\link[dismo]{randomPoints}} }
   \item{ext}{ an Extent object to limit the selection of background points to a sub-region of \code{x}, typically provided as c(lonmin, lonmax, latmin, latmax); see also \code{\link[dismo]{randomPoints}} and \code{\link[raster]{extent}} }
-  \item{k}{ If larger than 1, the number of groups to split between calibration (k-1) and evaluation (1) data sets (for example, \code{k = 5} results in 4/5 of presence and background points to be used for calibrating the models, and 1/5 of presence and background points to be used for evaluating the models). For \code{ensemble.test.splits}, \code{ensemble.test.gbm} and \code{ensemble.test.nnet}, this procedure is repeated \code{k} times (k-fold cross-validation). See also \code{\link[dismo]{kfold}}.  }
+  \item{k}{ If larger than 1, the number of groups to split between calibration (k-1) and evaluation (1) data sets (for example, \code{k = 4} results in 3/4 of presence and background points to be used for calibrating the models, and 1/4 of presence and background points to be used for evaluating the models). For \code{ensemble.test.splits}, \code{ensemble.test.gbm} and \code{ensemble.test.nnet}, this procedure is repeated \code{k} times (k-fold cross-validation). See also \code{\link[dismo]{kfold}}.  }
   \item{pt}{ presence points used for evaluating the suitability models, available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{at}{ background points used for evaluating the suitability models, available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
+  \item{CIRCLES.at}{ If \code{TRUE}, then new background points that will be used for evaluationg the suitability models will be selected (\code{\link[dismo]{randomPoints}}) in circular neighbourhoods (created with \code{\link[dismo]{circles}}) around presence locations (p and pt).  }
+  \item{CIRCLES.d}{ Radius in m of circular neighbourhoods (created with \code{\link[dismo]{circles}}) around presence locations (p and pt).  }
   \item{TrainData}{ dataframe with first column 'pb' describing presence (1) and absence (0) and other columns containing explanatory variables; see also \code{\link[dismo]{prepareData}}. In case that this dataframe is provided, then locations p and a are not used. For the maximum entropy model (\code{\link[dismo]{maxent}}), a different dataframe is used for calibration; see parameter \code{MAXENT.TrainData}. }
   \item{TestData}{ dataframe with first column 'pb' describing presence (1) and absence (0) and other columns containing explanatory variables; see also \code{\link[dismo]{prepareData}}. In case that this dataframe is provided, then locations pt and at are not used. For \code{ensemble.strategy}, this dataframe should be a dataframe that contains predictions for various models - such dataframe can be provided by the \code{ensemble.test} or \code{\link{ensemble.raster}} functions.  }
   \item{VIF}{ Estimate the variance inflation factors based on a linear model calibrated on the training data  (if \code{TRUE}). Only background locations will be used and the response variable 'pb' will be replaced by a random variable. See also \code{\link[car]{vif}}.  }
@@ -194,6 +199,7 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{PLOTS}{ Plot the results of evaluation for the various suitability models (if \code{TRUE}). See also \code{\link[dismo]{evaluate}}.  }
   \item{threshold.method}{ Method to calculate the threshold between predicted absence and presence; possibilities include \code{spec_sens} (highest sum of the true positive rate and the true negative rate), \code{kappa} (highest kappa value), \code{no_omission} (highest threshold that corresponds to no omission), \code{prevalence} (modeled prevalence is closest to observed prevalence) and \code{equal_sens_spec} (equal true positive rate and true negative rate). See \code{\link[dismo]{threshold}}. Options specific to the BiodiversityR implementation are: \code{threshold.mean} (resulting in calculating the mean value of \code{spec_sens}, \code{equal_sens_spec} and \code{prevalence}) and \code{threshold.min} (resulting in calculating the minimum value of \code{spec_sens}, \code{equal_sens_spec} and \code{prevalence}).   }
   \item{threshold.sensitivity}{ Sensitivity value for \code{threshold.method = 'sensitivity'}. See \code{\link[dismo]{threshold}}.  }
+  \item{threshold.PresenceAbsence}{ If \code{TRUE} calculate thresholds with the PresenceAbsence package. See \code{\link[PresenceAbsence]{optimal.thresholds}}.  }
   \item{evaluations.keep}{ Keep the results of evaluations (if \code{TRUE}). See also \code{\link[dismo]{evaluate}}. }
   \item{models.list}{ list with 'old' model objects such as \code{MAXENT} or \code{RF}. }
   \item{models.keep}{ store the details for each suitability modelling algorithm (if \code{TRUE}). (This may be particularly useful when projecting to different possible future climates.)  }
@@ -305,7 +311,7 @@ With parameter \code{ENSEMBLE.best}, the subset of best models (evaluated by the
 
 \code{ENSEMBLE.tune} will result in an internal procedure whereby the best selection of parameter values for \code{ENSEMBLE.min}, \code{ENSEMBLE.best} or \code{ENSEMBLE.exponent} can be identified. Through a factorial procedure, the ensemble model with best AUC for a specific combination of parameter values is identified. The procedure also provides the weights that correspond to the best ensemble.  
 
-Function \code{ensemble.test.splits} splits the presence and background locations in a user-defined (\code{k}) number of subsets (i.e. k-fold cross-validation), then sequentially calibrates individual suitability models with (\code{k-1}) combined subsets and evaluates those with the remaining one subset, whereby each subset is used once for evaluation in the user-defined number (\code{k}) of runs. For example, \code{k = 5} results in splitting the locations in 5 subsets, then using one of these subsets in turn for evaluations (see also \code{\link[dismo]{kfold}}). Note that for the maximum entropy (MAXENT) algorithm, the same background data will be used in each cross-validation run (this is based on the assumption that a large number (~10000) of background locations are used).
+Function \code{ensemble.test.splits} splits the presence and background locations in a user-defined (\code{k}) number of subsets (i.e. k-fold cross-validation), then sequentially calibrates individual suitability models with (\code{k-1}) combined subsets and evaluates those with the remaining one subset, whereby each subset is used once for evaluation in the user-defined number (\code{k}) of runs. For example, \code{k = 4} results in splitting the locations in 4 subsets, then using one of these subsets in turn for evaluations (see also \code{\link[dismo]{kfold}}). Note that for the maximum entropy (MAXENT) algorithm, the same background data will be used in each cross-validation run (this is based on the assumption that a large number (~10000) of background locations are used).
 
 Among the output from function \code{ensemble.test.splits} are suggested weights for an ensemble model (\code{output.weights} and \code{output.weights.AUC}), and information on the respective AUC values of the ensemble model with the suggested weights for each of the (\code{k}) subsets. Suggested weights \code{output.weights} are calculated as the average of the weights of the different algorithms (submodels) of the \code{k} ensembles. Suggested weights \code{output.weights.AUC} are calculated as the average of the AUC of the different algorithms of the for the \code{k} runs. 
 

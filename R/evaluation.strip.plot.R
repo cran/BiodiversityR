@@ -21,13 +21,14 @@
             }
             dim1 <- max(1, ceiling(sqrt(models)))
             dim2 <- max(1, ceiling(models/dim1))
+            par.old <- graphics::par(no.readonly=T)
             graphics::par(mfrow=c(dim1,dim2))
             for (j in 1:models) {
                 if (any(is.na(data[v, 2+vars+j])==F)) {
                     graphics::plot(data[f,v+2], data[f, 2+vars+j], main=variable, xlab="", ylab=names(data)[2+vars+j],...)
                 }
             }
-            graphics::par(mfrow=c(1,1))
+            graphics::par(par.old)
         }else{
             m <- names(data) == model
             if (any(is.na(data[v, m])==F)) {
@@ -44,12 +45,13 @@
             vars <- max(data[,1])
             dim1 <- max(1, ceiling(sqrt(vars)))
             dim2 <- max(1, ceiling(vars/dim1))
+            par.old <- graphics::par(no.readonly=T)
             graphics::par(mfrow=c(dim1,dim2))
             for (i in 1:vars) {
                 f <- data[,1]==i
                 graphics::plot(data[f,i+2], data[f, m], main=names(data)[i+2], xlab="", ylab=model,...)
             }
-            graphics::par(mfrow=c(1,1))
+            graphics::par(par.old)
         }
     }
 }

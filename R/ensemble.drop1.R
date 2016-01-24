@@ -1,5 +1,6 @@
 `ensemble.drop1` <- function(
-    x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, ext=NULL, k=0, pt=NULL, at=NULL,
+    x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, ext=NULL, 
+    k=0, pt=NULL, at=NULL, CIRCLES.at=FALSE, CIRCLES.d=100000,
     TrainData=NULL, TestData=NULL,
     VIF=FALSE, COR=FALSE,
     SINK=FALSE, species.name="Species001",
@@ -84,7 +85,7 @@
 
     tests <- ensemble.test(x=x, ext=ext,
         p=p, a=a, an=an, excludep=excludep, 
-        k=k, pt=pt, at=at,
+        k=k, pt=pt, at=at, CIRCLES.at=CIRCLES.at, CIRCLES.d=CIRCLES.d,
         TrainData=TrainData, TestData=TestData,
         PLOTS=FALSE, evaluations.keep=T, models.keep=F,
         VIF=VIF, COR=COR,

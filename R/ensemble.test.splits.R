@@ -1,11 +1,12 @@
 `ensemble.test.splits` <- function(
-    x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, ext=NULL, k=5, 
+    x=NULL, p=NULL, a=NULL, an=1000, CIRCLES.at=FALSE, CIRCLES.d=100000,
+    excludep=FALSE, ext=NULL, k=4, 
     TrainData=NULL,
     VIF=FALSE, COR=FALSE,
     SINK=FALSE, PLOTS=FALSE, 
     data.keep=FALSE,
     species.name = "Species001",
-    threshold.method="spec_sens", threshold.sensitivity=0.9,
+    threshold.method="spec_sens", threshold.sensitivity=0.9, threshold.PresenceAbsence=FALSE,
     AUC.weights=TRUE, ENSEMBLE.tune=FALSE, 
     ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1, 
     input.weights=NULL,
@@ -41,8 +42,8 @@
     k <- as.integer(k)
     if (k < 2) {
         cat(paste("\n", "NOTE: parameter k was set to be smaller than 2", sep = ""))
-        cat(paste("\n", "default value of 5 therefore set for parameter k", "\n", sep = ""))
-        k <- 5
+        cat(paste("\n", "default value of 4 therefore set for parameter k", "\n", sep = ""))
+        k <- 4
     }
 #
     if (is.null(layer.drops) == F) {
@@ -100,7 +101,7 @@
 # 
 # run ensemble.test first to obtain MAXENT.BackData and var.names
     tests <- ensemble.test(x=x, ext=ext,
-        p=p, a=a, an=an, excludep=excludep, k=0, 
+        p=p, a=a, an=an, pt=NULL, at=NULL, excludep=excludep, k=0, 
         TrainData=TrainData, 
         VIF=F, COR=F,
         PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
@@ -112,7 +113,6 @@
         MAXENT.a=MAXENT.a, MAXENT.an=MAXENT.an, MAXENT.BackData=MAXENT.BackData,
         GEODIST=0,
         factors=factors)
-
 
     var.names <- tests$evaluations$var.names
     var.names2 <- c("pb", var.names)
@@ -132,9 +132,10 @@
         if (length(dummy.vars2) == 0) {dummy.vars2 <- NULL}
     }
 
-# Different cross-validations if categorical variables
+# Different cross-validations if categorical variables or circular neighbourhoods (locations needed)
+# If locations not needed, then process considerably faster
 
-    if (length(factors2) > 0) {
+    if (length(factors2)>0  || CIRCLES.at==T) {
         p.all <- tests$evaluations$p
         a.all <- tests$evaluations$a
         groupp <- dismo::kfold(p.all, k=k)
@@ -146,9 +147,9 @@
 # Start cross-validations
     
     for (i in 1:k){
-        cat(paste("\n", species.name, " K-FOLD CROSS-VALIDATION RUN: ", i, "\n\n", sep = ""))
-        if (length(factors2) > 0) {
+        cat(paste("\n", species.name, " K-FOLD CROSS-VALIDATION RUN: ", i, "\n", sep = ""))
 
+        if (length(factors2)>0  || CIRCLES.at==T) {
             p1 <- p.all[groupp != i,]
             p2 <- p.all[groupp == i,]
             a1 <- a.all[groupa != i,]
@@ -156,9 +157,9 @@
 
             tests <- ensemble.test(x=x, ext=ext,
                 TrainData=NULL, TestData=NULL,
-                p=p1, a=a1, pt=p2, at=a2,
+                p=p1, a=a1, pt=p2, at=a2, CIRCLES.at=CIRCLES.at, CIRCLES.d=CIRCLES.d,
                 VIF=VIF, COR=COR,
-                threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity,
+                threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
                 PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
                 AUC.weights=AUC.weights, ENSEMBLE.tune=ENSEMBLE.tune,
                 ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, ENSEMBLE.exponent=ENSEMBLE.exponent, 
@@ -191,16 +192,16 @@
                 SVME.formula=SVME.formula, 
                 MAHAL.shape=MAHAL.shape)
 
-# Different cross-validations if no categorical variables
+# Different cross-validations if no categorical variables and no circular neighbourhoods
 
         }else{
             TrainData2 <- TrainData1[groupd != i,]
             TestData2 <- TrainData1[groupd == i,]
 
-            tests <- ensemble.test(x=x, ext=ext,
-                TrainData=TrainData2, TestData=TestData2,
+            tests <- ensemble.test(x=x, ext=ext, p=NULL, a=NULL, pt=NULL, at=NULL,
+                TrainData=TrainData2, TestData=TestData2, CIRCLES.at=CIRCLES.at, CIRCLES.d=CIRCLES.d,
                 VIF=VIF, COR=COR,
-                threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity,
+                threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
                 PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
                 AUC.weights=AUC.weights, ENSEMBLE.tune=ENSEMBLE.tune,
                 ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, ENSEMBLE.exponent=ENSEMBLE.exponent,
@@ -303,8 +304,8 @@
 #
     if(ENSEMBLE.tune == T) {
         cat(paste("\n", "suggested input weights for ensemble modelling (based on MEAN.T column)",  sep = ""))
-        cat(paste("\n", "ENSEMBLE.exponent=2; ENSEMBLE.best=0; ENSEMBLE.min=0.7",  "\n\n", sep = ""))
-        output.weights.T <- ensemble.weights(weights=output.weights.T, exponent=2, best=0, min.weight=0.7)
+        cat(paste("\n", "ENSEMBLE.exponent=2; ENSEMBLE.best=0; ENSEMBLE.min=", ENSEMBLE.min, "\n\n", sep = ""))
+        output.weights.T <- ensemble.weights(weights=output.weights.T, exponent=2, best=0, min.weight=ENSEMBLE.min)
         print(output.weights.T)
     # test with suggested weights
         output3 <- numeric(length=k+1)

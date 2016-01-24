@@ -83,7 +83,7 @@
     results$SVM.formula <- as.formula(paste(numpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
     results$SVME.formula <- as.formula(paste(catpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
     if (is.null(factors) == F) {
-        cat(paste("\n", "Note that categorical variables were not included for EARTH", "\n", "\n", sep = ""))
+        cat(paste("\n", "Note that categorical variables were not included by ensemble.formulae for EARTH", "\n", sep = ""))
     }
     return(results)
 }

@@ -1,0 +1,135 @@
+# ChangeLog file put under the \inst folder
+
+
+BiodiversityR versions
+
+	This ChangeLog provides information on new functions integrated in
+	the package and some required updates. Updates related to error
+	messages for new versions of the base and loaded packages are
+	typically not included here (as these were addressed).
+
+	BiodiversityR details on installation are available from:
+	http://www.worldagroforestry.org/resources/databases/tree-diversity-analysis
+
+	The manual accompanying the original version of BiodiversityR is
+	available from:
+	http://www.worldagroforestry.org/downloads/Publications/PDFS/B13695.pdf
+
+Version 2.6-1 (January 2016)
+
+	* ensemble.centroid and ensemble.zones: New functions to determine centroid 
+	locations in principal components space of presence locations of an organism. 
+	Mahalanobis distance from centroid locations to map zones based on the
+	minimum distance from centroid locations.
+
+	* report information on spatial sorting bias in ensemble.test.
+
+	* CIRLES.at and CIRCLES.d options in ensemble.test function to reduce spatial 
+	sorting bias between evaluation presence and absence locations
+
+	* threshold.PresenceAbsence option in ensemble.test to use the PresenceAbsence
+	package to calculate absence-presence thresholds.
+	
+	* ensemble.novel: New function to map novel environmental conditions.
+	
+	* ensemble.area: New function to calculate areas of suitability raster maps.
+
+	* ensemble.analogue: New function to map environmental (climate) analogues.
+	
+	* ensemble.ecocrop: New function to map suitability based on temperature 
+	and rainfall optimal and absolute ranges.
+
+	* corrected problem in handling probit-transformations in ensemble.raster function
+
+	* started ChangeLog
+
+
+Version 2.5-4 (September 2015)
+
+	* compatibility with Rcmdr restored (eg qqPlot)
+
+	* menu interface scripts updated	
+
+	* new menu option of Analysis of diversity > Add diversity variables to data set
+
+	* new menu option of silhouette in the Cluster analysis plot options
+
+
+Version 2.5-3 (July 2015)
+
+	* changes in the CAPdiscrim function to result in same results as PRIMER (problem
+	handled by including as.dist() function prior to cmdscale() function).
+
+	* new menu option of replacing NA with 0 in the community data set
+
+	* corrected problem in ensemble.test.splits function in obtain AUC-derived
+	weights for submodels when weights are not tuned
+
+	* ensured that subfolder to save models is created (ensemble.test function)
+	
+	* included package information for function visibility
+
+
+Version 2-5.2 (April 2015)
+
+	* included droplevels() function in function ensemble.test
+
+	* avoiding loading of libraries in ensemble functions (including gam::s()
+	for gam formula)
+
+	* included topography-derived variables in BCI.env data (provided by P. Legendre)
+
+
+Version 2-5.1 (November 2014)
+
+	* menu option to remove species with zero total abundance
+
+	* handle new 8-character species codes in vegan in examples
+
+	* include options to plot as.phylo() cluster dendrograms
+
+	* option to reorder cluster dendrograms
+
+	* option to plot symbols in cluster diagrams
+
+	* BiodiversityR start up message
+
+	* expand vegan functions from menu interface (vegemite, tabasco, coverscale,
+	screeplot, bioenv, betadisper, contribdiv, beals, betadiverr, wcmscale, pcnm,
+	polaccum, estaccumR, eventstar, indpower, isomap, meandist, nestedchecker,
+	nestedtemp, nestednodf, nestedbetasor, nestedbetajac, RsquareAdj, drarefy,
+	simper, treeheight)
+
+	* corrected problems with jackknife of diversity analysis (diversityresult
+	function with method='jackknife')
+
+
+Version 2-4.4 (May 2014)
+
+	* new PROBIT option in ensemble.test function to transform outputs of 
+	ensemble submodels with probit transformation (also supported in 
+	ensemble.raster function)	
+
+	* new ENSEMBLE.exponent option to modify weights of ensemble submodels
+	in ensemble model by using exponent
+
+	* corrected use of persp() for accumulated renyi profiles in menu interface
+
+
+Version 2-4.1 (January 2014)
+
+	* new functions of ensemble.simplified.categories and ensemble.dummy.variables
+
+	* new function of ensemble.evaluation.strip
+
+	* only allow ensemble calibration in ensemble.test and ensemble.test.splits
+	functions
+
+	* include legends in menu-interface generated plots no longer via locator()
+
+Older versions
+
+	* mainly changes related to newer version of R base and loaded packages,
+	including changes required to maintain compatility with R-commander
+
+

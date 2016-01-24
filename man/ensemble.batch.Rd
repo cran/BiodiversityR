@@ -14,14 +14,15 @@ The main function allows for batch processing of different species and different
 ensemble.batch(x = NULL, xn = c(x), ext = NULL, 
     species.presence = NULL, species.absence = NULL, 
     presence.min = 20,
-    an = 1000, excludep = FALSE,
-    k.splits = 5, k.test = 0, 
+    an = 1000, excludep = FALSE, CIRCLES.at = FALSE, CIRCLES.d = 100000, 
+    k.splits = 4, k.test = 0, 
     n.ensembles = 1, 
     SINK = FALSE,
     RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767, 
     KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
     models.save = FALSE,
-    threshold.method = "spec_sens", threshold.sensitivity = 0.9,
+    threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
+    threshold.PresenceAbsence = FALSE,
     ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1,
     input.weights = NULL, 
     MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, 
@@ -59,7 +60,8 @@ ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
     p = NULL, a = NULL,
     pt = NULL, at = NULL,
     threshold = -1,
-    threshold.method = "spec_sens", threshold.sensitivity = 0.9)
+    threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
+    threshold.PresenceAbsence = FALSE)
 
 }
 
@@ -72,6 +74,8 @@ ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{presence.min}{ minimum number of presence locations for the organism (if smaller, no models are fitted).  }
   \item{an}{ number of background points for calibration to be selected with \code{\link[dismo]{randomPoints}} in case argument \code{a} or \code{species.absence} is missing  }
   \item{excludep}{ parameter that indicates (if \code{TRUE}) that presence points will be excluded from the background points; see also \code{\link[dismo]{randomPoints}} }
+  \item{CIRCLES.at}{ If \code{TRUE}, then new background points that will be used for evaluationg the suitability models will be selected (\code{\link[dismo]{randomPoints}}) in circular neighbourhoods (created with \code{\link[dismo]{circles}}) around presence locations (p and pt).  }
+  \item{CIRCLES.d}{ Radius in m of circular neighbourhoods (created with \code{\link[dismo]{circles}}) around presence locations (p and pt).  }
   \item{k}{ If larger than 1, the mumber of groups to split between calibration (k-1) and evaluation (1) data sets (for example, \code{k=5} results in 4/5 of presence and background points to be used for calibrating the models, and 1/5 of presence and background points to be used for evaluating the models). See also \code{\link[dismo]{kfold}}.  }
   \item{k.splits}{ If larger than 1, the number of splits for the \code{\link{ensemble.test.splits}} step in batch processing. See also \code{\link[dismo]{kfold}}.  }
   \item{k.test}{ If larger than 1, the mumber of groups to split between calibration (k-1) and evaluation (1) data sets when calibrating the final models (for example, \code{k=5} results in 4/5 of presence and background points to be used for calibrating the models, and 1/5 of presence and background points to be used for evaluating the models). See also \code{\link[dismo]{kfold}}.  }
@@ -86,6 +90,7 @@ ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{models.save}{ Save the list with model details to a file (if \code{TRUE}). The filename will be \code{species.name} with extension \code{.models}; this file will be saved in subfolder of \code{models}. When loading this file, model results will be available as \code{ensemble.models}. }
   \item{threshold.method}{ Method to calculate the threshold between predicted absence and presence; possibilities include \code{spec_sens} (highest sum of the true positive rate and the true negative rate), \code{kappa} (highest kappa value), \code{no_omission} (highest threshold that corresponds to no omission), \code{prevalence} (modeled prevalence is closest to observed prevalence) and \code{equal_sens_spec} (equal true positive rate and true negative rate). See \code{\link[dismo]{threshold}}. Options specific to the BiodiversityR implementation are: \code{threshold.mean} (resulting in calculating the mean value of \code{spec_sens}, \code{equal_sens_spec} and \code{prevalence}) and \code{threshold.min} (resulting in calculating the minimum value of \code{spec_sens}, \code{equal_sens_spec} and \code{prevalence}).   }
   \item{threshold.sensitivity}{ Sensitivity value for \code{threshold.method = 'sensitivity'}. See \code{\link[dismo]{threshold}}.   }
+  \item{threshold.PresenceAbsence}{ If \code{TRUE} calculate thresholds with the PresenceAbsence package. See \code{\link[PresenceAbsence]{optimal.thresholds}}.  }
   \item{ENSEMBLE.best}{ The number of individual suitability models to be used in the consensus suitability map (based on a weighted average). In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then all individual suitability models with positive input weights are included in the consensus suitability map.  }
   \item{ENSEMBLE.min}{ The minimum input weight (assumed to correspond to evaluation indices of suitability models) for a model to be included in the ensemble.  }
   \item{ENSEMBLE.exponent}{ Exponent applied to AUC values to convert AUC values into weights (for example, an exponent of 2 converts input weights of 0.7, 0.8 and 0.9 into 0.7^2=0.49, 0.8^2=0.64 and 0.9^2=0.81). See \code{\link{ensemble.test}} for details.  }

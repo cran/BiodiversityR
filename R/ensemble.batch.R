@@ -2,14 +2,14 @@
     x=NULL, xn=c(x), ext=NULL, 
     species.presence=NULL, species.absence=NULL, 
     presence.min=20,
-    an=1000, excludep=FALSE, 
-    k.splits=5, k.test=0, 
+    an=1000, excludep=FALSE, CIRCLES.at=FALSE, CIRCLES.d=100000,
+    k.splits=4, k.test=0, 
     n.ensembles=1, 
     SINK=FALSE,
     RASTER.format="raster", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
     KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
     models.save=FALSE,
-    threshold.method="spec_sens", threshold.sensitivity=0.9,
+    threshold.method="spec_sens", threshold.sensitivity=0.9, threshold.PresenceAbsence=FALSE,
     ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1,
     input.weights=NULL,
     MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0,
@@ -42,8 +42,8 @@
     k.splits <- as.integer(k.splits)
     if (k.splits < 1) {
         cat(paste("\n", "NOTE: parameter k.splits was set to be smaller than 1", sep = ""))
-        cat(paste("\n", "default value of 5 therefore set for parameter k.splits", sep = ""))
-        k.splits <- 5
+        cat(paste("\n", "default value of 4 therefore set for parameter k.splits", sep = ""))
+        k.splits <- 4
     }
     n.ensembles <- as.integer(n.ensembles)
     if (n.ensembles < 1) {n.ensembles <- 1}
@@ -148,11 +148,12 @@
 
 #1. first ensemble tests
     calibration.1 <- ensemble.test.splits(x=x, p=ps, a=as, ext=ext, k=k.splits, 
+        CIRCLES.at=CIRCLES.at, CIRCLES.d=CIRCLES.d,
         ENSEMBLE.tune=T,
         ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, 
         ENSEMBLE.exponent=ENSEMBLE.exponent,
         species.name = RASTER.species.name1,
-        threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity,
+        threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
         input.weights=input.weights,
         MAXENT=MAXENT, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
         GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, EARTH=EARTH, RPART=RPART, 
@@ -201,7 +202,7 @@
         models.save=models.save, species.name=RASTER.species.name1,
         AUC.weights=F, ENSEMBLE.tune=F,
         input.weights=output.weights,
-        threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity,
+        threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
         RASTER.format=RASTER.format,
         PROBIT=PROBIT,
         Yweights=Yweights, 

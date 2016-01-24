@@ -1,6 +1,7 @@
 \name{ensemble.raster}
 \alias{ensemble.raster}
 \alias{ensemble.habitat.change}
+\alias{ensemble.area}
 
 \title{
 Suitability mapping based on ensembles of modelling algorithms: consensus mapping
@@ -29,6 +30,8 @@ ensemble.habitat.change(base.map=file.choose(),
     RASTER.format = "raster", RASTER.datatype = "INT1U", RASTER.NAflag = 255,
     KML.out = FALSE, KML.folder = "kml/change",
     KML.maxpixels = 100000, KML.blur = 10)
+
+ensemble.area(x=NULL, km2=TRUE)
 }
 
 \arguments{
@@ -58,6 +61,8 @@ ensemble.habitat.change(base.map=file.choose(),
   \item{change.folder}{ folder where new maps documenting changes in suitable habitat will be stored. NOTE: please ensure that the base folder (eg: ../ensembles) exists already.  }
   \item{KML.folder}{ folder where new maps (in Google Earth format) documenting changes in suitable habitat will be stored. NOTE: please ensure that the base folder (eg: ../kml) exists already.   }
 
+  \item{x}{ RasterLayer object (\code{\link[raster]{raster}}) in a longitude-latitude coordinate system  }
+  \item{km2}{ Provide results in square km rather than square m. See also \code{\link[geosphere]{areaPolygon}}  }
 }
 
 \details{
@@ -72,6 +77,8 @@ As the Mahalanobis function (\code{\link[dismo]{mahal}}) does not always provide
 The \code{ensemble.habitat.change} function produces new raster layers that show changes in suitable and not suitable habitat between a base raster and a list of other rasters. The output uses the following coding: 0 = areas that remain unsuitable, 11 = areas that remain suitable, 10 = areas of lost habitat, 1 = areas of new habitat. (Codes are inspired on a binary classification of habitat suitability in base [1- or 0-] and other layer [-1 or -0], eg new habitat is coded 01 = 1).
 
 With \code{KML.out = TRUE}, kml files are created in a subfolder named "KML". The colouring of the consensus suitability PNG is based on 20 intervals of size 50 between 0 and 1000. The colouring of the presence-absence PNG uses green for presence and red for absence. The colouring of the count suitability PNG uses black for zero (no models predict presence) and blue for the theoretical maximum number of models to predict presence (i.e. the count of all final weights), whereas intermediate numbers (1 to theoretical maximum - 1) are ranged from red to green. The colouring of the habitat change maps are: black (cells that are never suitable [value: 0]), green (cells that are always suitable [value: 11]), red (cells that are lost habitat [value: 10] and blue (cells that are new habitat [value: 1]).
+
+The \code{ensemble.area} function calculates the area of different categories with \code{\link[geosphere]{areaPolygon}}
 
 }
 
@@ -168,11 +175,13 @@ ensemble.calibrate.step2 <- ensemble.test(x=predictors, p=pres, a=background,
     GBMSTEP.learning.rate=0.002)
 
 # step 3: use previously calibrated models
+# re-evaluate the created maps at presence and background locations
+# (note that re-evaluation will be different due to rescaling of model results)
 ensemble.nofactors1 <- ensemble.raster(xn=predictors, ext=ext,
     models.list=ensemble.calibrate.step2$models, 
     input.weights=output.weights,
     thresholds=ensemble.calibrate.step2$models$thresholds,
-    SINK=TRUE,
+    SINK=TRUE, evaluate=TRUE,
     RASTER.species.name="Bradypus", RASTER.stack.name="base")
 
 # use the base map to check for changes in suitable habitat
@@ -223,6 +232,9 @@ other.file <- paste(getwd(), "/ensembles/presence/Bradypus_recalibrated.grd", se
 changed.habitat <- ensemble.habitat.change(base.map=base.file, 
     other.maps=c(other.file),
     change.folder="ensembles/change")
-}
 
+change.file <- paste(getwd(), "/ensembles/change/Bradypus_recalibrated_presence.grd", sep="")
+areas <- ensemble.area(raster(change.file))
+areas
+}
 }

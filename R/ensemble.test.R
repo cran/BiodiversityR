@@ -1,10 +1,10 @@
 `ensemble.test` <- function(
     x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, ext=NULL, 
-    k=0, pt=NULL, at=NULL,
+    k=0, pt=NULL, at=NULL, CIRCLES.at=FALSE, CIRCLES.d=100000,
     TrainData=NULL, TestData=NULL,
     VIF=FALSE, COR=FALSE,
     SINK=FALSE, PLOTS=TRUE, 
-    threshold.method="spec_sens", threshold.sensitivity=0.9,
+    threshold.method="spec_sens", threshold.sensitivity=0.9, threshold.PresenceAbsence=FALSE,
     evaluations.keep=FALSE, 
     models.list=NULL, models.keep=FALSE, 
     models.save=FALSE, species.name="Species001",
@@ -519,6 +519,28 @@
             at <- a[groupa == 1,]
             a <- ac
         }
+# check for spatial sorting bias (are the testing absences farther away than testing presences)
+        if (is.null(p)==F && identical(pt, p)==F) {
+            sb.bias <- dismo::ssb(p=pt, a=at, reference=p)
+            sb.bias2 <- sb.bias[, 1]/sb.bias[, 2]
+            cat(paste("\n", "Spatial sorting bias (dismo package, no bias=1, extreme bias=0): ",  sb.bias2, "\n", sep = ""))
+        }
+# attempt to reduce spatial bias by searching absence testing locations within circles around all known presences
+        if (CIRCLES.at == T) {
+            if (identical(pt, p) == T) {
+                cat(paste("\n", "No search for testing absences in circular neighbourhoods since no separate testing presences", sep = ""))
+                CIRCLES.at <- FALSE
+            }else{
+                cat(paste("\n", "Random selection of testing absences in circular neighbourhoods", sep = ""))
+                pres_all <- rbind(pt, p)
+                circles.calibrate <- dismo::circles(p=pres_all, lonlat=raster::isLonLat(x[[1]]), d=CIRCLES.d)
+                circles.predicted <- predict(circles.calibrate, x[[1]])
+                at <- dismo::randomPoints(circles.predicted, n=nrow(at), p=pres_all, excludep=T)
+                sb.bias <- dismo::ssb(p=pt, a=at, reference=p)
+                sb.bias2 <- sb.bias[, 1]/sb.bias[, 2]
+                cat(paste("\n", "Spatial sorting bias with new testing absences (dismo package, no bias=1, extreme bias=0): ",  sb.bias2, "\n", sep = ""))
+            }
+        }
         TrainData <- dismo::prepareData(x, p, b=a, factors=factors, xy=FALSE)
         if(any(is.na(TrainData[TrainData[,"pb"]==1,]))) {
             cat(paste("\n", "WARNING: presence locations with missing data removed from calibration data","\n\n",sep = ""))
@@ -532,6 +554,7 @@
         a <- a[TrainValid,]
         TrainData <- dismo::prepareData(x, p, b=a, factors=factors, xy=FALSE)
     }
+#
     if (is.null(TestData) == F) {
         TestData <- data.frame(TestData)
         if(any(is.na(TestData))) {
@@ -616,11 +639,11 @@
                     }
                 }
             }
-# step 3: also modify test data
+# step 3: also modify test data, but only if no circular neighbourhood
             if (no.tests == F) {
                 test.categories <- levels(droplevels(TestData[,factors[i]]))
                 new.categories <- c(all.categories[is.na(match(all.categories, test.categories))])
-                if (length(new.categories) > 0) {
+                if (length(new.categories)>0  && CIRCLES.at==F) {
                     cat(paste("\n", "The following levels were initially not captured by TestData for factor '", factors[i], "'\n", sep = ""))
                     print(new.categories)
                     if (is.null(x)==F && is.null(pt)==F && is.null(at)==F) {
@@ -642,6 +665,10 @@
                             cat(paste("\n", "Attempt to include these levels was complicated by missing values in other layers", "\n", sep = ""))
                         }
                     }
+                }
+                if (length(new.categories)>0  && CIRCLES.at==T) {
+                    cat(paste("\n", "Note that the following levels were not captured in the circular neighbourhood by TestData for factor '", factors[i], "'\n", sep = ""))
+                    print(new.categories)
                 }
             }
         }
@@ -799,12 +826,12 @@
     colnames(modelresults) <- c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
         "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL", "ENSEMBLE")
     TrainData <- cbind(TrainData, modelresults)
+    assign("TrainData", TrainData, envir=.BiodiversityR)
     modelresults <- data.frame(array(dim=c(nrow(TestData), 20), 0))
     colnames(modelresults) <- c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
         "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL", "ENSEMBLE")
     TestData <- cbind(TestData, modelresults)
     assign("TestData", TestData, envir=.BiodiversityR)
-    assign("TrainData", TrainData, envir=.BiodiversityR)
     weights <- as.numeric(array(dim=19, 0))
     names(weights) <- c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX", 
         "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL")
@@ -845,24 +872,65 @@
 # prepare for calculation of deviance
     obs1 <- TrainData[, "pb"]
 # new methods for calculating thresholds
-    threshold2 <- function(eval, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity) {
-        if (threshold.method == "threshold.min") {
-            t1 <- dismo::threshold(eval)[["spec_sens"]]
-            t2 <- dismo::threshold(eval)[["equal_sens_spec"]]            
-            t3 <- dismo::threshold(eval)[["prevalence"]]
-            thresholds <- as.numeric(c(t1, t2, t3))
-            thresholds <- thresholds[thresholds > 0]
-            return(min(thresholds))
+    threshold2 <- function(eval, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
+            threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=Pres, Abs=Abs) {
+        if (threshold.PresenceAbsence == T){        
+            Pres2 <- cbind(rep(1, length(Pres)), Pres)
+            Abs2 <- cbind(rep(0, length(Abs)), Abs)
+            data1 <- rbind(Pres2, Abs2)
+            data2 <- cbind(seq(1:nrow(data1)), data1)
+            auc.value <- PresenceAbsence::auc(data2, st.dev=F)
+            cat(paste("\n", "AUC from PresenceAbsence package (also used to calculate threshold): ", auc.value, "\n", sep = ""))
+            if (threshold.method=="kappa") {threshold.method <- "MaxKappa"}
+            if (threshold.method=="spec_sens") {threshold.method <- "MaxSens+Spec"}
+            if (threshold.method=="prevalence") {threshold.method <- "ObsPrev"}
+            if (threshold.method=="equal_sens_spec") {threshold.method <- "Sens=Spec"}
+            if (threshold.method=="sensitivity") {threshold.method <- "ReqSens"}
+            req.sens <- threshold.sensitivity
+            if (threshold.method=="no_omission") {
+                threshold.method <- "ReqSens"
+                req.sens <- 1.0
+            }
+            result <- PresenceAbsence::optimal.thresholds(data2, threshold=seq(from=0, to=1, by=0.005), req.sens=req.sens)
+            result2 <- as.numeric(result[, 2])
+            names(result2) <- result[, 1]
+            if (threshold.method == "threshold.min") {
+                t1 <- result2[["MaxSens+Spec"]]
+                t2 <- result2[["Sens=Spec"]]            
+                t3 <- result2[["ObsPrev"]]
+                thresholds <- as.numeric(c(t1, t2, t3))
+                thresholds <- thresholds[thresholds > 0]
+                return(min(thresholds))
+            }
+            if (threshold.method == "threshold.mean") {
+                t1 <- result2[["MaxSens+Spec"]]
+                t2 <- result2[["Sens=Spec"]]            
+                t3 <- result2[["ObsPrev"]]
+                thresholds <- as.numeric(c(t1, t2, t3))
+                thresholds <- thresholds[thresholds > 0]
+                return(mean(thresholds))
+            }
+            return(as.numeric(result2[[threshold.method]]))
+        }else{
+            result <- dismo::threshold(eval, sensitivity=threshold.sensitivity)        
+            if (threshold.method == "threshold.min") {
+                t1 <- result[["spec_sens"]]
+                t2 <- result[["equal_sens_spec"]]            
+                t3 <- result[["prevalence"]]
+                thresholds <- as.numeric(c(t1, t2, t3))
+                thresholds <- thresholds[thresholds > 0]
+                return(min(thresholds))
+            }
+            if (threshold.method == "threshold.mean") {
+                t1 <- result[["spec_sens"]]
+                t2 <- result[["equal_sens_spec"]]            
+                t3 <- result[["prevalence"]]
+                thresholds <- as.numeric(c(t1, t2, t3))
+                thresholds <- thresholds[thresholds > 0]
+                return(mean(thresholds))
+            }
+            return(result[[threshold.method]])
         }
-        if (threshold.method == "threshold.mean") {
-            t1 <- dismo::threshold(eval)[["spec_sens"]]
-            t2 <- dismo::threshold(eval)[["equal_sens_spec"]]            
-            t3 <- dismo::threshold(eval)[["prevalence"]]
-            thresholds <- as.numeric(c(t1, t2, t3))
-            thresholds <- thresholds[thresholds > 0]
-            return(mean(thresholds))
-        }
-        return(dismo::threshold(eval, sensitivity=threshold.sensitivity)[[threshold.method]])
     }
 #
 # count models
@@ -907,7 +975,7 @@
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
 #            thresholds["MAXENT"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
-            thresholds["MAXENT"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["MAXENT"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["MAXENT"]))
             weights["MAXENT"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -979,7 +1047,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GBM"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["GBM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["GBM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["GBM"]))
             weights["GBM"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1056,7 +1124,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GBMSTEP"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["GBMSTEP"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["GBMSTEP"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["GBMSTEP"]))
             weights["GBMSTEP"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1127,7 +1195,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"RF"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["RF"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["RF"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["RF"]))
             weights["RF"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1198,7 +1266,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GLM"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["GLM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["GLM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["GLM"]))
             weights["GLM"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1276,7 +1344,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GLMSTEP"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["GLMSTEP"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["GLMSTEP"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["GLMSTEP"]))
             weights["GLMSTEP"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1354,7 +1422,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GAM"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["GAM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["GAM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["GAM"]))
             weights["GAM"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1438,7 +1506,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"GAMSTEP"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["GAMSTEP"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["GAMSTEP"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["GAMSTEP"]))
             weights["GAMSTEP"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1518,7 +1586,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"MGCV"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["MGCV"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["MGCV"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["MGCV"]))
             weights["MGCV"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1589,7 +1657,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"MGCVFIX"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["MGCVFIX"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["MGCVFIX"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["MGCVFIX"]))
             weights["MGCVFIX"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1663,7 +1731,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"EARTH"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["EARTH"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["EARTH"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["EARTH"]))
             weights["EARTH"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1735,7 +1803,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"RPART"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["RPART"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["RPART"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["RPART"]))
             weights["RPART"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1808,7 +1876,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"NNET"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["NNET"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["NNET"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["NNET"]))
             weights["NNET"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1879,7 +1947,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"FDA"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["FDA"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["FDA"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["FDA"]))
             weights["FDA"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -1951,7 +2019,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"SVM"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["SVM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["SVM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["SVM"]))
             weights["SVM"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -2022,7 +2090,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"SVME"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["SVME"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["SVME"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["SVME"]))
             weights["SVME"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -2109,7 +2177,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"BIOCLIM"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["BIOCLIM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["BIOCLIM"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["BIOCLIM"]))
             weights["BIOCLIM"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -2179,7 +2247,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"DOMAIN"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["DOMAIN"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["DOMAIN"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["DOMAIN"]))
             weights["DOMAIN"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -2249,7 +2317,7 @@
             TrainAbs <- TrainData[TrainData[,"pb"]==0,"MAHAL"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["MAHAL"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["MAHAL"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["MAHAL"]))
             weights["MAHAL"] <- max(c(eval1@auc, 0), na.rm=T)
@@ -2410,7 +2478,7 @@
         }else{
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
-            thresholds["ENSEMBLE"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
+            thresholds["ENSEMBLE"] <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
             cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
             print(as.numeric(thresholds["ENSEMBLE"]))
             if (models.keep == T) {models$thresholds <- thresholds}

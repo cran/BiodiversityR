@@ -403,6 +403,7 @@
     item    helpMenu        command         "Using R Markdown"                              browseRMarkdown             ""          ""
     item    topMenu         cascade         "Help"                                          helpMenu                    ""          ""
 
+
     # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
     # AUG 2015
 
@@ -461,5 +462,7 @@
     item    biodivMenu      cascade         "Analysis of species as response"               countsMenu                  ""          ""
     item    biodivMenu      cascade         "Analysis of ecological distance"               ordinMenu                   ""          ""
     item    biodivMenu      cascade         "Help about BiodiversityR"                      helpbioMenu                 ""          ""
+
+
 
 

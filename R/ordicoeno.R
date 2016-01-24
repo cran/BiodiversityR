@@ -36,7 +36,7 @@ function(x, ordiplot, axis=1, legend=FALSE, cex=0.8, ncol=4, ...) {
     edfs <- as.numeric(edfs)
     names(edfs) <- colnames
     if (legend == T) {
-        legend("top", legend = colnames, pch=pchtypes[1:ncol(x)], lty=1, col = c(1:ncol(x)), ncol=ncol)
+        legend("top", legend=colnames, pch=pchtypes[1:ncol(x)], lty=1, col=c(1:ncol(x)), ncol=ncol)
     }
     grDevices::palette("default")
     cat("edfs from GAM models for each species...\n")
