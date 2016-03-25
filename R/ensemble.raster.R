@@ -252,6 +252,7 @@
     dir.create("ensembles/count", showWarnings = F)
     dir.create("ensembles/presence", showWarnings = F)
     stack.title <- RASTER.stack.name
+    if (gsub(".", "_", stack.title, fixed=T) != stack.title) {cat(paste("\n", "WARNING: title of stack (", stack.title, ") contains '.'", "\n\n", sep = ""))}
 #    stack.title <- xn@title
     if(KML.out == T) {
         dir.create("kml", showWarnings = F)
@@ -289,7 +290,7 @@
 #
 # since raster layers are scaled 0 - 1000, multiply the thresholds by 1000
     thresholds <- trunc(1000*thresholds)
-    cat(paste("\n", "threshold used (scaled to raster output): ", "\n", sep = ""))
+    cat(paste("\n", "submodel thresholds used (scaled to raster output): ", "\n", sep = ""))
     print(thresholds)
 #
 # count models

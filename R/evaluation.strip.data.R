@@ -64,7 +64,7 @@
         raster::projection(xn) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
     }
 # declare categorical layers for xn
-    factors <- models.list$factors
+#    factors <- models.list$factors
     if(is.null(factors) == F) {
         for (i in 1:length(factors)) {
             j <- which(names(xn) == factors[i])
@@ -223,6 +223,7 @@
     ws <- input.weights
 #
 # prepare data set
+    vars.xn <- names(xn)
     nvars <- length(vars)
     nnum <- nvars - length(factors)
     nrows <- nnum * steps
@@ -232,7 +233,7 @@
     fixedlevel <- array(dim=c(nvars))
     for (i in 1:nvars) {
         if(any(vars[i] == factors) == T) {
-            il <- which(vars.xn == vars[i])       
+            il <- which(vars.xn == vars[i])
             tabulation <- data.frame(raster::freq(xn[[il]]))
             NA.index <- !is.na(tabulation[,"value"])
             tabulation <- tabulation[NA.index,]           
@@ -326,11 +327,17 @@
     }
     if (RF > 0) {
         results <- RF.OLD
-        tryCatch(plot.data[,"RF"] <- predict(object=results, newdata=plot.data.vars, type="response"),
-            error= function(err) {print(paste("random forest prediction failed"))},
-            silent=F)
         results2 <- RF.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"RF"] <- predict(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            tryCatch(plot.data[,"RF"] <- as.numeric(predict(object=results, newdata=plot.data.vars, type="response")),
+                error= function(err) {print(paste("random forest prediction failed"))},
+                silent=F)
+            plot.data[,"RF"] <- predict(object=results2, newdata=plot.data, type="response")
+        }else{
+            tryCatch(plot.data[,"RF"] <- as.numeric(predict(object=results, newdata=plot.data.vars, type="response")),
+                error= function(err) {print(paste("random forest prediction failed"))},
+                silent=F)
+        }
     }
     if (GLM > 0) {
         results <- GLM.OLD

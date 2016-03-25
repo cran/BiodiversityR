@@ -15,6 +15,26 @@ BiodiversityR versions
 	available from:
 	http://www.worldagroforestry.org/downloads/Publications/PDFS/B13695.pdf
 
+Version 2.7-0
+
+	* new Graphical User Interface (GUI) for ensemble suitability modelling.
+	Guidelines for getting started are available from the GUI and in the 'doc'
+	folder of BiodiversityR
+
+	* included the ensemble.mean function within ensemble.batch, so that
+	ensemble.batch also produces the mean ('_MEAN_') ensemble files when several
+	ensembles are calibrated via ensemble.batch
+
+	* new function ensemble.plot, especially to apply a colourscheme that
+	differentiates between suitabilities below and above a threshold that
+	discriminates between predicted absence-presence of the organism
+
+	* new feature in the evaluation.strip.plot to include a boxplot for the 
+	presence locations of a data set used for model calibrations
+
+	* included help buttons in various GUI windows
+
+
 Version 2.6-1 (January 2016)
 
 	* ensemble.centroid and ensemble.zones: New functions to determine centroid 
@@ -59,6 +79,10 @@ Version 2.5-3 (July 2015)
 
 	* changes in the CAPdiscrim function to result in same results as PRIMER (problem
 	handled by including as.dist() function prior to cmdscale() function).
+
+	* new function importancevalue to calculate Importance Value Index, and new
+	ifri data set (collaboration with the International Forestry Resources and Institutions 
+	[IFRI] research network; http://www.ifriresearch.net)  
 
 	* new menu option of replacing NA with 0 in the community data set
 

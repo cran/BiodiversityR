@@ -96,11 +96,21 @@
 # basic assumption is that different ensemble files are named as species_ENSEMBLE_1, species_ENSEMBLE_2, ... i.e. output from ensemble.batch
 
     species_focus <- RASTER.species.name
+    if (gsub(".", "_", RASTER.species.name, fixed=T) != RASTER.species.name) {cat(paste("\n", "WARNING: species name (", RASTER.species.name, ") contains '.'", "\n\n", sep = ""))}
     ensemble.files <- list.files(path=paste(getwd(), "//ensembles", sep=""), pattern=species_focus, full.names=TRUE)
+    if (length(ensemble.files) < 1) {
+        cat(paste("\n", "NOTE: not meaningful to provide means as there are no raster files for this species:", RASTER.species.name, "\n", sep = ""))
+        return(NULL)
+    }
     RASTER.stack.name2 <- RASTER.stack.name
+    if (gsub(".", "_", RASTER.stack.name, fixed=T) != RASTER.stack.name) {cat(paste("\n", "WARNING: title of stack (", RASTER.stack.name, ") contains '.'", "\n\n", sep = ""))}
     if (RASTER.stack.name != "") {
         ensemble.files <- ensemble.files[grepl(pattern=RASTER.stack.name, x=ensemble.files)]
         RASTER.stack.name2 <- paste("_", RASTER.stack.name, sep="")
+        if (length(ensemble.files) < 1) {
+            cat(paste("\n", "NOTE: not meaningful to provide means as there are no raster files for this stack:", RASTER.stack.name, "\n", sep = ""))
+            return(NULL)
+        }
     }
     for (i in 1:length(positive.filters)) {
         ensemble.files <- ensemble.files[grepl(pattern=positive.filters[i], x=ensemble.files)]
@@ -158,6 +168,8 @@
     if (threshold.mean < 0) {
         eval1 <- NULL
         cat(paste("\n", "Evaluation of created mean ensemble raster layer at locations p and a", "\n", sep = ""))
+        if (ncol(p) == 3) {p <- p[p[,1]==species_focus, c(2:3)]}
+        if (ncol(a) == 3) {a <- a[a[,1]==species_focus, c(2:3)]}
         pres_consensus <- raster::extract(ensemble.mean, p)
         abs_consensus <- raster::extract(ensemble.mean, a)
         eval1 <- dismo::evaluate(p=pres_consensus, a=abs_consensus)
@@ -170,6 +182,8 @@
         if(retest == T) {
             eval1 <- NULL
             cat(paste("\n", "Evaluation of created mean ensemble raster layer at locations pt and at", "\n\n", sep = ""))
+            if (ncol(pt) == 3) {pt <- pt[pt[,1]==species_focus, c(2:3)]}
+            if (ncol(at) == 3) {at <- at[at[,1]==species_focus, c(2:3)]}
             pres_consensus <- raster::extract(ensemble.mean, pt)
             abs_consensus <- raster::extract(ensemble.mean, at)
             eval1 <- dismo::evaluate(p=pres_consensus, a=abs_consensus)

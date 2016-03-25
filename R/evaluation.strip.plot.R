@@ -1,10 +1,14 @@
 `evaluation.strip.plot` <- function(
-    data, 
+    data, TrainData=NULL,
     modelnames=c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
         "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL"),
     variable=NULL, model=NULL, ...
 ) 
 {
+    if (is.null(TrainData) == F) {
+        TrainData <- TrainData[TrainData[, "pb"]==1, ]
+        TrainData[, "pb"] <- as.factor(TrainData[, "pb"])
+    }
     if(is.null(variable)==F) {
         v <- (which(names(data) == variable))
         v <- v-2
@@ -22,17 +26,29 @@
             dim1 <- max(1, ceiling(sqrt(models)))
             dim2 <- max(1, ceiling(models/dim1))
             par.old <- graphics::par(no.readonly=T)
+            grDevices::dev.new()
             graphics::par(mfrow=c(dim1,dim2))
             for (j in 1:models) {
                 if (any(is.na(data[v, 2+vars+j])==F)) {
-                    graphics::plot(data[f,v+2], data[f, 2+vars+j], main=variable, xlab="", ylab=names(data)[2+vars+j],...)
+                    if (is.null(TrainData)==T  || is.factor(TrainData[, which(names(TrainData) == variable)])==T) {
+                        graphics::plot(data[f,v+2], data[f, 2+vars+j], main=variable, xlab="", ylab=names(data)[2+vars+j],...)
+                    }else{
+                        graphics::plot(data[f,v+2], data[f, 2+vars+j], main=variable, xlab="", ylab=names(data)[2+vars+j], ylim=c(0, 1.25), ...)
+                        graphics::boxplot(TrainData[, which(names(TrainData) == variable)] ~ TrainData[,"pb"], add=T, horizontal=T)
+                    }
                 }
             }
             graphics::par(par.old)
         }else{
             m <- names(data) == model
+            grDevices::dev.new()
             if (any(is.na(data[v, m])==F)) {
-                graphics::plot(data[f,v+2], data[f, m], main=variable, xlab="", ylab=names(data)[m], ...)
+                    if (is.null(TrainData)==T  || is.factor(TrainData[, which(names(TrainData) == variable)])==T) {
+                        graphics::plot(data[f,v+2], data[f, m], main=variable, xlab="", ylab=names(data)[2+vars+j],...)
+                    }else{
+                        graphics::plot(data[f,v+2], data[f, m], main=variable, xlab="", ylab=names(data)[2+vars+j], ylim=c(0, 1.25), ...)
+                        graphics::boxplot(TrainData[, which(names(TrainData) == variable)] ~ TrainData[,"pb"], add=T, horizontal=T)
+                    }
             }
         }
     }
@@ -45,11 +61,18 @@
             vars <- max(data[,1])
             dim1 <- max(1, ceiling(sqrt(vars)))
             dim2 <- max(1, ceiling(vars/dim1))
+            grDevices::dev.new()
             par.old <- graphics::par(no.readonly=T)
             graphics::par(mfrow=c(dim1,dim2))
             for (i in 1:vars) {
                 f <- data[,1]==i
-                graphics::plot(data[f,i+2], data[f, m], main=names(data)[i+2], xlab="", ylab=model,...)
+                if (is.null(TrainData)==T  || is.factor(TrainData[, which(names(TrainData) == names(data)[i+2])])==T) {
+                    graphics::plot(data[f,i+2], data[f, m], main=names(data)[i+2], xlab="", ylab=model,...)
+                }else{
+                    graphics::plot(data[f,i+2], data[f, m], main=names(data)[i+2], xlab="", ylab=model, ylim=c(0, 1.25), ...)
+                    varfocal <- names(data)[i+2]
+                    graphics::boxplot(TrainData[, which(names(TrainData) == varfocal)] ~ TrainData[,"pb"], add=T, horizontal=T)
+                }
             }
             graphics::par(par.old)
         }

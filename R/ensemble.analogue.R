@@ -103,6 +103,7 @@
     }
     if(length(x@title) == 0) {x@title <- "stack1"}
     stack.title <- RASTER.stack.name
+    if (gsub(".", "_", stack.title, fixed=T) != stack.title) {cat(paste("\n", "WARNING: title of stack (", stack.title, ") contains '.'", "\n\n", sep = ""))}
     rasterfull <- paste("ensembles/analogue/", RASTER.object.name, "_", stack.title , "_analogue", sep="")
     kmlfull <- paste("kml/analogue/", RASTER.object.name, "_", stack.title , "_analogue", sep="")
   

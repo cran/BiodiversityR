@@ -13,7 +13,7 @@ export(BiodiversityRGUI,check.datasets,check.ordiscores,spatialsample,makecommun
     nested.npmanova,ensemble.raster,ensemble.test,ensemble.formulae,ensemble.test.splits,ensemble.test.gbm,ensemble.test.nnet,
     ensemble.drop1,ensemble.batch,evaluation.strip.data,evaluation.strip.plot,ensemble.weights,ensemble.strategy,
     ensemble.simplified.categories,ensemble.accepted.categories,ensemble.dummy.variables,ensemble.habitat.change,
-    ensemble.mean, ensemble.centroids, ensemble.zones, ensemble.novel, ensemble.novel.object, ensemble.area, 
+    ensemble.mean, ensemble.plot, ensemble.centroids, ensemble.zones, ensemble.novel, ensemble.novel.object, ensemble.area, 
     ensemble.analogue, ensemble.analogue.object, ensemble.ecocrop, ensemble.ecocrop.object, .onAttach)
 
 if(tools:::.OStype() == "windows") {

@@ -60,6 +60,7 @@ predict.zone <- function(object=centroid.object, newdata=newdata) {
         dir.create("kml/zones", showWarnings = F)
     }
     stack.title <- RASTER.stack.name
+    if (gsub(".", "_", stack.title, fixed=T) != stack.title) {cat(paste("\n", "WARNING: title of stack (", stack.title, ") contains '.'", "\n\n", sep = ""))}
     rasterfull <- paste("ensembles/zones/", RASTER.species.name, "_", stack.title , sep="")
     kmlfull <- paste("kml/zones/", RASTER.species.name, "_", stack.title , sep="")
 

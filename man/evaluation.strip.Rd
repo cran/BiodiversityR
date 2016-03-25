@@ -17,7 +17,7 @@ evaluation.strip.data(xn = NULL, ext = NULL,
     steps=50
 )
 
-evaluation.strip.plot(data, 
+evaluation.strip.plot(data, TrainData=NULL,
     modelnames = c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", 
         "GAMSTEP", "MGCV", "MGCVFIX", "EARTH", "RPART", "NNET", "FDA", 
         "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL"), 
@@ -37,7 +37,8 @@ evaluation.strip.plot(data,
   \item{steps}{ number of steps within the range of a continuous explanatory variable }
 
   \item{data}{ data set with ranges of environmental variables and fitted suitability models, typically returned by \code{evaluation.strip.data} }
-  \item{modelnames}{ abbreviated names of the individual suitability models that are fitted. Should correspond to the names used in ensemble.grd. }
+  \item{TrainData}{ Data set representing the calibration data set. If provided, then a boxplot will be added for presence locations via \code{\link[graphics]{boxplot}} }
+  \item{modelnames}{ abbreviated names of the individual suitability models that are fitted }
   \item{variable}{ focal explanatory variable for plots with evaluation strips }
   \item{model}{ focal model for plots with evaluation strips }
   \item{...}{ Other arguments passed to \code{\link[graphics]{plot}} }
@@ -114,10 +115,15 @@ ensemble.calibrate <- ensemble.test(x=predictors, ext=ext,
 strip.data <- evaluation.strip.data(xn=predictors, ext=ext,
     models.list=ensemble.calibrate$models)
 
-
 # create graphs
-evaluation.strip.plot(data=strip.data, variable="bio5", type="o", col="red")
+evaluation.strip.plot(data=strip.data, variable="bio6", type="o", col="red")
+evaluation.strip.plot(data=strip.data, 
+    TrainData=ensemble.calibrate$models$TrainData,
+    variable="bio6", type="o", col="red")
 evaluation.strip.plot(data=strip.data, model="ENSEMBLE", type="o", col="red")
+evaluation.strip.plot(data=strip.data, 
+    TrainData=ensemble.calibrate$models$TrainData,
+    model="ENSEMBLE", type="o", col="red")
 
 }
 }

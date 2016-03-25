@@ -1,6 +1,7 @@
 \name{ensemble.batch}
 \alias{ensemble.batch}
 \alias{ensemble.mean}
+\alias{ensemble.plot}
 
 \title{
 Suitability mapping based on ensembles of modelling algorithms: batch processing
@@ -62,6 +63,17 @@ ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
     threshold = -1,
     threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
     threshold.PresenceAbsence = FALSE)
+
+ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
+    plot.method = "suitability", 
+    main = paste(RASTER.species.name, " ", plot.method, 
+        " for ", RASTER.stack.name, sep=""),
+    positive.filters = c("grd","_MEAN_"), negative.filters = c("xml"), 
+    p=NULL, a=NULL,
+    threshold = -1,
+    threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
+    threshold.PresenceAbsence = FALSE,
+    abs.breaks = 6, pres.breaks = 6, ...)
 
 }
 
@@ -172,6 +184,12 @@ ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{at}{ background points used for calibrating the suitability models, typicall available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{threshold}{ Threshold value that will be used to distinguish between presence and absence. If < 0, then a threshold value will be calculated from the provided presence \code{p} and absence \code{a} locations.  }
 
+  \item{plot.method}{ Choice of maps to be plotted: \code{suitability} plots suitability maps, \code{presence} plots presence-absence maps and \code{count} plots count maps (count of number of algorithms or number of ensembles predicting presence).  }
+  \item{main}{ main title for the plots.  }
+  \item{abs.breaks}{ Number of breaks in the colouring scheme for absence (only applies to \code{suitability} mapping).   }
+  \item{pres.breaks}{ Number of breaks in the colouring scheme for presence (only applies to \code{suitability} mapping).  }
+  \item{...}{ Other items passed to function \code{\link[raster]{plot}}. }
+
 }
 
 \details{
@@ -184,6 +202,8 @@ This function allows for batch processing of different species and different env
 \code{\link{ensemble.raster}} is the final step whereby raster layers are produced for the ensemble model.
 
 Function \code{ensemble.mean} results in raster layers that are based on the summary of several ensemble layers: the new ensemble has probability values that are the mean of the probabilities of the different raster layers, the presence-absence threshold is derived for this new ensemble layer, whereas the count reflects the number of ensemble layers where presence was predicted. Note the assumption that input probabilities are scaled between 0 and 1000 (as the output from \code{\link{ensemble.raster}}), whereas thresholds are based on actual probabilities (scaled between 0 and 1).
+
+Function \code{ensemble.plot} plots suitability, presence-absence or count maps. In the case of suitability maps, the presence-absence threshold needs to be provide as suitabilities smaller than the threshold will be coloured red to orange, whereas suitabilities larger than the threshold will be coloured light blue to dark blue.
 
 }
 
@@ -229,6 +249,15 @@ pres[,1] <- rep("Bradypus", nrow(pres))
 ext <- extent(-90, -32, -33, 23)
 background <- randomPoints(predictors, n=1000, ext=ext, extf = 1.00)
 
+# north and south for new predictions (as if new climates)
+ext2 <- extent(-90, -32, 0, 23)
+predictors2 <- crop(predictors, y=ext2)
+predictors2@title <- "north"
+
+ext3 <- extent(-90, -32, -33, 0)
+predictors3 <- crop(predictors, y=ext3)
+predictors3@title <- "south"
+
 # fit 3 ensembles with batch processing, choosing the best ensemble model based on the 
 # average AUC of 4-fold split of calibration and testing data
 # final models use all available presence data and average weights determined by the 
@@ -238,6 +267,7 @@ background <- randomPoints(predictors, n=1000, ext=ext, extf = 1.00)
 # note that these calculations can take a while
 
 ensemble.nofactors <- ensemble.batch(x=predictors, ext=ext,
+    xn=c(predictors2, predictors3),
     species.presence=pres, 
     species.absence=background, 
     k.splits=4, k.test=0, 
@@ -254,10 +284,15 @@ ensemble.nofactors <- ensemble.batch(x=predictors, ext=ext,
 # summaries for the 3 ensembles for the species
 # summaries are based on files in folders ensemble, ensemble/presence and 
 # ensemble/count
-pres1 <- pres[,-1]
-ensemble.mean(RASTER.species.name="Bradypus", 
-    p=pres1, a=background, 
+
+ensemble.mean(RASTER.species.name="Bradypus", RASTER.stack.name="base",
+    p=pres, a=background, 
     KML.out=T)
+
+# plot mean suitability 
+ensemble.plot(RASTER.species.name="Bradypus", RASTER.stack.name="base",
+    plot.method="suitability",
+    p=pres, a=background, abs.breaks=4, pres.breaks=9)
 
 }
 

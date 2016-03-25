@@ -56,7 +56,10 @@
     if ((GEODIST > 0) && (is.null(p) == T)) {stop("presence locations are missing for geoDist")}
 
 #
-    if(models.save==T) {dir.create("models", showWarnings = F)}
+    if(models.save==T) {
+        models.keep <- TRUE
+        dir.create("models", showWarnings = F)
+    }
 
 # create output file
     dir.create("outputs", showWarnings = F)
@@ -1175,7 +1178,7 @@
         }
         if (is.null(results) == F) {
             cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
-            TrainData[,"RF"] <- predict(object=results, newdata=TrainData.vars, type="response")
+            TrainData[,"RF"] <- as.numeric(predict(object=results, newdata=TrainData.vars, type="response"))
             if (PROBIT == T) {
                 if(is.null(RF.PROBIT.OLD) == T) { 
                     probit.formula <- as.formula(paste("pb ~ RF"))
@@ -1201,7 +1204,7 @@
             weights["RF"] <- max(c(eval1@auc, 0), na.rm=T)
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
-                TestData[,"RF"] <- predict(object=results, newdata=TestData.vars, type="response")
+                TestData[,"RF"] <- as.numeric(predict(object=results, newdata=TestData.vars, type="response"))
                 if (PROBIT == T) {
                     TestData[,"RF.step1"] <- TestData[,"RF"]
                     TestData[,"RF"] <- predict.glm(object=results2, newdata=TestData, type="response")

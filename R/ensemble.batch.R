@@ -53,6 +53,14 @@
         xn <- x
     }
     xn <- c(xn)
+# need to recalculate threshold for mean of ensembles
+# therefore put x as first of new stacks
+    if (n.ensembles > 1) {
+        xn <- c(x, xn)
+        for (i in 2:length(xn)) {
+            if(identical(x, xn[[i]])) {xn[[i]] <- NULL}
+        }
+    }
     species.presence <- data.frame(species.presence)
     species.absence <- data.frame(species.absence)
     if (ncol(species.presence) < 2) {stop("species.presence expected to be 3-column data.frame with species, x (e.g., lon) and y (e.g., lat) columns")}
@@ -87,7 +95,6 @@
         species.absence[,2] <- as.numeric(species.absence[,2])
         as <- species.absence
     }
-
 # 
 # process species by species
     species.names <- levels(droplevels(factor(species.presence[,1])))
@@ -156,7 +163,7 @@
         threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
         input.weights=input.weights,
         MAXENT=MAXENT, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
-        GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, EARTH=EARTH, RPART=RPART, 
+        GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
         NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, MAHAL=MAHAL,
         PROBIT=PROBIT,
         Yweights=Yweights, 
@@ -232,12 +239,40 @@
     for (n in 1:length(xn)) {
         xn.f <- xn[[n]]
         if(length(xn.f@title) == 0) {xn.f@title <- paste("stack", n, sep="")}
+        if (gsub(".", "_", xn.f@title, fixed=T) != xn.f@title) {cat(paste("\n", "WARNING: title of stack (", xn.f@title, ") contains '.'", "\n\n", sep = ""))}
         cat(paste("\n", "Predictions for species: ", RASTER.species.name1, " for rasterStack: ", xn.f@title, sep = ""))
         rasters2 <- ensemble.raster(xn=xn.f, ext=ext,
             models.list=calibration.2$models,            
             RASTER.species.name=RASTER.species.name1, 
             RASTER.format=RASTER.format, RASTER.datatype=RASTER.datatype, RASTER.NAflag=RASTER.NAflag,
             KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur)
+
+        if(runs==n.ensembles && n.ensembles>1 && RASTER.format=="raster") {
+
+# recalculate threshold for mean of predictions with calibration stack (xn[[1]])
+
+            if (n == 1) {
+                calibrate.mean <- NULL
+                calibrate.mean <- ensemble.mean(RASTER.species.name=focal.species, RASTER.stack.name=xn.f@title,
+                    positive.filters = c("grd", "_ENSEMBLE_"), negative.filters = c("xml"), 
+                    RASTER.format=RASTER.format, RASTER.datatype=RASTER.datatype, RASTER.NAflag=RASTER.NAflag,
+                    KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur,
+                    p=ps, a=as,
+                    pt = NULL, at = NULL,
+                    threshold = -1,
+                    threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence)
+                cat(paste("\n", "threshold for mean suitability: ", calibrate.mean$threshold, "\n", sep = ""))
+            }else{
+                ensemble.mean(RASTER.species.name=focal.species, RASTER.stack.name=xn.f@title,
+                    positive.filters = c("grd", "_ENSEMBLE_"), negative.filters = c("xml"), 
+                    RASTER.format=RASTER.format, RASTER.datatype=RASTER.datatype, RASTER.NAflag=RASTER.NAflag,
+                    KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur,
+                    p=NULL, a=NULL,
+                    pt = NULL, at = NULL,
+                    threshold = calibrate.mean$threshold,
+                    threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence)
+            }
+        }
     }
 
 # n ensembles loop
