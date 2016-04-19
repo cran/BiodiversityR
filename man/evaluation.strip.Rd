@@ -21,7 +21,8 @@ evaluation.strip.plot(data, TrainData=NULL,
     modelnames = c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", 
         "GAMSTEP", "MGCV", "MGCVFIX", "EARTH", "RPART", "NNET", "FDA", 
         "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL"), 
-    variable = NULL, model = NULL, ...
+    variable = NULL, model = NULL, 
+    dev.new.width = 7, dev.new.height = 7, ...
 )
 
 }
@@ -41,6 +42,8 @@ evaluation.strip.plot(data, TrainData=NULL,
   \item{modelnames}{ abbreviated names of the individual suitability models that are fitted }
   \item{variable}{ focal explanatory variable for plots with evaluation strips }
   \item{model}{ focal model for plots with evaluation strips }
+  \item{dev.new.width}{ Width for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
+  \item{dev.new.height}{ Heigth for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
   \item{...}{ Other arguments passed to \code{\link[graphics]{plot}} }
 }
 

@@ -57,7 +57,9 @@
 # therefore put x as first of new stacks
     if (n.ensembles > 1) {
         xn <- c(x, xn)
-        for (i in 2:length(xn)) {
+        i <- 1
+        while (i < length(xn)) {
+            i <- i+1
             if(identical(x, xn[[i]])) {xn[[i]] <- NULL}
         }
     }
@@ -127,7 +129,7 @@
         print(match.call())
     }
 
-        cat(paste("\n", "Evaluations for species: ", focal.species, "\n\n", sep = ""))
+        cat(paste("\n", "Evaluations for species: ", focal.species, "\n", sep = ""))
         ps <- species.presence[species.presence[,1]==focal.species, c(2:3)]
         if (is.null(species.absence)==F && ncol(species.absence) == 3) {
             as <- species.absence[species.absence[,1]==focal.species, c(2:3)]
@@ -165,7 +167,7 @@
         MAXENT=MAXENT, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
         GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
         NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, MAHAL=MAHAL,
-        PROBIT=PROBIT,
+        PROBIT=PROBIT, VIF=T,
         Yweights=Yweights, 
         layer.drops=layer.drops, factors=factors, dummy.vars=dummy.vars,
         maxit=maxit,
@@ -202,6 +204,8 @@
     output.weights[output.weights < 0.05] <- 0
     print(output.weights)
 
+    if (sum(output.weights) > 0) {
+
     calibration.2 <- ensemble.test(
         x=x, p=ps, a=as, ext=ext, k=k.test, pt=NULL, at=NULL,
         models.keep=TRUE, evaluations.keep=TRUE,
@@ -211,7 +215,7 @@
         input.weights=output.weights,
         threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
         RASTER.format=RASTER.format,
-        PROBIT=PROBIT,
+        PROBIT=PROBIT, VIF=T,
         Yweights=Yweights, 
         layer.drops=layer.drops, factors=factors, dummy.vars=dummy.vars,
         maxit=maxit,
@@ -241,11 +245,13 @@
         if(length(xn.f@title) == 0) {xn.f@title <- paste("stack", n, sep="")}
         if (gsub(".", "_", xn.f@title, fixed=T) != xn.f@title) {cat(paste("\n", "WARNING: title of stack (", xn.f@title, ") contains '.'", "\n\n", sep = ""))}
         cat(paste("\n", "Predictions for species: ", RASTER.species.name1, " for rasterStack: ", xn.f@title, sep = ""))
-        rasters2 <- ensemble.raster(xn=xn.f, ext=ext,
+        tryCatch(rasters2 <- ensemble.raster(xn=xn.f, ext=ext,
             models.list=calibration.2$models,            
             RASTER.species.name=RASTER.species.name1, 
             RASTER.format=RASTER.format, RASTER.datatype=RASTER.datatype, RASTER.NAflag=RASTER.NAflag,
-            KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur)
+            KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur),
+                error= function(err) {print(paste("WARNING: prediction failed for stack: ", xn.f@title, sep=""))},
+                silent=T)
 
         if(runs==n.ensembles && n.ensembles>1 && RASTER.format=="raster") {
 
@@ -273,6 +279,10 @@
                     threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence)
             }
         }
+    }
+
+
+# sum output weights > 0 loop
     }
 
 # n ensembles loop

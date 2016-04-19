@@ -1,11 +1,37 @@
 Graphical User Interface (GUI) for ensemble suitability modelling with BiodiversityR
 How to get started...
 
-(Roeland Kindt, World Agroforestry Centre, March 2016)
-    
-The recommended approach is to follow this workflow to get familiar with ensemble suitability modelling
-(it is expected that users will be able later to script commands to take full advantage of 
-the various options available with the ensemble functions of BiodiversityR)
+(Roeland Kindt, World Agroforestry Centre, March-April 2016)
+   
+In case that you are not familiar with species distribution modelling, then an excellent
+introduction and overview is given in this document available from the dismo package:
+
+	Hijmans RJ and Elith J. 2016. Species distribution modelling with R.
+	URL https://CRAN.R-project.org/package=dismo
+
+This document will be opened when selecting the menu option of
+'Species Distribution Modelling with R' within the top menu options of the ensemble modelling menus
+of BiodiversityR.
+
+Another good introduction to species distribution modelling is provided by:
+
+	Scheldeman X and van Zonneveld M. 2010. Training Manual on Spatial Analysis of 
+	Plant Diversity and Distribution. Bioversity International, Rome, Italy.
+	URL http://www.bioversityinternational.org/e-library/publications/detail/training-manual-on-spatial-analysis-of-plant-diversity-and-distribution/
+ 
+Example data sets used in the dismo package and also in documentation of BiodiversityR
+include point locations of Bradypus variegatus (Bolivian Three-toed Sloth; 
+http://www.iucnredlist.org/details/3038/0) and bioclimatic raster layers for North and
+South America. These data are directly available from the ensemble modelling GUI (pseudo-
+absence data created by random sampling are also provided; a stack of bioclimatic 
+raster layers for North and South America will be created with a specific check box
+in the menu for creating stacks of environmental layers).
+
+The recommended approach to ensemble suitability modelling with the GUI in BiodiversityR
+is to follow these steps:
+
+(It is expected that users will be able later to script commands to take full advantage of 
+the various options available with the ensemble functions of BiodiversityR.)
 
 1. Select the working directory
     Results from ensemble modelling will be saved in subfolders of this directory
@@ -24,8 +50,11 @@ the various options available with the ensemble functions of BiodiversityR)
     
 5. Declare which layers of the calibration stack are dummy variables
     These are layers coded 0-1 to indicate a level of a categorical variable)
-    
-6. Select the data set with presence locations
+
+6. Ensure that calibration and projection (future) raster stacks have the same names for layers
+    Renaming layers can be done with a specific menu option in stack menu
+
+7. Select the data set with presence locations
     Presence data sets contains 3 variables for species, x (eg, lon) and y (eg, lat)
     First import the data set from the main menu of R-commander > Data > Import data... 
     (note that this menu allows data entry from different formats such as .txt, .csv or Excel)
@@ -34,29 +63,30 @@ the various options available with the ensemble functions of BiodiversityR)
         of: Create species presence data set...
     Finally select the presence data set
     
-6. Select the data set with absence locations
+8. Select the data set with absence locations
     Typical absence data contains 3 variables for species, x (eg, lon) and y (eg, lat)
     If available, import with the same process as importing presence data (step 5 above)
     If not available, create absence data from the calibration stack and presence data
     Two options are available based on possibly excluding raster cells with presence locations
     
-7. Start ensemble modelling
+9. Start ensemble modelling
     Click the help button for some help on the (many) options of the ensemble.batch function
     (ideally first do earlier steps of selecting the calibration stack (explanatory variables), presence and absence data)
     When several ensembles are fitted, the final fitted ensemble model will be available as the object of 'ensmodels.focal'
     When output is large, it may only be possible to see the results with the 'capture output in file' option 
     
-8. Plot suitability and presence-absence maps
+10. Plot suitability and presence-absence maps
     Note that choice of species is based on information in the selected presence data set
     Suitability maps recalculate the threshold if the threshold parameter is set as treshold=-1
     Therefore, calculated thresholds are only meaningful for the calibration stack
     For stacks representing different scenarios (eg future climates), manually insert the correct threshold (as calculated from calibration data)
     
-9. Plot evaluation strips
+11. Plot evaluation strips
     Note that model calibrations correspond to the selected fitted ensemble model (the 'ensmodels.focal' object)
     The selected fitted model can be changed with the menu option of: Ensemble suitability modelling > Select ensemble models...
     
-10. Extrapolate for other calibration stacks
+12. Extrapolate for other calibration stacks
     Note that extrapolations can already be done with the main ensemble modelling (ensemble.batch)
     Note that model calibrations correspond to the selected fitted ensemble model (the 'ensmodels.focal' object)
     
+13. Save the R workspace

@@ -1,6 +1,7 @@
 `ensemble.plot` <- function(
     RASTER.species.name="Species001", RASTER.stack.name="base",
     plot.method="suitability", 
+    dev.new.width=7, dev.new.height=7,
     main=paste(RASTER.species.name, " ", plot.method, " for ", RASTER.stack.name, sep=""),
     positive.filters=c("grd","_MEAN_"), negative.filters=c("xml"), 
     p=NULL, a=NULL,
@@ -157,20 +158,20 @@
             seq1 <- seq1[1:(abs.breaks-1)]
             seq1[-abs.breaks]
             seq2 <- round(seq(from = threshold.mean, to = raster.max, length.out=pres.breaks), 4)
-            grDevices::dev.new()
+            if (dev.new.width > 0 && dev.new.height > 0) {grDevices::dev.new(width=dev.new.width, height=dev.new.height)}
             raster::plot(raster.focus, breaks = c(seq1, seq2), col = c(grDevices::rainbow(n=(abs.breaks-1), start = 0, end = 1/6), grDevices::rainbow(n=(pres.breaks-1), start=3/6, end=4/6)), colNA = NA, 
                 legend.shrink=0.8, cex.axis=0.8, main=main, sub=subtitle, ...)
         }
 
         if (plot.method == "presence") {
-            grDevices::dev.new()
+            if (dev.new.width > 0 && dev.new.height > 0) {grDevices::dev.new(width=dev.new.width, height=dev.new.height)}
             raster::plot(raster.focus, breaks=c(0, 0.5, 1), col = c("grey", "green"), colNA = NA, 
                 legend.shrink=0.6, cex.axis=0.8, lab.breaks=c("", "abs", "pres"), main=main, sub=subtitle, ...)
         }
 
         if (plot.method == "count") {
             nmax <- raster::maxValue(raster.focus)
-            grDevices::dev.new()
+            if (dev.new.width > 0 && dev.new.height > 0) {grDevices::dev.new(width=dev.new.width, height=dev.new.height)}
             if (nmax > 3) {
                 raster::plot(raster.focus, breaks=seq(from=-1, to=nmax, by=1), col=c("grey", grDevices::rainbow(n=(nmax-1), start=0, end=1/3), "blue"), 
                     legend.shrink=0.8, cex.axis=0.8, main=main, sub=subtitle, ...)

@@ -147,7 +147,7 @@
 # Start cross-validations
     
     for (i in 1:k){
-        cat(paste("\n", species.name, " K-FOLD CROSS-VALIDATION RUN: ", i, "\n", sep = ""))
+        cat(paste(species.name, " K-FOLD CROSS-VALIDATION RUN: ", i, "\n", sep = ""))
 
         if (length(factors2)>0  || CIRCLES.at==T) {
             p1 <- p.all[groupp != i,]

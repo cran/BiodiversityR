@@ -4549,6 +4549,10 @@ ens.start <- function() {
         "/", gettextRcmdr("Getting-Started-ensemble-GUI"), ".txt", sep=""))
 }
 
+dismo.pdf <- function() {
+    browseURL(paste(system.file(package="dismo"), "/doc/sdm.pdf", sep=""))
+}
+
 ens.directory <- function() {
     logger(paste("Select directory with raster layers and (ideally) presence locations", sep=""))
     logger(paste("Results will be saved in subfolders of this directory", sep=""))
@@ -4578,7 +4582,7 @@ ens.grd.menu <- function() {
     logger(paste("Select files to be converted to grd format of raster package", sep=""))
     doItAndPrint(paste("selected.files <- choose.files()", sep=""))
     logger(paste("As alternative use: selected.files <- list.files(path=getwd(), pattern='.tif', full.names=TRUE)", sep=""))
-    justDoIt(paste("selected.files <- normalizePath(selected.files)", sep=""))
+    justDoIt(paste("selected.files <- normalizePath(selected.files, mustWork=F)", sep=""))
     doItAndPrint(paste("selected.files", sep=""))
     doItAndPrint(paste("ens.grd(selected.files)", sep=""))
 }
@@ -4627,7 +4631,7 @@ stack.create.GUI <- function(){
         if (dismoValue == T) {all.vars <- T}
         if (all.vars==T) {
             if (dismoValue == T) {
-                dismo.dir <- normalizePath(paste(system.file(package="dismo"), '/ex', sep=''))
+                dismo.dir <- normalizePath(paste(system.file(package="dismo"), '/ex', sep=''), mustWork=F)
                 assign("dismo.ex", dismo.dir, envir=.GlobalEnv)
                 doItAndPrint(paste("selected.files <- list.files(path=dismo.ex, pattern='.grd', full.names=TRUE)", sep=""))
             }else{
@@ -4637,7 +4641,7 @@ stack.create.GUI <- function(){
             doItAndPrint(paste("selected.files <- choose.files(default='*.grd')", sep=""))
         }
         if(length(selected.files) > 0) {
-            justDoIt(paste("selected.files <- normalizePath(selected.files)", sep="")) 
+            justDoIt(paste("selected.files <- normalizePath(selected.files, mustWork=F)", sep="")) 
             doItAndPrint(paste("selected.files", sep=""))
             modelValue <- tclvalue(modelName)
             modelValue <- gsub(".", "_", modelValue, fixed=T)
@@ -4782,6 +4786,59 @@ stack.delete.GUI <- function(){
     tkgrid(tklabel(layerFrame, text="Layers to delete (drop)"), sticky="w")
     tkgrid(layerBox, layerScroll, sticky="w")
     tkgrid(layerFrame, sticky="w")
+    tkgrid(OKbutton, cancelButton, helpButton)
+    tkgrid(buttonsFrame, sticky="w")
+    tkgrid.configure(layerScroll, sticky="ns")
+#    tkselection.set(layerBox, 0)
+    for (row in 0:6) tkgrid.rowconfigure(top, row, weight=0)
+    for (col in 0:0) tkgrid.columnconfigure(top, col, weight=0)
+    .Tcl("update idletasks")
+    tkwm.resizable(top, 0, 0)
+    tkwm.deiconify(top)
+    tkgrab.set(top)
+    tkfocus(layerBox)
+    tkwait.window(top)
+}
+
+stack.rename.GUI <- function(){
+    top <- tktoplevel()
+    tkwm.title(top, "Rename layers of calibration stack")
+    lvariables <- eval(parse(text=paste("names(", stack.focal, ")", sep="")), envir=.GlobalEnv)
+    layerFrame <- tkframe(top, relief="groove", borderwidth=2)
+    layerBox <- tklistbox(layerFrame, width=50, height=15,
+        selectmode="single", background="white", exportselection="FALSE") 
+    layerScroll <- tkscrollbar(layerFrame, repeatinterval=5, command=function(...) tkyview(layerBox, ...))
+    tkconfigure(layerBox, yscrollcommand=function(...) tkset(layerScroll, ...))
+    for (x in lvariables) tkinsert(layerBox, "end", x)
+    modelName <- tclVar("calibration1")
+    modelFrame <- tkframe(top, relief="groove", borderwidth=2)
+    model <- tkentry(modelFrame, width=40, textvariable=modelName)
+    varName <- tclVar("bio0x")
+    varFrame <- tkframe(top, relief="groove", borderwidth=2)
+    var <- tkentry(varFrame, width=40, textvariable=varName)
+    onOK <- function(){
+        layer <- lvariables[as.numeric(tkcurselection(layerBox))+1]
+        varValue <- tclvalue(varName)
+        doItAndPrint(paste("names(", stack.focal, ")[which(names(", stack.focal, ")=='", layer, "')] <- '", varValue, "'", sep=""))
+    }
+    onCancel <- function() {
+        tkgrab.release(top)
+        tkfocus(CommanderWindow())
+        tkdestroy(top)  
+        }
+    buttonsFrame <- tkframe(top)
+    onHelp <- function() {
+        if (.Platform$OS.type != "windows") tkgrab.release(top)
+        doItAndPrint(paste("help('names', package='raster', help_type='html')", sep=""))
+        }
+    helpButton <- tkbutton(buttonsFrame, text="Help", width="12", command=onHelp)
+    OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
+    cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
+    tkgrid(tklabel(layerFrame, text="Select layer to rename"), sticky="w")
+    tkgrid(layerBox, layerScroll, sticky="w")
+    tkgrid(layerFrame, sticky="w")
+    tkgrid(tklabel(varFrame, text="New name:", width=10), var, sticky="w")
+    tkgrid(varFrame, sticky="w")
     tkgrid(OKbutton, cancelButton, helpButton)
     tkgrid(buttonsFrame, sticky="w")
     tkgrid.configure(layerScroll, sticky="ns")
@@ -5412,7 +5469,6 @@ batch.GUI <- function(){
         }else{
             stack.string <- paste("c()", sep="")
         }
-        logger(paste("stack.string: ", stack.string, sep=""))
         logger(paste("Note that it can take a while before results will be shown", sep=""))
         logger(paste("When calculations and projections are finalized, the window interface will close", sep=""))
         logger(paste("You can also monitor progress in the 'ensembles' and 'models' subfolders of the working directory", sep=""))
@@ -5431,18 +5487,22 @@ batch.GUI <- function(){
         if (is.null(presence.focal) == F) {
         if (n.ensembles > 1) {
             models.file <- paste(getwd(), "//models//", species.last, "_ENSEMBLE_", n.ensembles, "_models", sep="")
-            models.file <- normalizePath(models.file)
-            assign("ensmodels.file", models.file, envir=.GlobalEnv)
-            load(ensmodels.file)
-            assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
-            logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+            models.file <- normalizePath(models.file, mustWork=F)
+            if (file.exists(models.file) == T) {
+                assign("ensmodels.file", models.file, envir=.GlobalEnv)
+                load(ensmodels.file)
+                assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
+                logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+            }
         }else{
             models.file <- paste(getwd(), "//models//", species.last, "_models", sep="")
-            models.file <- normalizePath(models.file)
-            assign("ensmodels.file", models.file, envir=.GlobalEnv)
-            load(ensmodels.file)
-            assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
-            logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+            models.file <- normalizePath(models.file, mustWork=F)
+            if (file.exists(models.file) == T) {
+                assign("ensmodels.file", models.file, envir=.GlobalEnv)
+                load(ensmodels.file)
+                assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
+                logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+            }
         }
         }
         putRcmdr("dialog.values", list())
@@ -5552,18 +5612,22 @@ batch.GUI <- function(){
         if (is.null(presence.focal) == F) {
         if (n.ensembles > 1) {
             models.file <- paste(getwd(), "//models//", species.last, "_ENSEMBLE_", n.ensembles, "_models", sep="")
-            models.file <- normalizePath(models.file)
-            assign("ensmodels.file", models.file, envir=.GlobalEnv)
-            load(ensmodels.file)
-            assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
-            logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+            models.file <- normalizePath(models.file, mustWork=F)
+            if (file.exists(models.file) == T) {           
+                assign("ensmodels.file", models.file, envir=.GlobalEnv)
+                load(ensmodels.file)
+                assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
+                logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+            }
         }else{
             models.file <- paste(getwd(), "//models//", species.last, "_models", sep="")
-            models.file <- normalizePath(models.file)
-            assign("ensmodels.file", models.file, envir=.GlobalEnv)
-            load(ensmodels.file)
-            assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
-            logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+            models.file <- normalizePath(models.file, mustWork=F)
+            if (file.exists(models.file) == T) {
+                assign("ensmodels.file", models.file, envir=.GlobalEnv)
+                load(ensmodels.file)
+                assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
+                logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+            }
         }
         }
         putRcmdr("dialog.values", list())
@@ -5706,7 +5770,7 @@ ensemble.plot.GUI <- function(){
     f.variables <- c("(none)", "_MEAN_", "_ENSEMBLE_", "_ENSEMBLE_1_", "_ENSEMBLE_2_", "_ENSEMBLE_3_", "_ENSEMBLE_4_", "_ENSEMBLE_5_",
         "_ENSEMBLE_6_", "_ENSEMBLE_7_", "_ENSEMBLE_8_", "_ENSEMBLE_9_", "_ENSEMBLE_10_")
     filterFrame <- tkframe(left3Frame, relief="groove", borderwidth=2)
-    filterBox <- tklistbox(filterFrame, width=40, height=6,
+    filterBox <- tklistbox(filterFrame, width=40, height=8,
         selectmode="single", background="white", exportselection="FALSE") 
     filterScroll <- tkscrollbar(filterFrame, repeatinterval=5, command=function(...) tkyview(filterBox, ...))
     tkconfigure(filterBox, yscrollcommand=function(...) tkset(filterScroll, ...))
@@ -5715,6 +5779,8 @@ ensemble.plot.GUI <- function(){
     right32Frame <- tkframe(right3Frame)
     right33Frame <- tkframe(right3Frame)
     right34Frame <- tkframe(right3Frame)
+    fixedThresholdVariable <- tclVar("-1")
+    fixedThresholdEntry <- tkentry(right31Frame, width=20, textvariable=fixedThresholdVariable)
     sensitivityVariable <- tclVar("0.9")
     sensitivityEntry <- tkentry(right31Frame, width=20, textvariable=sensitivityVariable)
     PRESABSVariable <- tclVar("0")
@@ -5732,6 +5798,7 @@ ensemble.plot.GUI <- function(){
         filterValue <- f.variables[as.numeric(tkcurselection(filterBox))+1]
         var <- variables[as.numeric(tkcurselection(subsetBox))+1]
         sensitivity <- tclvalue(sensitivityVariable)
+        fixedThreshold <- tclvalue(fixedThresholdVariable)
         PRESABS <- tclvalue(PRESABSVariable) == "1"
         if (var == "Sens=Spec"){PRESABS <- TRUE}
         if (var == "MaxSens+Spec"){PRESABS <- TRUE}
@@ -5746,14 +5813,14 @@ ensemble.plot.GUI <- function(){
         absValue <- tclvalue(absVariable)
         if (filterValue == "(none)") {
             doItAndPrint(paste("ensemble.plot(RASTER.species.name='", speciesValue, "', RASTER.stack.name='", stackValue,
-                "', plot.method='", methodValue, "', positive.filters=c('grd'), threshold=-1, p=", presence.focal, ", a=", absence.focal, 
+                "', plot.method='", methodValue, "', positive.filters=c('grd'), threshold=", fixedThreshold, ", p=", presence.focal, ", a=", absence.focal, 
                 ", threshold.method='", var, "', threshold.sensitivity=", sensitivity, 
                 ", threshold.PresenceAbsence=", PRESABS, 
                 ", abs.breaks=", absValue, ", pres.breaks=", presValue, ")", sep=""))
         }else{
             doItAndPrint(paste("ensemble.plot(RASTER.species.name='", speciesValue, "', RASTER.stack.name='", stackValue,
                 "', plot.method='", methodValue, "', positive.filters=c('grd', '", filterValue, 
-                "'), threshold=-1, p=", presence.focal, ", a=", absence.focal, 
+                "'), threshold=", fixedThreshold, ", p=", presence.focal, ", a=", absence.focal, 
                 ", threshold.method='", var, "', threshold.sensitivity=", sensitivity, 
                 ", threshold.PresenceAbsence=", PRESABS, 
                 ", abs.breaks=", absValue, ", pres.breaks=", presValue, ")", sep=""))
@@ -5794,6 +5861,7 @@ ensemble.plot.GUI <- function(){
     tkgrid(tklabel(filterFrame, text="Filter"), sticky="w")
     tkgrid(filterBox, filterScroll, sticky="w")
     tkgrid(filterFrame, sticky="w")
+    tkgrid(tklabel(right31Frame, text="threshold value: ", width=20), fixedThresholdEntry, sticky="w")
     tkgrid(tklabel(right31Frame, text="threshold.sensitivity: ", width=20), sensitivityEntry, sticky="w")
     tkgrid(PRESABSCheckBox, tklabel(right32Frame, text="PresenceAbsence package"), sticky="w")
     tkgrid(tklabel(right33Frame, text="breaks for absence: ", width=20), absEntry, sticky="w")
@@ -5833,11 +5901,13 @@ model.select.menu <- function(){
     models.dir <- normalizePath(paste(getwd(), "//models//*models", sep=""), mustWork=F)
     assign("models.default", models.dir, envir=.GlobalEnv)
     doItAndPrint(paste("models.file <- choose.files(default=models.default, multi=F)", sep=""))
-    models.file <- normalizePath(models.file)
-    assign("ensmodels.file", models.file, envir=.GlobalEnv)
-    load(ensmodels.file)
-    assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
-    logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+    models.file <- normalizePath(models.file, mustWork=F)
+    if (file.exists(models.file) == T) {
+        assign("ensmodels.file", models.file, envir=.GlobalEnv)
+        load(ensmodels.file)
+        assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
+        logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+    }
     putRcmdr("dialog.values", list())
     activateMenus()
 }

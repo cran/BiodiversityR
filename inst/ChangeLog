@@ -1,5 +1,3 @@
-# ChangeLog file put under the \inst folder
-
 
 BiodiversityR versions
 
@@ -9,13 +7,29 @@ BiodiversityR versions
 	typically not included here (as these were addressed).
 
 	BiodiversityR details on installation are available from:
-	http://www.worldagroforestry.org/resources/databases/tree-diversity-analysis
+	http://www.worldagroforestry.org/output/tree-diversity-analysis
 
 	The manual accompanying the original version of BiodiversityR is
 	available from:
 	http://www.worldagroforestry.org/downloads/Publications/PDFS/B13695.pdf
 
-Version 2.7-0
+
+Version 2.7-1 (April 2016)
+
+	* ensemble.batch: procedure stops when no algorithms retained in the k-fold
+	cross-validation procedure
+
+	* new Graphical User Interface (GUI) for renaming layer names of calibration
+	and prediction stacks
+
+	* included link to Hijmans RJ and Elith J. 2016. Species distribution modelling with R.	
+
+	* options to set width and height of new graphical device for ensemble.plot,
+	evaluation.strip.plot and ensemble.centroids functions. Setting any of these parameters
+	to a value < 0 results in no opening of a new device .
+
+
+Version 2.7-0 (March 2016)
 
 	* new Graphical User Interface (GUI) for ensemble suitability modelling.
 	Guidelines for getting started are available from the GUI and in the 'doc'

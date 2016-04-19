@@ -78,7 +78,7 @@ Tree diversity analysis: A manual and
   software for common statistical methods for ecological and
   biodiversity studies.
  
-  \url{http://www.worldagroforestry.org/resources/databases/tree-diversity-analysis} 
+  \url{http://www.worldagroforestry.org/output/tree-diversity-analysis} 
 
 }   
 

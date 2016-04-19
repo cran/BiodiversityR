@@ -2528,7 +2528,7 @@
     remove(TrainData.vars, envir=.BiodiversityR)
     remove(TrainData.pres, envir=.BiodiversityR)
     remove(TestData.vars, envir=.BiodiversityR)
-    if (models.save==T && models.keep==T) {
+    if (models.save==T && models.keep==T && MAXENT2==0) {
         ensemble.models <- models
         save(ensemble.models, file=paste(getwd(), "/models/", models$species.name, "_models", sep=""), compress="xz")
     }

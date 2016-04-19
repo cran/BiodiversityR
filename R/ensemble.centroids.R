@@ -2,7 +2,7 @@
     presence.raster=NULL, x=NULL, categories.raster=NULL,
     an=10000, ext=NULL, name="Species001", 
     pca.var=0.95, centers=0, use.silhouette=TRUE,
-    plotit=FALSE 
+    plotit=FALSE, dev.new.width=7, dev.new.height=7 
 )
 {
     .BiodiversityR <- new.env()
@@ -127,6 +127,7 @@ predict.zone <- function(object=centroid.model, newdata=newdata) {
 # plotting
     if (plotit == T) {
         par.old <- graphics::par(no.readonly=T)
+        if (dev.new.width > 0 && dev.new.height > 0) {grDevices::dev.new(width=dev.new.width, height=dev.new.height)}
         graphics::par(mfrow=c(2,2))
         zone <- predict.zone(centroid.model, newdata=background.data)
         # simple plot in geographic space with K-means clustering

@@ -18,9 +18,9 @@ ensemble.zones(presence.raster = NULL, centroid.object = NULL,
     KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10)
 
 ensemble.centroids(presence.raster = NULL, x = NULL, categories.raster = NULL,
-    an = 10000, ext = NULL, 
-    name = "Species001", pca.var = 0.95, centers = 0, 
-    use.silhouette = TRUE, plotit = FALSE)
+    an = 10000, ext = NULL, name = "Species001", 
+    pca.var = 0.95, centers = 0, use.silhouette = TRUE, 
+    plotit = FALSE, dev.new.width = 7, dev.new.height = 7)
 
 }
 
@@ -45,6 +45,8 @@ ensemble.centroids(presence.raster = NULL, x = NULL, categories.raster = NULL,
   \item{centers}{ Number of centers (clusters) to be used for K-means clustering (\code{\link[stats]{kmeans}}). In case a value smaller than 1 is provided, function \code{\link[vegan]{cascadeKM}} is called to determine the optimal number of centers via the Calinski-Harabasz criterion.  }
   \item{use.silhouette}{ If \code{TRUE}, then centroid values are only based on presence points that have silhouette values (\code{\link[cluster]{silhouette}}) larger than 0.  }
   \item{plotit}{ If \code{TRUE}, then a plot is provided that shows the locations of centroids in geographical and environmental space. Plotting in geographical space is based on determination of the presence location (analogue) with smallest Mahalanobis distance to the centroid in environmental space.  }
+  \item{dev.new.width}{ Width for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
+  \item{dev.new.height}{ Heigth for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
 }
 
 \details{

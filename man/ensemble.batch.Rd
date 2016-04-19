@@ -66,6 +66,7 @@ ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
 
 ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
     plot.method = "suitability", 
+    dev.new.width = 7, dev.new.height = 7,
     main = paste(RASTER.species.name, " ", plot.method, 
         " for ", RASTER.stack.name, sep=""),
     positive.filters = c("grd","_MEAN_"), negative.filters = c("xml"), 
@@ -185,6 +186,8 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{threshold}{ Threshold value that will be used to distinguish between presence and absence. If < 0, then a threshold value will be calculated from the provided presence \code{p} and absence \code{a} locations.  }
 
   \item{plot.method}{ Choice of maps to be plotted: \code{suitability} plots suitability maps, \code{presence} plots presence-absence maps and \code{count} plots count maps (count of number of algorithms or number of ensembles predicting presence).  }
+  \item{dev.new.width}{ Width for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
+  \item{dev.new.height}{ Heigth for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
   \item{main}{ main title for the plots.  }
   \item{abs.breaks}{ Number of breaks in the colouring scheme for absence (only applies to \code{suitability} mapping).   }
   \item{pres.breaks}{ Number of breaks in the colouring scheme for presence (only applies to \code{suitability} mapping).  }
