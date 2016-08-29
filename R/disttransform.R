@@ -2,7 +2,7 @@
 function(x, method="hellinger") {
     x <- as.matrix(x)
     METHODS <- c("hellinger", "chord", "profiles", "chi.square", "log", "square", "pa",
-        "Braun.Blanquet", "Domin", "Hult", "Hill", "fix", "coverscale.log")
+        "Braun.Blanquet", "Domin", "Hult", "Hill", "fix", "coverscale.log", "dispweight")
     method <- match.arg(method,METHODS)
     switch(method, hellinger = {
         x <- decostand(x,"hellinger")
@@ -35,6 +35,8 @@ function(x, method="hellinger") {
         x <- coverscale(x, "fix")
     }, coverscale.log = {
         x <- coverscale(x, "log")
+    }, dispweight = {
+        x <- dispweight(x)
     })
 #
     for (i in 1:ncol(x)) {x[,i] <- as.numeric(x[,i])}

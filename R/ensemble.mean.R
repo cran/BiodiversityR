@@ -19,69 +19,6 @@
         if(identical(pt, p) == F || identical(at, a) == F)  {retest <- T}
     }
 
-# new methods for calculating thresholds
-    threshold2 <- function(eval, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
-            threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=Pres, Abs=Abs) {
-        if (threshold.PresenceAbsence == T){        
-            Pres2 <- cbind(rep(1, length(Pres)), Pres)
-            Abs2 <- cbind(rep(0, length(Abs)), Abs)
-            data1 <- rbind(Pres2, Abs2)
-            data2 <- cbind(seq(1:nrow(data1)), data1)
-            auc.value <- PresenceAbsence::auc(data2, st.dev=F)
-            cat(paste("\n", "AUC from PresenceAbsence package (also used to calculate threshold): ", auc.value, "\n", sep = ""))
-            if (threshold.method=="kappa") {threshold.method <- "MaxKappa"}
-            if (threshold.method=="spec_sens") {threshold.method <- "MaxSens+Spec"}
-            if (threshold.method=="prevalence") {threshold.method <- "ObsPrev"}
-            if (threshold.method=="equal_sens_spec") {threshold.method <- "Sens=Spec"}
-            if (threshold.method=="sensitivity") {threshold.method <- "ReqSens"}
-            req.sens <- threshold.sensitivity
-            if (threshold.method=="no_omission") {
-                threshold.method <- "ReqSens"
-                req.sens <- 1.0
-            }
-            result <- PresenceAbsence::optimal.thresholds(data2, threshold=seq(from=0, to=1, by=0.005), req.sens=req.sens)
-            result2 <- as.numeric(result[, 2])
-            names(result2) <- result[, 1]
-            if (threshold.method == "threshold.min") {
-                t1 <- result2[["MaxSens+Spec"]]
-                t2 <- result2[["Sens=Spec"]]            
-                t3 <- result2[["ObsPrev"]]
-                thresholds <- as.numeric(c(t1, t2, t3))
-                thresholds <- thresholds[thresholds > 0]
-                return(min(thresholds))
-            }
-            if (threshold.method == "threshold.mean") {
-                t1 <- result2[["MaxSens+Spec"]]
-                t2 <- result2[["Sens=Spec"]]            
-                t3 <- result2[["ObsPrev"]]
-                thresholds <- as.numeric(c(t1, t2, t3))
-                thresholds <- thresholds[thresholds > 0]
-                return(mean(thresholds))
-            }
-            return(as.numeric(result2[[threshold.method]]))
-        }else{
-            result <- dismo::threshold(eval, sensitivity=threshold.sensitivity)        
-            if (threshold.method == "threshold.min") {
-                t1 <- result[["spec_sens"]]
-                t2 <- result[["equal_sens_spec"]]            
-                t3 <- result[["prevalence"]]
-                thresholds <- as.numeric(c(t1, t2, t3))
-                thresholds <- thresholds[thresholds > 0]
-                return(min(thresholds))
-            }
-            if (threshold.method == "threshold.mean") {
-                t1 <- result[["spec_sens"]]
-                t2 <- result[["equal_sens_spec"]]            
-                t3 <- result[["prevalence"]]
-                thresholds <- as.numeric(c(t1, t2, t3))
-                thresholds <- thresholds[thresholds > 0]
-                return(mean(thresholds))
-            }
-            return(result[[threshold.method]])
-        }
-    }
-#
-
 # avoid problems with non-existing directories
     dir.create("ensembles", showWarnings = F)
     dir.create("ensembles/count", showWarnings = F)
@@ -171,12 +108,14 @@
         if (ncol(p) == 3) {p <- p[p[,1]==species_focus, c(2:3)]}
         if (ncol(a) == 3) {a <- a[a[,1]==species_focus, c(2:3)]}
         pres_consensus <- raster::extract(ensemble.mean, p)
+        pres_consensus <- pres_consensus[is.na(pres_consensus)==F]
         abs_consensus <- raster::extract(ensemble.mean, a)
+        abs_consensus <- abs_consensus[is.na(abs_consensus)==F]
         eval1 <- dismo::evaluate(p=pres_consensus, a=abs_consensus)
         print(eval1)
 #        threshold.mean <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
 #        threshold.mean <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
-        threshold.mean <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres_consensus, Abs=abs_consensus)
+        threshold.mean <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres_consensus, Abs=abs_consensus)
         cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
         print(as.numeric(threshold.mean))
         if(retest == T) {

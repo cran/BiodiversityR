@@ -4,6 +4,7 @@
 {
     target.values <- as.numeric(raster::extract(future.stack, ref.location))
     names(target.values) <- names(future.stack)
+    current.stack <- subset(current.stack, which(names(current.stack) %in% names(future.stack)))
     if ((method %in% c("mahal", "quantile", "sd")) == F) {method <- "none"} 
     if (method == "mahal") {
         a <- dismo::randomPoints(current.stack, n=an, p=NULL, excludep=F)
@@ -12,6 +13,12 @@
         background.data <- data.frame(background.data)
         TrainValid <- complete.cases(background.data)
         background.data <- background.data[TrainValid,]
+# test correlation: perfect correlation results in problem with ensemble.analogue function
+        no.problem <- TRUE
+        background.cor <- cor(background.data)
+        diag(background.cor) <- NA
+        cor.result <- any(round(as.numeric(background.cor), 10) == rep(1.00, length=length(as.numeric(background.cor))), na.rm=-T)
+        if (cor.result == T) {cat(paste("WARNING: some variables have strong correlation", "\n", sep=""))}
         cov.mahal <- cov(background.data)
         out <- list(name=name, ref.location=ref.location, stack.name=future.stack@title, 
             method=method, target.values=target.values, cov.mahal=cov.mahal)
@@ -65,6 +72,7 @@
     if(is.null(x) == T) {stop("value for parameter x is missing (RasterStack object)")}
     if(inherits(x, "RasterStack") == F) {stop("x is not a RasterStack object")}
     if (is.null(analogue.object) == T) {stop("value for parameter analogue.object is missing (hint: use the ensemble.analogue.object function)")}
+    x <- subset(x, which(names(x) %in% names(analogue.object$target.values)))
 # 
     predict.analogue <- function(object=analogue.object, newdata=newdata) {
         method <- object$method
@@ -107,7 +115,6 @@
     rasterfull <- paste("ensembles/analogue/", RASTER.object.name, "_", stack.title , "_analogue", sep="")
     kmlfull <- paste("kml/analogue/", RASTER.object.name, "_", stack.title , "_analogue", sep="")
   
-#
 # predict
     tryCatch(analogue.raster <- raster::predict(object=x, model=analogue.object, fun=predict.analogue, na.rm=TRUE, 
                                            filename=rasterfull, progress='text', overwrite=T, format=RASTER.format),
@@ -173,6 +180,7 @@
     output2[1 ,4] <- as.numeric(analogue.object$ref.location[,2])
     output2[, c(6:(5+vars))] <- analogue.object$target.values      
     output3 <- rbind(output2, output1)
+    output3$name <- paste(RASTER.object.name)
     cat(paste("\n", "analogue raster provided in folder: ", getwd(), "//ensembles//analogue", "\n\n", sep=""))
     return(output3)
 }

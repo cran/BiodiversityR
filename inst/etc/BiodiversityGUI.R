@@ -199,8 +199,8 @@ dune3[,1:30] <- dune2[,seq]
 colnames(dune3)[1:30] <- colnames(dune2)[seq]
 dune <- dune3
 dune.env <- dune.env2
-rownames(dune) <- rownames(dune.env) <- c("X01","X02","X03","X04","X05","X06","X07","X08","X09","X10",
-    "X11","X12","X13","X14","X15","X16","X17","X18","X19","X20")
+rownames(dune) <- rownames(dune.env) <- c("X01", "X02", "X03", "X04", "X05", "X06", "X07", "X08", "X09", "X10",
+    "X11", "X12", "X13", "X14", "X15", "X16", "X17", "X18", "X19", "X20")
 remove(dune2,dune3,dune.env2)
 
 
@@ -668,7 +668,7 @@ samesitesGUI <- function(){
     saveVariable <- tclVar("1")
     saveCheckBox <- tkcheckbutton(saveFrame, variable=saveVariable)
     onOK <- function(){
-        doItAndPrint(paste("check.datasets(", .communityDataSet, ",", .activeDataSet, ")", sep="")) 
+        doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep="")) 
         sav <- tclvalue(saveVariable) == "1"
         if (sav==T) {
             DataSet <- eval(parse(text=paste(.communityDataSet, sep="")), envir=.GlobalEnv)
@@ -676,8 +676,8 @@ samesitesGUI <- function(){
             logger(paste(newname, " <- ", .communityDataSet, sep=""))
             assign(newname,DataSet, envir=.GlobalEnv)
         }
-        logger(paste(.communityDataSet, " <- ", "same.sites(", .communityDataSet, "," , .activeDataSet, ")", sep=""))
-        assign(.communityDataSet, justDoIt(paste("same.sites(", .communityDataSet, ",", .activeDataSet, ")", sep="")), envir=.GlobalEnv)
+        logger(paste(.communityDataSet, " <- ", "same.sites(", .communityDataSet, ", " , .activeDataSet, ")", sep=""))
+        assign(.communityDataSet, justDoIt(paste("same.sites(", .communityDataSet, ", ", .activeDataSet, ")", sep="")), envir=.GlobalEnv)
         communityDataSet(.communityDataSet)
     }
     onCancel <- function() {
@@ -803,7 +803,7 @@ removeNAGUI <- function(){
     onOK <- function(){
         doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep="")) 
         var <- .variables[as.numeric(tkcurselection(subsetBox))+1]
-        command <- paste("removeNAcomm(", .communityDataSet, ",", .activeDataSet, ",'", var, "')", sep="")
+        command <- paste("removeNAcomm(", .communityDataSet, ", ", .activeDataSet, ",'", var, "')", sep="")
         logger(paste(.communityDataSet, " <- ", command, sep=""))
         assign(.communityDataSet, justDoIt(command), envir=.GlobalEnv)
         command <- paste("removezerospecies(", .communityDataSet, ")", sep="")
@@ -851,8 +851,8 @@ disttransGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(methodFrame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("hellinger","chord","profiles","chi.square","log","square","pa",
-        "Braun.Blanquet", "Domin", "Hult", "Hill", "fix", "coverscale.log")
+    methods <- c("hellinger", "chord", "profiles", "chi.square", "log", "square", "pa",
+        "Braun.Blanquet", "Domin", "Hult", "Hill", "fix", "coverscale.log", "dispweight")
     for (x in methods) tkinsert(methodBox, "end", x)
     saveFrame <- tkframe(top, relief="groove", borderwidth=2)
     saveVariable <- tclVar("1")
@@ -1039,7 +1039,9 @@ accumGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("exact","exact (unconditioned)","random","rarefaction", "coleman","collector","poolaccum","estaccumR","drarefy")
+    methods <- c("exact", "exact (unconditioned)", "random", "rarefaction", "coleman", "collector",
+        "arrhenius", "gleason", "gitay", "lomolino", "asymp", "gompertz", "michaelis-menten", "logis", "weibull",
+        "specslope", "poolaccum", "estaccumR", "rarefy", "drarefy", "rareslope")
     permVariable <- tclVar("100")
     permutation <- tkentry(method2Frame, width=10, textvariable=permVariable)
     for (x in methods) tkinsert(methodBox, "end", x)
@@ -1098,7 +1100,7 @@ accumGUI <- function(){
             scale <- paste(", scale='", var2, "'", sep="")
             xlab <- paste(", xlab='", var2, "'", sep="")
         }
-        if (method %in% c("exact","exact (unconditioned)","random","rarefaction", "coleman","collector")) {
+        if (method %in% c("exact", "exact (unconditioned)", "random", "rarefaction", "coleman", "collector")) {
             if (var == "all") {
                 if (method == "exact (unconditioned)") {
                     command <- paste("accumresult(", .communityDataSet, ", y=", .activeDataSet, ", method='exact', conditioned =F, gamma = 'boot', permutations=", perm, scale, ")", sep="")
@@ -1122,19 +1124,60 @@ accumGUI <- function(){
                 }
             }
         }
+
+        if (method == "arrhenius") {
+            command <- paste("fitspecaccum(specaccum(", .communityDataSet, ", method='exact'), model='arrhenius')", sep="")
+        }
+        if (method == "gleason") {
+            command <- paste("fitspecaccum(specaccum(", .communityDataSet, ", method='exact'), model='gleason')", sep="")
+        }
+        if (method == "gitay") {
+            command <- paste("fitspecaccum(specaccum(", .communityDataSet, ", method='exact'), model='gleason')", sep="")
+        }
+        if (method == "lomolino") {
+            command <- paste("fitspecaccum(specaccum(", .communityDataSet, ", method='exact'), model='lomolino')", sep="")
+        }
+        if (method == "asymp") {
+            command <- paste("fitspecaccum(specaccum(", .communityDataSet, ", method='exact'), model='asymp')", sep="")
+        }
+        if (method == "gompertz") {
+            command <- paste("fitspecaccum(specaccum(", .communityDataSet, ", method='exact'), model='gompertz')", sep="")
+        }
+        if (method == "michaelis-menten") {
+            command <- paste("fitspecaccum(specaccum(", .communityDataSet, ", method='exact'), model='michaelis-menten')", sep="")
+        }
+        if (method == "logis") {
+            command <- paste("fitspecaccum(specaccum(", .communityDataSet, ", method='exact'), model='logis')", sep="")
+        }
+        if (method == "weibull") {
+            command <- paste("fitspecaccum(specaccum(", .communityDataSet, ", method='exact'), model='weibull')", sep="")
+        }
+        if (method == "specslope") {
+            command <- paste("specslope(specaccum(", .communityDataSet, ", method='exact'), at=5)", sep="")
+        }
         if (method == "poolaccum") {
-                command <- paste("poolaccum(", .communityDataSet, ", permutations=", perm, ", minsize=1)", sep="")
+            command <- paste("poolaccum(", .communityDataSet, ", permutations=", perm, ", minsize=2)", sep="")
         }
         if (method == "estaccumR") {
-                command <- paste("estaccumR(", .communityDataSet, ", permutations=", perm, ")", sep="")
+            command <- paste("estaccumR(", .communityDataSet, ", permutations=", perm, ")", sep="")
+        }
+        if (method == "rarefy") {
+            command <- paste("rarefy(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")))", sep="")
         }
         if (method == "drarefy") {
-                command <- paste("drarefy(", .communityDataSet, ", sample=round(nrow(", .communityDataSet, ")/4))", sep="")
+            command <- paste("drarefy(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")))", sep="")
+        }
+        if (method == "rareslope") {
+            command <- paste("rareslope(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")))", sep="")
         }
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
         doItAndPrint(paste(modelValue))
-    }
+        if (method %in% c("arrhenius", "gleason", "gitay", "lomolino", "asymp", "gompertz", "michaelis-menten", "logis", "weibull")){
+            doItAndPrint(paste("coef(", modelValue, ")", sep=""))
+            doItAndPrint(paste("fitted(", modelValue, ")", sep=""))
+        }
+  }
     onPlot <- function(){
         modelValue <- tclvalue(modelName)
         method <- methods[as.numeric(tkcurselection(methodBox))+1]
@@ -1156,11 +1199,22 @@ accumGUI <- function(){
             var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
             xlab <- paste(", xlab='", var2, "'", sep="")
         }
-        if (method %in% c("exact","exact (unconditioned)","random","rarefaction", "coleman","collector")) {
+        if (method %in% c("exact", "exact (unconditioned)", "random", "rarefaction", "coleman", "collector")) {
             doItAndPrint(paste("accumplot(", modelValue, ", addit=", addit, ", ci=", ci, ", ci.type='bar', col='", col, "', cex=", cex, xlab, ", ylab='species richness'", xlim, ylim, ", pch=", pch, ", labels='", sub ,"')", sep=""))
         }
         if (method %in% c("poolaccum", "estaccumR")) {
             doItAndPrint(paste("plot(", modelValue, ")", sep=""))
+        }
+        if (method %in% c("arrhenius", "gleason", "gitay", "lomolino", "asymp", "gompertz", "michaelis-menten", "logis", "weibull")){
+            if (addit == F) { 
+                doItAndPrint(paste("plot(", modelValue, "$richness ~ Accum.1$sites, col='black', cex=", cex, xlab, ", ylab='species richness'", xlim, ylim, ", pch=1)", sep=""))
+                doItAndPrint(paste("points(fitted(", modelValue, ") ~ Accum.1$sites, col='", col, "', pch=", pch, ")", sep=""))
+            }else{
+                doItAndPrint(paste("points(fitted(", modelValue, ") ~ Accum.1$sites, col='", col, "', pch=", pch, ")", sep=""))
+            }
+        }
+        if (method %in% c("rarefy", "drarefy", "rareslope")) {
+            doItAndPrint(paste("rarecurve(", .communityDataSet, ", col=rainbow(nrow(", .communityDataSet, ")))", sep=""))
         }
         activateMenus()
         tkfocus(CommanderWindow())
@@ -1241,15 +1295,15 @@ diversityGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     indexScroll <- tkscrollbar(indexFrame, repeatinterval=5, command=function(...) tkyview(indexBox, ...))
     tkconfigure(indexBox, yscrollcommand=function(...) tkset(indexScroll, ...))
-    indices <- c("richness","abundance","Shannon","Simpson","inverseSimpson","Logalpha","Berger","Jevenness","Eevenness",
-        "jack1","jack2","chao","boot","richness (contribdiv)", "simpson (contribdiv)", "eventstar")
+    indices <- c("richness", "abundance", "Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", "Jevenness", "Eevenness",
+        "jack1", "jack2", "chao", "boot", "richness (contribdiv)", "simpson (contribdiv)", "eventstar")
     for (x in indices) tkinsert(indexBox, "end", x)
     methodFrame <- tkframe(choicesFrame)
     methodBox <- tklistbox(methodFrame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(methodFrame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("all (pooled)","separate per site","mean","sd","jackknife")
+    methods <- c("all (pooled)", "separate per site", "mean", "sd", "jackknife")
     for (x in methods) tkinsert(methodBox, "end", x)
     optionFrame <- tkframe(choicesFrame)
     dataVariable <- tclVar("0")
@@ -1286,8 +1340,8 @@ diversityGUI <- function(){
         if (data==T) {sortit <- F}
         var <- variables[as.numeric(tkcurselection(subsetBox))+1]
         sub <- tclvalue(subset)
-        if (index %in% c("richness","abundance","Shannon","Simpson","inverseSimpson","Logalpha","Berger","Jevenness","Eevenness",
-            "jack1","jack2","chao","boot")) {
+        if (index %in% c("richness", "abundance", "Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", "Jevenness", "Eevenness",
+            "jack1", "jack2", "chao", "boot")) {
             if (var == "all") {
                 command <- paste("diversityresult(", .communityDataSet, ", index='", index,
                     "' ,method='", method, "', sortit=", sortit, ", digits=3)", sep="")
@@ -1314,7 +1368,7 @@ diversityGUI <- function(){
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
         doItAndPrint(paste(modelValue))
-        if (data==T && var=="all" && method=="separate per site" && index %in% c("richness","abundance","Shannon","Simpson","inverseSimpson","Logalpha","Berger","Jevenness","Eevenness","jack1","jack2","chao","boot")) {
+        if (data==T && var=="all" && method=="separate per site" && index %in% c("richness", "abundance", "Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", "Jevenness", "Eevenness", "jack1", "jack2", "chao", "boot")) {
             justDoIt(paste(.activeDataSet, "$", index, " <- diversityresult(", .communityDataSet, ", index='", index,"' ,method='", method,"')[,1]", sep=""))
             logger(paste(.activeDataSet, "$", index, " <- diversityresult(", .communityDataSet, ", index='", index,"' ,method='", method,"')[,1]", sep=""))
             activeDataSet(.activeDataSet)
@@ -1332,7 +1386,7 @@ diversityGUI <- function(){
         if (ylim != "") {ylim <- paste(", ylim=c(", ylim, ")", sep="")}
         pch <- tclvalue(symbol)
         sub <- tclvalue(subset)
-        if (index %in% c("richness","abundance","Shannon","Simpson","inverseSimpson","Logalpha","Berger","Jevenness","Eevenness")) {
+        if (index %in% c("richness", "abundance", "Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", "Jevenness", "Eevenness")) {
             if (var!="all" && sub=="." && method!="separate per site") {
                 if (addit==F) {
                     justDoIt(paste("plot(rep(-90, nrow(", modelValue, ")) ~ as.factor(rownames(", modelValue, ")), xlab='", method, "', ylab=colnames(", modelValue, "), type='n'", ylim, ")", sep=""))
@@ -1429,7 +1483,7 @@ rankabunGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     scaleScroll <- tkscrollbar(option1Frame, repeatinterval=5, command=function(...) tkyview(scaleBox, ...))
     tkconfigure(scaleBox, yscrollcommand=function(...) tkset(scaleScroll, ...))
-    scales <- c("abundance","proportion","logabun","accumfreq")
+    scales <- c("abundance", "proportion", "logabun", "accumfreq")
     for (x in scales) tkinsert(scaleBox, "end", x)
     radVariable <- tclVar("0")
     radCheckBox <- tkcheckbutton(option2Frame, variable=radVariable)
@@ -1565,9 +1619,9 @@ renyiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(methodFrame, repeatinterval=3, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("all","separate per site","accumulation")
+    methods <- c("renyiall", "renyi separate per site", "renyi accumulation", "tsallis", "tsallis accumulation")
     for (x in methods) tkinsert(methodBox, "end", x)
-    scalelist <- tclVar("0,0.25,0.5,1,2,4,8,Inf")
+    scalelist <- tclVar("0, 0.25, 0.5, 1, 2, 4, 8, Inf")
     scaleFrame <- tkframe(choicesFrame)
     scaleEntry <- tkentry(scaleFrame, width=40, textvariable=scalelist)
     permVariable <- tclVar("100")
@@ -1600,6 +1654,9 @@ renyiGUI <- function(){
         doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
         modelValue <- tclvalue(modelName)
         method <- methods[as.numeric(tkcurselection(methodBox))+1]
+        method1 <- method
+        if (method1 == "renyiall") {method1 <- "all"}
+        if (method1 == "renyi separate per site") {method1 <- "s"}
         scales <- tclvalue(scalelist)
         evenness <- tclvalue(evenVariable) == "1"
         ylim <- tclvalue(ylist)
@@ -1607,23 +1664,31 @@ renyiGUI <- function(){
         var <- variables[as.numeric(tkcurselection(subsetBox))+1]
         sub <- tclvalue(subset)
         perm <- as.numeric(tclvalue(permVariable))
-        if (var == "all") {
-            if (method=="accumulation") {
-                command <- paste("renyiaccum(", .communityDataSet, ", scales=c(", scales, "), permutations=", perm, ")", sep="")
-            }else{
-                command <- paste("renyiresult(", .communityDataSet, ", scales=c(", scales, "), method='", method, "')", sep="")
-            }
-        }else{
-            var <- .variables[as.numeric(tkcurselection(subsetBox))]
-            if (sub == ".") {
-                command <- paste("renyicomp(", .communityDataSet, ", evenness=", evenness, ", y=", .activeDataSet, ", factor='", var, "', scales=c(", scales, "), permutations=", perm, ylim, ", legend=F)", sep="")
-            }else{
-                if (method=="accumulation") {
-                    command <- paste("renyiaccumresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', scales=c(", scales, "), permutations=", perm, ")", sep="")
+        if (method %in% c("renyiall", "renyi separate per site", "renyi accumulation")) {
+            if (var == "all") {
+                if (method=="renyi accumulation") {
+                    command <- paste("renyiaccum(", .communityDataSet, ", scales=c(", scales, "), permutations=", perm, ")", sep="")
                 }else{
-                    command <- paste("renyiresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', scales=c(", scales, "), method='", method, "')", sep="")
+                    command <- paste("renyiresult(", .communityDataSet, ", scales=c(", scales, "), method='", method1, "')", sep="")
+                }
+            }else{
+                var <- .variables[as.numeric(tkcurselection(subsetBox))]
+                if (sub == ".") {
+                    command <- paste("renyicomp(", .communityDataSet, ", evenness=", evenness, ", y=", .activeDataSet, ", factor='", var, "', scales=c(", scales, "), permutations=", perm, ylim, ", legend=F)", sep="")
+                }else{
+                    if (method=="renyi accumulation") {
+                        command <- paste("renyiaccumresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', scales=c(", scales, "), permutations=", perm, ")", sep="")
+                    }else{
+                        command <- paste("renyiresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', scales=c(", scales, "), method='", method1, "')", sep="")
+                    }
                 }
             }
+        }
+        if (method=="tsallis") {
+            command <- paste("tsallis(", .communityDataSet, ", scales=c(0, 0.25, 0.5, 1, 2, 4))", sep="")
+        }
+        if (method=="tsallis accumulation") {
+            command <- paste("tsallisaccum(", .communityDataSet, ", scales=c(0, 0.25, 0.5, 1, 2, 4), permutations=", perm, ")", sep="")
         }
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
@@ -1641,14 +1706,25 @@ renyiGUI <- function(){
         cex <- tclvalue(cexa)
         var <- variables[as.numeric(tkcurselection(subsetBox))+1]
         sub <- tclvalue(subset)
-        if (method=="accumulation") {
+        if (method=="renyi accumulation" || method=="tsallis accumulation") {
             justDoIt(paste("persp(", modelValue, ")", sep=""))
             logger(paste("persp(", modelValue, ")", sep=""))
-        }else{
+        }
+        if (method=="renyi" || method=="renyi separate per site") {
             if (var == "all" || sub != ".") {
-                justDoIt(paste("renyiplot(", modelValue, ", evenness=", evenness, ", addit=", addit, ", rainbow=T, legend=F, pch=", pch, ",col='", col, "', cex=", cex, ylim, ")", sep=""))
-                logger(paste("renyiplot(", modelValue, ", evenness=", evenness, ", addit=", addit, ", rainbow=T, legend=F, pch=", pch, ",col='", col, "', cex=", cex, ylim, ")", sep=""))
+                if (evenness == F) {
+                    justDoIt(paste("renyiplot(", modelValue, ", xlab='alpha', ylab='H-alpha', evenness=F, addit=", addit, ", rainbow=T, legend=F, pch=", pch, ",col='", col, "', cex=", cex, ylim, ")", sep=""))
+                    logger(paste("renyiplot(", modelValue, ", xlab='alpha', ylab='H-alpha', evenness=F, addit=", addit, ", rainbow=T, legend=F, pch=", pch, ",col='", col, "', cex=", cex, ylim, ")", sep=""))
+                }else{
+                    justDoIt(paste("renyiplot(", modelValue, ", xlab='alpha', ylab='E-alpha', evenness=T, addit=", addit, ", rainbow=T, legend=F, pch=", pch, ",col='", col, "', cex=", cex, ylim, ")", sep=""))
+                    logger(paste("renyiplot(", modelValue, ", xlab='alpha', ylab='H-alpha', evenness=T, addit=", addit, ", rainbow=T, legend=F, pch=", pch, ",col='", col, "', cex=", cex, ylim, ")", sep=""))                    
+                }
             }
+        }
+        if (method=="tsallis") {
+            doItAndPrint(paste("dev.new()", sep=""))
+            justDoIt(paste("plot(", modelValue, ")", sep=""))
+            logger(paste("plot(", modelValue, ")", sep=""))
         }
     }
     onCancel <- function() {
@@ -1659,7 +1735,7 @@ renyiGUI <- function(){
     buttonsFrame <- tkframe(top)
     onHelp <- function() {
         if (.Platform$OS.type != "windows") tkgrab.release(top)
-        doItAndPrint(paste("help('reyniresult', help_type='html')", sep=""))
+        doItAndPrint(paste("help('renyiresult', help_type='html')", sep=""))
         }
     helpButton <- tkbutton(buttonsFrame, text="Help", width="12", command=onHelp)
     OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
@@ -1765,8 +1841,8 @@ countGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
-    types <- c("diagnostic plots","levene test (factor)","term plot","effect plot", "qq plot", "result plot (new)", 
-        "result plot (add)","result plot (interpolate)", "cr plot","av plot","influence plot","multcomp (factor)","rpart")
+    types <- c("diagnostic plots", "levene test (factor)", "term plot", "effect plot", "qq plot", "result plot (new)", 
+        "result plot (add)", "result plot (interpolate)", "cr plot", "av plot", "influence plot", "multcomp (factor)", "rpart")
     for (x in types) tkinsert(typeBox, "end", x)
     axisBox <- tklistbox(plot2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
@@ -1780,8 +1856,8 @@ countGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     optionScroll <- tkscrollbar(option1Frame, repeatinterval=5, command=function(...) tkyview(optionBox, ...))
     tkconfigure(optionBox, yscrollcommand=function(...) tkset(optionScroll, ...))
-    options <- c("linear model","Poisson model","quasi-Poisson model","negative binomial model","gam model",
-        "gam negbinom model","glmmPQL","rpart")
+    options <- c("linear model", "Poisson model", "quasi-Poisson model", "negative binomial model", "gam model",
+        "gam negbinom model", "glmmPQL", "rpart")
     for (x in options) tkinsert(optionBox, "end", x)    
     standardVariable <- tclVar("0")
     standardCheckBox <- tkcheckbutton(option2Frame, variable=standardVariable)
@@ -2279,8 +2355,8 @@ presabsGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
-    types <- c("tabular","diagnostic plots","levene test (factor)","term plot","effect plot","qq plot","result plot (new)", 
-        "result plot (add)","result plot (interpolate)", "cr plot","av plot","influence plot","multcomp (factor)","rpart")
+    types <- c("tabular", "diagnostic plots", "levene test (factor)", "term plot", "effect plot", "qq plot", "result plot (new)", 
+        "result plot (add)", "result plot (interpolate)", "cr plot", "av plot", "influence plot", "multcomp (factor)", "rpart")
     for (x in types) tkinsert(typeBox, "end", x)
     axisBox <- tklistbox(plot2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
@@ -2294,7 +2370,7 @@ presabsGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     optionScroll <- tkscrollbar(option1Frame, repeatinterval=5, command=function(...) tkyview(optionBox, ...))
     tkconfigure(optionBox, yscrollcommand=function(...) tkset(optionScroll, ...))
-    options <- c("crosstab","binomial model","quasi-binomial model","gam model", "gam quasi-binomial model","rpart","nnetrandom")
+    options <- c("crosstab", "binomial model", "quasi-binomial model", "gam model", "gam quasi-binomial model", "rpart", "nnetrandom")
     for (x in options) tkinsert(optionBox, "end", x)    
     standardVariable <- tclVar("0")
     standardCheckBox <- tkcheckbutton(option2Frame, variable=standardVariable)
@@ -2777,7 +2853,8 @@ distmatrixGUI <- function(){
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
     distances <- c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
         "chao", "cao", "mahalanobis",
-        "w", "-1", "c", "wb", "r", "I", "e", "t", "me", "j", "sor", "m", "-2", "co", "cc", "g", "-3", "l", "19", "hk", "rlb", "sim", "gl", "z")
+        "w", "-1", "c", "wb", "r", "I", "e", "t", "me", "j", "sor", "m", "-2", "co", "cc", "g", "-3", "l", "19", "hk", "rlb", "sim", "gl", "z",
+        "designdist")
     for (x in distances) tkinsert(distBox, "end", x)
     onOK <- function(){
         dist <- distances[as.numeric(tkcurselection(distBox))+1]
@@ -2786,9 +2863,14 @@ distmatrixGUI <- function(){
             "chao", "cao", "mahalanobis")) {
             logger(paste(modelValue, " <- vegdist(", .communityDataSet, ", method='", dist, "', na.rm=T)", sep=""))
             assign(modelValue, justDoIt(paste("vegdist(",.communityDataSet, ", method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
-        }else{
+        }
+        if (dist %in% c("w", "-1", "c", "wb", "r", "I", "e", "t", "me", "j", "sor", "m", "-2", "co", "cc", "g", "-3", "l", "19", "hk", "rlb", "sim", "gl", "z")) {
             logger(paste(modelValue, " <- betadiver(", .communityDataSet, ", method='", dist, "')", sep=""))
             assign(modelValue, justDoIt(paste("betadiver(",.communityDataSet, ", method='",dist, "')", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "designdist") {
+            logger(paste(modelValue, " <- designdist(", .communityDataSet, ", method='(A+B-2*J)/(A+B)', terms='minimum')", sep=""))
+            assign(modelValue, justDoIt(paste("designdist(", .communityDataSet, ", method='(A+B-2*J)/(A+B)', terms='minimum')", sep="")), envir=.GlobalEnv)
         }
         doItAndPrint(paste(modelValue))
         doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
@@ -2849,7 +2931,7 @@ unconordiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("PCA","PCA (prcomp)", "PCoA","PCoA (Caillez)","CA","DCA","metaMDS","wcmdscale","pcnm","NMS (standard)","isomap")
+    methods <- c("PCA", "PCA (prcomp)", "PCoA", "PCoA (Cailliez)", "CA", "DCA", "metaMDS", "monoMDS", "wcmdscale", "wcmdscale (lingoes)", "wcmdscale (cailliez)", "pcnm", "NMS (standard)", "isomap")
     for (x in methods) tkinsert(methodBox, "end", x)
     distBox <- tklistbox(method2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
@@ -2860,7 +2942,7 @@ unconordiGUI <- function(){
     for (x in distances) tkinsert(distBox, "end", x)
     summaryVariable <- tclVar("1")
     summaryCheckBox <- tkcheckbutton(method4Frame, variable=summaryVariable)
-    scalingVariable <- tclVar("1")
+    scalingVariable <- tclVar("species")
     scale <- tkentry(method4Frame, width=10, textvariable=scalingVariable)
     NMSVariable <- tclVar("2")
     NMSa <- tkentry(method3Frame, width=10, textvariable=NMSVariable)
@@ -2879,13 +2961,14 @@ unconordiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
-    types <- c("plot","ordiplot","ordiplot empty","origin axes","identify sites","identify species","text sites","text species","points sites","points species",
-        "label sites","label species","orditorp sites","orditorp species",
-        "envfit","ordihull (factor)", "ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordiellipse (factor)","ordisurf (continuous)",
-        "ordibubble (continuous)","ordisymbol (factor)","ordisymbol (factor, legend)","ordivector (species)","ordivector interpretation",
-        "ordicluster","ordicluster2","ordispantree","ordinearest","ordiequilibriumcircle","screeplot",
-        "distance displayed","coenocline","stressplot",
-        "orditkplot sites","orditkplot species","orditkplot pointlabel")
+    types <- c("plot", "ordiplot", "ordiplot empty", "origin axes", "identify sites", "identify species", "text sites", "text species", "points sites", "points species",
+        "label sites", "label species", "orditorp sites", "orditorp species",
+        "envfit", "ordihull (factor)", "ordihull (factor, rainbow)", "ordihull (factor, polygon)", "ordiarrows (factor)", "ordiarrows (factor, rainbow)", "ordisegments (factor)", "ordisegments (factor, rainbow)", "ordispider (factor)", "ordispider (factor, rainbow)", "ordibar (factor)", "ordibar (factor, rainbow)",
+        "ordiellipse (factor)", "ordiellipse (factor, rainbow)", "ordiellipse (factor, ehull)", "ordiellipse (factor, polygon)", "ordisurf (continuous)",
+        "ordibubble (continuous)", "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation",
+        "ordicluster", "ordicluster2", "ordispantree", "ordinearest", "ordiequilibriumcircle", "screeplot",
+        "distance displayed", "coenocline", "stressplot",
+        "orditkplot sites", "orditkplot species", "orditkplot pointlabel")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
     choice <- tkentry(plot3Frame, width=10, textvariable=choicesVariable)
@@ -2933,7 +3016,7 @@ unconordiGUI <- function(){
             }
             command <- paste("cmdscale(distmatrix, k=", k, ", eig=T, add=F)", sep="")
         }
-        if (method=="PCoA (Caillez)") {
+        if (method=="PCoA (Cailliez)") {
             if(treatasdist==F){
                 logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
                 assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
@@ -2946,8 +3029,19 @@ unconordiGUI <- function(){
         }
         if (method=="metaMDS") { 
             addspec <- F          
-            command <- paste("metaMDS(", .communityDataSet, ",distance='", dist, "', k=", k, ", trymax=", perm, ", autotransform=T, noshare=0.1, expand=T, trace=1, plot=F)", sep="")
+            command <- paste("metaMDS(", .communityDataSet, ", distance='", dist, "', k=", k, ", trymax=", perm, ", autotransform=T, noshare=0.1, expand=T, trace=1, plot=F)", sep="")
             doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+        }
+        if (method=="monoMDS") {
+            if(treatasdist==F){
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }else{
+                logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
+                assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("monoMDS(distmatrix, k=", k, ", model='local')", sep="")
         }
         if (method=="wcmdscale") {
             if(treatasdist==F){
@@ -2958,7 +3052,29 @@ unconordiGUI <- function(){
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            command <- paste("wcmdscale(distmatrix, k=", k, ", eig=T)", sep="")          
+            command <- paste("wcmdscale(distmatrix, k=", k, ", eig=T, add=F)", sep="")          
+        }
+        if (method=="wcmdscale (lingoes)") {
+            if(treatasdist==F){
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ", method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ", method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }else{
+                logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
+                assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("wcmdscale(distmatrix, k=", k, ", eig=T, add='lingoes')", sep="")          
+        }
+        if (method=="wcmdscale (cailliez)") {
+            if(treatasdist==F){
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ", method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ", method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }else{
+                logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
+                assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("wcmdscale(distmatrix, k=", k, ", eig=T, add='cailliez')", sep="")          
         }
         if (method=="pcnm") {
             if(treatasdist==F){
@@ -3002,35 +3118,36 @@ unconordiGUI <- function(){
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
         sum <- tclvalue(summaryVariable) == "1"
         scaling <- tclvalue(scalingVariable)
-        if (method == "PCoA"  || method == "PCoA (Caillez)") {
+        if (method == "PCoA"  || method == "PCoA (Cailliez)") {
             doItAndPrint(paste("rownames(", modelValue, "$points) <- rownames(", .communityDataSet, ")", sep=""))
         }
         if (addspec==T) {
             if (method=="PCoA") {
-                doItAndPrint(paste(modelValue, "<- add.spec.scores(", modelValue, ",", .communityDataSet, ", method='pcoa.scores', Rscale=T, scaling=", scaling, ", multi=1)", sep=""))
+                doItAndPrint(paste(modelValue, "<- add.spec.scores(", modelValue, ", ", .communityDataSet, ", method='pcoa.scores', Rscale=T, scaling='sites', multi=1)", sep=""))
             }
-            if (method=="PCoA (Caillez)") {
-                doItAndPrint(paste(modelValue, "<- add.spec.scores(", modelValue, ",", .communityDataSet, ", method='pcoa.scores', Rscale=T, scaling=", scaling, ", multi=1)", sep=""))
+            if (method=="PCoA (Cailliez)") {
+                doItAndPrint(paste(modelValue, "<- add.spec.scores(", modelValue, ", ", .communityDataSet, ", method='pcoa.scores', Rscale=T, scaling='sites', multi=1)", sep=""))
             }
             if (method=="NMS (standard)") {
-                doItAndPrint(paste(modelValue, "<- add.spec.scores(", modelValue, ",", .communityDataSet, ", method='wa.scores')", sep=""))
+                doItAndPrint(paste(modelValue, "<- add.spec.scores(", modelValue, ", ", .communityDataSet, ", method='wa.scores')", sep=""))
             }
         }
         if (method == "PCA" || method == "PCA (prcomp)"  || method == "CA" || method == "DCA" || addspec == T) {
-            doItAndPrint(paste("check.ordiscores(", .communityDataSet, ",", modelValue, ", check.species=T)", sep=""))
+            doItAndPrint(paste("check.ordiscores(", .communityDataSet, ", ", modelValue, ", check.species=T)", sep=""))
         }else{
-            doItAndPrint(paste("check.ordiscores(", .communityDataSet, ",", modelValue, ", check.species=F)", sep=""))
+            doItAndPrint(paste("check.ordiscores(", .communityDataSet, ", ", modelValue, ", check.species=F)", sep=""))
         }
         if (sum==T) {
             if (method %in% c("PCA", "CA", "DCA")) {
-                doItAndPrint(paste("summary(", modelValue, ", scaling=", scaling, ")", sep=""))
+                doItAndPrint(paste("summary(", modelValue, ", scaling='", scaling, "')", sep=""))
+                doItAndPrint(paste("eigenvals(", modelValue, ")", sep=""))
                 if (method=="PCA") {doItAndPrint(paste("PCAsignificance(", modelValue, ")", sep=""))}
-                doItAndPrint(paste("goodness(", modelValue, ", display='sites', choices=c(1:4), statistic='explained')", sep=""))
+                doItAndPrint(paste("goodness(", modelValue, ", display='sites', choices=c(1:4), model='CA', statistic='explained')", sep=""))
                 doItAndPrint(paste("inertcomp(", modelValue, ", display='sites', statistic='explained', proportional=F)", sep=""))
             }         
-            if (method %in% c("PCA (prcomp)", "PCoA","PCoA (Caillez)","metaMDS","wcmdscale","pcnm","NMS (standard)")) {
+            if (method %in% c("PCA (prcomp)", "PCoA", "PCoA (Cailliez)", "metaMDS", "monoMDS", "wcmdscale", "wcmdscale (lingoes)", "wcmdscale (cailliez)", "pcnm", "NMS (standard)")) {
                 doItAndPrint(paste(modelValue, sep=""))
-                if (method=="metaMDS") {doItAndPrint(paste("goodness(", modelValue, ")", sep=""))}
+                if (method=="metaMDS" || method=="monoMDS") {doItAndPrint(paste("goodness(", modelValue, ")", sep=""))}
             }
             if (method=="isomap") {doItAndPrint(paste("summary(", modelValue, ")", sep=""))}
         }
@@ -3047,19 +3164,18 @@ unconordiGUI <- function(){
         cex <- tclvalue(cexVariable)
         treatasdist <- tclvalue(treatasdistVariable)==1
         addspec <- tclvalue(addspecVariable) == "1"
-        justDoIt(paste("attach(", .activeDataSet, ")", sep=""))
         if (plottype == "plot"){
             justDoIt(paste("par(cex=",cex,")", sep=""))
             logger(paste("par(cex=",cex,")", sep=""))
             if (method=="PCA" || method=="CA"  || method=="DCA") {
-                justDoIt(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))
-                logger(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))
+                justDoIt(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "')", sep=""))
+                logger(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "')", sep=""))
             }
-            if (method=="metaMDS") {
+            if (method=="metaMDS" || method=='monoMDS') {
                 justDoIt(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "))", sep=""))
                 logger(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "))", sep=""))
             }
-            if (method=="PCoA" || method=="PCoA (Caillez)"  || method=="NMS (standard)" || method=="wcmdscale" || method=="pcnm") {
+            if (method=="PCoA" || method=="PCoA (Cailliez)"  || method=="NMS (standard)" || method=="wcmdscale" || method=="wcmdscale (lingoes)"|| method=="wcmdscale (cailliez)"|| method=="pcnm") {
                 justDoIt(paste("plot1 <- plot(scores(", modelValue, ", display='sites', choices=c(", choices, ")))", sep=""))
                 logger(paste("plot1 <- plot(scores(", modelValue, ", display='sites', choices=c(", choices, ")))", sep=""))
                 if (addspec==T) {
@@ -3074,8 +3190,8 @@ unconordiGUI <- function(){
             justDoIt(paste("par(cex=",cex,")", sep=""))
             logger(paste("par(cex=",cex,")", sep=""))
             if (method=="PCA" || method=="CA"  || method=="DCA") {
-                justDoIt(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))
-                logger(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))
+                justDoIt(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "')", sep=""))
+                logger(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "')", sep=""))
             }else{
                 justDoIt(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "))", sep="")) 
                 logger(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "))", sep="")) 
@@ -3085,8 +3201,8 @@ unconordiGUI <- function(){
             justDoIt(paste("par(cex=",cex,")", sep=""))
             logger(paste("par(cex=",cex,")", sep=""))
             if (method=="PCA" || method=="CA"  || method=="DCA") {
-                justDoIt(paste("plot1 <- ordiplot(", modelValue, ", type='none', choices=c(", choices, "), scaling=", scaling, ")", sep=""))
-                logger(paste("plot1 <- ordiplot(", modelValue, ", type='none', choices=c(", choices, "), scaling=", scaling, ")", sep=""))
+                justDoIt(paste("plot1 <- ordiplot(", modelValue, ", type='none', choices=c(", choices, "), scaling='", scaling, "')", sep=""))
+                logger(paste("plot1 <- ordiplot(", modelValue, ", type='none', choices=c(", choices, "), scaling='", scaling, "')", sep=""))
             }else{
                 justDoIt(paste("plot1 <- ordiplot(", modelValue, ", type='none', choices=c(", choices, "))", sep="")) 
                 logger(paste("plot1 <- ordiplot(", modelValue, ", type='none', choices=c(", choices, "))", sep="")) 
@@ -3135,38 +3251,92 @@ unconordiGUI <- function(){
         }
         axisvar <- .variables[as.numeric(tkcurselection(axisBox))+1]
         varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", axisvar, ")", sep="")), envir=.GlobalEnv)
+        if (plottype %in% c("envfit", "ordihull (factor)", "ordihull (factor, rainbow)", "ordihull (factor, polygon)", "ordiarrows (factor)", "ordiarrows (factor, rainbow)", "ordisegments (factor)", "ordisegments (factor, rainbow)", "ordispider (factor)", "ordispider (factor, rainbow)", "ordibar (factor)", "ordibar (factor, rainbow)",
+                "ordiellipse (factor)", "ordiellipse (factor, rainbow)", "ordiellipse (factor, ehull)", "ordiellipse (factor, polygon)", "ordisurf (continuous)", "ordibubble (continuous)", 
+                "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation")){
+            justDoIt(paste("attach(", .activeDataSet, ", warn.conflicts=F)", sep=""))
+            logger(paste("attach(", .activeDataSet, ", warn.conflicts=F)",sep=""))
+        }
         if (plottype == "envfit"){
             doItAndPrint(paste("fitted <- envfit(plot1, data.frame(", axisvar, "), permutations=", perm, ")", sep=""))
             doItAndPrint(paste("plot(fitted, col='", col,"', cex=", cex, ")", sep=""))
         }
         if (plottype == "ordihull (factor)" && varfactor==T){
-            doItAndPrint(paste("ordihull(plot1,", axisvar, ", col='", col, "')", sep=""))
+            doItAndPrint(paste("ordihull(plot1, groups=", axisvar, ", draw='lines', col='", col, "')", sep=""))
+            doItAndPrint(paste("summary(ordihull(plot1, groups=", axisvar, "))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='hull', permutations=", perm, ")", sep=""))
+        }
+        if (plottype == "ordihull (factor, rainbow)" && varfactor==T){
+            doItAndPrint(paste("ordihull(plot1, groups=", axisvar, ", draw='lines', label=F, lwd=3, col=rainbow(length(levels(", axisvar, "))), border=rainbow(length(levels(", axisvar, "))))", sep=""))
+            doItAndPrint(paste("summary(ordihull(plot1, groups=", axisvar, "))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='hull', permutations=", perm, ")", sep=""))
+        }
+        if (plottype == "ordihull (factor, polygon)" && varfactor==T){
+            doItAndPrint(paste("ordihull(plot1, groups=", axisvar, ", draw='polygon', alpha=127, label=T, col=rainbow(length(levels(", axisvar, "))))", sep=""))
+            doItAndPrint(paste("summary(ordihull(plot1, groups=", axisvar, "))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='hull', permutations=", perm, ")", sep=""))
         }
         if (plottype == "ordiarrows (factor)" && varfactor==T){
-            doItAndPrint(paste("ordiarrows(plot1,", axisvar, ", col='", col, "')", sep=""))
+            doItAndPrint(paste("ordiarrows(plot1, groups=", axisvar, ", col='", col, "')", sep=""))
+        }
+        if (plottype == "ordiarrows (factor, rainbow)" && varfactor==T){
+            doItAndPrint(paste("ordiarrows(plot1, groups=", axisvar, ", col=rainbow(length(levels(", axisvar, "))))", sep=""))
         }
         if (plottype == "ordisegments (factor)" && varfactor==T){
-            doItAndPrint(paste("ordisegments(plot1,", axisvar, ", col='", col, "')", sep=""))
+            doItAndPrint(paste("ordisegments(plot1, groups=", axisvar, ", col='", col, "')", sep=""))
+        }
+        if (plottype == "ordisegments (factor, rainbow)" && varfactor==T){
+            doItAndPrint(paste("ordisegments(plot1, groups=", axisvar, ", col=rainbow(length(levels(", axisvar, "))))", sep=""))
         }
         if (plottype == "ordispider (factor)" && varfactor==T){
-            doItAndPrint(paste("ordispider(plot1,", axisvar, ", col='", col, "')", sep=""))
+            doItAndPrint(paste("ordispider(plot1, groups=", axisvar, ", spiders='centroid', col='", col, "')", sep=""))
+            }
+        if (plottype == "ordispider (factor, rainbow)" && varfactor==T){
+            doItAndPrint(paste("ordispider(plot1, groups=", axisvar, ", spiders='centroid', label=T, col=rainbow(length(levels(", axisvar, "))))", sep=""))
+            }
+        if (plottype == "ordibar (factor)" && varfactor==T){
+            doItAndPrint(paste("ordibar(plot1, groups=", axisvar, ", col='", col, "', conf=0.9, kind='se')", sep=""))
+            }
+        if (plottype == "ordibar (factor, rainbow)" && varfactor==T){
+            doItAndPrint(paste("ordibar(plot1, groups=", axisvar, ", label=T, col=rainbow(length(levels(", axisvar, "))))", sep=""))
             }
         if (plottype == "ordiellipse (factor)" && varfactor==T){
-            doItAndPrint(paste("ordiellipse(plot1,", axisvar, ", col='", col, "', conf=0.9)", sep=""))
+            doItAndPrint(paste("ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='se', draw='lines', col='", col, "')", sep=""))
+            doItAndPrint(paste("summary(ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='se'))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='ellipse', kind='se', permutations=", perm, ")", sep=""))
+            }
+        if (plottype == "ordiellipse (factor, rainbow)" && varfactor==T){
+            doItAndPrint(paste("ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='se', draw='lines', label=T, lwd=3, col=rainbow(length(levels(", axisvar, "))), border=rainbow(length(levels(", axisvar, "))))", sep=""))
+            doItAndPrint(paste("summary(ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='se'))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='ellipse', kind='se', permutations=", perm, ")", sep=""))
+            }
+        if (plottype == "ordiellipse (factor, ehull)" && varfactor==T){
+            doItAndPrint(paste("ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='ehull', draw='lines', label=T, lwd=3, col=rainbow(length(levels(", axisvar, "))), border=rainbow(length(levels(", axisvar, "))))", sep=""))
+            doItAndPrint(paste("summary(ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='ehull'))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='ellipse', kind='ehull', permutations=", perm, ")", sep=""))
+            }
+        if (plottype == "ordiellipse (factor, polygon)" && varfactor==T){
+            doItAndPrint(paste("ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='ehull', draw='polygon', alpha=127, label=T, col=rainbow(length(levels(", axisvar, "))))", sep=""))
+            doItAndPrint(paste("summary(ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='ehull'))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='ellipse', kind='ehull', permutations=", perm, ")", sep=""))
             }
         if (plottype == "ordisurf (continuous)" && varfactor==F){
-            doItAndPrint(paste("ordisurf(plot1,", axisvar, ", add=T)", sep=""))
+            doItAndPrint(paste("ordisurf(plot1, y=", axisvar, ", add=T, col='", col, "')", sep=""))
             }
         if (plottype == "ordibubble (continuous)" && varfactor==F){
-            doItAndPrint(paste("ordibubble(plot1,", axisvar, ", fg='", col, "')", sep=""))
+            doItAndPrint(paste("ordibubble(plot1, var=", axisvar, ", fg='", col, "')", sep=""))
             }
         if (plottype == "ordisymbol (factor)" && varfactor==T){
-            justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=F, rainbow=T, cex=", cex, ")", sep=""))
-            logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=F, rainbow=T, cex=", cex, ")", sep=""))
+            justDoIt(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', legend=F, rainbow=T, cex=", cex, ")", sep=""))
+            logger(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', legend=F, rainbow=T, cex=", cex, ")", sep=""))
         }
         if (plottype == "ordisymbol (factor, legend)" && varfactor==T){
-            justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=T, legend.x='topleft', legend.ncol=1, rainbow=T, cex=", cex, ")", sep=""))
-            logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', legend=T, legend.x='topleft', legend.ncol=1, rainbow=T, cex=", cex, ")", sep=""))
+            justDoIt(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', legend=T, legend.x='topleft', legend.ncol=1, rainbow=T, cex=", cex, ")", sep=""))
+            logger(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', legend=T, legend.x='topleft', legend.ncol=1, rainbow=T, cex=", cex, ")", sep=""))
+        }
+        if (plottype == "ordisymbol (factor, large)" && varfactor==T){
+            justDoIt(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', legend=T, legend.x='topleft', legend.ncol=1, rainbow=F, cex=4, lwd=2)", sep=""))
+            logger(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', legend=T, legend.x='topleft', legend.ncol=1, rainbow=F, cex=4, lwd=2)", sep=""))
         }
         if (plottype == "ordivector (species)"){
             realspecies <- eval(parse(text=paste("any(colnames(", .communityDataSet, ")=='", axisvar, "')", sep="")), envir=.GlobalEnv)
@@ -3181,7 +3351,7 @@ unconordiGUI <- function(){
             }
         }
         if (plottype == "ordiequilibriumcircle" && method == "PCA"){
-            doItAndPrint(paste("ordiequilibriumcircle(", modelValue, ",plot1, col='", col, "')", sep=""))
+            doItAndPrint(paste("ordiequilibriumcircle(", modelValue, ", plot1, col='", col, "')", sep=""))
             }            
         if (plottype == "ordicluster"){
             if(treatasdist==F){
@@ -3193,7 +3363,7 @@ unconordiGUI <- function(){
             }
             logger(paste("cluster <- hclust(distmatrix, method='single')", sep=""))
             assign("cluster", justDoIt(paste("hclust(distmatrix, method='single')", sep="")), envir=.GlobalEnv)
-            doItAndPrint(paste("ordicluster(plot1, cluster, prune=0, col='", col, "')", sep=""))
+            doItAndPrint(paste("ordicluster(plot1, cluster, prune=1, col='", col, "')", sep=""))
             }
         if (plottype == "ordicluster2"){
             if(treatasdist==F){
@@ -3209,45 +3379,45 @@ unconordiGUI <- function(){
             }
         if (plottype == "ordinearest"){
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ", method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ", method='", dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            doItAndPrint(paste("ordinearest(plot1, distmatrix,col='", col, "')", sep=""))
+            doItAndPrint(paste("ordinearest(plot1, distmatrix, col='", col, "')", sep=""))
             }
         if (plottype == "ordispantree"){
             if(treatasdist==F){
-                logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                logger(paste("distmatrix <- vegdist(", .communityDataSet, ", method='", dist, "', na.rm=T)", sep=""))
+                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ", method='", dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
                 assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            doItAndPrint(paste("lines(spantree(distmatrix,toolong=0),plot1,col='", col, "')", sep=""))
+            doItAndPrint(paste("lines(spantree(distmatrix,toolong=0), plot1, col='", col, "')", sep=""))
             }
         if (plottype == "distance displayed"){
             if(treatasdist==F){
-                doItAndPrint(paste("distdisplayed(", .communityDataSet ,",plot1, distx='", dist, "',plotit=T)", sep=""))
+                doItAndPrint(paste("distdisplayed(", .communityDataSet ,", plot1, distx='", dist, "', plotit=T)", sep=""))
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
-                assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+                assign("distmatrix", justDoIt(paste("as.dist(", .communityDataSet, ")", sep="")), envir=.GlobalEnv)
                 doItAndPrint(paste("distdisplayed(distmatrix, plot1, plotit=T)", sep=""))
             }
         }
         if (plottype == "coenocline"){
             doItAndPrint(paste("ordicoeno(", .communityDataSet ,", ordiplot=plot1, axis=1, legend=T, cex=0.8, ncol=4)", sep=""))
             }
-        if (plottype == "stressplot"  && method == "metaMDS"){
+        if (plottype == "stressplot"){
             doItAndPrint(paste("stressplot(", modelValue ,")", sep=""))
             }
         if (plottype == "orditkplot sites"){
             justDoIt(paste("par(cex=",cex,")", sep=""))
             logger(paste("par(cex=",cex,")", sep=""))
             if (method=="PCA" || method=="CA"  || method=="DCA") {
-                justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
-                logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, "), scaling='", scaling, "'))", sep=""))
+                logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, "), scaling='", scaling, "'))", sep=""))
             }else{
                 justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, ")))", sep="")) 
                 logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, ")))", sep="")) 
@@ -3257,8 +3427,8 @@ unconordiGUI <- function(){
             justDoIt(paste("par(cex=",cex,")", sep=""))
             logger(paste("par(cex=",cex,")", sep=""))
             if (method=="PCA" || method=="CA"  || method=="DCA") {
-                justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
-                logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, "), scaling='", scaling, "'))", sep=""))
+                logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, "), scaling='", scaling, "'))", sep=""))
             }else{
                 justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, ")))", sep="")) 
                 logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, ")))", sep="")) 
@@ -3268,8 +3438,8 @@ unconordiGUI <- function(){
             justDoIt(paste("par(cex=",cex,")", sep=""))
             logger(paste("par(cex=",cex,")", sep=""))
             if (method=="PCA" || method=="CA"  || method=="DCA") {
-                justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, "), scaling=", scaling, "))", sep=""))
-                logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "'))", sep=""))
+                logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "'))", sep=""))
             }else{
                 justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, ")))", sep="")) 
                 logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, ")))", sep="")) 
@@ -3278,10 +3448,10 @@ unconordiGUI <- function(){
 
         data <- tclvalue(dataVariable) =="1"
         if (data==T) {
-            justDoIt(paste(.activeDataSet, "$", modelValue, ".ax1 <- scores(plot1,display='sites')[,1]", sep=""))
-            logger(paste(.activeDataSet, "$", modelValue, ".ax1 <- scores(plot1,display='sites')[,1]", sep=""))
-            justDoIt(paste(.activeDataSet, "$", modelValue, ".ax2 <- scores(plot1,display='sites')[,2]", sep=""))
-            logger(paste(.activeDataSet, "$", modelValue, ".ax2 <- scores(plot1,display='sites')[,2]", sep=""))
+            justDoIt(paste(.activeDataSet, "$", modelValue, ".ax1 <- scores(plot1, display='sites')[,1]", sep=""))
+            logger(paste(.activeDataSet, "$", modelValue, ".ax1 <- scores(plot1, display='sites')[,1]", sep=""))
+            justDoIt(paste(.activeDataSet, "$", modelValue, ".ax2 <- scores(plot1, display='sites')[,2]", sep=""))
+            logger(paste(.activeDataSet, "$", modelValue, ".ax2 <- scores(plot1, display='sites')[,2]", sep=""))
             activeDataSet(.activeDataSet)
         }
     }
@@ -3370,7 +3540,8 @@ conordiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("RDA","CCA","capscale","capscale(add)","CAPdiscrim","prc","multiconstrained (RDA)", "multiconstrained (CCA)", "multiconstrained (capscale)", "multiconstrained (capscale add)")
+    methods <- c("RDA", "CCA", "capscale", "capscale (lingoes)", "capscale (cailliez)", "dbrda", "dbrda (lingoes)", "dbrda (cailliez)", "CAPdiscrim", "prc", 
+        "multiconstrained (RDA)", "multiconstrained (CCA)", "multiconstrained (capscale)", "multiconstrained (capscale add)")
     for (x in methods) tkinsert(methodBox, "end", x)
     distBox <- tklistbox(method2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
@@ -3383,7 +3554,7 @@ conordiGUI <- function(){
     summaryCheckBox <- tkcheckbutton(method3Frame, variable=summaryVariable)
     treatasdistVariable <- tclVar("0")
     treatasdistCheckBox <- tkcheckbutton(method3Frame, variable=treatasdistVariable)
-    scalingVariable <- tclVar("1")
+    scalingVariable <- tclVar("species")
     scale <- tkentry(method4Frame, width=10, textvariable=scalingVariable)
     permVariable <- tclVar("100")
     permutation <- tkentry(method4Frame, width=10, textvariable=permVariable)
@@ -3408,12 +3579,13 @@ conordiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
-    types <- c("plot","ordiplot","ordiplot empty","origin axes","identify sites","identify species","identify centroids","text sites","text species","text centroids",
-        "points sites","points species","points centroids",
-        "label sites","label species","label centroids","orditorp sites","orditorp species","orditorp centroids",
-        "envfit","ordihull (factor)","ordiarrows (factor)","ordisegments (factor)","ordispider (factor)","ordiellipse (factor)","ordisurf (continuous)",
-        "ordibubble (continuous)","ordisymbol (factor)","ordisymbol (factor, legend)","ordivector (species)","ordivector interpretation","ordicluster","ordicluster2",
-        "ordinearest","ordispantree","ordiresids","distance displayed","coenocline", "screeplot", "orditkplot sites","orditkplot species","orditkplot pointlabel")
+    types <- c("plot", "ordiplot", "ordiplot empty", "origin axes", "identify sites", "identify species", "identify centroids", "text sites", "text species", "text centroids",
+        "points sites", "points species", "points centroids",
+        "label sites", "label species", "label centroids", "orditorp sites", "orditorp species", "orditorp centroids",
+        "envfit", "ordihull (factor)", "ordihull (factor, rainbow)", "ordihull (factor, polygon)", "ordiarrows (factor)", "ordiarrows (factor, rainbow)", "ordisegments (factor)", "ordisegments (factor, rainbow)", "ordispider (factor)", "ordispider (factor, rainbow)", "ordibar (factor)", "ordibar (factor, rainbow)",
+        "ordiellipse (factor)", "ordiellipse (factor, rainbow)", "ordiellipse (factor, ehull)", "ordiellipse (factor, polygon)", "ordisurf (continuous)",
+        "ordibubble (continuous)", "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation", "ordicluster", "ordicluster2",
+        "ordinearest", "ordispantree", "ordiresids", "distance displayed", "coenocline", "screeplot", "stressplot", "orditkplot sites", "orditkplot species", "orditkplot pointlabel")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
     choice <- tkentry(plot3Frame, width=10, textvariable=choicesVariable)
@@ -3520,36 +3692,80 @@ conordiGUI <- function(){
             }
         formula <- paste(.communityDataSet, tclvalue(rhsVariable), sep=" ~ ")
         if (method=="RDA") {
-            command <- paste("rda(", formula, ",", .activeDataSet, ")", sep="")
+            command <- paste("rda(", formula, ", data=", .activeDataSet, ")", sep="")
             doItAndPrint(paste("dist.eval(", .communityDataSet, ",'euclidean')", sep=""))
         }
         if (method=="CCA") {
-            command <- paste("cca(", formula, ",", .activeDataSet, ")", sep="")
+            command <- paste("cca(", formula, ", data=", .activeDataSet, ")", sep="")
         }
         if (method=="capscale") {
             if(treatasdist==T){
                 logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
                 assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            command <- paste("capscale(", formula, ",", .activeDataSet, ",dist='", dist, "', add=F)", sep="")
+            command <- paste("capscale(", formula, ", data=", .activeDataSet, ", distance='", dist, "', sqrt.dist=F, add=F)", sep="")
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
-            doItAndPrint(paste("adonis(", formula, "," , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+            doItAndPrint(paste("adonis(", formula, ", data=" , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
         }
-        if (method=="capscale(add)") {
+        if (method=="capscale (lingoes)") {
             if(treatasdist==T){
                 logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
                 assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            command <- paste("capscale(", formula, ",", .activeDataSet, ",dist='", dist, "', add=T)", sep="")
+            command <- paste("capscale(", formula, ", data=", .activeDataSet, ", distance='", dist, "', sqrt.dist=F, add='lingoes')", sep="")
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
-            doItAndPrint(paste("adonis(", formula, "," , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+            doItAndPrint(paste("adonis(", formula, ", data=" , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+        }
+        if (method=="capscale (cailliez)") {
+            if(treatasdist==T){
+                logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
+                assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("capscale(", formula, ", data=", .activeDataSet, ", distance='", dist, "', sqrt.dist=F, add='cailliez')", sep="")
+            if(treatasdist==F){
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }
+            doItAndPrint(paste("adonis(", formula, ", data=" , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+        }
+        if (method=="dbrda") {
+            if(treatasdist==T){
+                logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
+                assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("dbrda(", formula, ", data=", .activeDataSet, ", distance='", dist, "', sqrt.dist=F, add=F)", sep="")
+            if(treatasdist==F){
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }
+            doItAndPrint(paste("adonis(", formula, ", data=" , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+        }
+        if (method=="dbrda (lingoes)") {
+            if(treatasdist==T){
+                logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
+                assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("dbrda(", formula, ", data=", .activeDataSet, ", distance='", dist, "', sqrt.dist=F, add='lingoes')", sep="")
+            if(treatasdist==F){
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }
+            doItAndPrint(paste("adonis(", formula, ", data=" , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+        }
+        if (method=="dbrda (cailliez)") {
+            if(treatasdist==T){
+                logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
+                assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("dbrda(", formula, ", data=", .activeDataSet, ", distance='", dist, "', sqrt.dist=F, add='cailliez')", sep="")
+            if(treatasdist==F){
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }
+            doItAndPrint(paste("adonis(", formula, ", data=" , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
         }
         if (method=="prc") {
-            command <- paste("prc(", .communityDataSet, "," ,tclvalue(rhsVariable), ")", sep="")
+            command <- paste("prc(", .communityDataSet, ", " ,tclvalue(rhsVariable), ")", sep="")
             doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
         }
         if (method=="CAPdiscrim") {
@@ -3557,22 +3773,22 @@ conordiGUI <- function(){
                 logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
                 assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            command <- paste("CAPdiscrim(", formula, ",", .activeDataSet, ", dist='", dist, "', permutations=", perm,")", sep="")
+            command <- paste("CAPdiscrim(", formula, ", ", .activeDataSet, ", dist='", dist, "', permutations=", perm,")", sep="")
             doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
         }
         if (method=="multiconstrained (RDA)") {
-            command <- paste("multiconstrained(method='rda',", formula, ",", .activeDataSet, ", contrast=0, step=", perm, ")", sep="")
+            command <- paste("multiconstrained(method='rda',", formula, ", ", .activeDataSet, ", contrast=0, step=", perm, ")", sep="")
             doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
         }
         if (method=="multiconstrained (CCA)") {
-            command <- paste("multiconstrained(method='cca',", formula, ",", .activeDataSet, ", contrast=0, step=", perm, ")", sep="")
+            command <- paste("multiconstrained(method='cca',", formula, ", ", .activeDataSet, ", contrast=0, step=", perm, ")", sep="")
         }
         if (method=="multiconstrained (capscale)") {
             if(treatasdist==T){
                 logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
                 assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            command <- paste("multiconstrained(method='capscale',", formula, ",", .activeDataSet, ",dist='", dist, "', add=F, contrast=0, step=", perm, ")", sep="")
+            command <- paste("multiconstrained(method='capscale',", formula, ", ", .activeDataSet, ",dist='", dist, "', add=F, contrast=0, step=", perm, ")", sep="")
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
@@ -3582,7 +3798,7 @@ conordiGUI <- function(){
                 logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
                 assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
-            command <- paste("multiconstrained(method='capscale',", formula, ",", .activeDataSet, ",dist='", dist, "', add=T, contrast=0, step=", perm, ")", sep="")
+            command <- paste("multiconstrained(method='capscale',", formula, ", ", .activeDataSet, ",dist='", dist, "', add=T, contrast=0, step=", perm, ")", sep="")
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
@@ -3594,11 +3810,11 @@ conordiGUI <- function(){
 #            }        
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
-        if (method == "RDA" || method == "CCA"  || method == "capscale" || method == "capscale(add)") {
-            doItAndPrint(paste("check.ordiscores(", .communityDataSet, ",", modelValue, ", check.species=T)", sep=""))
+        if (method == "RDA" || method == "CCA"  || method == "capscale" || method == "capscale (lingoes)" || method == "capscale (cailliez)" || method == "dbrda" || method == "dbrda (lingoes)" || method == "dbrda (cailliez)") {
+            doItAndPrint(paste("check.ordiscores(", .communityDataSet, ", ", modelValue, ", check.species=T)", sep=""))
         }
         if (method == "CAPdiscrim") {
-            doItAndPrint(paste("check.ordiscores(", .communityDataSet, ",", modelValue, ", check.species=F)", sep=""))
+            doItAndPrint(paste("check.ordiscores(", .communityDataSet, ", ", modelValue, ", check.species=F)", sep=""))
         }
         sum <- tclvalue(summaryVariable) == "1"
         scaling <- tclvalue(scalingVariable)
@@ -3606,24 +3822,23 @@ conordiGUI <- function(){
             if (method=="CAPdiscrim" || method=="multiconstrained (RDA)" || method=="multiconstrained (CCA)" || method=="multiconstrained (capscale)" || method=="multiconstrained (capscale add)") {
                 doItAndPrint(paste(modelValue, sep=""))
             }else{
-                doItAndPrint(paste("summary(", modelValue, ", scaling=", scaling, ")", sep=""))
+                doItAndPrint(paste("summary(", modelValue, ", scaling='", scaling, "')", sep=""))
             }
-            if (method=="RDA" || method=="CCA"  || method=="capscale"  || method=="capscale(add)") {
+            if (method=="RDA" || method=="CCA"  || method=="capscale"  || method=="capscale (lingoes)" || method=="capscale (cailliez)" || method=="dbrda"  || method=="dbrda (lingoes)" || method=="dbrda (cailliez)") {
+                doItAndPrint(paste("eigenvals(", modelValue, ")", sep=""))
                 doItAndPrint(paste("RsquareAdj(", modelValue, ")", sep=""))
                 doItAndPrint(paste("deviance(", modelValue, ")", sep=""))
                 doItAndPrint(paste("vif.cca(", modelValue, ")", sep=""))
-            }
-            if (method=="RDA" || method=="CCA"  || method=="capscale"  || method=="capscale(add)") {            
                 doItAndPrint(paste("goodness(", modelValue, ", display='sites', statistic='explained')", sep=""))            
                 doItAndPrint(paste("inertcomp(", modelValue, ", display='sites', statistic='explained', proportional=T)", sep="")) 
             }
-        }
-        if (perm>0  && method !="CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)") {
-            doItAndPrint(paste("permutest(", modelValue, ", permutations=", perm, ")", sep=""))
-            doItAndPrint(paste("permutest(", modelValue, ", permutations=", perm, ", first=T)", sep=""))
-            if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='terms')", sep=""))}
-            if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='margin')", sep=""))}
+            if (perm>0  && method !="CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)") {
+                doItAndPrint(paste("permutest(", modelValue, ", permutations=", perm, ")", sep=""))
+#               doItAndPrint(paste("permutest(", modelValue, ", permutations=", perm, ", first=T)", sep=""))
+                if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='terms')", sep=""))}
+                if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='margin')", sep=""))}
             }
+        }
         if(treatasdist==T  && method!="RDA" && method!="CCA"  && method!="prc" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)"){
             logger(paste(.communityDataSet, " <- data.frame(as.matrix(", .communityDataSet, "))", sep=""))
             assign(.communityDataSet, justDoIt(paste("data.frame(as.matrix(",.communityDataSet, "))", sep="")), envir=.GlobalEnv)
@@ -3640,12 +3855,11 @@ conordiGUI <- function(){
         cex <- tclvalue(cexVariable)
         col <- tclvalue(colVariable)
         treatasdist <- tclvalue(treatasdistVariable)==1
-        justDoIt(paste("attach(", .activeDataSet, ")", sep=""))
         if (plottype == "plot"  && method != "CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
             justDoIt(paste("par(cex=",cex,")", sep=""))
             logger(paste("par(cex=",cex,")", sep=""))
-            justDoIt(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))
-            logger(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))
+            justDoIt(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "')", sep=""))
+            logger(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "')", sep=""))
             }
         if (plottype == "ordiplot"){
             if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
@@ -3655,8 +3869,8 @@ conordiGUI <- function(){
                     justDoIt(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "))", sep=""))              
                     logger(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "))", sep=""))              
                 }else{
-                    justDoIt(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))              
-                    logger(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "), scaling=", scaling, ")", sep=""))              
+                    justDoIt(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "')", sep=""))              
+                    logger(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "')", sep=""))              
                 }
             }
         }
@@ -3668,8 +3882,8 @@ conordiGUI <- function(){
                     justDoIt(paste("plot1 <- ordiplot(", modelValue, ", type='none', choices=c(", choices, "))", sep=""))              
                     logger(paste("plot1 <- ordiplot(", modelValue, ", type='none', choices=c(", choices, "))", sep=""))              
                 }else{
-                    justDoIt(paste("plot1 <- ordiplot(", modelValue, ", type='none',choices=c(", choices, "), scaling=", scaling, ")", sep="")) 
-                    logger(paste("plot1 <- ordiplot(", modelValue, ", type='none',choices=c(", choices, "), scaling=", scaling, ")", sep="")) 
+                    justDoIt(paste("plot1 <- ordiplot(", modelValue, ", type='none',choices=c(", choices, "), scaling='", scaling, "')", sep="")) 
+                    logger(paste("plot1 <- ordiplot(", modelValue, ", type='none',choices=c(", choices, "), scaling='", scaling, "')", sep="")) 
                 }
             }
         }
@@ -3735,8 +3949,8 @@ conordiGUI <- function(){
                 justDoIt(paste("par(cex=",cex,")", sep=""))
                 logger(paste("par(cex=",cex,")", sep=""))
                 if (method != "CAPdiscrim") {
-                    justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
-                    logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                    justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, "), scaling='", scaling, "'))", sep=""))
+                    logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, "), scaling='", scaling, "'))", sep=""))
                 }else{
                     justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, ")))", sep="")) 
                     logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='sites', choices=c(", choices, ")))", sep="")) 
@@ -3748,8 +3962,8 @@ conordiGUI <- function(){
                 justDoIt(paste("par(cex=",cex,")", sep=""))
                 logger(paste("par(cex=",cex,")", sep=""))
                 if (method != "CAPdiscrim") {
-                    justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
-                    logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                    justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, "), scaling='", scaling, "'))", sep=""))
+                    logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, "), scaling='", scaling, "'))", sep=""))
                 }else{
                     justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, ")))", sep="")) 
                     logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", display='species', choices=c(", choices, ")))", sep="")) 
@@ -3761,8 +3975,8 @@ conordiGUI <- function(){
                 justDoIt(paste("par(cex=",cex,")", sep=""))
                 logger(paste("par(cex=",cex,")", sep=""))
                 if (method != "CAPdiscrim") {
-                    justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, "), scaling=", scaling, "))", sep=""))
-                    logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, "), scaling=", scaling, "))", sep=""))
+                    justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "'))", sep=""))
+                    logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "'))", sep=""))
                 }else{
                     justDoIt(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, ")))", sep="")) 
                     logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, ")))", sep="")) 
@@ -3771,49 +3985,103 @@ conordiGUI <- function(){
         }
         axisvar <- .variables[as.numeric(tkcurselection(axisBox))+1]
         varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", axisvar, ")", sep="")), envir=.GlobalEnv)
+        if (plottype %in% c("envfit", "ordihull (factor)", "ordihull (factor, rainbow)", "ordihull (factor, polygon)", "ordiarrows (factor)", "ordiarrows (factor, rainbow)", "ordisegments (factor)", "ordisegments (factor, rainbow)", "ordispider (factor)", "ordispider (factor, rainbow)", "ordibar (factor)", "ordibar (factor, rainbow)",
+                "ordiellipse (factor)", "ordiellipse (factor, rainbow)", "ordiellipse (factor, ehull)", "ordiellipse (factor, polygon)", "ordisurf (continuous)", "ordibubble (continuous)", 
+                "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation")){
+            justDoIt(paste("attach(", .activeDataSet, ", warn.conflicts=F)", sep=""))
+            logger(paste("attach(", .activeDataSet, ", warn.conflicts=F)",sep=""))
+        }
         if (plottype == "envfit"){
             doItAndPrint(paste("fitted <- envfit(plot1, data.frame(", axisvar, "), permutations=", perm, ")", sep=""))
             doItAndPrint(paste("plot(fitted, col='", col,"', cex=", cex, ")", sep=""))
         }
         if (plottype == "ordihull (factor)" && varfactor==T){
-            doItAndPrint(paste("ordihull(plot1,", axisvar, ", col='", col, "')", sep=""))
+            doItAndPrint(paste("ordihull(plot1, groups=", axisvar, ", draw='lines', col='", col, "')", sep=""))
+            doItAndPrint(paste("summary(ordihull(plot1, groups=", axisvar, "))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='hull', permutations=", perm, ")", sep=""))
+            }
+        if (plottype == "ordihull (factor, rainbow)" && varfactor==T){
+            doItAndPrint(paste("ordihull(plot1, groups=", axisvar, ", draw='lines', label=F, lwd=3, col=rainbow(length(levels(", axisvar, "))), border=rainbow(length(levels(", axisvar, "))))", sep=""))
+            doItAndPrint(paste("summary(ordihull(plot1, groups=", axisvar, "))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='hull', permutations=", perm, ")", sep=""))
+            }
+        if (plottype == "ordihull (factor, polygon)" && varfactor==T){
+            doItAndPrint(paste("ordihull(plot1, groups=", axisvar, ", draw='polygon', alpha=127, label=T, col=rainbow(length(levels(", axisvar, "))))", sep=""))
+            doItAndPrint(paste("summary(ordihull(plot1, groups=", axisvar, "))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='hull', permutations=", perm, ")", sep=""))
             }
         if (plottype == "ordiarrows (factor)" && varfactor==T){
             doItAndPrint(paste("ordiarrows(plot1,", axisvar, ", col='", col, "')", sep=""))
             }
+        if (plottype == "ordiarrows (factor, rainbow)" && varfactor==T){
+            doItAndPrint(paste("ordiarrows(plot1,", axisvar, ", col=rainbow(length(levels(", axisvar, "))))", sep=""))
+            }
         if (plottype == "ordisegments (factor)" && varfactor==T){
             doItAndPrint(paste("ordisegments(plot1,", axisvar, ", col='", col, "')", sep=""))
             }
+        if (plottype == "ordisegments (factor, rainbow)" && varfactor==T){
+            doItAndPrint(paste("ordisegments(plot1,", axisvar, ", col=rainbow(length(levels(", axisvar, "))))", sep=""))
+            }
         if (plottype == "ordispider (factor)" && varfactor==T){
-            doItAndPrint(paste("ordispider(plot1,", axisvar, ", col='", col, "')", sep=""))
+            doItAndPrint(paste("ordispider(plot1, groups=", axisvar, ", spiders='centroid', col='", col, "')", sep=""))
+            }
+        if (plottype == "ordispider (factor, rainbow)" && varfactor==T){
+            doItAndPrint(paste("ordispider(plot1, groups=", axisvar, ", spiders='centroid', label=T, col=rainbow(length(levels(", axisvar, "))))", sep=""))
+            }
+        if (plottype == "ordibar (factor)" && varfactor==T){
+            doItAndPrint(paste("ordibar(plot1, groups=", axisvar, ", conf=0.9, kind='se', col='", col, "')", sep=""))
+            }
+        if (plottype == "ordibar (factor, rainbow)" && varfactor==T){
+            doItAndPrint(paste("ordibar(plot1, groups=", axisvar, ", conf=0.9, kind='se', label=T, col=rainbow(length(levels(", axisvar, "))))", sep=""))
             }
         if (plottype == "ordiellipse (factor)" && varfactor==T){
-            doItAndPrint(paste("ordiellipse(plot1,", axisvar, ", col='", col, "', conf=0.9)", sep=""))
+            doItAndPrint(paste("ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='se', draw='lines', col='", col, "')", sep=""))
+            doItAndPrint(paste("summary(ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='se'))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='ellipse', kind='se', permutations=", perm, ")", sep=""))
+            }
+        if (plottype == "ordiellipse (factor, rainbow)" && varfactor==T){
+            doItAndPrint(paste("ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='se', draw='lines', label=T, lwd=3, col=rainbow(length(levels(", axisvar, "))), border=rainbow(length(levels(", axisvar, "))))", sep=""))
+            doItAndPrint(paste("summary(ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='se'))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='ellipse', kind='se', permutations=", perm, ")", sep=""))
+            }
+        if (plottype == "ordiellipse (factor, ehull)" && varfactor==T){
+            doItAndPrint(paste("ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='ehull', draw='lines', label=T, lwd=3, col=rainbow(length(levels(", axisvar, "))), border=rainbow(length(levels(", axisvar, "))))", sep=""))
+            doItAndPrint(paste("summary(ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='ehull'))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='ellipse', kind='ehull', permutations=", perm, ")", sep=""))
+            }
+        if (plottype == "ordiellipse (factor, polygon)" && varfactor==T){
+            doItAndPrint(paste("ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='ehull', draw='polygon', alpha=127, label=T, col=rainbow(length(levels(", axisvar, "))))", sep=""))
+            doItAndPrint(paste("summary(ordiellipse(plot1, groups=", axisvar, ", conf=0.9, kind='ehull'))", sep=""))
+            doItAndPrint(paste("ordiareatest(plot1, groups=", axisvar, ", area='ellipse', kind='ehull', permutations=", perm, ")", sep=""))
             }
         if (plottype == "ordisurf (continuous)" && varfactor==F){
-            doItAndPrint(paste("ordisurf(plot1,", axisvar, ", add=T)", sep=""))
+            doItAndPrint(paste("ordisurf(plot1, y=", axisvar, ", add=T, col='", col, "')", sep=""))
             }
         if (plottype == "ordibubble (continuous)" && varfactor==F){
-            doItAndPrint(paste("ordibubble(plot1,", axisvar, ", fg='", col, "')", sep=""))
+            doItAndPrint(paste("ordibubble(plot1, var=", axisvar, ", fg='", col, "')", sep=""))
             } 
         if (plottype == "ordisymbol (factor)" && varfactor==T){
-            justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=F, cex=", cex, ")", sep=""))
-            logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=F, cex=", cex, ")", sep=""))
+            justDoIt(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', rainbow=T, legend=F, cex=", cex, ")", sep=""))
+            logger(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', rainbow=T, legend=F, cex=", cex, ")", sep=""))
             }
         if (plottype == "ordisymbol (factor, legend)" && varfactor==T){
-            justDoIt(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=T, legend.x='topleft', legend.ncol=1, cex=", cex, ")", sep=""))
-            logger(paste("ordisymbol(plot1,", .activeDataSet, ",'", axisvar, "', rainbow=T, legend=T, legend.x='topleft', legend.ncol=1, cex=", cex, ")", sep=""))
+            justDoIt(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', rainbow=T, legend=T, legend.x='topleft', legend.ncol=1, cex=", cex, ")", sep=""))
+            logger(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', rainbow=T, legend=T, legend.x='topleft', legend.ncol=1, cex=", cex, ")", sep=""))
             }
+        if (plottype == "ordisymbol (factor, large)" && varfactor==T){
+            justDoIt(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', legend=T, legend.x='topleft', legend.ncol=1, rainbow=F, cex=4, lwd=2)", sep=""))
+            logger(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', legend=T, legend.x='topleft', legend.ncol=1, rainbow=F, cex=4, lwd=2)", sep=""))
+        }
         if (plottype == "ordivector (species)"){
             realspecies <- eval(parse(text=paste("any(colnames(", .communityDataSet, ")=='", axisvar, "')", sep="")), envir=.GlobalEnv)
             if (realspecies == T) {
-                doItAndPrint(paste("ordivector(plot1,'", axisvar, "',lty=0, angle=5, length=0.5)", sep=""))
+                doItAndPrint(paste("ordivector(plot1, '", axisvar, "', lty=0, angle=5, length=0.5)", sep=""))
                 }
             }
         if (plottype == "ordivector interpretation"){
             realspecies <- eval(parse(text=paste("any(colnames(", .communityDataSet, ")=='", axisvar, "')", sep="")), envir=.GlobalEnv)
             if (realspecies == T) {
-                doItAndPrint(paste("ordivector(plot1,'", axisvar, "',lty=2)", sep=""))
+                doItAndPrint(paste("ordivector(plot1, '", axisvar, "', lty=2)", sep=""))
             }
         }         
         if (plottype == "ordicluster"){
@@ -3826,15 +4094,15 @@ conordiGUI <- function(){
             }
             logger(paste("cluster <- hclust(distmatrix, method='single')", sep=""))
             assign("cluster", justDoIt(paste("hclust(distmatrix, method='single')", sep="")), envir=.GlobalEnv)
-            doItAndPrint(paste("ordicluster(plot1, cluster, prune=0,col='", col, "')", sep=""))
+            doItAndPrint(paste("ordicluster(plot1, cluster, prune=1, col='", col, "')", sep=""))
             }
         if (plottype == "ordicluster2"){
             if(treatasdist==F){
                 logger(paste("distmatrix <- vegdist(", .communityDataSet, ",method='", dist, "', na.rm=T)", sep=""))
-                assign("distmatrix", justDoIt(paste("vegdist(",.communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                assign("distmatrix", justDoIt(paste("vegdist(", .communityDataSet, ",method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
             }else{
                 logger(paste("distmatrix <- as.dist(", .communityDataSet, ")", sep=""))
-                assign("distmatrix", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+                assign("distmatrix", justDoIt(paste("as.dist(", .communityDataSet, ")", sep="")), envir=.GlobalEnv)
             }
             logger(paste("cluster <- hclust(distmatrix, method='single')", sep=""))
             assign("cluster", justDoIt(paste("hclust(distmatrix, method='single')", sep="")), envir=.GlobalEnv)
@@ -3877,7 +4145,10 @@ conordiGUI <- function(){
             logger(paste("par(cex=",cex,")", sep=""))
             justDoIt(paste("plot1 <- screeplot(", modelValue, ")", sep=""))
             logger(paste("plot1 <- screeplot(", modelValue, ")", sep=""))
-        }              
+        }
+        if (plottype == "stressplot"){
+            doItAndPrint(paste("stressplot(", modelValue ,")", sep=""))
+            }           
         data <- tclvalue(dataVariable) =="1"
         if (data==T) {
             justDoIt(paste(.activeDataSet, "$", modelValue, ".ax1 <- scores(plot1,display='sites')[,1]", sep=""))
@@ -3954,6 +4225,7 @@ conordiGUI <- function(){
     tkgrid.configure(typeScroll, sticky="ns")
     tkgrid.configure(axisScroll, sticky="ns")
     tkgrid.configure(methodScroll, sticky="ns")
+    tkgrid.configure(distScroll, sticky="ns")
     tkselection.set(xBox, 0)
     tkselection.set(typeBox, 0)
     tkselection.set(distBox, 0)
@@ -3990,7 +4262,7 @@ clusterGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("hclust","agnes","diana","kmeans","cascadeKM","pam","clara","fanny")
+    methods <- c("hclust", "agnes", "diana", "kmeans", "cascadeKM", "pam", "clara", "fanny")
     for (x in methods) tkinsert(methodBox, "end", x)
     distBox <- tklistbox(method2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
@@ -4013,7 +4285,7 @@ clusterGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     algoScroll <- tkscrollbar(method4Frame, repeatinterval=5, command=function(...) tkyview(algoBox, ...))
     tkconfigure(algoBox, yscrollcommand=function(...) tkset(algoScroll, ...))
-    algos <- c("average","single","complete","ward","weighted","median","centroid")
+    algos <- c("average", "single", "complete", "ward", "weighted", "median", "centroid")
     for (x in algos) tkinsert(algoBox, "end", x)
     plotFrame <- tkframe(top, relief="groove", borderwidth=2)
     plot1Frame <- tkframe(plotFrame)
@@ -4024,9 +4296,9 @@ clusterGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
-    types <- c("dendrogram1 (hang = -1)","dendrogram2 (hang = 0.1)", "dendrogram3 (horizontal)", 
+    types <- c("dendrogram1 (hang = -1)", "dendrogram2 (hang = 0.1)", "dendrogram3 (horizontal)", 
         "phylogram (ape package)", "cladogram (ape package)", "fan (ape package)", "unrooted (ape package)",    
-        "rectangles","pruned dendrogram","silhouette","kgs","cophenetic","cascadeKM","reorder (variable)", "tiplabels (variable size)", "tiplabels (factor)")
+        "rectangles", "pruned dendrogram", "silhouette", "kgs", "cophenetic", "cascadeKM", "reorder (variable)", "tiplabels (variable size)", "tiplabels (factor)")
     for (x in types) tkinsert(typeBox, "end", x)
     cexVariable <- tclVar("1")
     cexa <- tkentry(plot3Frame, width=8, textvariable=cexVariable)
@@ -4275,7 +4547,7 @@ mantelGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     testScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(testBox, ...))
     tkconfigure(testBox, yscrollcommand=function(...) tkset(testScroll, ...))
-    tests <- c("mantel","anosim (factor)","mrpp (factor)","rankindex", "bioenv", "betadisper (factor)", "meandist (factor)", "simper (factor)")
+    tests <- c("mantel", "anosim (factor)", "mrpp (factor)", "rankindex", "bioenv", "betadisper (factor)", "betadisper (factor, lingoes)", "betadisper (factor, cailliez)", "meandist (factor)", "simper (factor)")
     for (x in tests) tkinsert(testBox, "end", x)
     dist1Box <- tklistbox(method3Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
@@ -4306,7 +4578,7 @@ mantelGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(method6Frame, repeatinterval=3, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("pearson","spearman","kendall")
+    methods <- c("pearson", "spearman", "kendall")
     for (x in methods) tkinsert(methodBox, "end", x)
     onOK <- function(){
         test <- tests[as.numeric(tkcurselection(testBox))+1]
@@ -4409,8 +4681,42 @@ mantelGUI <- function(){
                     logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))
                     assign("distmatrix1", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
                 }
-                doItAndPrint(paste("betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ")",sep=""))
-                doItAndPrint(paste("anova(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, "))",sep=""))
+                doItAndPrint(paste("betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', bias.adjust=F, sqrt.dist=F, add=F)",sep=""))
+                doItAndPrint(paste("anova(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, add=F))",sep=""))
+            }
+        }
+        if (test == "betadisper (factor, lingoes)" && var2 != "all") {
+            var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
+            varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", var2, ")", sep="")), envir=.GlobalEnv)
+            if (varfactor==T) {
+                doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
+                if(treatasdist==F){
+                    logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ", method='", dist1, "', na.rm=T)", sep=""))
+                    assign("distmatrix1", justDoIt(paste("vegdist(", .communityDataSet, ", method='", dist1, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                    doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist1, "')", sep=""))
+                }else{
+                    logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))
+                    assign("distmatrix1", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+                }
+                doItAndPrint(paste("betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', bias.adjust=F, sqrt.dist=F, add='lingoes')",sep=""))
+                doItAndPrint(paste("anova(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, add='lingoes'))",sep=""))
+            }
+        }
+        if (test == "betadisper (factor, cailliez)" && var2 != "all") {
+            var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
+            varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", var2, ")", sep="")), envir=.GlobalEnv)
+            if (varfactor==T) {
+                doItAndPrint(paste("check.datasets(", .communityDataSet, ", ", .activeDataSet, ")", sep=""))
+                if(treatasdist==F){
+                    logger(paste("distmatrix1 <- vegdist(", .communityDataSet, ", method='", dist1, "', na.rm=T)", sep=""))
+                    assign("distmatrix1", justDoIt(paste("vegdist(", .communityDataSet, ", method='", dist1, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+                    doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist1, "')", sep=""))
+                }else{
+                    logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))
+                    assign("distmatrix1", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+                }
+                doItAndPrint(paste("betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, bias.adjust=F, add='cailliez')",sep=""))
+                doItAndPrint(paste("anova(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, add='cailliez'))",sep=""))
             }
         }
         if (test == "meandist (factor)" && var2 != "all") {
@@ -5146,11 +5452,20 @@ make.absences <- function(an=1000, x, excludep=F, presence.data=NULL) {
     }
 }
 
+old.predictors <- FALSE
+if (exists("predictors") == T) {
+    predictors.old <- predictors
+    old.predictors <- TRUE
+}
 predictor.files <- list.files(path=paste(system.file(package="dismo"), '/ex', sep=''),
     pattern='grd', full.names=TRUE)
 predictors <- raster::stack(predictor.files)
 BradypusAbsence <- make.absences(x=predictors, excludep=T, presence.data=BradypusPresence)
-assign("predictors", NULL, envir=.GlobalEnv)
+if (old.predictors == T) {
+    assign("predictors", predictors.old, envir=.GlobalEnv)
+}else{
+    assign("predictors", NULL, envir=.GlobalEnv)    
+}
 
 if (exists("absence.focal") == F) {assign("absence.focal", NULL, envir=.GlobalEnv)}
 absence.focalP <- function() {return(!is.null(absence.focal))}
@@ -5479,7 +5794,7 @@ batch.GUI <- function(){
             ", threshold.method='", var, "', threshold.sensitivity=", sensitivity, 
             ", threshold.PresenceAbsence=", PRESABS,
             ", factors=", factor.string, ", dummy.vars=", dummy.string,
-            ", ENSEMBLE.best=", ENSEMBLE.best, ", ENSEMBLE.min=", ENSEMBLE.min, ", ENSEMBLE.exponent=", ENSEMBLE.exponent,
+            ", ENSEMBLE.best=", ENSEMBLE.best, ", ENSEMBLE.min=", ENSEMBLE.min, ", ENSEMBLE.exponent=", ENSEMBLE.exponent, ", ENSEMBLE.weight.min=0.05", 
             ", MAXENT=", MAXENT, ", GBM=", GBM, ", GBMSTEP=", GBMSTEP, ", RF=", RF, ", GLM=", GLM, ", GLMSTEP=", GLMSTEP, ", GAM=", GAM,
             ", GAMSTEP=", GAMSTEP, ", MGCV=", MGCV, ", MGCVFIX=", MGCVFIX, ", EARTH=", EARTH, ", RPART=", RPART, ", NNET=", NNET,
             ", FDA=", FDA, ", SVM=", SVM, ", SVME=", SVME, ", BIOCLIM=", BIOCLIM, ", DOMAIN=", DOMAIN, ", MAHAL=", MAHAL,
@@ -5604,7 +5919,7 @@ batch.GUI <- function(){
             ", threshold.method='", var, "', threshold.sensitivity=", sensitivity, 
             ", threshold.PresenceAbsence=", PRESABS,
             ", factors=", factor.string, ", dummy.vars=", dummy.string,
-            ", ENSEMBLE.best=", ENSEMBLE.best, ", ENSEMBLE.min=", ENSEMBLE.min, ", ENSEMBLE.exponent=", ENSEMBLE.exponent,
+            ", ENSEMBLE.best=", ENSEMBLE.best, ", ENSEMBLE.min=", ENSEMBLE.min, ", ENSEMBLE.exponent=", ENSEMBLE.exponent,  ", ENSEMBLE.weight.min=0.05", 
             ", MAXENT=", MAXENT, ", GBM=", GBM, ", GBMSTEP=", GBMSTEP, ", RF=", RF, ", GLM=", GLM, ", GLMSTEP=", GLMSTEP, ", GAM=", GAM,
             ", GAMSTEP=", GAMSTEP, ", MGCV=", MGCV, ", MGCVFIX=", MGCVFIX, ", EARTH=", EARTH, ", RPART=", RPART, ", NNET=", NNET,
             ", FDA=", FDA, ", SVM=", SVM, ", SVME=", SVME, ", BIOCLIM=", BIOCLIM, ", DOMAIN=", DOMAIN, ", MAHAL=", MAHAL,
@@ -5816,14 +6131,14 @@ ensemble.plot.GUI <- function(){
                 "', plot.method='", methodValue, "', positive.filters=c('grd'), threshold=", fixedThreshold, ", p=", presence.focal, ", a=", absence.focal, 
                 ", threshold.method='", var, "', threshold.sensitivity=", sensitivity, 
                 ", threshold.PresenceAbsence=", PRESABS, 
-                ", abs.breaks=", absValue, ", pres.breaks=", presValue, ")", sep=""))
+                ", abs.breaks=", absValue, ", pres.breaks=", presValue, ", maptools.boundaries=T, maptools.col='dimgrey')", sep=""))
         }else{
             doItAndPrint(paste("ensemble.plot(RASTER.species.name='", speciesValue, "', RASTER.stack.name='", stackValue,
                 "', plot.method='", methodValue, "', positive.filters=c('grd', '", filterValue, 
                 "'), threshold=", fixedThreshold, ", p=", presence.focal, ", a=", absence.focal, 
                 ", threshold.method='", var, "', threshold.sensitivity=", sensitivity, 
                 ", threshold.PresenceAbsence=", PRESABS, 
-                ", abs.breaks=", absValue, ", pres.breaks=", presValue, ")", sep=""))
+                ", abs.breaks=", absValue, ", pres.breaks=", presValue, ", maptools.boundaries=T, maptools.col='dimgrey')", sep=""))
         }
         LOC <- tclvalue(locVariable) == "1"
         if (LOC == T) {doItAndPrint(paste("points(", presence.focal, "[which(", presence.focal, "[, 1] == '", 

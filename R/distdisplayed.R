@@ -1,5 +1,5 @@
 `distdisplayed` <-
-function(x,ordiplot,distx="bray",plotit=T,addit=F,method="spearman",permutations=100,abline=F,gam=T,...) {
+function(x, ordiplot, distx="bray", plotit=T, addit=F, method="spearman", permutations=100, abline=F, gam=T,...) {
     if (gam==T) {
 #        if (!require(mgcv)) {stop("Requires package mgcv")}
     }
@@ -34,20 +34,21 @@ function(x,ordiplot,distx="bray",plotit=T,addit=F,method="spearman",permutations
         }
         if (abline==T) {abline(0,1)}
         if (gam==T){
-            data <- data.frame(cbind(dist1,dist2))
+            data <- data.frame(cbind(as.numeric(dist1), as.numeric(dist2)))
+            names(data) <- c("dist1", "dist2")
             seq <- order(data[,1])
             sorted <- data
             sorted[1:nrow(data),] <- data[seq,]
-            gamresult <- gam(dist2~s(dist1),data=sorted)
+            gamresult <- mgcv::gam(as.formula(dist2 ~ s(dist1)), data=sorted)
             newdata <- data.frame(seq(min(sorted[,1]), max(sorted[,1]), length = 1000))
             colnames(newdata) <- "dist1"
-            gamresult2 <- predict(gamresult,newdata) 
+            gamresult2 <- predict(gamresult, newdata) 
             graphics::points(newdata$dist1,gamresult2,type="l",lwd=2,col="red")
         }
     }
-    result2 <- mantel(dist1,dist2,method=method,permutations=permutations,...)
+    result2 <- mantel(dist1, dist2, method=method, permutations=permutations,...)
     if (gam==T) {
-        return(list(gamanalysis=summary(gamresult),mantelanalysis=result2))
+        return(list(gamanalysis=summary(gamresult), mantelanalysis=result2))
     }else{
         return(result2)
     }

@@ -1,5 +1,7 @@
 `renyiresult` <-
-function(x,y="",factor,level,method="all",scales=c(0,0.25,0.5,1,2,4,8,Inf),evenness=F,...) {
+function(x, y="", factor, level, method="all",
+    scales=c(0, 0.25, 0.5, 1, 2, 4, 8, Inf), evenness=F,...) 
+{
     if(class(y) == "data.frame") {
         subs <- y[,factor]==level
         for (q in 1:length(subs)) {

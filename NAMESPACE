@@ -14,7 +14,8 @@ export(BiodiversityRGUI,check.datasets,check.ordiscores,spatialsample,makecommun
     ensemble.drop1,ensemble.batch,evaluation.strip.data,evaluation.strip.plot,ensemble.weights,ensemble.strategy,
     ensemble.simplified.categories,ensemble.accepted.categories,ensemble.dummy.variables,ensemble.habitat.change,
     ensemble.mean, ensemble.plot, ensemble.centroids, ensemble.zones, ensemble.novel, ensemble.novel.object, ensemble.area, 
-    ensemble.analogue, ensemble.analogue.object, ensemble.ecocrop, ensemble.ecocrop.object, .onAttach)
+    ensemble.analogue, ensemble.analogue.object, ensemble.ecocrop, ensemble.ecocrop.object, ensemble.threshold,
+    .onAttach)
 
 if(tools:::.OStype() == "windows") {
     export(import.from.Excel,import.from.Access,import.from.Excel2007,import.from.Access2007)

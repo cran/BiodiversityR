@@ -1,6 +1,6 @@
 # R Commander Menu Definitions
 
-# last modified 2015-04-22 by J. Fox
+# last modified 2016-07-19 by J. Fox
 
 #   type    menu/item      operation/parent  label                                          command/menu                activation  install?
 
@@ -69,12 +69,14 @@
     item    packagesMenu    command         "Read data set from an attached package..."     readDataFromPackage         ""          ""
     item    dataMenu        cascade         "Data in packages"                              packagesMenu                ""          ""
     menu    activeMenu      dataMenu        ""                                              ""                          ""          ""
+    item    activeMenu      command         "View data..."                                  viewData                    "activeDataSetP()"          ""
     item    activeMenu      command         "Select active data set..."                     selectActiveDataSet         "dataSetsP()"          ""
     item    activeMenu      command         "Refresh active data set"                       refreshActiveDataSet        "activeDataSetP()"          ""
     item    activeMenu      command         "Help on active data set (if available)"        helpDataSet                 "activeDataSetP()"          ""
     item    activeMenu      command         "Variables in active data set"                  variablesDataSet            "activeDataSetP()"          ""
     item    activeMenu      command         "Set case names..."                             setCaseNames                "activeDataSetP()"          ""
     item    activeMenu      command         "Subset active data set..."                     subsetDataSet               "activeDataSetP()"          ""
+    item    activeMenu      command         "Sort active data set..."                       sortDataSet                 "activeDataSetP()"          ""
     item	activeMenu		command			"Aggregate variables in active data set..."		Aggregate					"activeDataSetP() && factorsP()"  ""
     item	activeMenu		command			"Remove row(s) from active data set..."			RemoveRows					"activeDataSetP()"          ""
     item    activeMenu      command         "Stack variables in active data set..."         Stack                       "activeDataSetP() && numericP(2)"          ""
@@ -105,7 +107,8 @@
     item    summariesMenu   command         "Table of statistics..."                        statisticsTable             "numericP() && factorsP()"  ""
     item    summariesMenu   command         "Correlation matrix..."                         correlationMatrix           "numericP(2)"               "packageAvailable('RcmdrMisc')"
     item    summariesMenu   command         "Correlation test..."                           correlationTest             "numericP(2)"               "packageAvailable('RcmdrMisc')"
-    item    summariesMenu   command         "Shapiro-Wilk test of normality..."             ShapiroTest                 "numericP()"                ""
+#    item    summariesMenu   command         "Shapiro-Wilk test of normality..."             ShapiroTest                 "numericP()"                ""
+    item    summariesMenu   command         "Test of normality..."                          normalityTest               "numericP()"                "packageAvailable('nortest')"
     menu    tablesMenu      statisticsMenu  ""                                              ""                          ""          ""
     item    tablesMenu      command         "Two-way table..."                              twoWayTable                 "factorsP(2)" "packageAvailable('RcmdrMisc') && packageAvailable('abind')"
     item    tablesMenu      command         "Multi-way table..."                            multiWayTable               "factorsP(3)" "packageAvailable('RcmdrMisc') && packageAvailable('abind')"
@@ -190,6 +193,7 @@
     menu    modelsMenu      topMenu         ""                                              ""                          ""          ""
     item    modelsMenu      command         "Select active model..."                        selectActiveModel           "modelsP()"          ""
     item    modelsMenu      command         "Summarize model"                               summarizeModel              "activeModelP()"          ""
+    item    modelsMenu      command         "Compare model coefficients..."                 compareCoefficients         "modelsP(2)"               ""
     item    modelsMenu      command         "Add observation statistics to data..."         addObservationStatistics    "activeModelP()"          ""
     item    modelsMenu      separator       ""                                              ""                          ""          ""
     item	modelsMenu		command			"Akaike Information Criterion (AIC)"			aic							"activeModelP()"		  ""
@@ -198,6 +202,8 @@
     item	modelsMenu		command			"Subset model selection..."						subsetRegression			"lmP()"			 "packageAvailable('leaps')"
     item    modelsMenu      separator       ""                                              ""                          ""          ""
     item    modelsMenu      command         "Confidence intervals..."                       confidenceIntervals         "activeModelP()" "packageAvailable('MASS') && packageAvailable('abind')"
+    item    modelsMenu      command         "Bootstrap confidence intervals..."             Bootstrap                   "activeModelP() && (glmP() || lmP())" "packageAvailable('boot')"
+    item    modelsMenu      command         "Delta method confidence interval..."           DeltaMethodConfInt          "activeModelP() && (!multinomP())" ""
     menu    hypothesisMenu  modelsMenu      ""                                              ""                          ""          ""
     item    modelsMenu      cascade         "Hypothesis tests"                              hypothesisMenu              ""          ""
     item    hypothesisMenu  command         "ANOVA table..."                                anovaTable                  "activeModelP()" "packageAvailable('car')"
@@ -403,7 +409,6 @@
     item    helpMenu        command         "Using R Markdown"                              browseRMarkdown             ""          ""
     item    topMenu         cascade         "Help"                                          helpMenu                    ""          ""
 
-
     # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
     # MAR 2016
 
@@ -499,4 +504,6 @@
     item    ensMenu         cascade         "Absence data set"                              absMenu                     ""          ""
     item    ensMenu         cascade         "Ensemble suitability modeling"                 calibMenu                   ""          ""
     item    biodivMenu      cascade         "Help about BiodiversityR"                      helpbioMenu                 ""          ""
+
+
 

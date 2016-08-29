@@ -25,6 +25,7 @@ ensemble.batch(x = NULL, xn = c(x), ext = NULL,
     threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
     threshold.PresenceAbsence = FALSE,
     ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1,
+    ENSEMBLE.weight.min = 0.05,
     input.weights = NULL, 
     MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, 
     GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, RPART = 1, NNET = 1, 
@@ -74,7 +75,8 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
     threshold = -1,
     threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
     threshold.PresenceAbsence = FALSE,
-    abs.breaks = 6, pres.breaks = 6, ...)
+    abs.breaks = 6, pres.breaks = 6, 
+    maptools.boundaries = TRUE, maptools.col = "dimgrey", ...)
 
 }
 
@@ -104,9 +106,10 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{threshold.method}{ Method to calculate the threshold between predicted absence and presence; possibilities include \code{spec_sens} (highest sum of the true positive rate and the true negative rate), \code{kappa} (highest kappa value), \code{no_omission} (highest threshold that corresponds to no omission), \code{prevalence} (modeled prevalence is closest to observed prevalence) and \code{equal_sens_spec} (equal true positive rate and true negative rate). See \code{\link[dismo]{threshold}}. Options specific to the BiodiversityR implementation are: \code{threshold.mean} (resulting in calculating the mean value of \code{spec_sens}, \code{equal_sens_spec} and \code{prevalence}) and \code{threshold.min} (resulting in calculating the minimum value of \code{spec_sens}, \code{equal_sens_spec} and \code{prevalence}).   }
   \item{threshold.sensitivity}{ Sensitivity value for \code{threshold.method = 'sensitivity'}. See \code{\link[dismo]{threshold}}.   }
   \item{threshold.PresenceAbsence}{ If \code{TRUE} calculate thresholds with the PresenceAbsence package. See \code{\link[PresenceAbsence]{optimal.thresholds}}.  }
-  \item{ENSEMBLE.best}{ The number of individual suitability models to be used in the consensus suitability map (based on a weighted average). In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then all individual suitability models with positive input weights are included in the consensus suitability map.  }
-  \item{ENSEMBLE.min}{ The minimum input weight (assumed to correspond to evaluation indices of suitability models) for a model to be included in the ensemble.  }
-  \item{ENSEMBLE.exponent}{ Exponent applied to AUC values to convert AUC values into weights (for example, an exponent of 2 converts input weights of 0.7, 0.8 and 0.9 into 0.7^2=0.49, 0.8^2=0.64 and 0.9^2=0.81). See \code{\link{ensemble.test}} for details.  }
+  \item{ENSEMBLE.best}{ The number of individual suitability models to be used in the consensus suitability map (based on a weighted average). In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then all individual suitability models with positive input weights are included in the consensus suitability map. In case a vector is provided, \code{ensemble.strategy} is called internally to determine weights for the ensemble model. }
+  \item{ENSEMBLE.min}{ The minimum input weight (typically corresponding to AUC values) for a model to be included in the ensemble. In case a vector is provided, function \code{ensemble.strategy} is called internally to determine weights for the ensemble model.  }
+  \item{ENSEMBLE.exponent}{ Exponent applied to AUC values to convert AUC values into weights (for example, an exponent of 2 converts input weights of 0.7, 0.8 and 0.9 into 0.7^2=0.49, 0.8^2=0.64 and 0.9^2=0.81). See details. }
+  \item{ENSEMBLE.weight.min}{ The minimum output weight for models included in the ensemble, applying to weights that sum to one. Note that \code{ENSEMBLE.min} typically refers to input AUC values.   }
   \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.test.splits} can be used. }
   \item{MAXENT}{ Input weight for a maximum entropy model (\code{\link[dismo]{maxent}}). (Only weights > 0 will be used.)  }
   \item{GBM}{ Input weight for a boosted regression trees model (\code{\link[gbm]{gbm}}). (Only weights > 0 will be used.)  }
@@ -191,6 +194,8 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{main}{ main title for the plots.  }
   \item{abs.breaks}{ Number of breaks in the colouring scheme for absence (only applies to \code{suitability} mapping).   }
   \item{pres.breaks}{ Number of breaks in the colouring scheme for presence (only applies to \code{suitability} mapping).  }
+  \item{maptools.boundaries}{ If \code{TRUE}, then plot approximate country boundaries \code{\link[maptools]{wrld_simpl}}   }
+  \item{maptools.col}{ Colour for approximate country boundaries plotted via \code{\link[maptools]{wrld_simpl}}   }
   \item{...}{ Other items passed to function \code{\link[raster]{plot}}. }
 
 }
@@ -293,9 +298,10 @@ ensemble.mean(RASTER.species.name="Bradypus", RASTER.stack.name="base",
     KML.out=T)
 
 # plot mean suitability 
-ensemble.plot(RASTER.species.name="Bradypus", RASTER.stack.name="base",
+plot1 <- ensemble.plot(RASTER.species.name="Bradypus", RASTER.stack.name="base",
     plot.method="suitability",
     p=pres, a=background, abs.breaks=4, pres.breaks=9)
+plot1
 
 }
 

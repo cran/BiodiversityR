@@ -14,6 +14,78 @@ BiodiversityR versions
 	http://www.worldagroforestry.org/downloads/Publications/PDFS/B13695.pdf
 
 
+Version 2.7-2 (August 2016)
+
+	* compatible with Rcmdr	2.3-0 (August 2016) and vegan 2.4-0 (June 2016)
+
+	* new function ensemble.threshold to calculate threshold values to differentiate
+		between absence and presence suitabilities. This function was used earlier
+		only internally in the ensemble.test, ensemble.test.splits and ensemble.batch
+		functions, whereas it is now available and documented as separarte function.
+
+	* corrected error in makecommunitydataset (error reported by Pascal Hirsch)
+
+	* Graphical User Interface (GUI) now supports following functions or options from 
+	vegan:
+
+		o dispweight function (via Transform community matrix menu)
+		o fitspecaccum function (via options of "arrhenius", "gleason", "gitay", 
+			"lomolino", "asymp", "gompertz", "michaelis-menten", "logis" and 
+			"weibull" in Species accumulation curves menu)
+		o specslope function (via options in Species accumulation curves menu)
+		o rareslope function (via options in Species accumulation curves menu)
+		o rarefy function  (via options in Species accumulation curves menu)
+		o tsallis function (via options in Renyi profile menu)
+		o tsallisaccum function (via options in Renyi profile menu)	
+		o dbrda function (via Constrained ordination menu)
+		o monoMDS function (via Unconstrained ordination menu)
+		o stressplot function (via unconstrained and constrained ordination menus)
+		o betadisper function (via Compare distance matrices menu)
+		o designdist function (in Distance matrix calculation menu)
+		o Lingoes and Cailliez adjustments for wcmdscale, capscale, dbrda and 
+			betadisper
+		o sqrt.dist argument for wcmdscale, capscale, dbrda and betadisper
+		o descriptive string of "species" in scaling of ordination axes (via
+			unconstrained and constrained ordination menus)
+		o RsquareAdj function for cca, dbrda and capscale (in summaries of constrained 
+			ordination)
+		o ordibar function (via plotting functions for unconstrained and constrained
+			ordination)
+		o plotting factor levels in different colours with ordihull, ordiarrows, 
+			ordisegments, ordispider, ordibar and ordiellipse (via plotting 
+			functions for unconstrained and contrained ordination)
+		o summary and ordiareatest for ordihull and ordiellipse (via plotting 
+			functions for unconstrained and contrained ordination)
+		o ehull option of ordiellipse ((via plotting functions for unconstrained 
+			and contrained ordination))
+
+	* change in calculation for ensemble.threshold function when using thresholds from the
+		PresenceAbsence package with ensemble.threshold options of "threshold.mean"
+		and "threshold.min": five thresholds from the PresenceAbsence package will
+		be used (see Details)
+
+	* new parameter ENSEMBLE.weight.min to set minimum output weight for ensemble.test,
+		ensemble.test.splits and ensemble.batch. Note that parameter ENSEMBLE.min
+		refers to the minimum input weight (and typically used to exclude algorithms
+		with low AUC values).
+
+	* ensemble.plot allows to add country boundaries (via maptools package)
+
+	* ensemble.plot exports breaks and colours if only one suitability map is plotted
+
+	* breaks are forced to be unique in ensemble.plot
+
+	* ensemble.analogue gives warning is variables are very strongly correlated with 
+	method 'mahal' (as algorithm my fail)
+
+	* corrected problem in ensemble.novel function when x only has one layer
+
+	* avoid error when launching the GUI when dismo package was not installed
+
+	* corrected error in labeling the y-axis in reyniplot function (error reported by
+	Mauricio Carrasquilla)
+
+
 Version 2.7-1 (April 2016)
 
 	* ensemble.batch: procedure stops when no algorithms retained in the k-fold

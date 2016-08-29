@@ -8,7 +8,7 @@
     species.name = "Species001",
     threshold.method="spec_sens", threshold.sensitivity=0.9, threshold.PresenceAbsence=FALSE,
     AUC.weights=TRUE, ENSEMBLE.tune=FALSE, 
-    ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1, 
+    ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1, ENSEMBLE.weight.min=0.05,
     input.weights=NULL,
     MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0, 
     EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=1, 
@@ -106,7 +106,7 @@
         VIF=F, COR=F,
         PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
         AUC.weights=F, ENSEMBLE.tune=F,
-        ENSEMBLE.exponent=1, ENSEMBLE.best=1, ENSEMBLE.min=0.7, 
+        ENSEMBLE.exponent=1, ENSEMBLE.best=1, ENSEMBLE.min=0.7,
         MAXENT=0, GBM=0, GBMSTEP=0, RF=0, GLM=0, GLMSTEP=0, 
         GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, 
         NNET=0, FDA=0, SVM=0, SVME=0, BIOCLIM=0, DOMAIN=0, MAHAL=0,
@@ -162,7 +162,7 @@
                 threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
                 PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
                 AUC.weights=AUC.weights, ENSEMBLE.tune=ENSEMBLE.tune,
-                ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, ENSEMBLE.exponent=ENSEMBLE.exponent, 
+                ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, ENSEMBLE.exponent=ENSEMBLE.exponent, ENSEMBLE.weight.min=ENSEMBLE.weight.min,
                 MAXENT=MAXENT, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
                 GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
                 NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, MAHAL=MAHAL,
@@ -204,7 +204,7 @@
                 threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
                 PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
                 AUC.weights=AUC.weights, ENSEMBLE.tune=ENSEMBLE.tune,
-                ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, ENSEMBLE.exponent=ENSEMBLE.exponent,
+                ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, ENSEMBLE.exponent=ENSEMBLE.exponent, ENSEMBLE.weight.min=ENSEMBLE.weight.min,
                 MAXENT=MAXENT, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
                 GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
                 NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, MAHAL=MAHAL,
@@ -334,8 +334,8 @@
 #
     cat(paste("\n", "suggested input weights for ensemble modelling (based on MEAN column)",  "\n\n", sep = ""))
     print(output.weights)
-    cat(paste("\n", "Minimum input weight is 0.05", "\n", sep=""))
-    output.weights[output.weights < 0.05] <- 0
+    cat(paste("\n", "Minimum input weight is ", ENSEMBLE.weight.min, "\n", sep=""))
+    output.weights[output.weights < ENSEMBLE.weight.min] <- 0
     output.weights <- ensemble.weights(weights=output.weights, exponent=1, best=0, min.weight=0)
     cat(paste("\n", "Weights for ensemble forecasting", "\n", sep = ""))
     print(output.weights)
@@ -374,7 +374,7 @@
             output.weights.AUC=output.weights.T, AUC.with.suggested.weights2=output3, 
             call=match.call()))
     }else{
-        cat(paste("\n", "(note that output data are integer values representing probabilities multiplied by 1000)",  "\n\n", sep = ""))
+        cat(paste("\n\n"))
         return(list(table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, 
             output.weights.AUC=output.weights.T, AUC.with.suggested.weights.T=output3, 
             data=TestData.all, call=match.call()))

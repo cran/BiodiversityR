@@ -41,11 +41,18 @@ Tree diversity analysis: A manual and
 \author{Roeland Kindt (World Agroforestry Centre)}
 
 \examples{
-library(vegan)
-data(dune.env)
-makecommunitydataset(dune.env,row='Manure',column='Use',value='A1')
-makecommunitydataset(dune.env,row='Manure',column='Use',value='A1',
-    factor='Management',level='NM')
+
+\dontrun{
+dune.file <- normalizePath(paste(system.file(package="BiodiversityR"), 
+    '/etc/dunestacked.csv', sep=''))
+dune.stacked <- read.csv(dune.file)
+
+# dune.stacked has different variables for sites, species and abundance
+head(dune.stacked)
+dune.comm2 <- makecommunitydataset(dune.stacked, row='sites', column='species', 
+    value='abundance')
+}
+
 }
 
 \keyword{multivariate} 

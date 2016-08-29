@@ -8,7 +8,7 @@ This function provides a method for CAP as described by the authors of the ordin
 }
 
 \usage{
-CAPdiscrim(formula,data,dist="bray",axes=4,m=0,permutations=0)
+CAPdiscrim(formula, data, dist="bray", axes=4, m=0, permutations=0)
 }
 
 \arguments{

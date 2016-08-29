@@ -105,8 +105,8 @@
         }
     }
     output <- output[order(output[,"AUC.T"], decreasing=T), ]
-    cat(paste("\n", "Ensemble tuning: best=", output[1, "ENSEMBLE.best"], ", exponent=", output[1, "ENSEMBLE.exponent"],  ", min=", output[1, "ENSEMBLE.min"] ,"\n", sep=""))
-    cat(paste("\n", "Weights used for best strategy", "\n", sep = ""))
+    cat(paste("\n", "Ensemble tuning result: best=", output[1, "ENSEMBLE.best"], ", exponent=", output[1, "ENSEMBLE.exponent"],  ", min=", output[1, "ENSEMBLE.min"] ,"\n", sep=""))
+    cat(paste("\n", "Weights corresponding to best strategy", "\n", sep = ""))
     print(weights.out)
     return(list(weights=weights.out, output=output))
 }

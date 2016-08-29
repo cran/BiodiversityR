@@ -10,7 +10,7 @@
     KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
     models.save=FALSE,
     threshold.method="spec_sens", threshold.sensitivity=0.9, threshold.PresenceAbsence=FALSE,
-    ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1,
+    ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1, ENSEMBLE.weight.min=0.05,
     input.weights=NULL,
     MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0,
     EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=1, 
@@ -160,7 +160,7 @@
         CIRCLES.at=CIRCLES.at, CIRCLES.d=CIRCLES.d,
         ENSEMBLE.tune=T,
         ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, 
-        ENSEMBLE.exponent=ENSEMBLE.exponent,
+        ENSEMBLE.exponent=ENSEMBLE.exponent, ENSEMBLE.weight.min=ENSEMBLE.weight.min,
         species.name = RASTER.species.name1,
         threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
         input.weights=input.weights,
@@ -194,14 +194,13 @@
 
 #    xn.f <- eval(as.name(xn.focal))
     cat(paste("\n", "Final model calibrations for species: ", RASTER.species.name1,  "\n", sep = ""))
-    cat(paste("\n", "Minimum input weight is 0.05", "\n", sep=""))
-
+    cat(paste("\n", "Minimum input weight is ",  ENSEMBLE.weight.min, "\n", sep=""))
     if (AUC.weights == TRUE) {
         output.weights <- calibration.1$output.weights.AUC
     }else{
         output.weights <- calibration.1$output.weights
     }
-    output.weights[output.weights < 0.05] <- 0
+    output.weights[output.weights < ENSEMBLE.weight.min] <- 0
     print(output.weights)
 
     if (sum(output.weights) > 0) {

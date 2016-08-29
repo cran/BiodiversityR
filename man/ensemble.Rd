@@ -7,6 +7,7 @@
 \alias{ensemble.formulae}
 \alias{ensemble.weights}
 \alias{ensemble.strategy}
+\alias{ensemble.threshold}
 
 \title{
 Suitability mapping based on ensembles of modelling algorithms: comparison of different algorithms and calibration
@@ -30,6 +31,7 @@ ensemble.test(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, ext = N
     models.save = FALSE, species.name = "Species001",
     AUC.weights = TRUE, ENSEMBLE.tune = FALSE, 
     ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1, 
+    ENSEMBLE.weight.min = 0.05,
     input.weights = NULL, 
     MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, 
     GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, 
@@ -78,6 +80,7 @@ ensemble.test.splits(x = NULL, p = NULL, a = NULL, an = 1000,
     threshold.PresenceAbsence = FALSE,
     AUC.weights = TRUE, ENSEMBLE.tune = FALSE, 
     ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1,
+    ENSEMBLE.weight.min = 0.05,
     input.weights = NULL,
     MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, 
     GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, 
@@ -177,6 +180,9 @@ ensemble.strategy(TrainData = NULL, TestData = NULL,
 
 ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
 
+ensemble.threshold(eval, threshold.method="spec_sens", threshold.sensitivity=0.9, 
+    threshold.PresenceAbsence=FALSE, Pres, Abs) 
+
 }
 
 \arguments{
@@ -209,8 +215,9 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
   \item{AUC.weights}{ If \code{TRUE}, then AUC values are used as weights for the ensemble model, scaled to sum to 1 for the ensemble model through \code{ensemble.weights}. If \code{FALSE}, then input weights are scaled to sum to 1 for the ensemble model, but AUC values are not considered. }
   \item{ENSEMBLE.tune}{ Determine weights for the ensemble model based on AUC values through internal cross-validation procedures (if \code{TRUE}). See details. }
   \item{ENSEMBLE.best}{ The number of individual suitability models to be used in the consensus suitability map (based on a weighted average). In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then all individual suitability models with positive input weights are included in the consensus suitability map. In case a vector is provided, \code{ensemble.strategy} is called internally to determine weights for the ensemble model. }
-  \item{ENSEMBLE.min}{ The minimum input weight (assumed to correspond to evaluation indices of suitability models) for a model to be included in the ensemble. In case a vector is provided, function \code{ensemble.strategy} is called internally to determine weights for the ensemble model.  }
+  \item{ENSEMBLE.min}{ The minimum input weight (typically corresponding to AUC values) for a model to be included in the ensemble. In case a vector is provided, function \code{ensemble.strategy} is called internally to determine weights for the ensemble model.  }
   \item{ENSEMBLE.exponent}{ Exponent applied to AUC values to convert AUC values into weights (for example, an exponent of 2 converts input weights of 0.7, 0.8 and 0.9 into 0.7^2=0.49, 0.8^2=0.64 and 0.9^2=0.81). See details. }
+  \item{ENSEMBLE.weight.min}{ The minimum output weight for models included in the ensemble, applying to weights that sum to one. Note that \code{ENSEMBLE.min} typically refers to input AUC values.   }
   \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.test.splits} can be used. }
   \item{MAXENT}{ number: if larger than 0, then a maximum entropy model (\code{\link[dismo]{maxent}}) will be fitted among ensemble }
   \item{GBM}{ number: if larger than 0, then a boosted regression trees model (\code{\link[gbm]{gbm}}) will be fitted among ensemble }
@@ -296,6 +303,10 @@ ensemble.formulae(x, factors = NULL, dummy.vars = NULL)
 
   \item{verbose}{ If \code{TRUE}, then provide intermediate results for \code{ensemble.strategy}) }
 
+  \item{eval}{ ModelEvaluation object obtained by \code{\link[dismo]{evaluate}} }
+  \item{Pres}{ Suitabilities (probabilities) at presence locations }
+  \item{Abs}{ Suitabilities (probabilities) at background locations }
+
 }
 
 \details{
@@ -325,7 +336,10 @@ Function \code{ensemble.formulae} provides suggestions for formulae that can be 
 
 The \code{ensemble.weights} function is used internally by the \code{ensemble.test} and \code{\link{ensemble.raster}} functions, using the input weights for the different suitability modelling algorithms. Ties between input weights result in the same output weights.
 
-The \code{ensemble.strategy} function is used internally by the \code{ensemble.test} and \code{\link{ensemble.raster}} functions, using the train and test data sets with predictions of the different suitability modelling algorithms and different combinations of parameters \code{ENSEMBLE.best}, \code{ENSEMBLE.min} and \code{ENSEMBLE.exponent}. The final ensemble model is based on the parameters that generate the best AUC.
+The \code{ensemble.strategy} function is used internally by the \code{ensemble.test} function, using the train and test data sets with predictions of the different suitability modelling algorithms and different combinations of parameters \code{ENSEMBLE.best}, \code{ENSEMBLE.min} and \code{ENSEMBLE.exponent}. The final ensemble model is based on the parameters that generate the best AUC.
+
+The \code{ensemble.threshold} function is used internally by the \code{ensemble.test}, \code{ensemble.mean} and \code{ensemble.plot} functions. \code{threshold.mean} and \code{threshold.min} result in calculating the mean or minimum value of threshold methods that resulted in better results in a study by Liu et al. (Ecography 28: 385-393. 2005) with threshold availabe in \code{\link[dismo]{threshold}} (\code{prevalence}, \code{spec_sens} and \code{equal_spec_sens}) or \code{\link[PresenceAbsence]{optimal.thresholds}} (\code{ObsPrev}, \code{MeanProb}, \code{MaxSens+Spec}, \code{Sens=Spec} and \code{MinROCdist}).
+
 }
 
 \value{
@@ -338,6 +352,8 @@ Functions \code{ensemble.test.gbm} and \code{ensemble.test.nnet} return a matrix
 
 \references{
 Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in ensemble forecasting of species distribution. Global Change Biology 16: 1145-1157
+
+Liu C, Berry PM, Dawson TP and Pearson RC. 2005. Selecting thresholds of occurrence in the prediction of species distributions. Ecography 28: 385-393
 }
 
 
