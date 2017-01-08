@@ -1283,7 +1283,7 @@ diversityGUI <- function(){
     .activeDataSet <- ActiveDataSet()
     .communityDataSet <- CommunityDataSet()
     .variables <- Factors()
-    variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
+    variables <- paste(.variables)
     .cvariables <- CVariables()
     cvariables <- paste(.cvariables)
     modelName <- tclVar("Diversity.1")
@@ -1303,7 +1303,7 @@ diversityGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     methodScroll <- tkscrollbar(methodFrame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
-    methods <- c("all (pooled)", "separate per site", "mean", "sd", "jackknife")
+    methods <- c("pooled", "each site", "mean", "sd", "jackknife")
     for (x in methods) tkinsert(methodBox, "end", x)
     optionFrame <- tkframe(choicesFrame)
     dataVariable <- tclVar("0")
@@ -1322,10 +1322,10 @@ diversityGUI <- function(){
     subset1Frame <- tkframe(subsetFrame)
     subset2Frame <- tkframe(subsetFrame)
     subsetBox <- tklistbox(subset1Frame, width=27, height=7,
-        selectmode="single", background="white", exportselection="FALSE") 
+        selectmode="multiple", background="white", exportselection="FALSE") 
     subsetScroll <- tkscrollbar(subset1Frame, repeatinterval=5, command=function(...) tkyview(subsetBox, ...))
     tkconfigure(subsetBox, yscrollcommand=function(...) tkset(subsetScroll, ...))
-    variables <- c("all",variables)
+    variables <- c("(none)", variables)
     for (x in variables) tkinsert(subsetBox, "end", x)
     subset <- tclVar(".")
     subsetEntry <- tkentry(subset2Frame, width=10, textvariable=subset)
@@ -1334,25 +1334,35 @@ diversityGUI <- function(){
         modelValue <- tclvalue(modelName)
         index <- indices[as.numeric(tkcurselection(indexBox))+1]
         method <- methods[as.numeric(tkcurselection(methodBox))+1]
-        if (method == "all (pooled)") {method <- "all"}
         data <- tclvalue(dataVariable) == "1"
         sortit <- tclvalue(sortVariable) == "1"
         if (data==T) {sortit <- F}
         var <- variables[as.numeric(tkcurselection(subsetBox))+1]
+        if (length(var) > 2) {
+            logger(paste("more than 2 factors selected, whereas only 1 or 2 allowed"))
+            logger(paste("only first 2 will be used"))
+            var <- var[c(1:2)]
+            if ("(none)" %in% var) {var <- "(none)"}
+        }
         sub <- tclvalue(subset)
         if (index %in% c("richness", "abundance", "Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", "Jevenness", "Eevenness",
             "jack1", "jack2", "chao", "boot")) {
-            if (var == "all") {
+            if (var == "(none)") {
                 command <- paste("diversityresult(", .communityDataSet, ", index='", index,
-                    "' ,method='", method, "', sortit=", sortit, ", digits=3)", sep="")
+                    "' ,method='", method, "', sortit=", sortit, ", digits=6)", sep="")
             }else{
-                var <- .variables[as.numeric(tkcurselection(subsetBox))]
-                if (sub == ".") {
-                    command <- paste("diversitycomp(", .communityDataSet, ", y=", .activeDataSet, ", factor1='", var, "', factor2='', index='", index,
-                        "' ,method='", method, "', sortit=", sortit, ", digits=3)", sep="")
-                }else{
-                    command <- paste("diversityresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', index='", index,
-                        "' ,method='", method, "', sortit=", sortit, ", digits=3)", sep="")
+                if (length(var) == 1) {
+                    if (sub == ".") {
+                        command <- paste("diversitycomp(", .communityDataSet, ", y=", .activeDataSet, ", factor1='", var, "', index='", index,
+                            "' , method='", method, "', sortit=", sortit, ", digits=6)", sep="")
+                    }else{
+                        command <- paste("diversityresult(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', level='", sub, "', index='", index,
+                            "' , method='", method, "', sortit=", sortit, ", digits=6)", sep="")
+                    }
+                }
+                if (length(var) == 2) {
+                    command <- paste("diversitycomp(", .communityDataSet, ", y=", .activeDataSet, ", factor1='", var[1], "', factor2='", var[2], "', index='", index,
+                            "' , method='", method, "', sortit=", sortit, ", digits=6)", sep="")
                 }
             }
         }
@@ -1368,7 +1378,7 @@ diversityGUI <- function(){
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
         doItAndPrint(paste(modelValue))
-        if (data==T && var=="all" && method=="separate per site" && index %in% c("richness", "abundance", "Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", "Jevenness", "Eevenness", "jack1", "jack2", "chao", "boot")) {
+        if (data==T && var=="(none)" && method=="separate per site" && index %in% c("richness", "abundance", "Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", "Jevenness", "Eevenness", "jack1", "jack2", "chao", "boot")) {
             justDoIt(paste(.activeDataSet, "$", index, " <- diversityresult(", .communityDataSet, ", index='", index,"' ,method='", method,"')[,1]", sep=""))
             logger(paste(.activeDataSet, "$", index, " <- diversityresult(", .communityDataSet, ", index='", index,"' ,method='", method,"')[,1]", sep=""))
             activeDataSet(.activeDataSet)
@@ -1607,7 +1617,7 @@ renyiGUI <- function(){
     .activeDataSet <- ActiveDataSet()
     .communityDataSet <- CommunityDataSet()
     .variables <- Factors()
-    variables <- paste(.variables, ifelse(is.element(.variables, Factors()), "[factor]", ""))
+    variables <- paste(.variables)
     .cvariables <- CVariables()
     cvariables <- paste(.cvariables)
     modelName <- tclVar("Renyi.1")
@@ -1646,7 +1656,7 @@ renyiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     subsetScroll <- tkscrollbar(subset1Frame, repeatinterval=5, command=function(...) tkyview(subsetBox, ...))
     tkconfigure(subsetBox, yscrollcommand=function(...) tkset(subsetScroll, ...))
-    variables <- c("all",variables)
+    variables <- c("(none)", variables)
     for (x in variables) tkinsert(subsetBox, "end", x)
     subset <- tclVar(".")
     subsetEntry <- tkentry(subset2Frame, width=10, textvariable=subset)
@@ -1665,7 +1675,7 @@ renyiGUI <- function(){
         sub <- tclvalue(subset)
         perm <- as.numeric(tclvalue(permVariable))
         if (method %in% c("renyiall", "renyi separate per site", "renyi accumulation")) {
-            if (var == "all") {
+            if (var == "(none)") {
                 if (method=="renyi accumulation") {
                     command <- paste("renyiaccum(", .communityDataSet, ", scales=c(", scales, "), permutations=", perm, ")", sep="")
                 }else{
@@ -2261,7 +2271,7 @@ countGUI <- function(){
     tkgrid(x2Frame, tklabel(xFrame, text="", width=1), x3Frame, sticky="w")
     tkgrid(x4Frame, sticky="w")
     tkgrid(xFrame, sticky="w")
-    tkgrid(tklabel(subsetFrame, text="Remove site with name: ", width=20), subsetEntry, sticky="w")
+    tkgrid(tklabel(subsetFrame, text="Remove site with name", width=20), subsetEntry, sticky="w")
     tkgrid(subsetFrame, sticky="w")
     tkgrid(tklabel(plot1Frame, text="Plot options"), sticky="w")
     tkgrid(typeBox, typeScroll, sticky="nw")
@@ -4842,8 +4852,21 @@ browseTDAwebsite <- function() {
 }
 
 browseTDAmanual <- function() {
-    browseURL("http://www.worldagroforestry.org/downloads/publications/PDFs/kindt%20b2005.pdf")
+    browseURL("http://www.worldagroforestry.org/downloads/Publications/PDFS/b13695.pdf")
 }
+
+vegan.diversity.pdf <- function() {
+    browseURL(paste(system.file(package="vegan"), "/doc/diversity-vegan.pdf", sep=""))
+}
+
+vegan.ordination.pdf <- function() {
+    browseURL(paste(system.file(package="vegan"), "/doc/intro-vegan.pdf", sep=""))
+}
+
+oksanen.website <- function() {
+    browseURL(paste("http://cc.oulu.fi/~jarioksa/opetus/metodi", sep=""))
+}
+
 
 ###################
 # GUI for ensemble suitability modelling
@@ -5016,6 +5039,8 @@ stack.select.GUI <- function(){
         assign("stack.focal", var, envir=.GlobalEnv)
         doItAndPrint(paste(stack.focal, sep=""))
         doItAndPrint(paste(stack.focal, "@title", sep=""))
+        logger(paste("Note that GUI assumes that stack name and stack title are the same", sep=""))
+        logger(paste("If stack name and stack title are different, create the stack via the GUI", sep=""))
         putRcmdr("dialog.values", list())
         activateMenus()
 	closeDialog()
@@ -5053,6 +5078,30 @@ stack.select.GUI <- function(){
 viewstack <- function(){
     doItAndPrint(paste(stack.focal, sep=""))
     doItAndPrint(paste(stack.focal, "@title", sep=""))
+    doItAndPrint(paste("dev.new()", sep=""))
+    doItAndPrint(paste("raster::plot(", stack.focal, ")", sep=""))
+    if (is.null(stack.factors) == F) {
+        for (i in 1:length(stack.factors)) {
+            if (i==1) {
+                factor.string <- paste("c('", stack.factors[i], "'", sep="")
+            }else{
+                factor.string <- paste(factor.string, ", '", stack.factors[i], "'", sep="")
+            }
+        }
+        factor.string <- paste(factor.string, ")", sep="")
+        logger(paste("Selected factors: ", factor.string, sep=""))
+    }
+    if (is.null(stack.dummies) == F) {
+        for (i in 1:length(stack.dummies)) {
+            if (i==1) {
+                dummy.string <- paste("c('", stack.dummies[i], "'", sep="")
+            }else{
+                dummy.string <- paste(dummy.string, ", '", stack.dummies[i], "'", sep="")
+            }
+        }
+        dummy.string <- paste(dummy.string, ")", sep="")
+        logger(paste("Selected dummy variables: ", dummy.string, sep=""))
+    }
 }
 
 stack.delete.GUI <- function(){
@@ -5071,7 +5120,11 @@ stack.delete.GUI <- function(){
             logger(paste(stack.focal, " <- raster::dropLayer(", stack.focal, ", which(names(", stack.focal, ")=='", layers[i], "'))", sep=""))
             stack.eval <- eval(parse(text=paste("raster::dropLayer(", stack.focal, ", which(names(", stack.focal, ")=='", layers[i], "'))", sep="")), envir=.GlobalEnv)
             assign(stack.focal, stack.eval, envir=.GlobalEnv)
+            if (is.null(stack.factors) == F) {stack.factors <- stack.factors[which(stack.factors != layers[i])]}
+            if (is.null(stack.dummies) == F) {stack.dummies <- stack.dummies[which(stack.dummies != layers[i])]}
         }
+        if (length(stack.factors) == 0) {assign("stack.factors", NULL, envir=.GlobalEnv)}
+        if (length(stack.dummies) == 0) {assign("stack.dummies", NULL, envir=.GlobalEnv)}
         activateMenus()
 	closeDialog()
 	tkfocus(CommanderWindow())
@@ -5089,7 +5142,7 @@ stack.delete.GUI <- function(){
     helpButton <- tkbutton(buttonsFrame, text="Help", width="12", command=onHelp)
     OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
     cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
-    tkgrid(tklabel(layerFrame, text="Layers to delete (drop)"), sticky="w")
+    tkgrid(tklabel(layerFrame, text="Select one or several layers to delete"), sticky="w")
     tkgrid(layerBox, layerScroll, sticky="w")
     tkgrid(layerFrame, sticky="w")
     tkgrid(OKbutton, cancelButton, helpButton)
@@ -5189,7 +5242,7 @@ stack.factors.GUI <- function(){
                 }
             }
             factor.string <- paste(factor.string, ")", sep="")
-            doItAndPrint(paste("Selected factors: ", factor.string, sep=""))
+            logger(paste("Selected factors: ", factor.string, sep=""))
         }
         activateMenus()
 	closeDialog()
@@ -5203,7 +5256,7 @@ stack.factors.GUI <- function(){
     buttonsFrame <- tkframe(top)
     OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
     cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
-    tkgrid(tklabel(layerFrame, text="Select factors"), sticky="w")
+    tkgrid(tklabel(layerFrame, text="Select one or several factors"), sticky="w")
     tkgrid(layerBox, layerScroll, sticky="w")
     tkgrid(layerFrame, sticky="w")
     tkgrid(OKbutton, cancelButton)
@@ -5250,7 +5303,7 @@ stack.dummies.GUI <- function(){
                 }
             }
             dummy.string <- paste(dummy.string, ")", sep="")
-            doItAndPrint(paste("Selected dummy variables: ", dummy.string, sep=""))
+            logger(paste("Selected dummy variables: ", dummy.string, sep=""))
         }
         activateMenus()
 	closeDialog()
@@ -5264,7 +5317,7 @@ stack.dummies.GUI <- function(){
     buttonsFrame <- tkframe(top)
     OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
     cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
-    tkgrid(tklabel(layerFrame, text="Select dummy variables"), sticky="w")
+    tkgrid(tklabel(layerFrame, text="Select one or several dummy variables"), sticky="w")
     tkgrid(layerBox, layerScroll, sticky="w")
     tkgrid(layerFrame, sticky="w")
     tkgrid(OKbutton, cancelButton)
@@ -5297,7 +5350,7 @@ make.presence.GUI <- function(){
     fvariables <- paste(.fvariables)
     .nvariables <- Numeric()
     nvariables <- paste(.nvariables)
-    modelName <- tclVar("Presence1")
+    modelName <- tclVar("SpeciesPresence")
     modelFrame <- tkframe(top, relief="groove", borderwidth=2)
     model <- tkentry(modelFrame, width=24, textvariable=modelName)
     speciesFrame <- tkframe(top, relief="groove", borderwidth=2)
@@ -5453,18 +5506,18 @@ make.absences <- function(an=1000, x, excludep=F, presence.data=NULL) {
 }
 
 old.predictors <- FALSE
-if (exists("predictors") == T) {
+if (exists("calibration0") == T) {
     predictors.old <- predictors
     old.predictors <- TRUE
 }
 predictor.files <- list.files(path=paste(system.file(package="dismo"), '/ex', sep=''),
     pattern='grd', full.names=TRUE)
-predictors <- raster::stack(predictor.files)
-BradypusAbsence <- make.absences(x=predictors, excludep=T, presence.data=BradypusPresence)
+calibration0 <- raster::stack(predictor.files)
+BradypusAbsence <- make.absences(x=calibration0, excludep=T, presence.data=BradypusPresence)
 if (old.predictors == T) {
-    assign("predictors", predictors.old, envir=.GlobalEnv)
+    assign("calibration0", predictors.old, envir=.GlobalEnv)
 }else{
-    assign("predictors", NULL, envir=.GlobalEnv)    
+    assign("calibration0", NULL, envir=.GlobalEnv)    
 }
 
 if (exists("absence.focal") == F) {assign("absence.focal", NULL, envir=.GlobalEnv)}
@@ -5521,7 +5574,7 @@ make.absence.GUI <- function(){
     cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
     tkgrid(tklabel(modelFrame, text="Save result as:    ", width=15), model, sticky="w")
     tkgrid(modelFrame, sticky="w")
-    tkgrid(tklabel(exclude1Frame, text="number of absence points: ", width=26), n.absEntry, sticky="w")
+    tkgrid(tklabel(exclude1Frame, text="number of absence points", width=26), n.absEntry, sticky="w")
     tkgrid(excludeCheckBox, tklabel(exclude2Frame, text="exclude raster cells with presence        "), sticky="w")
     tkgrid(exclude1Frame, sticky="w")
     tkgrid(exclude2Frame, sticky="w")
@@ -5597,8 +5650,8 @@ viewabsence <- function(){
 }
 
 if (exists("ensmodels.file") == F) {assign("ensmodels.file", NULL, envir=.GlobalEnv)}
-if (exists("ensmodels.focal") == F) {assign("ensmodels.focal", NULL, envir=.GlobalEnv)}
-ensmodelsP <- function() {return(!is.null(ensmodels.focal))}
+if (exists("focal.ensemble.object") == F) {assign("focal.ensemble.object", NULL, envir=.GlobalEnv)}
+ensmodelsP <- function() {return(!is.null(focal.ensemble.object))}
 
 batch.GUI <- function(){
     top <- tktoplevel()
@@ -5615,11 +5668,15 @@ batch.GUI <- function(){
     ENSEMBLE.bestEntry <- tkentry(left1Frame, width=15, textvariable=ENSEMBLE.bestVariable)
     ENSEMBLE.minVariable <- tclVar("0.7")
     ENSEMBLE.minEntry <- tkentry(left1Frame, width=15, textvariable=ENSEMBLE.minVariable)
-    ENSEMBLE.exponentVariable <- tclVar("c(1, 2)")
+    ENSEMBLE.exponentVariable <- tclVar("c(1, 2, 3)")
     ENSEMBLE.exponentEntry <- tkentry(left1Frame, width=15, textvariable=ENSEMBLE.exponentVariable)
-    PROBITVariable <- tclVar("0")
+    CIRCLES.dVariable <- tclVar("0")
+    CIRCLES.dEntry <- tkentry(left1Frame, width=15, textvariable=CIRCLES.dVariable)
+    VIF.maxVariable <- tclVar("10")
+    VIF.maxEntry <- tkentry(left1Frame, width=15, textvariable=VIF.maxVariable)
+    PROBITVariable <- tclVar("1")
     PROBITCheckBox <- tkcheckbutton(left2Frame, variable=PROBITVariable)
-    AUC.weightsVariable <- tclVar("1")
+    AUC.weightsVariable <- tclVar("0")
     AUC.weightsCheckBox <- tkcheckbutton(left2Frame, variable=AUC.weightsVariable)
     infoFrame <- tkframe(firstFrame)
     info1Frame <- tkframe(infoFrame)
@@ -5647,8 +5704,9 @@ batch.GUI <- function(){
     right1Frame <- tkframe(rightFrame)
     right2Frame <- tkframe(rightFrame)
     right3Frame <- tkframe(rightFrame)
-    variables <- c("spec_sens", "equal_sens_spec", "sensitivity", "no_omission", "prevalence", "kappa", "threshold.min", "threshold.mean", 
-        "Sens=Spec", "MaxSens+Spec", "MaxKappa", "MaxPCC", "PredPrev=Obs", "ObsPrev", "MeanProb", "MinROCdist", "ReqSens")
+    variables <- c("spec_sens", "equal_sens_spec", "sensitivity", "no_omission", "prevalence", "kappa",  
+        "Sens=Spec", "MaxSens+Spec", "MaxKappa", "MaxPCC", "PredPrev=Obs", "ObsPrev", "MeanProb", "MinROCdist", "ReqSens",
+        "threshold2013.mean", "threshold2013.min", "threshold2005.mean", "threshold2005.min")
     varFrame <- tkframe(right1Frame, relief="groove", borderwidth=2)
     subsetBox <- tklistbox(varFrame, width=40, height=5,
         selectmode="single", background="white", exportselection="FALSE")
@@ -5666,50 +5724,67 @@ batch.GUI <- function(){
     algo4Frame <- tkframe(algoFrame)
     MAXENTVariable <- tclVar("0")
     MAXENTCheckBox <- tkcheckbutton(algo1Frame, variable=MAXENTVariable)
-    GLMVariable <- tclVar("0")
-    GLMCheckBox <- tkcheckbutton(algo1Frame, variable=GLMVariable)
-    MGCVVariable <- tclVar("0")
-    MGCVCheckBox <- tkcheckbutton(algo1Frame, variable=MGCVVariable)
-    NNETVariable <- tclVar("0")
-    NNETCheckBox <- tkcheckbutton(algo1Frame, variable=NNETVariable)
-    BIOCLIMVariable <- tclVar("0")
-    BIOCLIMCheckBox <- tkcheckbutton(algo1Frame, variable=BIOCLIMVariable)
-    GBMVariable <- tclVar("0")
-    GBMCheckBox <- tkcheckbutton(algo2Frame, variable=GBMVariable)
-    GLMSTEPVariable <- tclVar("0")
-    GLMSTEPCheckBox <- tkcheckbutton(algo2Frame, variable=GLMSTEPVariable)
-    MGCVFIXVariable <- tclVar("0")
-    MGCVFIXCheckBox <- tkcheckbutton(algo2Frame, variable=MGCVFIXVariable)
-    FDAVariable <- tclVar("0")
-    FDACheckBox <- tkcheckbutton(algo2Frame, variable=FDAVariable)
-    DOMAINVariable <- tclVar("0")
-    DOMAINCheckBox <- tkcheckbutton(algo2Frame, variable=DOMAINVariable)
-    GBMSTEPVariable <- tclVar("0")
-    GBMSTEPCheckBox <- tkcheckbutton(algo3Frame, variable=GBMSTEPVariable)
-    GAMVariable <- tclVar("0")
-    GAMCheckBox <- tkcheckbutton(algo3Frame, variable=GAMVariable)
-    EARTHVariable <- tclVar("0")
-    EARTHCheckBox <- tkcheckbutton(algo3Frame, variable=EARTHVariable)
-    SVMVariable <- tclVar("0")
-    SVMCheckBox <- tkcheckbutton(algo3Frame, variable=SVMVariable)
-    MAHALVariable <- tclVar("0")
-    MAHALCheckBox <- tkcheckbutton(algo3Frame, variable=MAHALVariable)
     RFVariable <- tclVar("0")
-    RFCheckBox <- tkcheckbutton(algo4Frame, variable=RFVariable)
+    RFCheckBox <- tkcheckbutton(algo1Frame, variable=RFVariable)
     GAMSTEPVariable <- tclVar("0")
-    GAMSTEPCheckBox <- tkcheckbutton(algo4Frame, variable=GAMSTEPVariable)
+    GAMSTEPCheckBox <- tkcheckbutton(algo1Frame, variable=GAMSTEPVariable)
     RPARTVariable <- tclVar("0")
-    RPARTCheckBox <- tkcheckbutton(algo4Frame, variable=RPARTVariable)
+    RPARTCheckBox <- tkcheckbutton(algo1Frame, variable=RPARTVariable)
     SVMEVariable <- tclVar("0")
-    SVMECheckBox <- tkcheckbutton(algo4Frame, variable=SVMEVariable)
+    SVMECheckBox <- tkcheckbutton(algo1Frame, variable=SVMEVariable)
+    DOMAINVariable <- tclVar("0")
+    DOMAINCheckBox <- tkcheckbutton(algo1Frame, variable=DOMAINVariable)
+#
+    MAXLIKEVariable <- tclVar("0")
+    MAXLIKECheckBox <- tkcheckbutton(algo2Frame, variable=MAXLIKEVariable)
+    GLMVariable <- tclVar("0")
+    GLMCheckBox <- tkcheckbutton(algo2Frame, variable=GLMVariable)
+    MGCVVariable <- tclVar("0")
+    MGCVCheckBox <- tkcheckbutton(algo2Frame, variable=MGCVVariable)
+    NNETVariable <- tclVar("0")
+    NNETCheckBox <- tkcheckbutton(algo2Frame, variable=NNETVariable)
+    GLMNETVariable <- tclVar("0")
+    GLMNETCheckBox <- tkcheckbutton(algo2Frame, variable=GLMNETVariable)
+    MAHALVariable <- tclVar("0")
+    MAHALCheckBox <- tkcheckbutton(algo2Frame, variable=MAHALVariable)
+#
+    GBMVariable <- tclVar("0")
+    GBMCheckBox <- tkcheckbutton(algo3Frame, variable=GBMVariable)
+    GLMSTEPVariable <- tclVar("0")
+    GLMSTEPCheckBox <- tkcheckbutton(algo3Frame, variable=GLMSTEPVariable)
+    MGCVFIXVariable <- tclVar("0")
+    MGCVFIXCheckBox <- tkcheckbutton(algo3Frame, variable=MGCVFIXVariable)
+    FDAVariable <- tclVar("0")
+    FDACheckBox <- tkcheckbutton(algo3Frame, variable=FDAVariable)
+    BIOCLIMOVariable <- tclVar("0")
+    BIOCLIMOCheckBox <- tkcheckbutton(algo3Frame, variable=BIOCLIMOVariable)
+    MAHAL01Variable <- tclVar("0")
+    MAHAL01CheckBox <- tkcheckbutton(algo3Frame, variable=MAHAL01Variable)
+#
+    GBMSTEPVariable <- tclVar("0")
+    GBMSTEPCheckBox <- tkcheckbutton(algo4Frame, variable=GBMSTEPVariable)
+    GAMVariable <- tclVar("0")
+    GAMCheckBox <- tkcheckbutton(algo4Frame, variable=GAMVariable)
+    EARTHVariable <- tclVar("0")
+    EARTHCheckBox <- tkcheckbutton(algo4Frame, variable=EARTHVariable)
+    SVMVariable <- tclVar("0")
+    SVMCheckBox <- tkcheckbutton(algo4Frame, variable=SVMVariable)
+    BIOCLIMVariable <- tclVar("0")
+    BIOCLIMCheckBox <- tkcheckbutton(algo4Frame, variable=BIOCLIMVariable)
+#
     if (is.null(presence.focal) == F) {species.names <- eval(parse(text=paste("levels(droplevels(factor(", presence.focal, "[, 1])))", sep="")), envir=.GlobalEnv)}
     if (is.null(presence.focal) == F) {species.last <- species.names[length(species.names)]}
+#
     onOK <- function(){
         n.ensembles <- tclvalue(n.ensemblesVariable)
         k.splits <- tclvalue(k.splitsVariable)
         ENSEMBLE.best <- tclvalue(ENSEMBLE.bestVariable)
         ENSEMBLE.min <- tclvalue(ENSEMBLE.minVariable)
         ENSEMBLE.exponent <- tclvalue(ENSEMBLE.exponentVariable)
+        SSB.reduce <- FALSE
+        CIRCLES.d <- tclvalue(CIRCLES.dVariable)
+        if (CIRCLES.d > 0) {SSB.reduce <- TRUE}
+        VIF.max <- tclvalue(VIF.maxVariable)
         PROBIT <- tclvalue(PROBITVariable) == "1"
         AUC.weights <- tclvalue(AUC.weightsVariable) == "1"
         stack.focalValue <- tclvalue(stack.focalVariable)
@@ -5728,6 +5803,7 @@ batch.GUI <- function(){
         if (var == "MinROCdist"){PRESABS <- TRUE}
         if (var == "ReqSens"){PRESABS <- TRUE}
         MAXENT <- tclvalue(MAXENTVariable)
+        MAXLIKE <- tclvalue(MAXLIKEVariable)
         GBM <- tclvalue(GBMVariable)
         GBMSTEP <- tclvalue(GBMSTEPVariable)
         RF <- tclvalue(RFVariable)
@@ -5743,9 +5819,12 @@ batch.GUI <- function(){
         FDA <- tclvalue(FDAVariable)
         SVM <- tclvalue(SVMVariable)
         SVME <- tclvalue(SVMEVariable)
+        GLMNET <- tclvalue(GLMNETVariable)
+        BIOCLIMO <- tclvalue(BIOCLIMOVariable)
         BIOCLIM <- tclvalue(BIOCLIMVariable)
         DOMAIN <- tclvalue(DOMAINVariable)
         MAHAL <- tclvalue(MAHALVariable)
+        MAHAL01 <- tclvalue(MAHAL01Variable)
         if (is.null(stack.factors) == F) {
             for (i in 1:length(stack.factors)) {
                 if (i==1) {
@@ -5785,40 +5864,48 @@ batch.GUI <- function(){
             stack.string <- paste("c()", sep="")
         }
         logger(paste("Note that it can take a while before results will be shown", sep=""))
+        logger(paste("Probably capturing output in file is considerably faster", sep=""))
         logger(paste("When calculations and projections are finalized, the window interface will close", sep=""))
-        logger(paste("You can also monitor progress in the 'ensembles' and 'models' subfolders of the working directory", sep=""))
-        doItAndPrint(paste("ensemble.batch(x=", stack.focalValue, ", xn=", stack.string, 
+        logger(paste("You can also monitor progress in the 'outputs' subfolder of the working directory: ", getwd(), sep=""))
+        doItAndPrint(paste("batch.1 <- ensemble.batch(x=", stack.focalValue, ", xn=", stack.string, 
             ", species.presence=", presence.focalValue, ", species.absence=", absence.focalValue,
-            ", presence.min=20, k.splits=", k.splits,
-            ", n.ensembles=", n.ensembles, ", KML.out=TRUE, models.save=TRUE",
+            ", presence.min=20, SSB.reduce=", SSB.reduce, ", CIRCLES.d=", CIRCLES.d,
+            ", k.splits=", k.splits,
+            ", n.ensembles=", n.ensembles,
+            ", VIF.max=", VIF.max, 
+            ", KML.out=TRUE, models.save=TRUE",
             ", threshold.method='", var, "', threshold.sensitivity=", sensitivity, 
             ", threshold.PresenceAbsence=", PRESABS,
             ", factors=", factor.string, ", dummy.vars=", dummy.string,
             ", ENSEMBLE.best=", ENSEMBLE.best, ", ENSEMBLE.min=", ENSEMBLE.min, ", ENSEMBLE.exponent=", ENSEMBLE.exponent, ", ENSEMBLE.weight.min=0.05", 
-            ", MAXENT=", MAXENT, ", GBM=", GBM, ", GBMSTEP=", GBMSTEP, ", RF=", RF, ", GLM=", GLM, ", GLMSTEP=", GLMSTEP, ", GAM=", GAM,
-            ", GAMSTEP=", GAMSTEP, ", MGCV=", MGCV, ", MGCVFIX=", MGCVFIX, ", EARTH=", EARTH, ", RPART=", RPART, ", NNET=", NNET,
-            ", FDA=", FDA, ", SVM=", SVM, ", SVME=", SVME, ", BIOCLIM=", BIOCLIM, ", DOMAIN=", DOMAIN, ", MAHAL=", MAHAL,
+            ", MAXENT=", MAXENT, ", MAXLIKE=", MAXLIKE, ", GBM=", GBM, ", GBMSTEP=", GBMSTEP, 
+            ", RF=", RF, ", GLM=", GLM, ", GLMSTEP=", GLMSTEP, ", GAM=", GAM,
+            ", GAMSTEP=", GAMSTEP, ", MGCV=", MGCV, ", MGCVFIX=", MGCVFIX, ", EARTH=", EARTH, 
+            ", RPART=", RPART, ", NNET=", NNET, ", FDA=", FDA, ", SVM=", SVM, 
+            ", SVME=", SVME, ", GLMNET=", GLMNET, ", BIOCLIM.O=", BIOCLIMO, ", BIOCLIM=", BIOCLIM, 
+            ", DOMAIN=", DOMAIN, ", MAHAL=", MAHAL, ", MAHAL01=", MAHAL01,
             ", PROBIT=", PROBIT, ", AUC.weights=", AUC.weights, ")", sep=""))
+        doItAndPrint(paste("batch.1"))
         if (is.null(presence.focal) == F) {
-        if (n.ensembles > 1) {
-            models.file <- paste(getwd(), "//models//", species.last, "_ENSEMBLE_", n.ensembles, "_models", sep="")
-            models.file <- normalizePath(models.file, mustWork=F)
-            if (file.exists(models.file) == T) {
-                assign("ensmodels.file", models.file, envir=.GlobalEnv)
-                load(ensmodels.file)
-                assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
-                logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+            if (n.ensembles > 1) {
+                models.file <- paste(getwd(), "//models//", species.last, "_ENSEMBLE_", n.ensembles, "_models", sep="")
+                models.file <- normalizePath(models.file, mustWork=F)
+                if (file.exists(models.file) == T) {
+                    assign("ensmodels.file", models.file, envir=.GlobalEnv)
+                    load(ensmodels.file)
+                    assign("focal.ensemble.object", ensemble.models, envir=.GlobalEnv)          
+                    logger(paste("Focal ensemble (object focal.ensemble.object) loaded from: ", models.file, sep=""))
+                }
+            }else{
+                models.file <- paste(getwd(), "//models//", species.last, "_models", sep="")
+                models.file <- normalizePath(models.file, mustWork=F)
+                if (file.exists(models.file) == T) {
+                    assign("ensmodels.file", models.file, envir=.GlobalEnv)
+                    load(ensmodels.file)
+                    assign("focal.ensemble.object", ensemble.models, envir=.GlobalEnv)          
+                    logger(paste("Focal ensemble models (object focal.ensemble.object) loaded from: ", models.file, sep=""))
+                }
             }
-        }else{
-            models.file <- paste(getwd(), "//models//", species.last, "_models", sep="")
-            models.file <- normalizePath(models.file, mustWork=F)
-            if (file.exists(models.file) == T) {
-                assign("ensmodels.file", models.file, envir=.GlobalEnv)
-                load(ensmodels.file)
-                assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
-                logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
-            }
-        }
         }
         putRcmdr("dialog.values", list())
         activateMenus()
@@ -5831,6 +5918,10 @@ batch.GUI <- function(){
         ENSEMBLE.best <- tclvalue(ENSEMBLE.bestVariable)
         ENSEMBLE.min <- tclvalue(ENSEMBLE.minVariable)
         ENSEMBLE.exponent <- tclvalue(ENSEMBLE.exponentVariable)
+        SSB.reduce <- FALSE
+        CIRCLES.d <- tclvalue(CIRCLES.dVariable)
+        if (CIRCLES.d > 0) {SSB.reduce <- TRUE}
+        VIF.max <- tclvalue(VIF.maxVariable)
         PROBIT <- tclvalue(PROBITVariable) == "1"
         AUC.weights <- tclvalue(AUC.weightsVariable) == "1"
         stack.focalValue <- tclvalue(stack.focalVariable)
@@ -5849,6 +5940,7 @@ batch.GUI <- function(){
         if (var == "MinROCdist"){PRESABS <- TRUE}
         if (var == "ReqSens"){PRESABS <- TRUE}
         MAXENT <- tclvalue(MAXENTVariable)
+        MAXLIKE <- tclvalue(MAXLIKEVariable)
         GBM <- tclvalue(GBMVariable)
         GBMSTEP <- tclvalue(GBMSTEPVariable)
         RF <- tclvalue(RFVariable)
@@ -5864,9 +5956,12 @@ batch.GUI <- function(){
         FDA <- tclvalue(FDAVariable)
         SVM <- tclvalue(SVMVariable)
         SVME <- tclvalue(SVMEVariable)
+        GLMNET <- tclvalue(GLMNETVariable)
+        BIOCLIMO <- tclvalue(BIOCLIMOVariable)
         BIOCLIM <- tclvalue(BIOCLIMVariable)
         DOMAIN <- tclvalue(DOMAINVariable)
         MAHAL <- tclvalue(MAHALVariable)
+        MAHAL01 <- tclvalue(MAHAL01Variable)
         if (is.null(stack.factors) == F) {
             for (i in 1:length(stack.factors)) {
                 if (i==1) {
@@ -5911,39 +6006,47 @@ batch.GUI <- function(){
         assign("output.filename", filename1, envir=.GlobalEnv)
         logger(paste("Results will be written to file: ", output.filename, sep=""))
         logger(paste("When calculations and projections are finalized, the window interface will close", sep=""))
-        logger(paste("You can also monitor progress in the 'ensembles' and 'models' subfolders of the working directory", sep=""))
-        doItAndPrint(paste("capture.output(ensemble.batch(x=", stack.focalValue, ", xn=", stack.string, 
+        logger(paste("You can also monitor progress in the 'outputs' subfolder of the working directory: ", getwd(), sep=""))
+        doItAndPrint(paste("capture.output(batch.1 <- ensemble.batch(x=", stack.focalValue, ", xn=", stack.string, 
             ", species.presence=", presence.focalValue, ", species.absence=", absence.focalValue,
-            ", presence.min=20, k.splits=", k.splits,
-            ", n.ensembles=", n.ensembles, ", KML.out=TRUE, models.save=TRUE",
+            ", presence.min=20, SSB.reduce=", SSB.reduce, ", CIRCLES.d=", CIRCLES.d,
+            ", k.splits=", k.splits,
+            ", n.ensembles=", n.ensembles,
+            ", VIF.max=", VIF.max, 
+            ", KML.out=TRUE, models.save=TRUE",
             ", threshold.method='", var, "', threshold.sensitivity=", sensitivity, 
             ", threshold.PresenceAbsence=", PRESABS,
             ", factors=", factor.string, ", dummy.vars=", dummy.string,
             ", ENSEMBLE.best=", ENSEMBLE.best, ", ENSEMBLE.min=", ENSEMBLE.min, ", ENSEMBLE.exponent=", ENSEMBLE.exponent,  ", ENSEMBLE.weight.min=0.05", 
-            ", MAXENT=", MAXENT, ", GBM=", GBM, ", GBMSTEP=", GBMSTEP, ", RF=", RF, ", GLM=", GLM, ", GLMSTEP=", GLMSTEP, ", GAM=", GAM,
-            ", GAMSTEP=", GAMSTEP, ", MGCV=", MGCV, ", MGCVFIX=", MGCVFIX, ", EARTH=", EARTH, ", RPART=", RPART, ", NNET=", NNET,
-            ", FDA=", FDA, ", SVM=", SVM, ", SVME=", SVME, ", BIOCLIM=", BIOCLIM, ", DOMAIN=", DOMAIN, ", MAHAL=", MAHAL,
+            ", MAXENT=", MAXENT, ", MAXLIKE=", MAXLIKE, ", GBM=", GBM, ", GBMSTEP=", GBMSTEP, 
+            ", RF=", RF, ", GLM=", GLM, ", GLMSTEP=", GLMSTEP, ", GAM=", GAM,
+            ", GAMSTEP=", GAMSTEP, ", MGCV=", MGCV, ", MGCVFIX=", MGCVFIX, ", EARTH=", EARTH, 
+            ", RPART=", RPART, ", NNET=", NNET, ", FDA=", FDA, ", SVM=", SVM, 
+            ", SVME=", SVME, ", GLMNET=", GLMNET, ", BIOCLIM.O=", BIOCLIMO, ", BIOCLIM=", BIOCLIM, 
+            ", DOMAIN=", DOMAIN, ", MAHAL=", MAHAL, ", MAHAL01=", MAHAL01,
             ", PROBIT=", PROBIT, ", AUC.weights=", AUC.weights, "), file=output.filename)", sep=""))
+        doItAndPrint(paste("batch.1"))
         if (is.null(presence.focal) == F) {
-        if (n.ensembles > 1) {
-            models.file <- paste(getwd(), "//models//", species.last, "_ENSEMBLE_", n.ensembles, "_models", sep="")
-            models.file <- normalizePath(models.file, mustWork=F)
-            if (file.exists(models.file) == T) {           
-                assign("ensmodels.file", models.file, envir=.GlobalEnv)
-                load(ensmodels.file)
-                assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
-                logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+            if (n.ensembles > 1) {
+                models.file <- paste(getwd(), "//models//", species.last, "_ENSEMBLE_", n.ensembles, "_models", sep="")
+                models.file <- normalizePath(models.file, mustWork=F)
+                if (file.exists(models.file) == T) {           
+                    assign("ensmodels.file", models.file, envir=.GlobalEnv)
+                    load(ensmodels.file)
+                    assign("focal.ensemble.object", ensemble.models, envir=.GlobalEnv)          
+                    logger(paste("Focal ensemble models (object focal.ensemble.object) loaded from: ", models.file, sep=""))
+                }
+            }else{
+                models.file <- paste(getwd(), "//models//", species.last, "_models", sep="")
+                models.file <- normalizePath(models.file, mustWork=F)
+                if (file.exists(models.file) == T) {
+                    assign("ensmodels.file", models.file, envir=.GlobalEnv)
+                    load(ensmodels.file)
+                    assign("focal.ensemble.object", ensemble.models, envir=.GlobalEnv)          
+                    logger(paste("Focal ensemble models (object focal.ensemble.object) loaded from: ", models.file, sep=""))
+                }
             }
-        }else{
-            models.file <- paste(getwd(), "//models//", species.last, "_models", sep="")
-            models.file <- normalizePath(models.file, mustWork=F)
-            if (file.exists(models.file) == T) {
-                assign("ensmodels.file", models.file, envir=.GlobalEnv)
-                load(ensmodels.file)
-                assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
-                logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
-            }
-        }
+            logger(paste("You can find the results in: ", output.filename, sep=""))
         }
         putRcmdr("dialog.values", list())
         activateMenus()
@@ -5964,33 +6067,37 @@ batch.GUI <- function(){
     OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
     capturebutton <- tkbutton(buttonsFrame, text="capture output in file", width="25", command=onCapture)
     cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
-    tkgrid(tklabel(left1Frame, text="number of ensembles: ", width=20), n.ensembleEntry, sticky="w")
-    tkgrid(tklabel(left1Frame, text="k.splits: ", width=20), k.splitsEntry, sticky="w")
-    tkgrid(tklabel(left1Frame, text="ENSEMBLE.best: ", width=20), ENSEMBLE.bestEntry, sticky="w")
-    tkgrid(tklabel(left1Frame, text="ENSEMBLE.min: ", width=20), ENSEMBLE.minEntry, sticky="w")
-    tkgrid(tklabel(left1Frame, text="ENSEMBLE.exponent: ", width=20), ENSEMBLE.exponentEntry, sticky="w")
+    tkgrid(tklabel(left1Frame, text="number of ensembles", width=24), n.ensembleEntry, sticky="w")
+    tkgrid(tklabel(left1Frame, text="k.splits", width=24), k.splitsEntry, sticky="w")
+    tkgrid(tklabel(left1Frame, text="ENSEMBLE.best", width=24), ENSEMBLE.bestEntry, sticky="w")
+    tkgrid(tklabel(left1Frame, text="ENSEMBLE.min", width=24), ENSEMBLE.minEntry, sticky="w")
+    tkgrid(tklabel(left1Frame, text="ENSEMBLE.exponent", width=24), ENSEMBLE.exponentEntry, sticky="w")
+    tkgrid(tklabel(left1Frame, text="CIRCLES.d (if > 0)", width=24), CIRCLES.dEntry, sticky="w")
+    tkgrid(tklabel(left1Frame, text="VIF.max", width=22), VIF.maxEntry, sticky="w")
     tkgrid(PROBITCheckBox, tklabel(left2Frame, text="PROBIT transformations      "), sticky="w")
     tkgrid(AUC.weightsCheckBox, tklabel(left2Frame, text="Use mean AUC as weights"), sticky="w")
-    tkgrid(tklabel(left2Frame, text="    ", width=5), tklabel(left2Frame, text="    ", width=30), sticky="w")
+#    tkgrid(tklabel(left2Frame, text="    ", width=5), tklabel(left2Frame, text="    ", width=30), sticky="w")
     tkgrid(left1Frame, sticky="w")
     tkgrid(left2Frame, sticky="w")
-    tkgrid(tklabel(info1Frame, text="calibration: ", width=15), stack.focalEntry, sticky="w")
-    tkgrid(tklabel(info1Frame, text="presence: ", width=15), presence.focalEntry, sticky="w")
-    tkgrid(tklabel(info1Frame, text="absence: ", width=15), absence.focalEntry, sticky="w")
+    tkgrid(tklabel(info1Frame, text="calibration", width=15), stack.focalEntry, sticky="w")
+    tkgrid(tklabel(info1Frame, text="presence", width=15), presence.focalEntry, sticky="w")
+    tkgrid(tklabel(info1Frame, text="absence", width=15), absence.focalEntry, sticky="w")
     tkgrid(tklabel(info2Frame, text="    ", width=35), absence.focalEntry, sticky="w")
-    tkgrid(tklabel(info2Frame, text="(Better not to edit the parameters above", width=35), sticky="w")
-    tkgrid(tklabel(info2Frame, text="but to use other menus to select the", width=35), sticky="w")
-    tkgrid(tklabel(info2Frame, text="calibration stack, presence and absence)", width=35), sticky="w")
+    tkgrid(tklabel(info2Frame, text="Better not to edit the parameters above", width=35), sticky="w")
+    tkgrid(tklabel(info2Frame, text="but to use other menus for selections", width=35), sticky="w")
+    tkgrid(tklabel(info2Frame, text="    ", width=35), absence.focalEntry, sticky="w")
+    tkgrid(tklabel(info2Frame, text="Capturing output in file", width=35), sticky="w")
+    tkgrid(tklabel(info2Frame, text="will be much faster", width=35), sticky="w")
     tkgrid(info1Frame, sticky="w")
     tkgrid(info2Frame, sticky="w")
     tkgrid(leftFrame, infoFrame, sticky="w")
     tkgrid(firstFrame, sticky="w")
-    tkgrid(tklabel(stackFrame, text="Select stacks to predict"), sticky="w")
+    tkgrid(tklabel(stackFrame, text="Select one or several stacks to predict"), sticky="w")
     tkgrid(stackBox, stackScroll, sticky="w")
     tkgrid(tklabel(right1Frame, text="Select threshold method"), sticky="w")
     tkgrid(subsetBox, subsetScroll, sticky="w")
     tkgrid(varFrame, sticky="w")
-    tkgrid(tklabel(right2Frame, text="threshold.sensitivity: ", width=20), sensitivityEntry, sticky="w")
+    tkgrid(tklabel(right2Frame, text="threshold.sensitivity", width=20), sensitivityEntry, sticky="w")
     tkgrid(PRESABSCheckBox, tklabel(right3Frame, text="PresenceAbsence package"), sticky="w")
     tkgrid(right1Frame, sticky="w")
     tkgrid(right2Frame, sticky="w")
@@ -5998,30 +6105,39 @@ batch.GUI <- function(){
     tkgrid(stackFrame, rightFrame, sticky="w")
     tkgrid(secondFrame, sticky="w")
     tkgrid(tklabel(algoFrame, text="Select algorithms", width=15), sticky="w")
+#
     tkgrid(MAXENTCheckBox, tklabel(algo1Frame, text="MAXENT"), sticky="w")
-    tkgrid(GLMCheckBox, tklabel(algo1Frame, text="GLM"), sticky="w")
-    tkgrid(MGCVCheckBox, tklabel(algo1Frame, text="MGCV"), sticky="w")
-    tkgrid(NNETCheckBox, tklabel(algo1Frame, text="NNET"), sticky="w")
-    tkgrid(BIOCLIMCheckBox, tklabel(algo1Frame, text="BIOCLIM"), sticky="w")
+    tkgrid(RFCheckBox, tklabel(algo1Frame, text="RF"), sticky="w")
+    tkgrid(GAMSTEPCheckBox, tklabel(algo1Frame, text="GAMSTEP"), sticky="w")
+    tkgrid(RPARTCheckBox, tklabel(algo1Frame, text="RPART"), sticky="w")
+    tkgrid(SVMECheckBox, tklabel(algo1Frame, text="SVME"), sticky="w")
+    tkgrid(DOMAINCheckBox, tklabel(algo1Frame, text="DOMAIN"), sticky="w")
     tkgrid(tklabel(algo1Frame, text="    ", width=5), tklabel(algo1Frame, text="    ", width=12), sticky="w")
-    tkgrid(GBMCheckBox, tklabel(algo2Frame, text="GBM"), sticky="w")
-    tkgrid(GLMSTEPCheckBox, tklabel(algo2Frame, text="GLMSTEP"), sticky="w")
-    tkgrid(MGCVFIXCheckBox, tklabel(algo2Frame, text="MGCVFIX"), sticky="w")
-    tkgrid(FDACheckBox, tklabel(algo2Frame, text="FDA"), sticky="w")
-    tkgrid(DOMAINCheckBox, tklabel(algo2Frame, text="DOMAIN"), sticky="w")
+#
+    tkgrid(MAXLIKECheckBox, tklabel(algo2Frame, text="MAXLIKE"), sticky="w")
+    tkgrid(GLMCheckBox, tklabel(algo2Frame, text="GLM"), sticky="w")
+    tkgrid(MGCVCheckBox, tklabel(algo2Frame, text="MGCV"), sticky="w")
+    tkgrid(NNETCheckBox, tklabel(algo2Frame, text="NNET"), sticky="w")
+    tkgrid(GLMNETCheckBox, tklabel(algo2Frame, text="GLMNET"), sticky="w")
+    tkgrid(MAHALCheckBox, tklabel(algo2Frame, text="MAHAL"), sticky="w")
     tkgrid(tklabel(algo2Frame, text="    ", width=5), tklabel(algo2Frame, text="    ", width=12), sticky="w")
-    tkgrid(GBMSTEPCheckBox, tklabel(algo3Frame, text="GBMSTEP"), sticky="w")
-    tkgrid(GAMCheckBox, tklabel(algo3Frame, text="GAM"), sticky="w")
-    tkgrid(EARTHCheckBox, tklabel(algo3Frame, text="EARTH"), sticky="w")
-    tkgrid(SVMCheckBox, tklabel(algo3Frame, text="SVM"), sticky="w")
-    tkgrid(MAHALCheckBox, tklabel(algo3Frame, text="MAHAL"), sticky="w")
+#
+    tkgrid(GBMCheckBox, tklabel(algo3Frame, text="GBM"), sticky="w")
+    tkgrid(GLMSTEPCheckBox, tklabel(algo3Frame, text="GLMSTEP"), sticky="w")
+    tkgrid(MGCVFIXCheckBox, tklabel(algo3Frame, text="MGCVFIX"), sticky="w")
+    tkgrid(FDACheckBox, tklabel(algo3Frame, text="FDA"), sticky="w") 
+    tkgrid(BIOCLIMOCheckBox, tklabel(algo3Frame, text="BIOCLIM.O"), sticky="w")
+    tkgrid(MAHAL01CheckBox, tklabel(algo3Frame, text="MAHAL01"), sticky="w")
     tkgrid(tklabel(algo3Frame, text="    ", width=5), tklabel(algo3Frame, text="    ", width=12), sticky="w")
-    tkgrid(RFCheckBox, tklabel(algo4Frame, text="RF"), sticky="w")
-    tkgrid(GAMSTEPCheckBox, tklabel(algo4Frame, text="GAMSTEP"), sticky="w")
-    tkgrid(RPARTCheckBox, tklabel(algo4Frame, text="RPART"), sticky="w")
-    tkgrid(SVMECheckBox, tklabel(algo4Frame, text="SVME"), sticky="w")
+#
+    tkgrid(GBMSTEPCheckBox, tklabel(algo4Frame, text="GBMSTEP"), sticky="w")
+    tkgrid(GAMCheckBox, tklabel(algo4Frame, text="GAM"), sticky="w")
+    tkgrid(EARTHCheckBox, tklabel(algo4Frame, text="EARTH"), sticky="w")
+    tkgrid(SVMCheckBox, tklabel(algo4Frame, text="SVM"), sticky="w")
+    tkgrid(BIOCLIMCheckBox, tklabel(algo4Frame, text="BIOCLIM"), sticky="w")
     tkgrid(tklabel(algo4Frame, text="     "), sticky="w")
     tkgrid(tklabel(algo4Frame, text="    ", width=5), tklabel(algo4Frame, text="    ", width=12), sticky="w")
+#
     tkgrid(algo1Frame, algo2Frame, algo3Frame, algo4Frame, sticky="w")
     tkgrid(algoFrame, sticky="w")
     tkgrid(OKbutton, capturebutton, tklabel(buttonsFrame, text="     "), cancelButton, helpButton)
@@ -6053,7 +6169,8 @@ ensemble.plot.GUI <- function(){
     speciesScroll <- tkscrollbar(speciesFrame, repeatinterval=5, command=function(...) tkyview(speciesBox, ...))
     tkconfigure(speciesBox, yscrollcommand=function(...) tkset(speciesScroll, ...))
     for (x in species.names) tkinsert(speciesBox, "end", x)
-    m.variables <- c("suitability", "presence", "count")
+    m.variables <-  c("suitability", "presence", "count",
+        "consensussuitability", "consensuspresence", "consensuscount", "consensussd")
     methodFrame <- tkframe(right1Frame, relief="groove", borderwidth=2)
     methodBox <- tklistbox(methodFrame, width=40, height=6,
         selectmode="single", background="white", exportselection="FALSE") 
@@ -6071,8 +6188,9 @@ ensemble.plot.GUI <- function(){
     stackScroll <- tkscrollbar(stackFrame, repeatinterval=5, command=function(...) tkyview(stackBox, ...))
     tkconfigure(stackBox, yscrollcommand=function(...) tkset(stackScroll, ...))
     for (x in s.variables) tkinsert(stackBox, "end", x)
-    variables <- c("spec_sens", "equal_sens_spec", "sensitivity", "no_omission", "prevalence", "kappa", "threshold.min", "threshold.mean", 
-        "Sens=Spec", "MaxSens+Spec", "MaxKappa", "MaxPCC", "PredPrev=Obs", "ObsPrev", "MeanProb", "MinROCdist", "ReqSens")
+    variables <- c("spec_sens", "equal_sens_spec", "sensitivity", "no_omission", "prevalence", "kappa",  
+        "Sens=Spec", "MaxSens+Spec", "MaxKappa", "MaxPCC", "PredPrev=Obs", "ObsPrev", "MeanProb", "MinROCdist", "ReqSens",
+        "threshold2013.mean", "threshold2013.min", "threshold2005.mean", "threshold2005.min")
     varFrame <- tkframe(right2Frame, relief="groove", borderwidth=2)
     subsetBox <- tklistbox(varFrame, width=40, height=6,
         selectmode="single", background="white", exportselection="FALSE")
@@ -6082,8 +6200,7 @@ ensemble.plot.GUI <- function(){
     thirdFrame <- tkframe(top, relief="groove", borderwidth=2)
     left3Frame <- tkframe(thirdFrame)
     right3Frame <- tkframe(thirdFrame)
-    f.variables <- c("(none)", "_MEAN_", "_ENSEMBLE_", "_ENSEMBLE_1_", "_ENSEMBLE_2_", "_ENSEMBLE_3_", "_ENSEMBLE_4_", "_ENSEMBLE_5_",
-        "_ENSEMBLE_6_", "_ENSEMBLE_7_", "_ENSEMBLE_8_", "_ENSEMBLE_9_", "_ENSEMBLE_10_")
+    f.variables <- c("(none)", as.character(paste("_ENSEMBLE_", c(1:100), "_", sep="")))
     filterFrame <- tkframe(left3Frame, relief="groove", borderwidth=2)
     filterBox <- tklistbox(filterFrame, width=40, height=8,
         selectmode="single", background="white", exportselection="FALSE") 
@@ -6141,8 +6258,20 @@ ensemble.plot.GUI <- function(){
                 ", abs.breaks=", absValue, ", pres.breaks=", presValue, ", maptools.boundaries=T, maptools.col='dimgrey')", sep=""))
         }
         LOC <- tclvalue(locVariable) == "1"
-        if (LOC == T) {doItAndPrint(paste("points(", presence.focal, "[which(", presence.focal, "[, 1] == '", 
-            speciesValue, "'), c(2:3)], pch=4, col='black', cex=0.9, lwd=1.5)", sep=""))}
+        if (LOC == T) {
+            if (methodValue == "suitability" || methodValue == "consensussuitability") {
+                doItAndPrint(paste("points(", presence.focal, "[which(", presence.focal, "[, 1] == '", 
+                    speciesValue, "'), c(2:3)], pch=21, col='black', bg='chartreuse', cex=1, lwd=1.5)", sep=""))
+            }
+            if (methodValue == "presence" || methodValue == "consensuspresence") {
+                doItAndPrint(paste("points(", presence.focal, "[which(", presence.focal, "[, 1] == '", 
+                    speciesValue, "'), c(2:3)], pch=21, col='black', bg='orange', cex=1, lwd=1.5)", sep=""))
+            }
+            if (methodValue == "count" || methodValue == "consensuscount" || methodValue == "consensussd") {
+                doItAndPrint(paste("points(", presence.focal, "[which(", presence.focal, "[, 1] == '", 
+                    speciesValue, "'), c(2:3)], pch=21, col='black', bg='blueviolet', cex=1, lwd=1.5)", sep=""))
+            }
+        }
     }
     onCancel <- function() {
         tkgrab.release(top)
@@ -6155,7 +6284,7 @@ ensemble.plot.GUI <- function(){
         doItAndPrint(paste("help('ensemble.plot', help_type='html')", sep=""))
         }
     helpButton <- tkbutton(buttonsFrame, text="Help", width="12", command=onHelp)
-    OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
+    OKbutton <- tkbutton(buttonsFrame, text="Plot", width="12", command=onOK, default="active")
     cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
     tkgrid(tklabel(speciesFrame, text="Species variable"), sticky="w")
     tkgrid(speciesBox, speciesScroll, sticky="w")
@@ -6176,11 +6305,11 @@ ensemble.plot.GUI <- function(){
     tkgrid(tklabel(filterFrame, text="Filter"), sticky="w")
     tkgrid(filterBox, filterScroll, sticky="w")
     tkgrid(filterFrame, sticky="w")
-    tkgrid(tklabel(right31Frame, text="threshold value: ", width=20), fixedThresholdEntry, sticky="w")
-    tkgrid(tklabel(right31Frame, text="threshold.sensitivity: ", width=20), sensitivityEntry, sticky="w")
+    tkgrid(tklabel(right31Frame, text="threshold value", width=20), fixedThresholdEntry, sticky="w")
+    tkgrid(tklabel(right31Frame, text="threshold.sensitivity", width=20), sensitivityEntry, sticky="w")
     tkgrid(PRESABSCheckBox, tklabel(right32Frame, text="PresenceAbsence package"), sticky="w")
-    tkgrid(tklabel(right33Frame, text="breaks for absence: ", width=20), absEntry, sticky="w")
-    tkgrid(tklabel(right33Frame, text="breaks for presence: ", width=20), presEntry, sticky="w")
+    tkgrid(tklabel(right33Frame, text="breaks for absence", width=20), absEntry, sticky="w")
+    tkgrid(tklabel(right33Frame, text="breaks for presence", width=20), presEntry, sticky="w")
     tkgrid(locCheckBox, tklabel(right34Frame, text="Add presence locations"), sticky="w")
     tkgrid(right31Frame, sticky="w")
     tkgrid(right32Frame, sticky="w")
@@ -6213,15 +6342,15 @@ ensemble.plot.GUI <- function(){
 
 model.select.menu <- function(){
     logger(paste("Select models", sep=""))
-    models.dir <- normalizePath(paste(getwd(), "//models//*models", sep=""), mustWork=F)
+    models.dir <- normalizePath(paste(getwd(), "//models", sep=""), mustWork=F)
     assign("models.default", models.dir, envir=.GlobalEnv)
-    doItAndPrint(paste("models.file <- choose.files(default=models.default, multi=F)", sep=""))
+    doItAndPrint(paste("models.file <- choose.files(default=models.default, filters='*models', multi=F)", sep=""))
     models.file <- normalizePath(models.file, mustWork=F)
     if (file.exists(models.file) == T) {
         assign("ensmodels.file", models.file, envir=.GlobalEnv)
         load(ensmodels.file)
-        assign("ensmodels.focal", ensemble.models, envir=.GlobalEnv)          
-        logger(paste("Focal ensemble models (object ensmodels.focal) loaded from: ", models.file, sep=""))
+        assign("focal.ensemble.object", ensemble.models, envir=.GlobalEnv)          
+        logger(paste("Focal ensemble models (object focal.ensemble.object) loaded from: ", models.file, sep=""))
     }
     putRcmdr("dialog.values", list())
     activateMenus()
@@ -6230,7 +6359,7 @@ model.select.menu <- function(){
 
 eval.strip.GUI <- function(){
     top <- tktoplevel()
-    tkwm.title(top, "Evaluation strip")
+    tkwm.title(top, "Evaluation strips")
     update.stacklist()
     s.variables <- stack.list
     stackFrame <- tkframe(top, relief="groove", borderwidth=2)
@@ -6239,29 +6368,35 @@ eval.strip.GUI <- function(){
     stackScroll <- tkscrollbar(stackFrame, repeatinterval=5, command=function(...) tkyview(stackBox, ...))
     tkconfigure(stackBox, yscrollcommand=function(...) tkset(stackScroll, ...))
     for (x in s.variables) tkinsert(stackBox, "end", x)
-    mvariables <- eval(parse(text=paste("names(ensmodels.focal$output.weights)[ensmodels.focal$output.weights>0]", sep="")), envir=.GlobalEnv)
+    mvariables <- eval(parse(text=paste("names(focal.ensemble.object$output.weights)[focal.ensemble.object$output.weights>0]", sep="")), envir=.GlobalEnv)
     mvariables <- c("ENSEMBLE", mvariables)
-    layerFrame <- tkframe(top, relief="groove", borderwidth=2)
-    layerBox <- tklistbox(layerFrame, width=65, height=8,
+    modelFrame <- tkframe(top, relief="groove", borderwidth=2)
+    modelBox <- tklistbox(modelFrame, width=65, height=8,
         selectmode="single", background="white", exportselection="FALSE") 
-    layerScroll <- tkscrollbar(layerFrame, repeatinterval=5, command=function(...) tkyview(layerBox, ...))
-    tkconfigure(layerBox, yscrollcommand=function(...) tkset(layerScroll, ...))
-    for (x in mvariables) tkinsert(layerBox, "end", x)
+    modelScroll <- tkscrollbar(modelFrame, repeatinterval=5, command=function(...) tkyview(modelBox, ...))
+    tkconfigure(modelBox, yscrollcommand=function(...) tkset(modelScroll, ...))
+    for (x in mvariables) tkinsert(modelBox, "end", x)
+    vvariables <- eval(parse(text=paste("focal.ensemble.object$var.names", sep="")), envir=.GlobalEnv)
+    variableFrame <- tkframe(top, relief="groove", borderwidth=2)
+    variableBox <- tklistbox(variableFrame, width=65, height=8,
+        selectmode="single", background="white", exportselection="FALSE") 
+    variableScroll <- tkscrollbar(variableFrame, repeatinterval=5, command=function(...) tkyview(variableBox, ...))
+    tkconfigure(variableBox, yscrollcommand=function(...) tkset(variableScroll, ...))
+    for (x in vvariables) tkinsert(variableBox, "end", x)
     onOK <- function(){
         stackValue <- s.variables[as.numeric(tkcurselection(stackBox))+1]
-        command <- paste("evaluation.strip.data(xn=", stackValue, ", models.list=ensmodels.focal, steps=50)", sep="")
+        command <- paste("evaluation.strip.data(xn=", stackValue, ", models.list=focal.ensemble.object, steps=200)", sep="")
         logger(paste("strip.data <- ", command, sep=""))
         assign("strip.data", justDoIt(command), envir=.GlobalEnv)
     }
     onplot <- function(){
-        layers <- mvariables[as.numeric(tkcurselection(layerBox))+1]
-        doItAndPrint(paste("evaluation.strip.plot(data=strip.data, model='", layers, "')", sep=""))
+        model.focal <- mvariables[as.numeric(tkcurselection(modelBox))+1]
+        doItAndPrint(paste("evaluation.strip.plot(data=strip.data$plot.data, TrainData=strip.data$TrainData, model.focal='", model.focal, "', col='red')", sep=""))
     }
-    onCancel <- function() {
-        tkgrab.release(top)
-        tkfocus(CommanderWindow())
-        tkdestroy(top)  
-        }
+    onplot2 <- function(){
+        variable.focal <- vvariables[as.numeric(tkcurselection(variableBox))+1]
+        doItAndPrint(paste("evaluation.strip.plot(data=strip.data$plot.data, TrainData=strip.data$TrainData, variable.focal='", variable.focal, "', col='red')", sep=""))
+    }
     buttonsFrame <- tkframe(top)
     onHelp <- function() {
         if (.Platform$OS.type != "windows") tkgrab.release(top)
@@ -6269,19 +6404,24 @@ eval.strip.GUI <- function(){
         }
     helpButton <- tkbutton(buttonsFrame, text="Help", width="12", command=onHelp)
     OKbutton <- tkbutton(buttonsFrame, text="prepare data", width="15", command=onOK, default="active")
-    plotbutton <- tkbutton(buttonsFrame, text="plot", width="12", command=onplot, default="active")
-    cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
+    plotbutton <- tkbutton(buttonsFrame, text="plot model", width="12", command=onplot, default="active")
+    plot2button <- tkbutton(buttonsFrame, text="plot variable", width="12", command=onplot2, default="active")
     tkgrid(tklabel(stackFrame, text="Select stack to prepare data"), sticky="w")
     tkgrid(stackBox, stackScroll, sticky="w")
     tkgrid(stackFrame, sticky="w")
-    tkgrid(tklabel(layerFrame, text="Select model to plot"), sticky="w")
-    tkgrid(layerBox, layerScroll, sticky="w")
-    tkgrid(layerFrame, sticky="w")
-    tkgrid(OKbutton, plotbutton, tklabel(buttonsFrame, text="    "), cancelButton, helpButton)
+    tkgrid(tklabel(modelFrame, text="Select model to plot"), sticky="w")
+    tkgrid(modelBox, modelScroll, sticky="w")
+    tkgrid(modelFrame, sticky="w")
+    tkgrid(tklabel(variableFrame, text="Select variable to plot"), sticky="w")
+    tkgrid(variableBox, variableScroll, sticky="w")
+    tkgrid(variableFrame, sticky="w")
+    tkgrid(OKbutton, plotbutton, plot2button, tklabel(buttonsFrame, text="    "), helpButton)
     tkgrid(buttonsFrame, sticky="w")
-    tkgrid.configure(layerScroll, sticky="ns")
+    tkgrid.configure(variableScroll, sticky="ns")
+    tkgrid.configure(modelScroll, sticky="ns")
     tkgrid.configure(stackScroll, sticky="ns")
-    tkselection.set(layerBox, 0)
+    tkselection.set(variableBox, 0)
+    tkselection.set(modelBox, 0)
     tkselection.set(stackBox, 0)
     for (row in 0:6) tkgrid.rowconfigure(top, row, weight=0)
     for (col in 0:0) tkgrid.columnconfigure(top, col, weight=0)
@@ -6289,7 +6429,7 @@ eval.strip.GUI <- function(){
     tkwm.resizable(top, 0, 0)
     tkwm.deiconify(top)
     tkgrab.set(top)
-    tkfocus(layerBox)
+    tkfocus(modelBox)
     tkwait.window(top)
 }
 
@@ -6306,7 +6446,7 @@ ens.predict.GUI <- function(){
     for (x in s.variables) tkinsert(stackBox, "end", x)
     onOK <- function(){
         stackValue <- s.variables[as.numeric(tkcurselection(stackBox))+1]
-        doItAndPrint(paste("ensemble.raster(xn=", stackValue, ", models.list=ensmodels.focal, RASTER.species.name = ensmodels.focal$species.name)", sep=""))
+        doItAndPrint(paste("ensemble.raster(xn=", stackValue, ", models.list=focal.ensemble.object, RASTER.species.name = focal.ensemble.object$species.name)", sep=""))
     }
     onCancel <- function() {
         tkgrab.release(top)

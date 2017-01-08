@@ -12,11 +12,12 @@ The basic function \code{ensemble.raster} creates two consensus raster layers, o
 }
 
 \usage{
-ensemble.raster(xn = NULL, ext = NULL, 
+ensemble.raster(xn = NULL, 
     models.list = NULL, 
     input.weights = models.list$output.weights,
     thresholds = models.list$thresholds,
-    RASTER.species.name = "Species001", RASTER.stack.name = xn@title, 
+    RASTER.species.name = models.list$species.name, 
+    RASTER.stack.name = xn@title, 
     RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
     RASTER.models.overwrite = TRUE,
     KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
@@ -24,21 +25,21 @@ ensemble.raster(xn = NULL, ext = NULL,
     p = models.list$p, a = models.list$a,
     pt = models.list$pt, at = models.list$at)
 
-ensemble.habitat.change(base.map=file.choose(), 
-    other.maps=utils::choose.files(),
-    change.folder="ensembles/change",
+ensemble.habitat.change(base.map = file.choose(), 
+    other.maps = utils::choose.files(),
+    change.folder = "ensembles/change",
     RASTER.format = "raster", RASTER.datatype = "INT1U", RASTER.NAflag = 255,
     KML.out = FALSE, KML.folder = "kml/change",
     KML.maxpixels = 100000, KML.blur = 10)
 
 ensemble.area(x=NULL, km2=TRUE)
+
 }
 
 \arguments{
-  \item{xn}{ RasterStack object (\code{\link[raster]{stack}}) containing all layers that correspond to explanatory variables of an ensemble calibrated earlier with \code{\link{ensemble.test}}. See also \code{\link[raster]{predict}}.   }
-  \item{ext}{ an Extent object to limit the prediction to a sub-region of \code{xn} and the selection of background points to a sub-region of \code{x}, typically provided as c(lonmin, lonmax, latmin, latmax); see also \code{\link[raster]{predict}}, \code{\link[dismo]{randomPoints}} and \code{\link[raster]{extent}} }
+  \item{xn}{ RasterStack object (\code{\link[raster]{stack}}) containing all layers that correspond to explanatory variables of an ensemble calibrated earlier with \code{\link{ensemble.calibrate.models}}. See also \code{\link[raster]{predict}}.   }
   \item{models.list}{ list with 'old' model objects such as \code{MAXENT} or \code{RF}. }
-  \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.test.splits} can be used. }
+  \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.calibrate.weights} can be used. }
   \item{thresholds}{ array with the threshold values separating predicted presence for each of the algorithms. }
   \item{RASTER.species.name}{ First part of the names of the raster files that will be generated, expected to identify the modelled species (or organism). }
   \item{RASTER.stack.name}{ Last part of the names of the raster files that will be generated, expected to identify the predictor stack used. }
@@ -68,7 +69,7 @@ ensemble.area(x=NULL, km2=TRUE)
 \details{
 The basic function \code{ensemble.raster} fits individual suitability models for all models with positive input weights. In subfolder "models" of the working directory, suitability maps for the individual suitability modelling algorithms are stored. In subfolder "ensembles", a consensus suitability map based on a weighted average of individual suitability models is stored. In subfolder "ensembles/presence", a presence-absence (1-0) map will be provided. In subfolder "ensembles/count", a consensus suitability map based on the number of individual suitability models that predict presence of the focal organism is stored.
 
-Several of the features of \code{ensemble.raster} are also available from \code{\link{ensemble.test}}. The main difference between the two functions is that \code{ensemble.raster} generates raster layers for individual suitability models, whereas the purpose of \code{\link{ensemble.test}} is specifically to test different suitability modelling algorithms.
+Several of the features of \code{ensemble.raster} are also available from \code{\link{ensemble.calibrate.models}}. The main difference between the two functions is that \code{ensemble.raster} generates raster layers for individual suitability models, whereas the purpose of \code{\link{ensemble.calibrate.models}} is specifically to test different suitability modelling algorithms.
 
 Note that values in suitability maps are integer values that were calculated by multiplying probabilities by 1000 (see also \code{\link[base]{trunc}}).
 
@@ -99,7 +100,7 @@ Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in 
 
 
 \seealso{
-\code{\link{evaluation.strip.plot}}, \code{\link{ensemble.test}}, \code{\link{ensemble.test.splits}}, \code{\link{ensemble.batch}}
+\code{\link{evaluation.strip.plot}}, \code{\link{ensemble.calibrate.models}}, \code{\link{ensemble.calibrate.weights}}, \code{\link{ensemble.batch}}
 }
 
 \examples{
@@ -113,11 +114,9 @@ predictor.files <- list.files(path=paste(system.file(package="dismo"), '/ex', se
 predictors <- stack(predictor.files)
 # subset based on Variance Inflation Factors
 predictors <- subset(predictors, subset=c("bio5", "bio6", 
-    "bio16", "bio17", "biome"))
-predictors
+    "bio16", "bio17"))
 predictors
 predictors@title <- "base"
-
 
 # presence points
 # presence points
@@ -125,8 +124,7 @@ presence_file <- paste(system.file(package="dismo"), '/ex/bradypus.csv', sep='')
 pres <- read.table(presence_file, header=TRUE, sep=',')[,-1]
 
 # choose background points
-ext <- extent(-90, -32, -33, 23)
-background <- randomPoints(predictors, n=1000, ext=ext, extf = 1.00)
+background <- randomPoints(predictors, n=1000, extf = 1.00)
 
 # if desired, change working directory where subfolders of "models" and 
 # "ensembles" will be created
@@ -140,90 +138,92 @@ getwd()
 # factor is not used as it is not certain whether correct levels will be used
 # it may therefore be better to use dummy variables
 
-# step 1: 4-fold cross-validation
-ensemble.calibrate.step1 <- ensemble.test.splits(x=predictors, p=pres, a=background, 
-    ext=ext,
-    k=4, 
-    layer.drops=c("biome"),
+# step 1: determine weights through 4-fold cross-validation
+ensemble.calibrate.step1 <- ensemble.calibrate.weights(
+    x=predictors, p=pres, a=background, k=4, 
     SINK=TRUE, species.name="Bradypus",
-    MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
-    GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
-    SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
+    MAXENT=1, MAXLIKE=0, GBM=1, GBMSTEP=0, RF=0, GLM=1, GLMSTEP=0, 
+    GAM=1, GAMSTEP=0, MGCV=1, MGCVFIX=0,
+    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, GLMNET=1,
+    BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
     ENSEMBLE.tune=TRUE, PROBIT=TRUE,
-    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
-    ENSEMBLE.min=0.7,
-    Yweights="BIOMOD", factors=c("biome"),
-    PLOTS=FALSE, formulae.defaults=TRUE,
-    GBMSTEP.learning.rate=0.002)
+    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3),
+    ENSEMBLE.min=c(0.65, 0.7),
+    Yweights="BIOMOD",
+    PLOTS=FALSE, formulae.defaults=TRUE)
 
-# step 2: create the models that will be used for the raster predictions
-# models with input.weights < 0.05 are excluded
+# step 1 generated the weights for each algorithm
+# Choice here to use the weights calculated directly from AUC
+# and not the tuned weights
+# However, results show what AUC would be with tuned parameters
+model.weights <- ensemble.calibrate.step1$output.weights.AUC
+x.batch <- ensemble.calibrate.step1$x
+p.batch <- ensemble.calibrate.step1$p
+a.batch <- ensemble.calibrate.step1$a
+MAXENT.a.batch <- ensemble.calibrate.step1$MAXENT.a
+factors.batch <- ensemble.calibrate.step1$factors
+dummy.vars.batch <- ensemble.calibrate.step1$dummy.vars
 
-output.weights <- ensemble.calibrate.step1$output.weights.AUC
-output.weights[output.weights < 0.05] <- 0
-output.weights
-
-ensemble.calibrate.step2 <- ensemble.test(x=predictors, p=pres, a=background, 
-    ext=ext,
-    layer.drops=c("biome"),
+# step 2: calibrate models with all available presence locations
+# weights determined in step 1 calculate ensemble in step 2
+ensemble.calibrate.step2 <- ensemble.calibrate.models(
+    x=x.batch, p=p.batch, a=a.batch, MAXENT.a=MAXENT.a.batch, 
+    factors=factors.batch, dummy.vars=dummy.vars.batch, 
     SINK=TRUE, species.name="Bradypus",
     models.keep=TRUE,
-    input.weights=output.weights,
+    input.weights=model.weights,
     AUC.weights=FALSE, ENSEMBLE.tune=FALSE, PROBIT=TRUE,
-    Yweights="BIOMOD", factors=c("biome"),
-    PLOTS=FALSE, formulae.defaults=TRUE,
-    GBMSTEP.learning.rate=0.002)
+    Yweights="BIOMOD",
+    PLOTS=FALSE, formulae.defaults=TRUE)
 
-# step 3: use previously calibrated models
+# step 3: use previously calibrated models to create ensemble raster layers
 # re-evaluate the created maps at presence and background locations
-# (note that re-evaluation will be different due to rescaling of model results)
-ensemble.nofactors1 <- ensemble.raster(xn=predictors, ext=ext,
+# (note that re-evaluation will be different due to truncation of raster layers
+# as they wered saved as integer values ranged 0 to 1000)
+ensemble.raster.results <- ensemble.raster(xn=predictors, 
     models.list=ensemble.calibrate.step2$models, 
-    input.weights=output.weights,
-    thresholds=ensemble.calibrate.step2$models$thresholds,
+    input.weights=model.weights,
     SINK=TRUE, evaluate=TRUE,
     RASTER.species.name="Bradypus", RASTER.stack.name="base")
 
 # use the base map to check for changes in suitable habitat
 # this type of analysis is typically done with different predictor layers
 # (for example, predictor layers representing different possible future climates)
-# in this example, changes from a previous model (ensemble.nofactors1)
-# are contrasted with a newly calibrated model (ensemble.nofactors2)
-ensemble.calibrate.step1 <- ensemble.test.splits(x=predictors, p=pres, a=background, 
-    ext=ext,
+# In this example, changes from a previous model (ensemble.raster.results)
+# are contrasted with a newly calibrated model (ensemble.raster.results2)
+# step 1: 4-fold cross-validation
+ensemble.calibrate2.step1 <- ensemble.calibrate.weights(
+    x=x.batch, p=p.batch, a=a.batch, MAXENT.a=MAXENT.a.batch, 
+    factors=factors.batch, dummy.vars=dummy.vars.batch, 
     k=4, 
-    layer.drops=c("biome"),
     SINK=TRUE, species.name="Bradypus",
-    MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
-    GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
-    SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
+    MAXENT=1, MAXLIKE=0, GBM=1, GBMSTEP=0, RF=0, GLM=1, GLMSTEP=0, 
+    GAM=1, GAMSTEP=0, MGCV=1, MGCVFIX=0,
+    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, GLMNET=1,
+    BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
     ENSEMBLE.tune=TRUE, PROBIT=TRUE,
-    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 4, 6, 8),
-    ENSEMBLE.min=0.7,
-    Yweights="BIOMOD", 
-    PLOTS=FALSE, formulae.defaults=TRUE,
-    GBMSTEP.learning.rate=0.002)
+    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3),
+    ENSEMBLE.min=c(0.65, 0.7),
+    Yweights="BIOMOD",
+    PLOTS=FALSE, formulae.defaults=TRUE)
 
-output.weights <- ensemble.calibrate.step1$output.weights.AUC
-output.weights[output.weights < 0.05] <- 0
-output.weights
+model.weights2 <- ensemble.calibrate2.step1$output.weights.AUC
 
-ensemble.calibrate.step2 <- ensemble.test(x=predictors, p=pres, a=background, 
-    ext=ext,
-    layer.drops=c("biome"),
+ensemble.calibrate2.step2 <- ensemble.calibrate.models(
+    x=x.batch, p=p.batch, a=a.batch, MAXENT.a=MAXENT.a.batch, 
+    factors=factors.batch, dummy.vars=dummy.vars.batch, 
     SINK=TRUE, species.name="Bradypus",
     models.keep=TRUE,
-    input.weights=output.weights,
+    input.weights=model.weights2,
     AUC.weights=FALSE, ENSEMBLE.tune=FALSE, PROBIT=TRUE,
-    Yweights="BIOMOD", 
-    PLOTS=FALSE, formulae.defaults=TRUE,
-    GBMSTEP.learning.rate=0.002)
+    Yweights="BIOMOD",
+    PLOTS=FALSE, formulae.defaults=TRUE)
 
-ensemble.nofactors2 <- ensemble.raster(xn=predictors, ext=ext,
-    models.list=ensemble.calibrate.step2$models, 
-    input.weights=output.weights,
-    thresholds=ensemble.calibrate.step2$models$thresholds,
-    SINK=TRUE,
+ensemble.raster.results2 <- ensemble.raster(
+    xn=predictors, 
+    models.list=ensemble.calibrate2.step2$models, 
+    input.weights=model.weights2,
+    SINK=TRUE, evaluate=TRUE,
     RASTER.species.name="Bradypus", RASTER.stack.name="recalibrated")
 
 base.file <- paste(getwd(), "/ensembles/presence/Bradypus_base.grd", sep="")
@@ -234,6 +234,19 @@ changed.habitat <- ensemble.habitat.change(base.map=base.file,
     change.folder="ensembles/change")
 
 change.file <- paste(getwd(), "/ensembles/change/Bradypus_recalibrated_presence.grd", sep="")
+
+par.old <- graphics::par(no.readonly=T)
+dev.new()
+par(mfrow=c(2,2))
+raster::plot(raster(base.file), breaks=c(-1, 0, 1), col=c("grey", "green"), 
+    legend.shrink=0.8, main="base presence")
+raster::plot(raster(other.file), breaks=c(-1, 0, 1), col=c("grey", "green"), 
+    legend.shrink=0.8, main="other presence")
+raster::plot(raster(change.file), breaks=c(-1, 0, 1, 10, 11), 
+    col=c("grey", "blue", "red", "green"), 
+    legend.shrink=0.8, main="habitat change", sub="11 remaining, 10 lost, 1 new")
+graphics::par(par.old)
+
 areas <- ensemble.area(raster(change.file))
 areas
 }

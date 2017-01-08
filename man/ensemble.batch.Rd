@@ -8,16 +8,17 @@ Suitability mapping based on ensembles of modelling algorithms: batch processing
 }
 
 \description{
-The main function allows for batch processing of different species and different environmental RasterStacks. The function makes internal calls to \code{\link{ensemble.test.splits}}, \code{\link{ensemble.test}} and \code{\link{ensemble.raster}}. 
+The main function allows for batch processing of different species and different environmental RasterStacks. The function makes internal calls to \code{\link{ensemble.calibrate.weights}}, \code{\link{ensemble.calibrate.models}} and \code{\link{ensemble.raster}}. 
 }
 
 \usage{
-ensemble.batch(x = NULL, xn = c(x), ext = NULL, 
+ensemble.batch(x = NULL, xn = c(x), 
     species.presence = NULL, species.absence = NULL, 
     presence.min = 20,
-    an = 1000, excludep = FALSE, CIRCLES.at = FALSE, CIRCLES.d = 100000, 
+    an = 1000, excludep = FALSE, SSB.reduce = FALSE, CIRCLES.d = 250000, 
     k.splits = 4, k.test = 0, 
-    n.ensembles = 1, 
+    n.ensembles = 1,
+    VIF.max = 10, 
     SINK = FALSE,
     RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767, 
     KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
@@ -27,15 +28,17 @@ ensemble.batch(x = NULL, xn = c(x), ext = NULL,
     ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1,
     ENSEMBLE.weight.min = 0.05,
     input.weights = NULL, 
-    MAXENT = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, 
+    MAXENT = 1, MAXLIKE = 1, GBM = 1, GBMSTEP = 0, RF = 1, GLM = 1, GLMSTEP = 1, GAM = 1, 
     GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, RPART = 1, NNET = 1, 
-    FDA = 1, SVM = 1, SVME = 1, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, 
-    PROBIT = FALSE, AUC.weights = TRUE,
+    FDA = 1, SVM = 1, SVME = 1, GLMNET = 1,
+    BIOCLIM.O = 0, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, MAHAL01 = 1,
+    PROBIT = FALSE, AUC.weights = FALSE,
     Yweights = "BIOMOD", 
     layer.drops = NULL, factors = NULL, dummy.vars = NULL,
     formulae.defaults = TRUE, maxit = 100,
-    MAXENT.a = NULL, MAXENT.an = 10000, MAXENT.BackData = NULL, 
+    MAXENT.a = NULL, MAXENT.an = 10000, 
     MAXENT.path = paste(getwd(), "/models/maxent", sep=""),
+    MAXLIKE.formula = NULL, MAXLIKE.method = "BFGS",
     GBM.formula = NULL, GBM.n.trees = 2001, 
     GBMSTEP.gbm.x = 2:(1 + raster::nlayers(x)), 
     GBMSTEP.tree.complexity = 5, GBMSTEP.learning.rate = 0.005, 
@@ -53,12 +56,15 @@ ensemble.batch(x = NULL, xn = c(x), ext = NULL,
     NNET.formula = NULL, NNET.size = 8, NNET.decay = 0.01, 
     FDA.formula = NULL, 
     SVM.formula = NULL, SVME.formula = NULL,
+    GLMNET.nlambda = 100, GLMNET.class = FALSE,
+    BIOCLIM.O.fraction = 0.9,
     MAHAL.shape = 1)
 
 ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
     positive.filters = c("grd", "_ENSEMBLE_"), negative.filters = c("xml"), 
     RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
     KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
+    abs.breaks = 6, pres.breaks = 6, sd.breaks = 9,
     p = NULL, a = NULL,
     pt = NULL, at = NULL,
     threshold = -1,
@@ -66,35 +72,35 @@ ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
     threshold.PresenceAbsence = FALSE)
 
 ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
-    plot.method = "suitability", 
+    plot.method=c("suitability", "presence", "count", 
+        "consensussuitability", "consensuspresence", "consensuscount", "consensussd"),  
     dev.new.width = 7, dev.new.height = 7,
     main = paste(RASTER.species.name, " ", plot.method, 
         " for ", RASTER.stack.name, sep=""),
-    positive.filters = c("grd","_MEAN_"), negative.filters = c("xml"), 
+    positive.filters = c("grd"), negative.filters = c("xml"), 
     p=NULL, a=NULL,
     threshold = -1,
     threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
     threshold.PresenceAbsence = FALSE,
-    abs.breaks = 6, pres.breaks = 6, 
+    abs.breaks = 6, pres.breaks = 6, sd.breaks = 9,
     maptools.boundaries = TRUE, maptools.col = "dimgrey", ...)
-
 }
 
 \arguments{
   \item{x}{ RasterStack object (\code{\link[raster]{stack}}) containing all layers to calibrate an ensemble.  }
   \item{xn}{ RasterStack object (\code{\link[raster]{stack}}) containing all layers that correspond to explanatory variables of an ensemble calibrated earlier with \code{x}. Several RasterStack objects can be provided in a format as c(stack1, stack2, stack3); these will be used sequentially. See also \code{\link[raster]{predict}}.   }
-  \item{ext}{ an Extent object to limit the prediction to a sub-region of \code{xn} and the selection of background points to a sub-region of \code{x}, typically provided as c(lonmin, lonmax, latmin, latmax); see also \code{\link[raster]{predict}}, \code{\link[dismo]{randomPoints}} and \code{\link[raster]{extent}} }
   \item{species.presence}{ presence points used for calibrating the suitability models, available in 3-column (species, x, y) or (species, lon, lat) dataframe  }
   \item{species.absence}{ background points used for calibrating the suitability models, either available in a 3-column (species, x, y) or (species, lon, lat), or available in a 2-column (x, y) or (lon, lat) dataframe. In case of a 2-column dataframe, the same background locations will be used for all species.  }
   \item{presence.min}{ minimum number of presence locations for the organism (if smaller, no models are fitted).  }
   \item{an}{ number of background points for calibration to be selected with \code{\link[dismo]{randomPoints}} in case argument \code{a} or \code{species.absence} is missing  }
   \item{excludep}{ parameter that indicates (if \code{TRUE}) that presence points will be excluded from the background points; see also \code{\link[dismo]{randomPoints}} }
-  \item{CIRCLES.at}{ If \code{TRUE}, then new background points that will be used for evaluationg the suitability models will be selected (\code{\link[dismo]{randomPoints}}) in circular neighbourhoods (created with \code{\link[dismo]{circles}}) around presence locations (p and pt).  }
+  \item{SSB.reduce}{ If \code{TRUE}, then new background points that will be used for evaluationg the suitability models will be selected (\code{\link[dismo]{randomPoints}}) in circular neighbourhoods (created with \code{\link[dismo]{circles}}) around presence locations (p and pt). The abbreviation of SSB refers to spatial sorting bias; see also \code{\link[dismo]{ssb}}.  }
   \item{CIRCLES.d}{ Radius in m of circular neighbourhoods (created with \code{\link[dismo]{circles}}) around presence locations (p and pt).  }
   \item{k}{ If larger than 1, the mumber of groups to split between calibration (k-1) and evaluation (1) data sets (for example, \code{k=5} results in 4/5 of presence and background points to be used for calibrating the models, and 1/5 of presence and background points to be used for evaluating the models). See also \code{\link[dismo]{kfold}}.  }
-  \item{k.splits}{ If larger than 1, the number of splits for the \code{\link{ensemble.test.splits}} step in batch processing. See also \code{\link[dismo]{kfold}}.  }
+  \item{k.splits}{ If larger than 1, the number of splits for the \code{\link{ensemble.calibrate.weights}} step in batch processing. See also \code{\link[dismo]{kfold}}.  }
   \item{k.test}{ If larger than 1, the mumber of groups to split between calibration (k-1) and evaluation (1) data sets when calibrating the final models (for example, \code{k=5} results in 4/5 of presence and background points to be used for calibrating the models, and 1/5 of presence and background points to be used for evaluating the models). See also \code{\link[dismo]{kfold}}.  }
   \item{n.ensembles}{ If larger than 1, the number of different ensembles generated per species in batch processing. }
+  \item{VIF.max}{ Maximum Variance Inflation Factor of variables; see \code{\link[BiodiversityR]{ensemble.VIF}}.  }
   \item{SINK}{ Append the results to a text file in subfolder 'outputs' (if \code{TRUE}). The name of file is based on species names. In case a file already exists, then results are appended. See also \code{\link[base]{sink}}.  }
   \item{RASTER.format}{ Format of the raster files that will be generated. See \code{\link[raster]{writeFormats}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.datatype}{ Format of the raster files that will be generated. See \code{\link[raster]{dataType}} and \code{\link[raster]{writeRaster}}.  }
@@ -110,8 +116,9 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{ENSEMBLE.min}{ The minimum input weight (typically corresponding to AUC values) for a model to be included in the ensemble. In case a vector is provided, function \code{ensemble.strategy} is called internally to determine weights for the ensemble model.  }
   \item{ENSEMBLE.exponent}{ Exponent applied to AUC values to convert AUC values into weights (for example, an exponent of 2 converts input weights of 0.7, 0.8 and 0.9 into 0.7^2=0.49, 0.8^2=0.64 and 0.9^2=0.81). See details. }
   \item{ENSEMBLE.weight.min}{ The minimum output weight for models included in the ensemble, applying to weights that sum to one. Note that \code{ENSEMBLE.min} typically refers to input AUC values.   }
-  \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.test.splits} can be used. }
+  \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.calibrate.weights} can be used. }
   \item{MAXENT}{ Input weight for a maximum entropy model (\code{\link[dismo]{maxent}}). (Only weights > 0 will be used.)  }
+  \item{MAXLIKE}{ Input weight for a maxlike model (\code{\link[maxlike]{maxlike}}). (Only weights > 0 will be used.)  }
   \item{GBM}{ Input weight for a boosted regression trees model (\code{\link[gbm]{gbm}}). (Only weights > 0 will be used.)  }
   \item{GBMSTEP}{ Input weight for a stepwise boosted regression trees model (\code{\link[dismo]{gbm.step}}). (Only weights > 0 will be used.)  }
   \item{RF}{ Input weight for a random forest model (\code{\link[randomForest]{randomForest}}). (Only weights > 0 will be used.)  }
@@ -127,21 +134,25 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{FDA}{ Input weight for a flexible discriminant analysis model (\code{\link[mda]{fda}}). (Only weights > 0 will be used.)  }
   \item{SVM}{ Input weight for a support vector machine model (\code{\link[kernlab]{ksvm}}). (Only weights > 0 will be used.)  }
   \item{SVME}{ Input weight for a support vector machine model (\code{\link[e1071]{svm}}). (Only weights > 0 will be used.) }
+  \item{GLMNET}{ Input weight for a GLM with lasso or elasticnet regularization (\code{\link[glmnet]{glmnet}}). (Only weights > 0 will be used.) }
+  \item{BIOCLIM.O}{ Input weight for the original BIOCLIM algorithm (\code{\link[BiodiversityR]{ensemble.bioclim}}). (Only weights > 0 will be used.) }
   \item{BIOCLIM}{ Input weight for the BIOCLIM algorithm (\code{\link[dismo]{bioclim}}). (Only weights > 0 will be used.)  }
   \item{DOMAIN}{ Input weight for the DOMAIN algorithm (\code{\link[dismo]{domain}}). (Only weights > 0 will be used.)  }
   \item{MAHAL}{ Input weight for the Mahalonobis algorithm (\code{\link[dismo]{mahal}}). (Only weights > 0 will be used.)  }
+  \item{MAHAL01}{ Input weight for the Mahalanobis algorithm (\code{\link[dismo]{mahal}}), using a transformation method afterwards whereby output is within the range between 0 and 1. (Only weights > 0 will be used.) }
   \item{PROBIT}{ If \code{TRUE}, then subsequently to the fitting of the individual algorithm (e.g. maximum entropy or GAM) a generalized linear model (\code{\link[stats]{glm}}) with probit link \code{family=binomial(link="probit")} will be fitted to transform the predictions, using the previous predictions as explanatory variable. This transformation results in all model predictions to be probability estimates.  }
-  \item{AUC.weights}{ If \code{TRUE}, then use the average of the AUC for the different submodels in the different crossvalidation runs as weights for the 'full' ensemble model. See \code{\link{ensemble.test.splits}} for details.  }
+  \item{AUC.weights}{ If \code{TRUE}, then use the average of the AUC for the different submodels in the different crossvalidation runs as weights for the 'full' ensemble model. See \code{\link{ensemble.calibrate.weights}} for details.  }
   \item{Yweights}{ chooses how cases of presence and background (absence) are weighted; \code{"BIOMOD"} results in equal weighting of all presence and all background cases, \code{"equal"} results in equal weighting of all cases. The user can supply a vector of weights similar to the number of cases in the calibration data set. }
   \item{layer.drops}{ vector that indicates which layers should be removed from RasterStack \code{x}. See also \code{\link[raster]{addLayer}}.  }
   \item{factors}{ vector that indicates which variables are factors; see also \code{\link[dismo]{prepareData}}  }
   \item{dummy.vars}{ vector that indicates which variables are dummy variables (influences formulae suggestions) }
   \item{formulae.defaults}{ Suggest formulae for most of the models (if \code{TRUE}). See also \code{\link{ensemble.formulae}}.   }
   \item{maxit}{ Maximum number of iterations for some of the models. See also \code{\link[stats]{glm.control}}, \code{\link[gam]{gam.control}}, \code{\link[mgcv]{gam.control}} and \code{\link[nnet]{nnet}}.  }
-  \item{MAXENT.a}{ background points used for calibrating the maximum entropy model (\code{\link[dismo]{maxent}}), typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}. Ignored if \code{MAXENT.BackData} is provided.  }
+  \item{MAXENT.a}{ background points used for calibrating the maximum entropy model (\code{\link[dismo]{maxent}}), typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}.  }
   \item{MAXENT.an}{ number of background points for calibration to be selected with \code{\link[dismo]{randomPoints}} in case argument \code{MAXENT.a} is missing. When used with the \code{ensemble.batch} function, the same background locations will be used for each of the species runs; this implies that for each species, presence locations are not excluded from the background data for this function.   }
-  \item{MAXENT.BackData}{ dataframe containing explanatory variables for the background locations. This information will be used for calibrating the maximum entropy model (\code{\link[dismo]{maxent}}). When used with the \code{ensemble.batch} function, the same background locations will be used for each of the cross-validation runs; this is based on the assumption that a large number (~10000) of background locations are used.  }
   \item{MAXENT.path}{ path to the directory where output files of the maximum entropy model are stored; see also \code{\link[dismo]{maxent}}   }
+  \item{MAXLIKE.formula}{ formula for the maxlike algorithm; see also \code{\link[maxlike]{maxlike}}  }
+  \item{MAXLIKE.method}{ method for the maxlike algorithm; see also \code{\link[stats]{optim}}  }
   \item{GBM.formula}{ formula for the boosted regression trees algorithm; see also \code{\link[gbm]{gbm}}  }
   \item{GBM.n.trees}{ total number of trees to fit for the boosted regression trees model; see also \code{\link[gbm]{gbm}}  }
   \item{GBMSTEP.gbm.x}{ indices of column numbers with explanatory variables for stepwise boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
@@ -176,24 +187,28 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{FDA.formula}{ formula for the flexible discriminant analysis model; see also \code{\link[mda]{fda}}  }
   \item{SVM.formula}{ formula for the support vector machine model; see also \code{\link[kernlab]{ksvm}}  }
   \item{SVME.formula}{ formula for the support vector machine model; see also \code{\link[e1071]{svm}}  }
-  \item{MAHAL.shape}{ parameter that influences the transformation of output values of \code{\link[dismo]{mahal}}. See details section.  }
+  \item{GLMNET.nlambda}{ The number of \code{lambda} values; see also \code{\link[glmnet]{glmnet}}  }
+  \item{GLMNET.class}{ Use the predicted class to calculate the mean predictions of GLMNET; see also \code{\link[glmnet]{predict.glmnet}}  }
+  \item{BIOCLIM.O.fraction}{ Fraction of range representing the optimal limits, default value of 0.9 as in the original BIOCLIM software (\code{\link[BiodiversityR]{ensemble.bioclim}}).  }
+  \item{MAHAL.shape}{ parameter that influences the transformation of output values of \code{\link[dismo]{mahal}}.  }
 
   \item{RASTER.species.name}{ First part of the names of the raster files, expected to identify the modelled species (or organism). }
   \item{RASTER.stack.name}{ Last part of the names of the raster files, expected to identify the predictor stack used. }
   \item{positive.filters}{ vector that indicates parts of filenames for files that will be included in the calculation of the mean probability values  }
   \item{negative.filters}{ vector that indicates parts of filenames for files that will not be included in the calculation of the mean probability values  }
+  \item{abs.breaks}{ Number of breaks in the colouring scheme for absence (only applies to \code{suitability} mapping).   }
+  \item{pres.breaks}{ Number of breaks in the colouring scheme for presence (only applies to \code{suitability} mapping).  }
+  \item{sd.breaks}{ Number of breaks in the colouring scheme for standard deviation (only applies to \code{sd} mapping).  }
   \item{p}{ presence points used for calibrating the suitability models, typically available in 2-column (x, y) or (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{a}{ background points used for calibrating the suitability models, typically available in 2-column (x, y) or (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{pt}{ presence points used for evaluating the suitability models, typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}}  }
   \item{at}{ background points used for calibrating the suitability models, typicall available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{threshold}{ Threshold value that will be used to distinguish between presence and absence. If < 0, then a threshold value will be calculated from the provided presence \code{p} and absence \code{a} locations.  }
 
-  \item{plot.method}{ Choice of maps to be plotted: \code{suitability} plots suitability maps, \code{presence} plots presence-absence maps and \code{count} plots count maps (count of number of algorithms or number of ensembles predicting presence).  }
+  \item{plot.method}{ Choice of maps to be plotted: \code{suitability} plots suitability maps, \code{presence} plots presence-absence maps, \code{count} plots count maps (count of number of algorithms or number of ensembles predicting presence) and \code{sd} plots standard deviation maps.  }
   \item{dev.new.width}{ Width for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
   \item{dev.new.height}{ Heigth for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
   \item{main}{ main title for the plots.  }
-  \item{abs.breaks}{ Number of breaks in the colouring scheme for absence (only applies to \code{suitability} mapping).   }
-  \item{pres.breaks}{ Number of breaks in the colouring scheme for presence (only applies to \code{suitability} mapping).  }
   \item{maptools.boundaries}{ If \code{TRUE}, then plot approximate country boundaries \code{\link[maptools]{wrld_simpl}}   }
   \item{maptools.col}{ Colour for approximate country boundaries plotted via \code{\link[maptools]{wrld_simpl}}   }
   \item{...}{ Other items passed to function \code{\link[raster]{plot}}. }
@@ -201,11 +216,11 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
 }
 
 \details{
-This function allows for batch processing of different species and different environmental RasterStacks. The function makes internal calls to \code{\link{ensemble.test.splits}}, \code{\link{ensemble.test}} and \code{\link{ensemble.raster}}. 
+This function allows for batch processing of different species and different environmental RasterStacks. The function makes internal calls to \code{\link{ensemble.calibrate.weights}}, \code{\link{ensemble.calibrate.models}} and \code{\link{ensemble.raster}}. 
 
-\code{\link{ensemble.test.splits}} results in a cross-validation procedure whereby the data set is split in calibration and testing subsets and the best weights for the ensemble model are determined (including the possibility for weights = 0).
+\code{\link{ensemble.calibrate.weights}} results in a cross-validation procedure whereby the data set is split in calibration and testing subsets and the best weights for the ensemble model are determined (including the possibility for weights = 0).
 
-\code{\link{ensemble.test}} is the step whereby models are calibrated using all the available presence data.
+\code{\link{ensemble.calibrate.models}} is the step whereby models are calibrated using all the available presence data.
 
 \code{\link{ensemble.raster}} is the final step whereby raster layers are produced for the ensemble model.
 
@@ -230,7 +245,7 @@ Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in 
 
 
 \seealso{
-\code{\link{ensemble.test.splits}}, \code{\link{ensemble.test}}, \code{\link{ensemble.raster}}
+\code{\link{ensemble.calibrate.weights}}, \code{\link{ensemble.calibrate.models}}, \code{\link{ensemble.raster}}
 }
 
 \examples{
@@ -254,52 +269,56 @@ pres <- read.table(presence_file, header=TRUE, sep=',')
 pres[,1] <- rep("Bradypus", nrow(pres))
 
 # choose background points
-ext <- extent(-90, -32, -33, 23)
-background <- randomPoints(predictors, n=1000, ext=ext, extf = 1.00)
+background <- randomPoints(predictors, n=1000, extf = 1.00)
 
 # north and south for new predictions (as if new climates)
 ext2 <- extent(-90, -32, 0, 23)
 predictors2 <- crop(predictors, y=ext2)
+predictors2 <- stack(predictors2)
 predictors2@title <- "north"
 
 ext3 <- extent(-90, -32, -33, 0)
 predictors3 <- crop(predictors, y=ext3)
+predictors3 <- stack(predictors3)
 predictors3@title <- "south"
 
 # fit 3 ensembles with batch processing, choosing the best ensemble model based on the 
 # average AUC of 4-fold split of calibration and testing data
 # final models use all available presence data and average weights determined by the 
-# ensemble.test.splits function (called internally)
+# ensemble.calibrate.weights function (called internally)
 # batch processing can handle several species by using 3-column species.presence and 
 # species.absence data sets
 # note that these calculations can take a while
 
-ensemble.nofactors <- ensemble.batch(x=predictors, ext=ext,
-    xn=c(predictors2, predictors3),
+ensemble.nofactors <- ensemble.batch(x=predictors, 
+    xn=c(predictors, predictors2, predictors3),
     species.presence=pres, 
     species.absence=background, 
     k.splits=4, k.test=0, 
     n.ensembles=3, 
-    SINK=TRUE,
+    SINK=TRUE, 
     layer.drops=c("biome"),
-    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 4, 6, 8), 
+    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3), 
     ENSEMBLE.min=0.7,
-    MAXENT=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=0, MGCV=1, 
-    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=0,
+    MAXENT=1, MAXLIKE=0, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
+    GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
+    SVM=1, SVME=1, GLMNET=1,
+    BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
+    PROBIT=TRUE,
     Yweights="BIOMOD",
     formulae.defaults=TRUE)
 
 # summaries for the 3 ensembles for the species
-# summaries are based on files in folders ensemble, ensemble/presence and 
-# ensemble/count
+# summaries are based on files in folders ensemble/suitability, 
+# ensemble/presence and ensemble/count
+# ensemble.mean is used internally in ensemble.batch
 
 ensemble.mean(RASTER.species.name="Bradypus", RASTER.stack.name="base",
-    p=pres, a=background, 
-    KML.out=T)
+    p=pres, a=background)
 
 # plot mean suitability 
 plot1 <- ensemble.plot(RASTER.species.name="Bradypus", RASTER.stack.name="base",
-    plot.method="suitability",
+    plot.method="consensussuitability",
     p=pres, a=background, abs.breaks=4, pres.breaks=9)
 plot1
 

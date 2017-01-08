@@ -5,7 +5,7 @@ function(x, y, factor, level, returncomm=TRUE) {
         if(is.na(subs[q])) {subs[q]<-F}
     }
     if (returncomm==T) {
-        x <- x[subs,,drop=F]
+        x <- x[subs, , drop=F]
         freq <- apply(x,2,sum)
         subs <- freq>0
         x <- x[,subs,drop=F]

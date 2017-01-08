@@ -46,6 +46,13 @@ predict.zone <- function(object=centroid.model, newdata=newdata) {
     a <- data.frame(a)
     background.data <- raster::extract(x, a)
     background.data <- data.frame(background.data)
+    if (length(names(x)) == 1) {
+        xdouble <- raster::stack(x, x)
+        background.data <-  raster::extract(x=xdouble, y=a)
+        background.data <- data.frame(background.data)
+        background.data <- background.data[, 1, drop=F]
+        names(background.data) <- names(x)
+    }
     TrainValid <- complete.cases(background.data)
     a <- a[TrainValid,]
     background.data <- background.data[TrainValid,]
@@ -65,7 +72,7 @@ predict.zone <- function(object=centroid.model, newdata=newdata) {
             cat(paste("\n", "Number of centroids determined with cascadeKM (2 to 16 clusters, Calinski-Harabasz criterion)", "\n", sep = ""))
             cascaderesult <- vegan::cascadeKM(rda.scores, inf.gr=2, sup.gr=16, iter=200, criterion="calinski")
             print(cascaderesult$results)
-            groupnumbers <- (as.numeric(gsub(" groups", "", colnames(cascaderesult$results))))
+            groupnumbers <- as.numeric(gsub(" groups", "", colnames(cascaderesult$results)))
             w <- cascaderesult$results[2,]
             maxx = which.max(w[])
             centers <- groupnumbers[maxx]
@@ -78,7 +85,7 @@ predict.zone <- function(object=centroid.model, newdata=newdata) {
 
 # predefined categories
     }else{
-        categories.data <- raster::extract(categories.raster, a)        
+        categories.data <- raster::extract(categories.raster, a)
         categories.data <- data.frame(categories.data)
         categories <- levels(as.factor(categories.data[,1]))
         categories <- categories[is.na(categories) == F]
@@ -132,30 +139,31 @@ predict.zone <- function(object=centroid.model, newdata=newdata) {
         zone <- predict.zone(centroid.model, newdata=background.data)
         # simple plot in geographic space with K-means clustering
         graphics::plot(a[, 2] ~ a[, 1], pch=15, col=grDevices::rainbow(centers)[as.numeric(clusters.remember)], 
-            main="zones (based on K-means clustering in PCA) and locations of centroid analogs", xlab=names(a)[1], ylab=names(a)[2])
-        graphics::points(centroid.analogs[, 2] ~ centroid.analogs[, 1], pch=20)
+            main="K-means zones in geographical space", xlab=names(a)[1], ylab=names(a)[2])
+        graphics::points(centroid.analogs[, 2] ~ centroid.analogs[, 1], pch=8)
         graphics::text(centroid.analogs[, 2] ~ centroid.analogs[, 1], labels=c(1:centers), pos=3)
         graphics::legend(x="topright", legend=c(1:centers), pch=rep(15, centers), col=grDevices::rainbow(centers))
         # simple plot in geographic space with Mahalanobis clustering
         graphics::plot(a[, 2] ~ a[, 1], pch=15, col=grDevices::rainbow(centers)[as.numeric(zone)], 
-            main="zones (based on Mahalanobis distance from centroid) and locations of centroid analogs", xlab=names(a)[1], ylab=names(a)[2])
-        graphics::points(centroid.analogs[, 2] ~ centroid.analogs[, 1], pch=20)
+            main="predicted zones from centroid", xlab=names(a)[1], ylab=names(a)[2])
+        graphics::points(centroid.analogs[, 2] ~ centroid.analogs[, 1], pch=8)
         graphics::text(centroid.analogs[, 2] ~ centroid.analogs[, 1], labels=c(1:centers), pos=3)
         graphics::legend(x="topright", legend=c(1:centers), pch=rep(15, centers), col=grDevices::rainbow(centers))
         # plot in PCA space
-        graphics::plot(rda.scores[, 2] ~ rda.scores[, 1], pch=15, col=grDevices::rainbow(centers)[as.numeric(zone)], main="locations of centroids (bullets) and analogs (asterisks)")
+        graphics::plot(rda.scores[, 2] ~ rda.scores[, 1], pch=15, col=grDevices::rainbow(centers)[as.numeric(zone)], main="K-means zones in environmental space")
         graphics::points(centroid.rda[, 2] ~ centroid.rda[, 1], pch=20)
         graphics::text(centroid.rda[, 2] ~ centroid.rda[, 1], labels=c(1:centers), pos=3)
         graphics::points(rda.scores[remember.closest, 2] ~ rda.scores[remember.closest, 1], pch=8)
         graphics::legend(x="topright", legend=c(1:centers), pch=rep(15, centers), col=grDevices::rainbow(centers))
         if (ax >= 4) {
-            graphics::plot(rda.scores[, 4] ~ rda.scores[, 3], pch=15, col=grDevices::rainbow(centers)[as.numeric(zone)], main="locations of centroids (bullets) and analogs (asterisks)")
+            graphics::plot(rda.scores[, 4] ~ rda.scores[, 3], pch=15, col=grDevices::rainbow(centers)[as.numeric(zone)], main="K-means zones in environmental space")
             graphics::points(centroid.rda[, 4] ~ centroid.rda[, 3], pch=20)
             graphics::text(centroid.rda[, 4] ~ centroid.rda[, 3], labels=c(1:centers), pos=3)
             graphics::points(rda.scores[remember.closest, 4] ~ rda.scores[remember.closest, 3], pch=8)
             graphics::legend(x="topright", legend=c(1:centers), pch=rep(15, centers), col=grDevices::rainbow(centers))
         }
         graphics::par(par.old)
+        cat(paste("\n\n", "In graphs, circles are locations of centroids and asterisks locations of analogues of centroids", "\n", sep = ""))
     }
 
 # output

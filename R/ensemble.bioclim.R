@@ -1,8 +1,8 @@
 `ensemble.bioclim.object` <- function(
     x=NULL, p=NULL, fraction=0.9,
-    quantiles=FALSE, 
+    quantiles=TRUE, 
     species.name="Species001", 
-    factors=NULL, dummy.vars=NULL
+    factors=NULL
 )
 {
     if(is.null(x) == T) {stop("value for parameter x is missing (data.frame or RasterStack object)")}
@@ -10,7 +10,6 @@
     if(fraction < 0 || fraction > 1) {stop("fraction should be in range 0-1")}
 
     factors <- as.character(factors)
-    dummy.vars <- as.character(dummy.vars)
 
 # cutoff parameter based on the normal distribution
     cutoff <- qnorm(0.5+fraction/2)   
@@ -18,6 +17,12 @@
 
     if(inherits(x, "RasterStack")==T  && is.null(p)==F) {
         clim.values <- data.frame(raster::extract(x, y=p))
+        if (length(names(x)) == 1) {
+            xdouble <- raster::stack(x, x)
+            clim.values <-  raster::extract(x=xdouble, y=p)
+            clim.values <- data.frame(clim.values)
+            clim.values <- clim.values[, 1, drop=F]
+        }
         names(clim.values) <- names(x)
         x <- clim.values        
     }
@@ -25,20 +30,20 @@
     if(inherits(x, "data.frame") == F) {
         vars <- names(x)
         if (length(factors) > 0) {for (i in 1:length(factors)) {vars <- vars[which(names(x) != factors[i])]}}
-        if (length(dummy.vars) > 0) {for (i in 1:length(dummy.vars)) {vars <- vars[which(names(x) != dummy.vars[i])]}}
         nv <- length(vars)
-        lower.limitsq <- upper.limitsq <- lower.limits <- upper.limits <- minima <- maxima <- clim.sd <- clim.mean <- numeric(length=nv)
-        names(lower.limitsq) <- names(upper.limitsq) <- names(lower.limits) <- names(upper.limits) <- names(minima) <- names(maxima) <- names(clim.sd) <- names(clim.mean) <- vars
+        lower.limitsq <- upper.limitsq <- lower.limits <- upper.limits <- minima <- maxima <- clim.sd <- clim.median <- clim.mean <- numeric(length=nv)
+        names(lower.limitsq) <- names(upper.limitsq) <- names(lower.limits) <- names(upper.limits) <- names(minima) <- names(maxima) <- names(clim.sd) <- names(clim.median) <- names(clim.mean) <- vars
         for (i in 1:nv) {
             vari <- vars[which(vars == names(x)[i])]
-            raster.focus <- x[[i]]
+            raster.focus <- x[[which(vars == names(x)[i])]]
             raster::setMinMax(raster.focus)
             meanV <- raster::cellStats(raster.focus, 'mean')
             sdV <- raster::cellStats(raster.focus, 'sd')
             minV <- raster::minValue(raster.focus)
             maxV <- raster::maxValue(raster.focus)
-            lowerV <- as.numeric(quantile(raster.focus, probs[1]))
-            upperV <- as.numeric(quantile(raster.focus, probs[2]))
+            lowerV <- as.numeric(raster::quantile(raster.focus, probs=probs[1], na.rm=T))
+            upperV <- as.numeric(raster::quantile(raster.focus, probs=probs[2], na.rm=T))
+            medianV <- as.numeric(raster::quantile(raster.focus, probs=0.5, na.rm=T))
 
             lower.limitsq[which(names(lower.limitsq) == vari)] <- lowerV
             upper.limitsq[which(names(upper.limitsq) == vari)] <- upperV
@@ -46,24 +51,25 @@
             clim.sd[which(names(clim.sd) == vari)] <- sdV
             minima[which(names(minima) == vari)] <- minV
             maxima[which(names(maxima) == vari)] <- maxV
+            clim.median[which(names(clim.median) == vari)] <- medianV
         }
 
     }else{
         clim.values <- x
         for (i in 1:length(names(clim.values))) {if (is.factor(clim.values[, i]) == T) {factors <- c(factors, names(clim.values)[i])} }        
         factors <- unique(factors)
-        if (length(factors) > 0) {for (i in 1:length(factors)) {clim.values <- clim.values[, which(names(clim.values) != factors[i])]}}
-        if (length(dummy.vars) > 0) {for (i in 1:length(dummy.vars)) {clim.values <- clim.values[, which(names(clim.values) != dummy.vars[i])]}}
+        if (length(factors) > 0) {for (i in 1:length(factors)) {clim.values <- clim.values[, which(names(clim.values) != factors[i]), drop=F]}}
 
         clim.mean <- apply(clim.values, 2, "mean", na.rm=T)
         clim.sd <- apply(clim.values, 2, "sd", na.rm=T)
 
-        lower.limitsq <- upper.limitsq <- lower.limits <- upper.limits <- minima <- maxima <- numeric(length=length(clim.mean))
-        names(lower.limitsq) <- names(upper.limitsq) <- names(lower.limits) <- names(upper.limits) <- names(minima) <- names(maxima) <- names(clim.values)
+        lower.limitsq <- upper.limitsq <- lower.limits <- upper.limits <- minima <- maxima <- clim.median <- numeric(length=length(clim.mean))
+        names(lower.limitsq) <- names(upper.limitsq) <- names(lower.limits) <- names(upper.limits) <- names(minima) <- names(maxima) <- names(clim.median) <- names(clim.values)
         minima <- apply(clim.values, 2, "min", na.rm=T)
         maxima <- apply(clim.values, 2, "max", na.rm=T)          
         lower.limitsq <- apply(clim.values, 2, "quantile", probs[1], na.rm=T)
         upper.limitsq <- apply(clim.values, 2, "quantile", probs[2], na.rm=T)
+        clim.median <- apply(clim.values, 2, "quantile", 0.5, na.rm=T)
     }
 
     if (quantiles == F){  
@@ -89,7 +95,7 @@
     }
 
     return(list(lower.limits=lower.limits, upper.limits=upper.limits, minima=minima, maxima=maxima, 
-        means=clim.mean, sds=clim.sd, cutoff=cutoff, fraction=fraction, species.name=species.name))
+        means=clim.mean, medians=clim.median, sds=clim.sd, cutoff=cutoff, fraction=fraction, species.name=species.name))
 }
 
 
@@ -106,6 +112,12 @@
     if(inherits(x, "RasterStack") == F) {stop("x is not a RasterStack object")}
     if (is.null(bioclim.object) == T) {stop("value for parameter bioclim.object is missing (hint: use the ensemble.bioclim.object function)")}
 # 
+# 
+    if (KML.out==T && raster::isLonLat(x)==F) {
+        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of stack ", x@title , " is not longitude and latitude", "\n", sep = ""))
+        KML.out <- FALSE
+    }
+#
     predict.bioclim <- function(object=bioclim.object, newdata=newdata) {
         lower.limits <- object$lower.limits
         upper.limits <- object$upper.limits
@@ -170,12 +182,11 @@
 #  
     if (KML.out == T) {
 #        working.raster <- trunc(1000*working.raster)
-        raster::KML(working.raster, filename=kmlfull, col = c("grey", "orange", "green"), colNA = 0, 
+        raster::KML(working.raster, filename=kmlfull, col = c("grey", "blue", "green"), colNA = 0, 
             blur=KML.blur, maxpixels=KML.maxpixels, overwrite=T, breaks = c(-0.1, 0, 0.5, 1.0))
     }
   
     cat(paste("\n", "bioclim raster provided in folder: ", getwd(), "//ensembles", "\n", sep=""))
     return(bioclim.raster)
 }
-
 

@@ -12,7 +12,7 @@ function(x,y="",factor="",level,digits=1,t=qt(0.975,df=n-1)) {
     }
     if(dim(as.matrix(x))[1]==0) {
         result <- array(NA,dim=c(1,8))
-        colnames(result) <- c("rank","abundance","proportion","plower","pupper","accumfreq","logabun","rankfreq")
+        colnames(result) <- c("rank", "abundance", "proportion", "plower", "pupper", "accumfreq", "logabun", "rankfreq")
         rownames(result) <- "none"
         return(result)
     }    
@@ -21,7 +21,7 @@ function(x,y="",factor="",level,digits=1,t=qt(0.975,df=n-1)) {
     n <- nrow(x)
     mu <- sum(total)/n
     result <- array(dim=c(p,8))
-    colnames(result) <- c("rank","abundance","proportion","plower","pupper","accumfreq","logabun","rankfreq")
+    colnames(result) <- c("rank", "abundance", "proportion", "plower", "pupper", "accumfreq", "logabun", "rankfreq")
     rownames(result) <- colnames(x)
     for (j in 1:p) {
         spec <- x[,j]

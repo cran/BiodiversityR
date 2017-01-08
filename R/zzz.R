@@ -1,6 +1,6 @@
 .onAttach <- function(...) {
       packageStartupMessage("BiodiversityR ", utils::packageDescription("BiodiversityR", field="Version"),
-      ": use function 'BiodiversityRGUI()' to launch the BiodiversityR Graphical User Interface\n")
+      ": Use command BiodiversityRGUI() to launch the Graphical User Interface and to learn about backward compatibility\n")
 }
 
 

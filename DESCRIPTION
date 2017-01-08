@@ -1,22 +1,21 @@
 Package: BiodiversityR
 Type: Package
 Title: Package for Community Ecology and Suitability Analysis
-Version: 2.7-2
-Date: 2016-08-25
+Version: 2.8-0
+Date: 2017-01-05
 Author: Roeland Kindt
 Maintainer: Roeland Kindt <R.KINDT@CGIAR.ORG>
 Description: Graphical User Interface (via the R-Commander) and utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website. In 2012, methods for (ensemble) suitability modelling and mapping were expanded in the package.
 License: GPL-2
-URL: http://www.r-project.org,
-        http://www.worldagroforestry.org/output/tree-diversity-analysis
+URL: http://www.worldagroforestry.org/output/tree-diversity-analysis
 Depends: R (>= 3.2.2), tcltk, vegan (>= 2.4-0)
 Imports: Rcmdr (>= 2.3-0)
 Suggests: permute, lattice, MASS, mgcv, cluster, car, RODBC, rpart,
         effects, multcomp, ellipse, maptree, sp, splancs, spatial,
-        akima, nnet, dismo, raster (>= 2.0-31), rgdal, gbm,
-        randomForest, gam, earth, mda, kernlab, e1071, tools, methods,
-        bootstrap, PresenceAbsence, geosphere
-Packaged: 2016-08-29 09:10:55 UTC; RKINDT
+        akima, nnet, dismo, raster (>= 2.0-31), rgdal, maxlike, gbm,
+        randomForest, gam, earth, mda, kernlab, e1071, glmnet, tools,
+        methods, bootstrap, PresenceAbsence, geosphere, maptools
+Packaged: 2017-01-08 12:55:17 UTC; RKINDT
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2016-08-29 14:16:03
+Date/Publication: 2017-01-08 15:42:16

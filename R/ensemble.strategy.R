@@ -2,13 +2,14 @@
     TrainData=NULL, TestData=NULL,
     verbose=FALSE,
     ENSEMBLE.best=c(4:10), ENSEMBLE.min=c(0.7),
-    ENSEMBLE.exponent=c(1, 2, 4, 6, 8) 
+    ENSEMBLE.exponent=c(1, 2, 3) 
 )
 {
 #    if (! require(dismo)) {stop("Please install the dismo package")}
 #   input AUC
-    modelnames <- c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
-        "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL")
+    modelnames <- c("MAXENT", "MAXLIKE", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
+        "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET",
+        "BIOCLIM.O", "BIOCLIM", "DOMAIN", "MAHAL", "MAHAL01")
     weights <- numeric(length=length(modelnames))
     final.weights <- weights
     names(weights) <- modelnames
@@ -19,7 +20,7 @@
 # output for each cross-validation run
     output <- data.frame(array(dim=c(bests*exponents*mins, 7), NA))
     if (nrow(output) == 1) {cat(paste("\n", "NOTE: no alternatives available for choosing best strategy", "\n", sep=""))}
-    colnames(output) <- c("ENSEMBLE.best", "ENSEMBLE.exponent", "ENSEMBLE.min", "model.C", "AUC.C", "model.T", "AUC.T")
+    names(output) <- c("ENSEMBLE.best", "ENSEMBLE.exponent", "ENSEMBLE.min", "model.C", "AUC.C", "model.T", "AUC.T")
     all.combinations <- expand.grid(ENSEMBLE.best, ENSEMBLE.exponent, ENSEMBLE.min)
     output[,c(1:3)] <- all.combinations
 #
@@ -55,13 +56,14 @@
         ws <- ensemble.weights(input.weights.e, exponent=output[r, "ENSEMBLE.exponent"], best=output[r, "ENSEMBLE.best"], 
             min.weight=output[r, "ENSEMBLE.min"])
         if (verbose == T) {print(ws)}
-        TrainData[,"ENSEMBLE"] <- ws["MAXENT"]*TrainData[,"MAXENT"] + ws["GBM"]*TrainData[,"GBM"] +
+        TrainData[,"ENSEMBLE"] <- ws["MAXENT"]*TrainData[,"MAXENT"] + ws["MAXLIKE"]*TrainData[,"MAXLIKE"] + ws["GBM"]*TrainData[,"GBM"] +
             ws["GBMSTEP"]*TrainData[,"GBMSTEP"] + ws["RF"]*TrainData[,"RF"] + ws["GLM"]*TrainData[,"GLM"] +
             ws["GLMSTEP"]*TrainData[,"GLMSTEP"] + ws["GAM"]*TrainData[,"GAM"] + ws["GAMSTEP"]*TrainData[,"GAMSTEP"] +
             ws["MGCV"]*TrainData[,"MGCV"] + ws["MGCVFIX"]*TrainData[,"MGCVFIX"] + ws["EARTH"]*TrainData[,"EARTH"] +
             ws["RPART"]*TrainData[,"RPART"] + ws["NNET"]*TrainData[,"NNET"] + ws["FDA"]*TrainData[,"FDA"] +
-            ws["SVM"]*TrainData[,"SVM"] + ws["SVME"]*TrainData[,"SVME"] + ws["BIOCLIM"]*TrainData[,"BIOCLIM"] +
-            ws["DOMAIN"]*TrainData[,"DOMAIN"] + ws["MAHAL"]*TrainData[,"MAHAL"]
+            ws["SVM"]*TrainData[,"SVM"] + ws["SVME"]*TrainData[,"SVME"] + ws["GLMNET"]*TrainData[,"GLMNET"] +
+            ws["BIOCLIM.O"]*TrainData[,"BIOCLIM.O"] + ws["BIOCLIM"]*TrainData[,"BIOCLIM"] +
+            ws["DOMAIN"]*TrainData[,"DOMAIN"] + ws["MAHAL"]*TrainData[,"MAHAL"] + ws["MAHAL01"]*TrainData[,"MAHAL01"]
 #        TrainData[,"ENSEMBLE"] <- trunc(TrainData[,"ENSEMBLE"])
         TrainPres <- TrainData[TrainData[,"pb"]==1,"ENSEMBLE"]
         TrainAbs <- TrainData[TrainData[,"pb"]==0,"ENSEMBLE"]
@@ -77,13 +79,14 @@
             output[r, "model.C"] <- names(weights.cal)[1]
             output[r, "AUC.C"] <- weights.cal[1]
         }
-        TestData[,"ENSEMBLE"] <- ws["MAXENT"]*TestData[,"MAXENT"] + ws["GBM"]*TestData[,"GBM"] +
+        TestData[,"ENSEMBLE"] <- ws["MAXENT"]*TestData[,"MAXENT"] + ws["MAXLIKE"]*TestData[,"MAXLIKE"] + ws["GBM"]*TestData[,"GBM"] +
             ws["GBMSTEP"]*TestData[,"GBMSTEP"] + ws["RF"]*TestData[,"RF"] + ws["GLM"]*TestData[,"GLM"] +
             ws["GLMSTEP"]*TestData[,"GLMSTEP"] + ws["GAM"]*TestData[,"GAM"] + ws["GAMSTEP"]*TestData[,"GAMSTEP"] +
             ws["MGCV"]*TestData[,"MGCV"] + ws["MGCVFIX"]*TestData[,"MGCVFIX"] + ws["EARTH"]*TestData[,"EARTH"] +
             ws["RPART"]*TestData[,"RPART"] + ws["NNET"]*TestData[,"NNET"] + ws["FDA"]*TestData[,"FDA"] +
-            ws["SVM"]*TestData[,"SVM"] + ws["SVME"]*TestData[,"SVME"] + ws["BIOCLIM"]*TestData[,"BIOCLIM"] +
-            ws["DOMAIN"]*TestData[,"DOMAIN"] + ws["MAHAL"]*TestData[,"MAHAL"]
+            ws["SVM"]*TestData[,"SVM"] + ws["SVME"]*TestData[,"SVME"] + ws["GLMNET"]*TestData[,"GLMNET"] + 
+            ws["BIOCLIM.O"]*TestData[,"BIOCLIM.O"] + ws["BIOCLIM"]*TestData[,"BIOCLIM"] +
+            ws["DOMAIN"]*TestData[,"DOMAIN"] + ws["MAHAL"]*TestData[,"MAHAL"] + ws["MAHAL01"]*TestData[,"MAHAL01"]
 #        TestData[,"ENSEMBLE"] <- trunc(TestData[,"ENSEMBLE"])
         TestPres <- TestData[TestData[,"pb"]==1,"ENSEMBLE"]
         TestAbs <- TestData[TestData[,"pb"]==0,"ENSEMBLE"]

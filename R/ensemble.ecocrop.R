@@ -23,17 +23,24 @@
 #    if (! require(dismo)) {stop("Please install the dismo package")}
     if(is.null(x) == T) {stop("value for parameter x is missing (RasterStack object)")}
     if(inherits(x, "RasterStack") == F) {stop("x is not a RasterStack object")}
+#
+# 
+    if (KML.out==T && raster::isLonLat(x)==F) {
+        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of stack ", x@title , " is not longitude and latitude", "\n", sep = ""))
+        KML.out <- FALSE
+    }
+#
     names(x)[which(names(x)=="bio01")] <- "bio1"
     names(x)[which(names(x)=="bio05")] <- "bio5"
     names(x)[which(names(x)=="bio06")] <- "bio6"
-    if (is.null(ecocrop.object) == T) {stop("value for parameter ecocrop.object is missing (hint: use the ensemble.ecocrop.object function)")}
+    if (is.null(ecocrop.object) == TRUE) {stop("value for parameter ecocrop.object is missing (hint: use the ensemble.ecocrop.object function)")}
     vars <- names(x)
-    if (any(vars == "bio12") == FALSE) {stop("Bioclimatic variable 'bio12' not provided with data")}
+    if (any(vars == "bio12") == F) {stop("Bioclimatic variable 'bio12' not provided with data")}
     if (ecocrop.object$annual.temps == F) {
-        if (any(vars == "bio5") == FALSE) {stop("Bioclimatic variable 'bio5' not provided with data")}
-        if (any(vars == "bio6") == FALSE) {stop("Bioclimatic variable 'bio6' not provided with data")}
+        if (any(vars == "bio5") == F) {stop("Bioclimatic variable 'bio5' not provided with data")}
+        if (any(vars == "bio6") == F) {stop("Bioclimatic variable 'bio6' not provided with data")}
     }else{
-        if (any(vars == "bio1") == FALSE) {stop("Bioclimatic variable 'bio1' not provided with data")}
+        if (any(vars == "bio1") == F) {stop("Bioclimatic variable 'bio1' not provided with data")}
     }
 # 
     predict.ecocrop <- function(object=ecocrop.object, newdata=newdata) {
@@ -104,8 +111,8 @@
     }
     if(length(x@title) == 0) {x@title <- "stack1"}
     stack.title <- RASTER.stack.name
-    rasterfull <- paste("ensembles/ecocrop/", RASTER.object.name, "_", stack.title , "_ecocrop", sep="")
-    kmlfull <- paste("kml/ecocrop/", RASTER.object.name, "_", stack.title , "_ecocrop", sep="")
+    rasterfull <- paste("ensembles/ecocrop/", RASTER.object.name, "_", stack.title, sep="")
+    kmlfull <- paste("kml/ecocrop/", RASTER.object.name, "_", stack.title, sep="")
   
 #
 # predict

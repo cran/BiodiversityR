@@ -2,19 +2,21 @@ import(stats, Rcmdr, vegan)
 
 importFrom(tcltk, tkfont.create, tkbutton)
 
-export(BiodiversityRGUI,check.datasets,check.ordiscores,spatialsample,makecommunitydataset,
-    removeNAcomm,replaceNAcomm,removeNAenv,subsetcomm,removezerospecies,balanced.specaccum,accumresult,accumplot,accumcomp,
-    diversityresult,diversitycomp,diversityvariables,
-    rankabundance,radfitresult,rankabunplot,rankabuncomp,renyiresult,renyiplot,
+export(BiodiversityRGUI, check.datasets, check.ordiscores, spatialsample, makecommunitydataset, stackcommunitydataset,
+    removeNAcomm, replaceNAcomm, removeNAenv, subsetcomm, removezerospecies, balanced.specaccum, accumresult, accumplot, accumcomp,
+    diversityresult, diversitycomp, diversityvariables,
+    rankabundance, radfitresult, rankabunplot, rankabuncomp, renyiresult, renyiplot,
     renyiaccumresult, renyicomp, importancevalue, importancevalue.comp, prepare.bioenv,
-    deviancepercentage,residualssurface,crosstabanalysis,dist.zeroes,dist.eval,PCAsignificance,add.spec.scores,
-    NMSrandom,nnetrandom,ordibubble,ordisymbol,ordicluster2,ordinearest,ordivector,ordiequilibriumcircle,distdisplayed,
-    ordicoeno,CAPdiscrim,caprescale,multiconstrained,disttransform,same.sites,loaded.citations,nested.anova.dbrda,
-    nested.npmanova,ensemble.raster,ensemble.test,ensemble.formulae,ensemble.test.splits,ensemble.test.gbm,ensemble.test.nnet,
-    ensemble.drop1,ensemble.batch,evaluation.strip.data,evaluation.strip.plot,ensemble.weights,ensemble.strategy,
-    ensemble.simplified.categories,ensemble.accepted.categories,ensemble.dummy.variables,ensemble.habitat.change,
+    deviancepercentage, residualssurface, crosstabanalysis, dist.zeroes, dist.eval, PCAsignificance, add.spec.scores,
+    NMSrandom, nnetrandom, ordibubble, ordisymbol, ordicluster2, ordinearest, ordivector, ordiequilibriumcircle, distdisplayed,
+    ordicoeno, CAPdiscrim, caprescale, multiconstrained, disttransform, same.sites, loaded.citations, nested.anova.dbrda, nested.npmanova,
+    ensemble.raster, ensemble.calibrate.models, ensemble.calibrate.weights,
+    ensemble.calibrate.models.gbm, ensemble.calibrate.models.nnet, ensemble.formulae,
+    ensemble.drop1, ensemble.batch, evaluation.strip.data, evaluation.strip.plot, ensemble.weights,ensemble.strategy,
+    ensemble.simplified.categories, ensemble.accepted.categories, ensemble.dummy.variables, ensemble.habitat.change,
     ensemble.mean, ensemble.plot, ensemble.centroids, ensemble.zones, ensemble.novel, ensemble.novel.object, ensemble.area, 
     ensemble.analogue, ensemble.analogue.object, ensemble.ecocrop, ensemble.ecocrop.object, ensemble.threshold,
+    ensemble.bioclim.object, ensemble.bioclim, ensemble.bioclim.graph, ensemble.bioclim.graph.data, ensemble.VIF,
     .onAttach)
 
 if(tools:::.OStype() == "windows") {

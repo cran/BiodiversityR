@@ -1,25 +1,27 @@
 `ensemble.novel.object` <- function(
     x=NULL, name="reference1", mask.raster=NULL, 
-    quantiles=FALSE, probs=c(0.025, 0.975)
+    quantiles=FALSE, probs=c(0.05, 0.95),
+    factors=NULL   
 )
 {
     vars <- names(x)
+    if (length(factors) > 0) {for (i in 1:length(factors)) {vars <- vars[which(names(x) != factors[i])]}}
     nv <- length(vars)
     minima <- maxima <- numeric(nv)
     names(minima) <- names(maxima) <- vars
     if(inherits(x, "RasterStack") == T) {
-        for (i in c(1:(raster::nlayers(x)))) {
-            vari <- vars[which(vars == names(x)[i])]
-            raster.focus <- x[[i]]
-            if (is.null(mask.raster) == F) {raster.focus <- raster::mask(x[[i]], mask=mask.raster)}
+        for (i in c(1:nv)) {
+            vari <- vars[which(names(x) == vars[i])]
+            raster.focus <- x[[which(names(x) == vars[i])]]
+            if (is.null(mask.raster) == F) {raster.focus <- raster::mask(x[[which(names(x) == vars[i])]], mask=mask.raster)}
             raster::setMinMax(raster.focus)
             print(raster.focus)
             if (quantiles == F) {
                 minV <- raster::minValue(raster.focus)
                 maxV <- raster::maxValue(raster.focus)
             }else{
-                minV <- as.numeric(quantile(raster.focus, probs[1]))
-                maxV <- as.numeric(quantile(raster.focus, probs[2]))
+                minV <- as.numeric(raster::quantile(raster.focus, probs=probs[1], na.rm=T))
+                maxV <- as.numeric(raster::quantile(raster.focus, probs=probs[2], na.rm=T))
             }
             minima[which(names(minima) == vari)] <- minV
             maxima[which(names(maxima) == vari)] <- maxV
@@ -28,13 +30,13 @@
     if(inherits(x, "data.frame") == T) {
         for (i in 1:nv) {
             vari <- vars[i]
-            xdata <- x[, which(names(x)==vari)]
+            xdata <- x[, which(names(x)==vari), drop=F]
             if (quantiles == F) {
                 minV <- min(xdata)
                 maxV <- max(xdata)
             }else{
-                minV <- as.numeric(quantile(xdata, probs[1]))
-                maxV <- as.numeric(quantile(xdata, probs[2]))
+                minV <- as.numeric(stats::quantile(xdata, probs[1], na.rm=T))
+                maxV <- as.numeric(stats::quantile(xdata, probs[2], na.rm=T))
             }
             minima[which(names(minima) == vari)] <- minV
             maxima[which(names(maxima) == vari)] <- maxV
@@ -58,7 +60,12 @@
   if (is.null(novel.object) == T) {stop("value for parameter novel.object is missing (hint: use the ensemble.novel.object function)")}
   if (all.equal(names(novel.object$minima), names(novel.object$maxima)) == F) {{stop("different variable names for maxima and minima")}}
   # 
-  # 
+# 
+    if (KML.out==T && raster::isLonLat(x)==F) {
+        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of stack ", x@title , " is not longitude and latitude", "\n", sep = ""))
+        KML.out <- FALSE
+    }
+#
   predict.novel <- function(object=novel.object, newdata=newdata) {
     minima <- object$minima
     maxima <- object$maxima
@@ -114,6 +121,7 @@
     if (any(vars==vars.x[i]) == F) {
       cat(paste("\n", "NOTE: RasterStack layer '", vars.x[i], "' was not documented in the novel object data set and will be ignored", "\n", sep = ""))
       x <- raster::dropLayer(x, which(names(x) %in% c(vars.x[i]) ))
+      x <- raster::stack(x)
     }
   }
   
@@ -169,3 +177,4 @@
   novel.raster <- raster::raster(rasterfull)
   return(novel.raster)
 }
+

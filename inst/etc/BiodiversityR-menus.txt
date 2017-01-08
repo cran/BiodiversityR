@@ -1,5 +1,5 @@
     # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
-    # MAR 2016
+    # DEC 2016
 
     menu    biodivMenu      topMenu         ""                                              ""                          ""          ""
     menu    communMenu      biodivMenu      ""                                              ""                          ""          ""
@@ -79,8 +79,11 @@
     menu    helpbioMenu     biodivMenu      ""                                              ""                          ""          ""
     item    helpbioMenu     command         "Help about BiodiversityR"                      helpBiodiversityR           ""          ""
     item    helpbioMenu     command         "Citations for loaded packages"                 allcitations                ""          ""
-    item    helpbioMenu     command         "Go to website for BiodiversityR"               browseTDAwebsite            ""          ""
-    item    helpbioMenu     command         "Tree Diversity Analysis PDF (7.7 MB)"          browseTDAmanual             ""          ""
+    item    helpbioMenu     command         "BiodiversityR website"                         browseTDAwebsite            ""          ""
+    item    helpbioMenu     command         "Tree Diversity Analysis book PDF (7.7 MB)"     browseTDAmanual             ""          ""
+    item    helpbioMenu     command         "Diversity analysis in vegan"                   vegan.diversity.pdf         ""          ""
+    item    helpbioMenu     command         "Introduction to ordination in vegan"           vegan.ordination.pdf        ""          ""
+    item    helpbioMenu     command         "Community Analysis website (Oksanen)"          oksanen.website             ""          ""
     item    topMenu         cascade         "BiodiversityR"                                 biodivMenu                  ""          ""
     item    biodivMenu      cascade         "Community matrix"                              communMenu                  ""          ""
     item    biodivMenu      cascade         "Environmental matrix"                          enviroMenu                  ""          ""
@@ -92,5 +95,7 @@
     item    ensMenu         cascade         "Presence data set"                             presMenu                    ""          ""
     item    ensMenu         cascade         "Absence data set"                              absMenu                     ""          ""
     item    ensMenu         cascade         "Ensemble suitability modeling"                 calibMenu                   ""          ""
-    item    biodivMenu      cascade         "Help about BiodiversityR"                      helpbioMenu                 ""          ""
+    item    biodivMenu      cascade         "Help"                                          helpbioMenu                 ""          ""
+
+
 

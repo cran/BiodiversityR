@@ -1,6 +1,6 @@
 `ensemble.dummy.variables` <- function(
     xcat=NULL, freq.min=50, most.frequent=5,
-    overwrite=TRUE, ...
+    new.levels=NULL, overwrite=TRUE, ...
 )
 {
 #    if (! require(dismo)) {stop("Please install the dismo package")}
@@ -8,27 +8,28 @@
 
 # get all categories of the layer
     freqs <- raster::freq(xcat)
-    freqs <- freqs[is.na(freqs[,1])==F, ]
-    all.categories <- freqs[,1]
+    freqs <- freqs[is.na(freqs[, 1])==F, ]
+    all.categories <- freqs[, 1]
     replace.frame <- data.frame(id=all.categories, v=rep(0, length(all.categories)))
     colnames(replace.frame)[2] <- paste(names(xcat), "dummy", sep="")
-    freqs <- freqs[order(freqs[,2], decreasing=T),]
+    freqs <- freqs[order(freqs[, 2], decreasing=T),]
     cat(paste("\n", "Frequency of the categories", "\n", sep = ""))
     print(freqs)
+    max.level <- max(freqs[ ,1])
 
 # freq.min should at minimum exclude the least frequent category
-    least.freq <- min(freqs[,2])
+    least.freq <- min(freqs[, 2])
     if (least.freq > freq.min) {freq.min <- least.freq}
    
 # get only variables with higher frequencies
    
-    freqs <- freqs[freqs[,2] > freq.min, ]
+    freqs <- freqs[freqs[, 2] > freq.min, ]
     if (most.frequent < 1) {most.frequent <- length(freqs[, 1])}
     if (most.frequent < length(freqs[, 1])) {
-        freqs <- freqs[1:most.frequent,]
+        freqs <- freqs[1:most.frequent, , drop=F]
     }
     new.categories <- freqs[, 1]
-    cat(paste("\n", "dummy layers will be created for the following categories", "\n", sep = ""))
+    cat(paste("\n", "dummy layers will be created for the following factor levels", "\n", sep = ""))
     print(new.categories)
 
 # filename of original layer
@@ -53,6 +54,21 @@
         names(new.x) <- new.name
         raster::writeRaster(new.x, filename=filename2, overwrite=overwrite, ...)
     }
+
+# make layers for the new categories
+    if (is.null(new.levels) == F) {
+        cat(paste("\n", "dummy layers will be created for the following new factor levels", "\n", sep = ""))
+        print(new.levels)
+
+        for (i in 1:length(new.levels)) {
+            new.x <- xcat > max.level
+            extension2 <- paste("_", new.levels[i], ".", tools::file_ext(filename1), sep="")
+            filename2 <- gsub(pattern=extension1, replacement=extension2, x=filename1)
+            new.name <- paste(names(xcat)[1], "_", new.levels[i], sep="")
+            names(new.x) <- new.name
+            raster::writeRaster(new.x, filename=filename2, overwrite=overwrite, ...)
+        }
+    } 
 
 # remove the working file
     cat(paste("\n", "Removing temporary file: ", filename3, "\n", sep = ""))

@@ -1,19 +1,19 @@
-`ensemble.test.nnet` <- function(
-    x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, ext=NULL, k=4, 
+`ensemble.calibrate.models.gbm` <- function(
+    x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, k=4, 
     TrainData=NULL,
     VIF=FALSE, COR=FALSE,
     SINK=FALSE, PLOTS=FALSE, 
     species.name="Species001",
     Yweights="BIOMOD", 
-    layer.drops=NULL, factors=NULL, 
-    formulae.defaults=TRUE, maxit=100,
-    NNET.formula=NULL,
-    sizes=c(2, 4, 6, 8), decays=c(0.1, 0.05, 0.01, 0.001)
+    layer.drops=NULL, factors=NULL,
+    GBMSTEP.gbm.x=2:(ncol(TrainData.orig)), 
+    complexity=c(3:6), learning=c(0.005, 0.002, 0.001), 
+    GBMSTEP.bag.fraction=0.5, GBMSTEP.step.size=100
 )
 {
     .BiodiversityR <- new.env()
-#    if (! require(dismo)) {stop("Please install the dismo package")}
-#    if (! require(nnet)) {stop("Please install the nnet package")}
+#   if (! require(dismo)) {stop("Please install the dismo package")}
+#    if (! require(gbm)) {stop("Please install the gbm package")}
     k <- as.integer(k)
     if (k < 2) {
         cat(paste("\n", "NOTE: parameter k was set to be smaller than 2", sep = ""))
@@ -41,7 +41,7 @@
         }else{
             cat(paste("\n", "NOTE: results appended in file: ", paste.file, "\n", sep = ""))
         }
-        cat(paste("\n\n", "RESULTS (ensemble.test.nnet function)", "\n", sep=""), file=paste.file, append=T)
+        cat(paste("\n\n", "RESULTS (ensemble.calibrate.models.gbm function)", "\n\n", sep=""), file=paste.file, append=T)
         sink(file=paste.file, append=T)
         cat(paste(date(), "\n", sep=""))
         print(match.call())
@@ -50,7 +50,7 @@
 # check TrainData
     if (is.null(TrainData) == F) {
         TrainData <- data.frame(TrainData)
-        if (colnames(TrainData)[1] !="pb") {stop("first column for TrainData should be 'pb' containing presence (1) and absence (0) data")}
+        if (names(TrainData)[1] !="pb") {stop("first column for TrainData should be 'pb' containing presence (1) and absence (0) data")}
         if ((is.null(x) == F) && (raster::nlayers(x) != (ncol(TrainData)-1))) {
             cat(paste("\n", "WARNING: different number of explanatory variables in rasterStack and TrainData", sep = ""))
         }
@@ -58,12 +58,6 @@
 
 # modify RasterStack x only if this RasterStack was provided
     if (is.null(x) == F) {
-        if (is.null(ext) == F) {
-            if(length(x@title) == 0) {x@title <- "stack1"}
-            title.old <- x@title
-            x <- raster::crop(x, y=ext, snap="in")
-            x@title <- title.old
-        }
         if (is.null(layer.drops) == F) {
             vars <- names(x)
             layer.drops <- as.character(layer.drops)
@@ -76,6 +70,7 @@
                 }else{
                     cat(paste("\n", "NOTE: variable '", layer.drops[i], "' will not be included as explanatory variable", "\n", sep = ""))
                     x <- raster::dropLayer(x, which(names(x) %in% c(layer.drops[i]) ))
+                    x <- raster::stack(x)
                     vars <- names(x)
                     if (is.null(factors) == F) {
                         factors <- factors[factors != layer.drops[i]]
@@ -138,9 +133,9 @@
                     cat(paste("\n", "WARNING: variable to exclude '", layer.drops[i], "' not among columns of TrainData", "\n", sep = ""))
                 }else{
                     cat(paste("\n", "NOTE: variable '", layer.drops[i], "' will not be included as explanatory variable", "\n", sep = ""))
-                    TrainData <- TrainData[, which(colnames(TrainData) != layer.drops[i])]
-                    if (is.null(TestData) == F) {TestData <- TestData[, which(colnames(TestData) != layer.drops[i])]}
-                    vars <- colnames(TrainData)
+                    TrainData <- TrainData[, which(names(TrainData) != layer.drops[i]), drop=F]
+                    if (is.null(TestData) == F) {TestData <- TestData[, which(names(TestData) != layer.drops[i]), drop=F]}
+                    vars <- names(TrainData)
                     if (is.null(factors) == F) {
                         factors <- factors[factors != layer.drops[i]]
                         if(length(factors) == 0) {factors <- NULL}
@@ -177,17 +172,6 @@
             }
         }
     }
-#
-    if (formulae.defaults == T) {
-        if(is.null(TrainData) == T) {        
-            formulae <- ensemble.formulae(x, factors=factors)
-        }else{
-            formulae <- ensemble.formulae(x, factors=factors)
-        }
-    }
-    if (is.null(NNET.formula) == T && formulae.defaults == T) {NNET.formula <- formulae$NNET.formula}
-    if (is.null(NNET.formula) == T) {stop("Please provide the NNET.formula (hint: use ensemble.formulae function)")}
-    environment(NNET.formula) <- .BiodiversityR
 
 # create TrainData and TestData
     if (is.null(TrainData) == F) {
@@ -199,12 +183,20 @@
     }else{
         if (is.null(a)==T) {
             if (excludep == T) {
-                a <- dismo::randomPoints(x[[1]], n=an, p=p, ext=ext, excludep=T)
+                a <- dismo::randomPoints(x[[1]], n=an, p=p, excludep=T)
             }else{
-                a <- dismo::randomPoints(x[[1]], n=an, p=NULL, ext=ext, excludep=F)
+                a <- dismo::randomPoints(x[[1]], n=an, p=NULL, excludep=F)
             }        
         }
         TrainData <- dismo::prepareData(x, p, b=a, factors=factors, xy=FALSE)
+        if (length(names(x)) == 1) {
+            xdouble <- raster::stack(x, x)
+            TrainData <- dismo::prepareData(x=xdouble, p, b=a, factors=factors, xy=FALSE)
+            TrainData <- TrainData[, -3]
+            names(TrainData)[2] <- names(x)
+        }
+
+
         if(any(is.na(TrainData[TrainData[,"pb"]==1,]))) {
             cat(paste("\n", "WARNING: presence locations with missing data removed from calibration data","\n\n",sep = ""))
         }
@@ -216,40 +208,50 @@
         TrainValid <- complete.cases(TrainData[TrainData[,"pb"]==0,])
         a <- a[TrainValid,]
         TrainData <- dismo::prepareData(x, p, b=a, factors=factors, xy=FALSE)
+        if (length(names(x)) == 1) {
+            xdouble <- raster::stack(x, x)
+            TrainData <- dismo::prepareData(x=xdouble, p, b=a, factors=factors, xy=FALSE)
+            TrainData <- TrainData[, -3]
+            names(TrainData)[2] <- names(x)
+        }
     }
     TrainData.orig <- TrainData
     assign("TrainData.orig", TrainData.orig, envir=.BiodiversityR)
 #
-    ns <- length(sizes)
-    nd <- length(decays)
-    nt <- ns*nd
-    output <- array(NA, dim=c(nt, k+3))
-    colnames(output) <- c("size","decay", 1:k,"MEAN")
-    output[,"size"] <- rep(sizes, nd)
-    output[,"decay"] <- rep(decays, each=ns) 
+    nc <- length(complexity)
+    nl <- length(learning)
+    nt <- nc*nl
+    output <- array(NA, dim=c(nt, 2*k+3))
+    colnames(output) <- c("tree.complexity","learning.rate", 1:k,"MEAN",1:k)
+    output[,"tree.complexity"] <- rep(complexity, nl)
+    output[,"learning.rate"] <- rep(learning, each=nc) 
 #
     groupp <- dismo::kfold(TrainData, k=k, by=TrainData[,"pb"])
     for (i in 1:k){
-        cat(paste("\n", "EVALUATION RUN: ", i, "\n", "\n", sep = ""))
+        cat(paste("\n", "EVALUATION RUN: ", i, "\n\n", sep = ""))
         TrainData.c <- TrainData[groupp != i,]
         TestData.c <- TrainData[groupp == i,]
         assign("TrainData.c", TrainData.c, envir=.BiodiversityR)
         assign("TestData.c", TestData.c, envir=.BiodiversityR)
         for (j in 1:nt) {
-            NNET.size <- output[j,"size"]
-            NNET.decay <- output[j, "decay"]
-            cat(paste("\n", "size: ", NNET.size, ", decay: ", NNET.decay, "\n", sep=""))
-            tests <- ensemble.test(x=x,
-                TrainData=TrainData.c, TestData=TestData.c, 
+            complex <- output[j,"tree.complexity"]
+            lr <- output[j, "learning.rate"]
+            cat(paste("\n", "complexity: ", complex, ", learning: ", lr, "\n", sep=""))
+            tests <- ensemble.calibrate.models(x=x,
+                TrainData=TrainData.c, TestData=TestData.c,
                 VIF=VIF, COR=COR,
                 PLOTS=PLOTS, evaluations.keep=T,
-                MAXENT=0, GBM=0, GBMSTEP=0, RF=0, GLM=0, GLMSTEP=0, 
+                MAXENT=0, MAXLIKE=1, GBM=0, GBMSTEP=1, RF=0, GLM=0, GLMSTEP=0, 
                 GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, 
-                NNET=1, FDA=0, SVM=0, SVME=0, BIOCLIM=0, DOMAIN=0, MAHAL=0, GEODIST=0, 
-                maxit=maxit,
-                Yweights=Yweights, factors=factors,
-                NNET.formula=NNET.formula, NNET.size=NNET.size, NNET.decay=NNET.decay)
-            output[j,2+i] <- tests$NNET.T@auc 
+                NNET=0, FDA=0, SVM=0, SVME=0, GLMNET=0,
+                BIOCLIM=0, DOMAIN=0, MAHAL=0, MAHAL01=0,   
+                Yweights=Yweights, factors=factors,   
+                GBMSTEP.gbm.x=2:(1+raster::nlayers(x)), 
+                GBMSTEP.bag.fraction=GBMSTEP.bag.fraction, 
+                GBMSTEP.tree.complexity=complex, GBMSTEP.learning.rate=lr, 
+                GBMSTEP.step.size=GBMSTEP.step.size)
+            output[j,2+i] <- tests$GBMSTEP.T@auc
+            output[j,k+3+i] <- tests$GBMSTEP.trees 
         }
     }
     output[,k+3] <- rowMeans(output[,3:(k+2)], na.rm=T)
@@ -260,7 +262,5 @@
     if (SINK==T  && OLD.SINK==F) {sink(file=NULL, append=T)}
     return(list(table=output, call=match.call() ))
 }
-
-
 
 

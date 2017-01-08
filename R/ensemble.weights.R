@@ -1,7 +1,7 @@
 `ensemble.weights` <- function(
     weights=c(0.9, 0.8, 0.7, 0.5), 
     best=0, min.weight=0, exponent=1.0,
-    digits=4
+    digits=6
 )
 {
     names.weights <- names(weights)

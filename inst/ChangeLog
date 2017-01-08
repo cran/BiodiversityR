@@ -14,6 +14,134 @@ BiodiversityR versions
 	http://www.worldagroforestry.org/downloads/Publications/PDFS/B13695.pdf
 
 
+Version 2.8-1 (January 2017, malaria recovery version)
+
+	* compatible with Rcmdr	2.3-1 (October 2016)
+
+	* BiodiversityRGUI function gives information on backward compatibility with prior
+		versions of BiodiversityR
+
+	* new function ensemble.calibrate.models that replaces function ensemble.test.
+		The original name of ensemble.test originated from the first (2012) versions of 
+		ensemble suitability modelling functions in BiodiversityR where both 
+		ensemble.raster and ensemble test internally calibrated and evaluated (tested)
+		models, but only ensemble.raster went ahead with creating suitability raster 
+		layers. For possible backwards compatibility, assign 
+		ensemble.test <- ensemble.calibrate.models
+
+	* new function ensemble.calibrate.weights that replaces function ensemble.test.splits
+
+	* slot ensemble.calibrate.weights$AUC.table (ensemble.calibrate.weights) replaces 
+		ensemble.calibrate.weights$table
+
+	* argument SSB.reduce (ensemble.calibrate.models, ensemble.batch) replaces argument 
+		CIRCLES.at
+
+	* ensemble suitability layers are now create in different 'ensemble' subfolders
+		subfolder 'suitability' contains suitability layers for each ensemble
+		subfolder 'presence' contains presence layers for each ensemble
+		subfolder 'count' contains number of algorithms predicting presence
+		subfolder 'consensussuitability' contains consensus suitability layers
+		subfolder 'consensuspresence' contains consensus presence layers
+		subfolder 'consensuscount' contains count of ensembles predicting presence
+		subfolder 'consenssd' contains consensus standard deviation
+
+	* new function ensemble.VIF that selects subsets of explanatory data layers until all
+		Variance Inflation Factors are below a user-defined threshold (default: 10).
+		By an iterative procedure, the data layer with largest VIF is removed in each
+		step. The function is called from within the ensemble.batch function.
+
+	* new function ensemble.bioclim that provides an algorithm that more closely represents
+		the original BIOCLIM algorithm than function dismo::bioclim
+
+	* new function ensemble.bioclim.graph that graph function makes graphs that show mean, 
+		median, minimum, maximum and lower and upper limits for species or climates
+
+	* new function stackcommunitydataset that creates a data.frame with separate columns
+		for sites, species and abundance values (therefore the inverse function of
+		makecommunitydataset). Function is useful to combine information from 
+		different community data sets into one community data set.
+
+	* new option for including the glmnet algorithm in ensemble suitability modelling. 
+		Option available via argument of GLMNET in ensemble.calibrate.models, 
+		ensemble.batch, GUI interface and other functions.
+
+	* new option for including the maxlike algorithm (Royle et al. 2012. Methods in Ecology
+		and Evolution) in ensemble suitability modelling. However, because the maxlike
+		function does not accept data frames for model calibration and the predict
+		function does not have a newdata argument, inclusion of the algorithm is 
+		problematic and may often not be available (as in evaluation.strip.data)
+		or fail (Roeland will write a new email to the authors of maxlike indicating
+		the need to expand maxlike to handle data frames).
+
+	* new option for including a modification of the dismo::mahal algorithm to ensure
+		that predictions are within the 0 to 1 range similar to probabilities. Option
+		available via argument of MAHAL01 and MAHAL.shape in ensemble.calibrate.models, 
+		ensemble.batch, GUI interface and other functions with 
+
+	* new output of the ensemble.batch function to report which ensemble had the best
+		overall AUC. (This option can be used to plot count models
+
+	* new options for ensemble.threshold
+		threshold.method == "threshold2013.mean" provides the mean threshold of
+			optimal thresholds identified by Liu et al. 2013. Journal of 
+			Biogeography 40: 778-789
+		threshold.method == "threshold2013.min" provides the minimum threshold of
+			optimal thresholds identified by Liu et al. 2013. Journal of 
+			Biogeography 40: 778-789		
+		threshold.method == "threshold2005.mean" provides the mean threshold of
+			optimal thresholds identified by Liu et al. 2005. Ecography 28: 
+			385-393
+		threshold.method == "threshold2005.min" provides the minimum threshold of
+			optimal thresholds identified by Liu et al. 2005. Ecography 28: 
+			385-393		
+
+	* change of handling of data extraction from raster stacks with only 1 layer
+
+	* internal change of raster extent no longer possible with main ensemble functions.
+		Hence rasterstack objects should be modified prior to using them in
+		ensemble functions.
+
+	* change of implementation in ensemble.calibrate.models whereby dummy variables
+		are no longer excluded for BIOCLIM and BIOCLIM.O algorithms
+
+	* change of implementatin in ensemble.calibrate.models whereby only dummy variables
+		with no variation are excluded for the DOMAIN algorithm
+
+	* new option for ensemble.drop1 to also fit models with only the focal variable.
+		Option available via argument of variables.alone = TRUE.
+
+	* new option for ensemble.novel.object to exclude factor variables. The documentation
+		was updated to show dealing with factor variable through dummy variables.
+
+	* new option for ensemble.dummy.variables to create dummy variables for levels not
+		observed in the input factor layer
+
+	* increased output of ensemble.calibrate.models and ensemble.calibrate.weights to
+		show how ensemble weights are determined (input weights, parameters and
+		output weights)
+
+	* warning message in ensemble GUI that title of calibration stack is expected to be
+		the same as object name of the calibration stack
+
+	* ensemble suitability calibration modelling allows to set VIF.max (maximum Variance
+		Inflaction Factors of explanatory variables) and CIRCLES.d (the distance in m
+		of circular neighbourhoods for testing background locations to reduce spatial
+		sorting bias).
+
+	* added example of superimposing GBIF locations in ensemble.ecocrop documentation
+
+	* GUI option of showing calibration stack also provides names of factor variables,
+		names of dummy variables and makes a plot of the calibration stack
+
+	* Diversity indices menu now also accepts two factor variables to create a 2-way
+		table with diversity statistics for each combination of factor levels
+
+	* Added links from the GUI help to vignettes on diversity analysis in vegan and 
+		ordination analysis in vegan. Also added link to the community analysis
+		website of Jari Oksanen from the GUI help.
+
+
 Version 2.7-2 (August 2016)
 
 	* compatible with Rcmdr	2.3-0 (August 2016) and vegan 2.4-0 (June 2016)

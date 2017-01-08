@@ -1,6 +1,8 @@
-`renyiplot` <- function(xr, addit=F, pch=1,
+`renyiplot` <- function(
+    xr, addit=FALSE, pch=1,
     xlab="alpha", ylab="H-alpha", ylim=NULL,
-    labelit=T, legend=T, legend.ncol=8, col=1, cex=1, rainbow=T, evenness=F,...) 
+    labelit=TRUE, legend=TRUE, legend.x="topleft", legend.ncol=8, 
+    col=1, cex=1, rainbow=TRUE, evenness=FALSE, ...) 
 {
     x <- xr
 #    x <- as.matrix(x)
@@ -48,8 +50,8 @@
                 graphics::text(p, x[i,p], labels=rownames(x)[i], pos=4, col=col, cex=cex)
             }
         }
-        if (legend==T && n<26) {legend(graphics::locator(1), legend=rownames(x), pch=c(1:n), col=col, ncol=legend.ncol)}
-        if (legend==T && n>25) {legend(graphics::locator(1), legend=rownames(x), pch=rep(19,n), col=col, ncol=legend.ncol)}
+        if (legend==T && n<26) {legend(x=legend.x, legend=rownames(x), pch=c(1:n), col=col, ncol=legend.ncol)}
+        if (legend==T && n>25) {legend(x=legend.x, legend=rownames(x), pch=rep(19,n), col=col, ncol=legend.ncol)}
 
     }
     grDevices::palette("default")

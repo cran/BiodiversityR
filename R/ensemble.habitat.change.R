@@ -25,14 +25,22 @@
     }
 #
     dir.create(change.folder, showWarnings = F)
+#
+    base.raster <- raster::raster(base.map)
+    base.name <- names(base.raster)
+    raster::setMinMax(base.raster)
+# 
+    if (KML.out==T && raster::isLonLat(base.raster)==F) {
+        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of baseline raster is not longitude and latitude", "\n", sep = ""))
+        KML.out <- FALSE
+    }
+#
     if(KML.out==T && KML.folder == "kml/change") {
         dir.create("kml", showWarnings = F)
         dir.create("kml/change", showWarnings = F)
     }
     if(KML.out == T && KML.folder != "kml/change") {dir.create(KML.folder, showWarnings = F)}
-    base.raster <- raster::raster(base.map)
-    base.name <- names(base.raster)
-    raster::setMinMax(base.raster)
+#
     if (raster::maxValue(base.raster) > 1) {
         cat(paste("Warning: base.raster has values larger than 1, hence does not provide presence-absence", sep=""))
     }

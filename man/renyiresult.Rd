@@ -11,19 +11,19 @@ Provides some alternative methods of obtaining results on Renyi diversity profil
 }
 
 \usage{
-renyiresult(x, y="", factor, level, method = "all",
-    scales = c(0, 0.25, 0.5, 1, 2, 4, 8, Inf), evenness = F,...)
+renyiresult(x, y=NULL, factor, level, method = "all",
+    scales = c(0, 0.25, 0.5, 1, 2, 4, 8, Inf), evenness = FALSE ,...)
 
-renyiplot(xr,addit=F, pch = 1, 
+renyiplot(xr, addit=FALSE, pch = 1, 
     xlab = "alpha", ylab = "H-alpha", ylim = NULL,
-    labelit = T, legend = T, legend.ncol = 8, col = 1, cex = 1,
-    rainbow = T, evenness = F, ...)
+    labelit = TRUE, legend = TRUE, legend.x="topleft", legend.ncol = 8, 
+    col = 1, cex = 1, rainbow = TRUE, evenness = FALSE, ...)
 
-renyiaccumresult(x, y = "", factor, level,
+renyiaccumresult(x, y=NULL, factor, level,
     scales=c(0, 0.25, 0.5, 1, 2, 4, 8, Inf), permutations = 100,...)
 
 renyicomp(x, y, factor, sites=Inf,
-    scales = c(0, 0.25, 0.5, 1, 2, 4, 8, Inf), permutations = 100, plotit = T,...)
+    scales = c(0, 0.25, 0.5, 1, 2, 4, 8, Inf), permutations = 100, plotit = FALSE, ...)
 }
 
 \arguments{
@@ -34,6 +34,7 @@ renyicomp(x, y, factor, sites=Inf,
   \item{method}{ Method of calculating the diversity profiles: "all" calculates the diversity of the entire community (all sites pooled together), "s" calculates the diversity of each site separatedly. }
   \item{scales}{ Scale parameter values as in function \code{\link[vegan]{renyi}} (\pkg{vegan}). }
   \item{evenness}{ Calculate or plot the evenness profile. }
+
   \item{xr}{ Result from \code{\link[vegan]{renyi}} or \code{renyiresult}. }
   \item{addit}{ Add diversity profile to an existing graph. }
   \item{pch}{ Symbol used for drawing the diversity profiles (as in function \code{\link[graphics]{points}}). }
@@ -42,11 +43,13 @@ renyicomp(x, y, factor, sites=Inf,
   \item{ylim}{ Limits of the vertical axis. }
   \item{labelit}{ Provide site labels (site names) at beginning and end of the diversity profiles. }
   \item{legend}{ Add the legend (you need to click in the graph where the legend needs to be plotted). }
+  \item{legend.x}{ Location of the legend; see also \code{\link[graphics]{legend}}. }
   \item{legend.ncol}{ number of columns for the legend (as in function \code{\link[graphics]{legend}}). }
   \item{col}{ Colour for the diversity profile (as in function \code{\link[graphics]{points}}). }
   \item{cex}{ Character expansion factor (as in function \code{\link[graphics]{points}}).  }
   \item{rainbow}{ Use rainbow colours for the diversity profiles. }
-  \item{sites}{ Maximum number of sites to provide profile values. }
+
+  \item{sites}{ Number of accumulated sites to provide profile values. }
   \item{permutations}{ Number of permutations for the Monte-Carlo simulations for accumulated renyi diversity profiles (estimated by \code{\link[vegan:renyi]{renyiaccum}}). }
   \item{plotit}{ Plot the results (you need to click in the graph where the legend should be plotted). }
   \item{...}{ Other arguments to be passed to functions \code{\link[vegan]{renyi}} or \code{\link[graphics]{plot}}. }

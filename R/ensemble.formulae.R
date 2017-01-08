@@ -1,11 +1,38 @@
 `ensemble.formulae` <- function(
-    x, factors=NULL, dummy.vars=NULL
+    x, layer.drops=NULL, factors=NULL, dummy.vars=NULL, weights=NULL
 )
 {
+
+    results <- list(GBM.formula=NULL, RF.formula=NULL, GLM.formula=NULL, STEP.formula=NULL, GLMSTEP.scope=NULL,  
+        GAM.formula=NULL, GAMSTEP.scope=NULL, MGCV.formula=NULL, MGCVFIX.formula=NULL,
+        EARTH.formula=NULL, RPART.formula=NULL, NNET.formula=NULL,
+        FDA.formula=NULL, SVM.formula=NULL, SVME.formula=NULL, MAXLIKE.formula=NULL)
+
 # in older version of raster used layerNames instead of names
     vars <- names(x)
+
+# drop variables
+    if (is.null(layer.drops) == F) {
+        layer.drops <- as.character(layer.drops)
+        factors <- as.character(factors)
+        dummy.vars <- as.character(dummy.vars)
+        nd <- length(layer.drops)
+        for (i in 1:nd) {                 
+            vars <- vars[which(vars != layer.drops[i])]
+            factors <- factors[which(factors != layer.drops[i])]
+            dummy.vars <- dummy.vars[which(dummy.vars != layer.drops[i])]
+        }
+        if (length(factors) == 0) {factors <- NULL}
+        if (length(dummy.vars) == 0) {dummy.vars <- NULL}
+    }    
+
 # exclude column for pb for data.frames
     vars <- vars[which(vars != "pb")]
+    if (length(vars) == 0) {
+        cat(paste("\n", "WARNING: no variables available", "\n\n", sep = ""))
+        return(results)
+    }
+
     gamscope <- as.list(vars)
     names(gamscope) <- vars
     nv <- length(vars)
@@ -15,7 +42,7 @@
         factors <- as.character(factors)
         for (i in 1:nf) {
             if (any(vars==factors[i])==FALSE) {
-                cat(paste("\n", "WARNING: categorical variable '", factors[i], "' not among grid layers", "\n", "\n", sep = ""))
+                cat(paste("\n", "WARNING: categorical variable '", factors[i], "' not among grid layers", "\n\n", sep = ""))
             }
         }
     }
@@ -27,10 +54,7 @@
             }
         }
     }
-    results <- list(GBM.formula=NULL, RF.formula=NULL, GLM.formula=NULL, STEP.formula=NULL, GLMSTEP.scope=NULL,  
-        GAM.formula=NULL, GAMSTEP.scope=NULL, MGCV.formula=NULL, MGCVFIX.formula=NULL,
-        EARTH.formula=NULL, RPART.formula=NULL, NNET.formula=NULL,
-        FDA.formula=NULL, SVM.formula=NULL, SVME.formula=NULL)
+
     numpb <- paste("pb ~ ")
     catpb <- paste("as.factor(pb) ~ ")
     stepvars <- paste(vars[1])
@@ -56,14 +80,19 @@
     }
     ne <- nv-nf
     earthvars <- NULL
-    if (ne > 0) {
-        earthvars <- paste0("earthvars", c(1:ne))        
-        j <- 0
-        for (i in 1:nv) {
-            if (any(vars[i]==factors) == F) { 
-                j <- j+1
-                earthvars[j] <- paste(vars[i])
-            }
+
+    if (all(vars %in% factors) == T) {
+        earthvars <- NULL
+    }else{
+        if (ne > 0) {
+            earthvars <- paste0("earthvars", c(1:ne))        
+            j <- 0
+            for (i in 1:nv) {
+                if (any(vars[i]==factors) == F) { 
+                    j <- j+1
+                    earthvars[j] <- paste(vars[i])
+                }
+           }
         }
     }
     results$GBM.formula <- as.formula(paste(numpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
@@ -75,15 +104,22 @@
     results$GAMSTEP.scope <- gamscope
     results$MGCV.formula <- as.formula(paste(numpb, paste(mgcvvars, sep="", collapse="+"), sep="", collapse="+"))
     results$MGCVFIX.formula <- as.formula(paste(numpb, paste(mgcvfixvars, sep="", collapse="+"), sep="", collapse="+"))
-# no categorical variables for earth
-    results$EARTH.formula <- as.formula(paste(catpb, paste(earthvars, sep="", collapse="+"), sep="", collapse="+"))
+# no categorical variables for maxlike and earth
+    if(is.null(earthvars) == F) {results$EARTH.formula <- as.formula(paste(catpb, paste(earthvars, sep="", collapse="+"), sep="", collapse="+"))}
+    if(is.null(earthvars) == F) {results$MAXLIKE.formula <- as.formula(paste("~", paste(earthvars, sep="", collapse="+"), sep="", collapse="+"))}
     results$RPART.formula <- as.formula(paste(catpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
     results$NNET.formula <- as.formula(paste(catpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
     results$FDA.formula <- as.formula(paste(numpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
     results$SVM.formula <- as.formula(paste(numpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
     results$SVME.formula <- as.formula(paste(catpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
     if (is.null(factors) == F) {
-        cat(paste("\n", "Note that categorical variables were not included by ensemble.formulae for EARTH", "\n", sep = ""))
+        if (is.null(weights) == F) {
+            if (weights["MAXLIKE"] > 0  && is.null(earthvars) == F) {cat(paste("\n", "Note that categorical variables were not included by ensemble.formulae for MAXLIKE", sep = ""))}
+            if (weights["MAXLIKE"] > 0  && is.null(earthvars) == T) {cat(paste("\n", "Note that there were no variables available for MAXLIKE to make a formula", sep = ""))}
+            if (weights["EARTH"] > 0 && is.null(earthvars) == F) {cat(paste("\n", "Note that categorical variables were not included by ensemble.formulae for EARTH", sep = ""))}
+            if (weights["EARTH"] > 0 && is.null(earthvars) == T) {cat(paste("\n", "Note that there were no variables available for MAXLIKE to make a formula", sep = ""))}
+            cat(paste("\n\n"))
+        }
     }
     return(results)
 }

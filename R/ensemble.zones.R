@@ -12,7 +12,12 @@
     if(is.null(x) == T) {stop("value for parameter x is missing (RasterStack object)")}
     if(inherits(x, "RasterStack") == F) {stop("x is not a RasterStack object")}
     if (is.null(centroid.object) == T) {stop("value for parameter centroid.object is missing (hint: use the ensemble.centroids function)")}
-
+#
+# 
+    if (KML.out==T && raster::isLonLat(presence.raster)==F) {
+        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of presence.raster is not longitude and latitude", "\n", sep = ""))
+        KML.out <- FALSE
+    }
 # 
 predict.zone <- function(object=centroid.object, newdata=newdata) {
     centroids <- object$centroids
@@ -40,6 +45,7 @@ predict.zone <- function(object=centroid.object, newdata=newdata) {
         if (any(vars==vars.x[i]) == F) {
             cat(paste("\n", "NOTE: RasterStack layer '", vars.x[i], "' was not documented in the centroids data set", "\n", sep = ""))
             x <- raster::dropLayer(x, which(names(x) %in% c(vars.x[i]) ))
+            x <- raster::stack(x)
         }
     }
 
@@ -49,6 +55,7 @@ predict.zone <- function(object=centroid.object, newdata=newdata) {
         title.old <- x@title
         x <- raster::crop(x, y=ext, snap="in")
         x@title <- title.old
+        x <- raster::stack(x)
         presence.raster <- raster::crop(presence.raster, y=ext, snap="in")
     }
 
@@ -60,7 +67,7 @@ predict.zone <- function(object=centroid.object, newdata=newdata) {
         dir.create("kml/zones", showWarnings = F)
     }
     stack.title <- RASTER.stack.name
-    if (gsub(".", "_", stack.title, fixed=T) != stack.title) {cat(paste("\n", "WARNING: title of stack (", stack.title, ") contains '.'", "\n\n", sep = ""))}
+#    if (gsub(".", "_", stack.title, fixed=T) != stack.title) {cat(paste("\n", "WARNING: title of stack (", stack.title, ") contains '.'", "\n\n", sep = ""))}
     rasterfull <- paste("ensembles/zones/", RASTER.species.name, "_", stack.title , sep="")
     kmlfull <- paste("kml/zones/", RASTER.species.name, "_", stack.title , sep="")
 

@@ -12,36 +12,27 @@ These functions provide a dataframe which can subsequently be used to evaluate t
 evaluation.strip.data(xn = NULL, ext = NULL,
     models.list = NULL, 
     input.weights = models.list$output.weights,
-    vars = models.list$vars, factors = models.list$factors, 
-    dummy.vars = models.list$dummy.vars, 
-    steps=50
+    steps=200
 )
 
 evaluation.strip.plot(data, TrainData=NULL,
-    modelnames = c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", 
-        "GAMSTEP", "MGCV", "MGCVFIX", "EARTH", "RPART", "NNET", "FDA", 
-        "SVM", "SVME", "BIOCLIM", "DOMAIN", "MAHAL"), 
-    variable = NULL, model = NULL, 
+    variable.focal = NULL, model.focal = NULL, 
     dev.new.width = 7, dev.new.height = 7, ...
 )
 
 }
 
 \arguments{
-  \item{xn}{ RasterStack object (\code{\link[raster]{stack}}) containing all layers that correspond to explanatory variables of an ensemble calibrated earlier with \code{\link{ensemble.test}}. See also \code{\link[raster]{predict}}.   }
+  \item{xn}{ RasterStack object (\code{\link[raster]{stack}}) containing all layers that correspond to explanatory variables of an ensemble calibrated earlier with \code{\link{ensemble.calibrate.models}}. See also \code{\link[raster]{predict}}.   }
   \item{ext}{ an Extent object to limit the prediction to a sub-region of \code{xn} and the selection of background points to a sub-region of \code{x}, typically provided as c(lonmin, lonmax, latmin, latmax); see also \code{\link[raster]{predict}}, \code{\link[dismo]{randomPoints}} and \code{\link[raster]{extent}} }
   \item{models.list}{ list with 'old' model objects such as \code{MAXENT} or \code{RF}. }
-  \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.test.splits} can be used. }
-  \item{vars}{ Vector that indicates which variables should be included as columns in the data frame. Only variables that correspond to layers of the rasterStack will be included. }
-  \item{factors}{ vector that indicates which variables are factors; see also \code{\link[dismo]{prepareData}} and \code{\link{ensemble.formulae}}  }
-  \item{dummy.vars}{ vector that indicates which variables are dummy variables (coded 0 or 1 to indicate presence of specific level of a categorical variable; see also \code{\link{ensemble.formulae}} }
+  \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.calibrate.weights} can be used. }
   \item{steps}{ number of steps within the range of a continuous explanatory variable }
 
   \item{data}{ data set with ranges of environmental variables and fitted suitability models, typically returned by \code{evaluation.strip.data} }
   \item{TrainData}{ Data set representing the calibration data set. If provided, then a boxplot will be added for presence locations via \code{\link[graphics]{boxplot}} }
-  \item{modelnames}{ abbreviated names of the individual suitability models that are fitted }
-  \item{variable}{ focal explanatory variable for plots with evaluation strips }
-  \item{model}{ focal model for plots with evaluation strips }
+  \item{variable.focal}{ focal explanatory variable for plots with evaluation strips }
+  \item{model.focal}{ focal model for plots with evaluation strips }
   \item{dev.new.width}{ Width for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
   \item{dev.new.height}{ Heigth for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
   \item{...}{ Other arguments passed to \code{\link[graphics]{plot}} }
@@ -68,7 +59,7 @@ Elith J, Ferrier S, Huettmann F & Leathwick J. 2005. The evaluation strip: A new
 \author{ Roeland Kindt (World Agroforestry Centre) }
 
 \seealso{
-\code{\link{ensemble.raster}}
+\code{\link{ensemble.calibrate.models}} and \code{\link{ensemble.raster}}
 }
 
 \examples{
@@ -81,7 +72,8 @@ predictor.files <- list.files(path=paste(system.file(package="dismo"), '/ex', se
 predictors <- stack(predictor.files)
 # subset based on Variance Inflation Factors
 predictors <- subset(predictors, subset=c("bio5", "bio6", 
-    "bio16", "bio17", "biome"))
+    "bio16", "bio17"))
+predictors <- stack(predictors)
 predictors
 predictors@title <- "base"
 
@@ -96,37 +88,60 @@ pres_train <- pres[groupp !=  1, ]
 pres_test <- pres[groupp ==  1, ]
 
 # choose background points
-ext <- extent(-90, -32, -33, 23)
-background <- randomPoints(predictors, n=1000, ext=ext, extf=1.00)
+background <- randomPoints(predictors, n=1000, extf=1.00)
 colnames(background)=c('lon', 'lat')
 groupa <- kfold(background, 5)
 backg_train <- background[groupa != 1, ]
 backg_test <- background[groupa == 1, ]
 
 # calibrate the models
-ensemble.calibrate <- ensemble.test(x=predictors, ext=ext,
+# MAXLIKE not included as does not allow predictions for data.frames
+# ENSEMBLE.min and ENSEMBLE.weight.min set very low to explore all
+# algorithms.
+# If focus is on actual ensemble, then set ENSEMBLE.min and 
+# ENSEMBLE.weight.min to more usual values
+ensemble.calibrate <- ensemble.calibrate.models(x=predictors, 
     p=pres_train, a=backg_train, 
     pt=pres_test, at=backg_test,
-    ENSEMBLE.min=0.6,
-    MAXENT=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
+    ENSEMBLE.min=0.5, ENSEMBLE.weight.min = 0.001,
+    MAXENT=1, MAXLIKE=0, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
-    SVM=1, SVME=1, BIOCLIM=1, DOMAIN=1, MAHAL=1,
-    Yweights="BIOMOD", factors="biome",
+    SVM=1, SVME=1, GLMNET=1,
+    BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
+    Yweights="BIOMOD", 
     PLOTS=FALSE, models.keep=TRUE)
 
 # obtain data for plotting the evaluation strip
-strip.data <- evaluation.strip.data(xn=predictors, ext=ext,
+strip.data <- evaluation.strip.data(xn=predictors, steps=500,
     models.list=ensemble.calibrate$models)
 
+# in case predictions for DOMAIN failed
+# however, ENSEMBLE should also be recalculated
+DOMAIN.model <- ensemble.calibrate$models$DOMAIN
+strip.data$plot.data[, "DOMAIN"] <- dismo::predict(object=DOMAIN.model, 
+    x=strip.data$plot.data)
+
+# in case predictions for MAHAL01 failed
+predict.MAHAL01 <- function(model, newdata, MAHAL.shape) {
+    p <- dismo::predict(object=model, x=newdata)
+    p <- p - 1 - MAHAL.shape
+    p <- abs(p)
+    p <- MAHAL.shape / p
+    return(as.numeric(p))
+}
+
+MAHAL01.model <- ensemble.calibrate$models$MAHAL01
+MAHAL.shape1 <- ensemble.calibrate$models$formulae$MAHAL.shape
+strip.data$plot.data[, "MAHAL01"] <- predict.MAHAL01(model=MAHAL01.model, 
+    newdata=strip.data$plot.data, MAHAL.shape=MAHAL.shape1)
+
 # create graphs
-evaluation.strip.plot(data=strip.data, variable="bio6", type="o", col="red")
-evaluation.strip.plot(data=strip.data, 
-    TrainData=ensemble.calibrate$models$TrainData,
-    variable="bio6", type="o", col="red")
-evaluation.strip.plot(data=strip.data, model="ENSEMBLE", type="o", col="red")
-evaluation.strip.plot(data=strip.data, 
-    TrainData=ensemble.calibrate$models$TrainData,
-    model="ENSEMBLE", type="o", col="red")
+evaluation.strip.plot(data=strip.data$plot.data, variable.focal="bio6",
+    TrainData=strip.data$TrainData,
+    type="o", col="red")
+evaluation.strip.plot(data=strip.data$plot.data, model.focal="ENSEMBLE",
+    TrainData=strip.data$TrainData,
+    type="o", col="red")
 
 }
 }

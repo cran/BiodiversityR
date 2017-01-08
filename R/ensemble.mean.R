@@ -1,8 +1,9 @@
 `ensemble.mean` <- function(
     RASTER.species.name="Species001", RASTER.stack.name="base",
-    positive.filters=c("grd","_ENSEMBLE_"), negative.filters=c("xml"), 
+    positive.filters=c("grd", "_ENSEMBLE_"), negative.filters=c("xml"), 
     RASTER.format="raster", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
     KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
+    abs.breaks=6, pres.breaks=6, sd.breaks=9,
     p=NULL, a=NULL,
     pt=NULL, at=NULL,
     threshold=-1,
@@ -18,23 +19,29 @@
     if (is.null(pt)==F && is.null(at)==F) {
         if(identical(pt, p) == F || identical(at, a) == F)  {retest <- T}
     }
-
+#
+    if(is.null(p) == F) {names(p) <- c("x", "y")}
+    if(is.null(a) == F) {names(a) <- c("x", "y")}
+    if(is.null(pt) == F) {names(pt) <- c("x", "y")}
+    if(is.null(at) == F) {names(at) <- c("x", "y")}
+#
 # avoid problems with non-existing directories
-    dir.create("ensembles", showWarnings = F)
-    dir.create("ensembles/count", showWarnings = F)
-    dir.create("ensembles/presence", showWarnings = F)
+    dir.create("ensembles/consensussuitability", showWarnings = F)
+    dir.create("ensembles/consensuscount", showWarnings = F)
+    dir.create("ensembles/consensuspresence", showWarnings = F)
+    dir.create("ensembles/consensussd", showWarnings = F)
     if(KML.out == T) {
         dir.create("kml", showWarnings = F)
-        dir.create("kml/count", showWarnings = F)
-        dir.create("kml/presence", showWarnings = F)
+        dir.create("kml/consensussuitability", showWarnings = F)
+        dir.create("kml/consensuscount", showWarnings = F)
+        dir.create("kml/consensuspresence", showWarnings = F)
+        dir.create("kml/consensussd", showWarnings = F)
     }
-
-# get ensemble files
-# basic assumption is that different ensemble files are named as species_ENSEMBLE_1, species_ENSEMBLE_2, ... i.e. output from ensemble.batch
-
+#
+# get ensemble input files
     species_focus <- RASTER.species.name
     if (gsub(".", "_", RASTER.species.name, fixed=T) != RASTER.species.name) {cat(paste("\n", "WARNING: species name (", RASTER.species.name, ") contains '.'", "\n\n", sep = ""))}
-    ensemble.files <- list.files(path=paste(getwd(), "//ensembles", sep=""), pattern=species_focus, full.names=TRUE)
+    ensemble.files <- list.files(path=paste(getwd(), "//ensembles//suitability", sep=""), pattern=species_focus, full.names=TRUE)
     if (length(ensemble.files) < 1) {
         cat(paste("\n", "NOTE: not meaningful to provide means as there are no raster files for this species:", RASTER.species.name, "\n", sep = ""))
         return(NULL)
@@ -43,7 +50,7 @@
     if (gsub(".", "_", RASTER.stack.name, fixed=T) != RASTER.stack.name) {cat(paste("\n", "WARNING: title of stack (", RASTER.stack.name, ") contains '.'", "\n\n", sep = ""))}
     if (RASTER.stack.name != "") {
         ensemble.files <- ensemble.files[grepl(pattern=RASTER.stack.name, x=ensemble.files)]
-        RASTER.stack.name2 <- paste("_", RASTER.stack.name, sep="")
+        filename0 <- paste(species_focus, "_", RASTER.stack.name, sep="")
         if (length(ensemble.files) < 1) {
             cat(paste("\n", "NOTE: not meaningful to provide means as there are no raster files for this stack:", RASTER.stack.name, "\n", sep = ""))
             return(NULL)
@@ -64,42 +71,38 @@
     ensemble.stack <- raster::stack(ensemble.files)
     cat(paste("\n", "RasterStack used to create mean ensemble", "\n\n", sep = ""))
     print(ensemble.stack)
+#
     ensemble.mean <- raster::mean(ensemble.stack)
-#    if (is.na(crs(ensemble.mean)) == T) {
-#        crs(ensemble.mean) <- "+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs"
-#    }
     ensemble.mean <- trunc(1.0 * ensemble.mean)
 #    raster::setMinMax(ensemble.mean)
-    names(ensemble.mean) <- paste(species_focus, "_MEAN", RASTER.stack.name2, sep="")
-    cat(paste("\n", "Mean ensemble (truncated)", "\n\n", sep = ""))
+    names(ensemble.mean) <- filename0
+    cat(paste("\n", "consensus mean suitability (truncated)", "\n\n", sep = ""))
     print(ensemble.mean)
-    filename1 <- paste(getwd(), "//ensembles//", species_focus, "_MEAN", RASTER.stack.name2, sep="")
+    filename1 <- paste(getwd(), "//ensembles//consensussuitability//", filename0, sep="")
     raster::writeRaster(x=ensemble.mean, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
 # avoid possible problems with saving of names of the raster layers
     raster::writeRaster(ensemble.mean, filename="working.grd", overwrite=T)
     working.raster <- raster::raster("working.grd")
-    names(working.raster) <- paste(species_focus, "_MEAN", RASTER.stack.name2, sep="")
+    names(working.raster) <- filename0
     raster::writeRaster(working.raster, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
 # standard deviation
     ensemble.sd <- raster::calc(ensemble.stack, fun=sd)
-    ensemble.sd <- trunc(1.0 * ensemble.sd)
+    ensemble.sd <- trunc(ensemble.sd)
 #    raster::setMinMax(ensemble.mean)
-    names(ensemble.sd) <- paste(species_focus, "_SD", RASTER.stack.name2, sep="")
-    cat(paste("\n", "Standard deviation for ensemble (truncated)", "\n\n", sep = ""))
+    names(ensemble.sd) <- filename0
+    cat(paste("\n", "consensus standard deviation (truncated)", "\n\n", sep = ""))
     print(ensemble.sd)
-    filename1 <- paste(getwd(), "//ensembles//", species_focus, "_SD", RASTER.stack.name2, sep="")
+    filename1 <- paste(getwd(), "//ensembles//consensussd//", filename0, sep="")
     raster::writeRaster(x=ensemble.sd, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
 #  avoid possible problems with saving of names of the raster layers
     raster::writeRaster(ensemble.sd, filename="working.grd", overwrite=T)
     working.raster <- raster::raster("working.grd")
-    names(working.raster) <- paste(species_focus, "_SD", RASTER.stack.name2, sep="")
+    names(working.raster) <- filename0
     raster::writeRaster(working.raster, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
-# thresholds apply to probabilities
-    ensemble.mean <- ensemble.mean / 1000
 #
     threshold.mean <- threshold
     if (threshold.mean < 0) {
@@ -107,14 +110,12 @@
         cat(paste("\n", "Evaluation of created mean ensemble raster layer at locations p and a", "\n", sep = ""))
         if (ncol(p) == 3) {p <- p[p[,1]==species_focus, c(2:3)]}
         if (ncol(a) == 3) {a <- a[a[,1]==species_focus, c(2:3)]}
-        pres_consensus <- raster::extract(ensemble.mean, p)
+        pres_consensus <- raster::extract(ensemble.mean, p)/1000
         pres_consensus <- pres_consensus[is.na(pres_consensus)==F]
-        abs_consensus <- raster::extract(ensemble.mean, a)
+        abs_consensus <- raster::extract(ensemble.mean, a)/1000
         abs_consensus <- abs_consensus[is.na(abs_consensus)==F]
         eval1 <- dismo::evaluate(p=pres_consensus, a=abs_consensus)
         print(eval1)
-#        threshold.mean <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
-#        threshold.mean <- threshold2(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity)
         threshold.mean <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres_consensus, Abs=abs_consensus)
         cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
         print(as.numeric(threshold.mean))
@@ -123,43 +124,56 @@
             cat(paste("\n", "Evaluation of created mean ensemble raster layer at locations pt and at", "\n\n", sep = ""))
             if (ncol(pt) == 3) {pt <- pt[pt[,1]==species_focus, c(2:3)]}
             if (ncol(at) == 3) {at <- at[at[,1]==species_focus, c(2:3)]}
-            pres_consensus <- raster::extract(ensemble.mean, pt)
-            abs_consensus <- raster::extract(ensemble.mean, at)
+            pres_consensus <- raster::extract(ensemble.mean, p)/1000
+            pres_consensus <- pres_consensus[is.na(pres_consensus)==F]
+            abs_consensus <- raster::extract(ensemble.mean, a)/1000
+            abs_consensus <- abs_consensus[is.na(abs_consensus)==F]
             eval1 <- dismo::evaluate(p=pres_consensus, a=abs_consensus)
             print(eval1)
         }
     }
+
 #
+# 
+    if (KML.out==T && raster::isLonLat(ensemble.mean)==F) {
+        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) is not longitude and latitude", "\n", sep = ""))
+        KML.out <- FALSE
+    }
     if (KML.out == T) {
-        seq1 <- seq(from = 0, to = threshold.mean, length.out = 10)
-        seq2 <- seq(from = threshold.mean, to = 1, length.out = 11)
-        filename2 <- paste(getwd(), "//kml//", species_focus, "_MEAN", RASTER.stack.name2, sep="")
-        raster::KML(ensemble.mean, filename=filename2, col = c(grDevices::rainbow(n = 10, start = 0, end = 1/6), grDevices::rainbow(n = 10, start = 3/6, end = 4/6)), colNA = 0, 
-            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE, breaks = c(seq1, seq2))
+        raster.min <- raster::minValue(ensemble.mean)
+        raster.max <- raster::maxValue(ensemble.mean)
+        seq1 <- round(seq(from=raster.min, to=threshold.mean, length.out=abs.breaks), 4)
+        seq1 <- seq1[1:(abs.breaks-1)]
+        seq1[-abs.breaks]
+        seq1 <- unique(seq1)
+        seq2 <- round(seq(from = threshold.mean, to = raster.max, length.out=pres.breaks), 4)
+        seq2 <- unique(seq2)
+        filename2 <- paste(getwd(), "//kml//consensussuitability//", filename0, sep="")
+        raster::KML(ensemble.mean, filename=filename2, breaks = c(seq1, seq2), col = c(grDevices::rainbow(n=length(seq1), start=0, end =1/6), grDevices::rainbow(n=length(seq2)-1, start=3/6, end=4/6)), colNA = 0, 
+            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE)
+#
         sd.max <- raster::cellStats(ensemble.sd, stat='max')
-        seq1 <- seq(from = 0, to = sd.max, length.out = 20)
-        filename2b <- paste(getwd(), "//kml//", species_focus, "_SD", RASTER.stack.name2, sep="")
-        raster::KML(ensemble.sd, filename=filename2b, col = grDevices::rainbow(n = 19, start = 0, end = 4/6), colNA = 0, 
+        seq1 <- seq(from = 0, to = sd.max, length.out = sd.breaks)
+        filename2b <- paste(getwd(), "//kml//consensussd//", filename0, sep="")
+        raster::KML(ensemble.sd, filename=filename2b, col=grDevices::rainbow(n = length(seq1)-1, start = 1/6, end = 4/6), colNA = 0, 
             blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE, breaks = seq1)
     }
 #
 # presence-absence maps based on the mean maps
-    enspresence <- ensemble.mean >= threshold.mean
-#    if (is.na(crs(enspresence)) == T) {crs(enspresence) <- crs(ensemble.mean)}
-#    enspresence <- trunc(enspresence)
+    enspresence <- ensemble.mean >= 1000 * threshold.mean
     raster::setMinMax(enspresence)
-    names(enspresence) <- paste(species_focus, "_MEAN", RASTER.stack.name2, "_presence", sep="")
-    filename3 <- paste(getwd(), "//ensembles//presence//", species_focus, "_MEAN", RASTER.stack.name2, sep="")
+    names(enspresence) <- filename0
+    filename3 <- paste(getwd(), "//ensembles//consensuspresence//", filename0, sep="")
     raster::writeRaster(x=enspresence, filename=filename3, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #
 #  avoid possible problems with saving of names of the raster layers
     raster::writeRaster(enspresence, filename="working.grd", overwrite=T)
     working.raster <- raster::raster("working.grd")
-    names(working.raster) <- paste(species_focus, "_MEAN", RASTER.stack.name2, "_presence", sep="")
+    names(working.raster) <- filename0
     raster::writeRaster(working.raster, filename=filename3, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #
     if (KML.out == T) {
-        filename4 <- paste(getwd(), "//kml//presence//", species_focus, "_MEAN", RASTER.stack.name2, sep="")
+        filename4 <- paste(getwd(), "//kml//consensuspresence//", filename0, sep="")
         raster::KML(enspresence, filename=filename4, col=c("grey", "green"),
             colNA=0, blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE)
     }
@@ -178,27 +192,25 @@
     }
 
     ensemble.stack <- raster::stack(presence.files)
-    cat(paste("\n", "RasterStack (presence-absence) used to create mean ensemble (count)", "\n\n", sep = ""))
+    cat(paste("\n", "RasterStack (presence-absence) used to create consensus ensemble (count of ensembles)", "\n\n", sep = ""))
     print(ensemble.stack)
     ensemble.count <- sum(ensemble.stack)
-#    if (is.na(crs(ensemble.count)) == T) {crs(ensemble.count) <- crs(ensemble.mean)}
-#    ensemble.count <- trunc(ensemble.count)
     raster::setMinMax(ensemble.count)
-    names(ensemble.count) <- paste(species_focus, "_MEAN", RASTER.stack.name2, "_count", sep="")
-    filename5 <- paste(getwd(), "//ensembles//count//", species_focus, "_MEAN", RASTER.stack.name2, sep="")
+    names(ensemble.count) <- filename0
+    filename5 <- paste(getwd(), "//ensembles//consensuscount//", filename0, sep="")
     raster::writeRaster(x=ensemble.count, filename=filename5, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #
 #  avoid possible problems with saving of names of the raster layers
     raster::writeRaster(ensemble.count, filename="working.grd", overwrite=T)
     working.raster <- raster::raster("working.grd")
-    names(working.raster) <- paste(species_focus, "_MEAN", RASTER.stack.name2, "_count", sep="")
+    names(working.raster) <- filename0
     raster::writeRaster(working.raster, filename=filename5, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #
     if (KML.out == T) {
-        filename6 <- paste(getwd(), "//kml//count//", species_focus, "_MEAN", RASTER.stack.name2, sep="")
+        filename6 <- paste(getwd(), "//kml//consensuscount//", filename0, sep="")
         nmax <- length(presence.files)
         if (nmax > 3) {
-            raster::KML(ensemble.count, filename=filename6, col=c("grey", grDevices::rainbow(n=(nmax-1), start=0, end=1/3), "blue"),
+            raster::KML(ensemble.count, filename=filename6, col=c("grey", "black", grDevices::rainbow(n=(nmax-2), start=0, end=1/3), "blue"),
                 colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
         }else{
             raster::KML(ensemble.count, filename=filename6, col=c("grey", grDevices::rainbow(n=nmax, start=0, end=1/3)),

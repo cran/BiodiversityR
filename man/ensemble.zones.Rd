@@ -81,24 +81,60 @@ predictors <- subset(predictors, subset=c("bio1", "bio5", "bio6", "bio7", "bio8"
     "bio12", "bio16", "bio17"))
 predictors
 predictors@title <- "base"
+
 # choose background points
-ext <- extent(-90, -32, -33, 23)
+background <- randomPoints(predictors, n=1000, extf=1.00)
+
+# predicted presence from GLM
+ensemble.calibrate.step1 <- ensemble.calibrate.models(
+    x=predictors, p=pres, a=background,
+    species.name="Bradypus",
+    MAXENT=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=0, GLM=1, GLMSTEP=0, 
+    GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0,
+    EARTH=0, RPART=0, NNET=0, FDA=0, SVM=0, SVME=0, GLMNET=0,
+    BIOCLIM.O=0, BIOCLIM=0, DOMAIN=0, MAHAL=0, MAHAL01=0,
+    Yweights="BIOMOD",
+    models.keep=TRUE)
+
+ensemble.raster.results <- ensemble.raster(xn=predictors, 
+    models.list=ensemble.calibrate.step1$models, 
+    RASTER.species.name="Bradypus", RASTER.stack.name="base")
 
 # get presence map as for example created with ensemble.raster in subfolder 'ensemble/presence'
 # presence values are values equal to 1
-presence.raster <- raster(file.choose())
+presence.file <- paste("ensembles//presence//Bradypus_base.grd", sep="")
+presence.raster <- raster(presence.file)
 
 # let cascadeKM decide on the number of clusters
+dev.new()
 centroids <- ensemble.centroids(presence.raster=presence.raster, 
-    x=predictors, an=1000, ext=ext, plotit=T)
+    x=predictors, an=1000, plotit=T)
 ensemble.zones(presence.raster=presence.raster, centroid.object=centroids, 
-    x=predictors, ext=ext, RASTER.species.name="Bradypus", KML.out=T)
+    x=predictors, RASTER.species.name="Bradypus", KML.out=T)
 
-# choose clusters manually
-centroids <- ensemble.centroids(presence.raster=presence.raster, 
-    x=predictors, an=1000, ext=ext, plotit=T, centers=6)
+dev.new()
+zones.file <- paste("ensembles//zones//Bradypus_base.grd", sep="")
+zones.raster <- raster(zones.file)
+max.zones <- maxValue(zones.raster)
+plot(zones.raster, breaks=c(0, c(1:max.zones)), 
+    col = grDevices::rainbow(n=max.zones), main="zones")
 ensemble.zones(presence.raster=presence.raster, centroid.object=centroids, 
-    x=predictors, ext=ext, RASTER.species.name="Bradypus6", KML.out=T)
+    x=predictors, RASTER.species.name="Bradypus", KML.out=T)
+
+# manually choose 6 zones
+dev.new()
+centroids6 <- ensemble.centroids(presence.raster=presence.raster, 
+    x=predictors, an=1000, plotit=T, centers=6)
+ensemble.zones(presence.raster=presence.raster, centroid.object=centroids6, 
+    x=predictors, RASTER.species.name="Bradypus6", KML.out=T)
+
+dev.new()
+zones.file <- paste("ensembles//zones//Bradypus6_base.grd", sep="")
+zones.raster <- raster(zones.file)
+max.zones <- maxValue(zones.raster)
+plot(zones.raster, breaks=c(0, c(1:max.zones)), 
+    col = grDevices::rainbow(n=max.zones), main="six zones")
+
 }
 }
 

@@ -1,5 +1,6 @@
 \name{makecommunitydataset}
 \alias{makecommunitydataset}
+\alias{stackcommunitydataset}
 
 \title{Make a Community Dataset from a Stacked Dataset}
 
@@ -8,7 +9,8 @@ Makes a community data set from a stacked dataset (with separate variables for t
 }
 
 \usage{
-makecommunitydataset(x,row,column,value,factor="",level="",drop=F)
+makecommunitydataset(x, row, column, value, factor="", level="", drop=F)
+stackcommunitydataset(comm, remove.zeroes=FALSE, order.sites=FALSE, order.species=FALSE)
 }
 
 \arguments{
@@ -19,10 +21,18 @@ makecommunitydataset(x,row,column,value,factor="",level="",drop=F)
   \item{factor}{ Name of the variable to calculate a subset of the data frame. }
   \item{level}{ Value of the subset of the factor variable to calculate a subset of the data frame. }
   \item{drop}{ Drop rows without species (species with total abundance of zero are always dropped) }
+
+  \item{comm}{ Community data set }
+  \item{remove.zeroes}{ Should rows with zero abundance be removed? }
+  \item{order.sites}{ Should sites be ordered alphabetically? }
+  \item{order.species}{ Should species be ordered alphabetically? }
+
 }
 
 \details{
-This function calculates a cross-tabulation from a data frame, summing up all the values of the numerical variable identified as variable for the cell values. If factor="", then no subset is calculated from the data frame in the first step.
+\code{makecommunitydataset} calculates a cross-tabulation from a data frame, summing up all the values of the numerical variable identified as variable for the cell values. If factor="", then no subset is calculated from the data frame in the first step.
+
+\code{stackcommunitydataset} reverses the actions of \code{makecommunitydataset} and recreates the data in stacked format. 
 }
 
 \value{
@@ -51,6 +61,10 @@ dune.stacked <- read.csv(dune.file)
 head(dune.stacked)
 dune.comm2 <- makecommunitydataset(dune.stacked, row='sites', column='species', 
     value='abundance')
+
+# recreate the original stack
+dune.stacked2 <- stackcommunitydataset(dune.comm2, remove.zeroes=T)
+
 }
 
 }

@@ -85,6 +85,38 @@ Brazil.ecocrop <- ensemble.ecocrop.object(temp.thresholds=c(20, 36, 12, 40),
     annual.temps=FALSE, name="Bertholletia_excelsa")
 Brazil.ecocrop
 ensemble.ecocrop(predictors, ecocrop.object=Brazil.ecocrop)
+
+dev.new()
+par.old <- graphics::par(no.readonly=T)
+graphics::par(mfrow=c(1,2))
+
+
+rasterfull1 <- paste("ensembles//ecocrop//Bertholletia_excelsa_base.grd", sep="")
+rasterfull1 <- raster(rasterfull1)
+# raster file saved probabilities as integer values between 0 and 1000
+rasterfull1 <- rasterfull1/1000
+raster::plot(rasterfull1, main="Ecocrop suitability")
+
+GBIFloc <- gbif(genus="Bertholletia", species="excelsa", geo=TRUE)
+GBIFpres <- cbind(GBIFloc$lon, GBIFloc$lat)
+GBIFpres <- GBIFpres[complete.cases(GBIFpres), ]
+GBIFpres <- GBIFpres[duplicated(GBIFpres) == FALSE, ]
+point.suitability <- extract(rasterfull1, y=GBIFpres)
+point.suitability[is.na(point.suitability)] <- -1
+
+GBIFpres.optimal <- GBIFpres[point.suitability == 1, ]
+GBIFpres.suboptimal <- GBIFpres[point.suitability < 1 & point.suitability > 0, ]
+GBIFpres.not <- GBIFpres[point.suitability == 0, ]
+
+raster::plot(rasterfull1, main="GBIF locations", 
+    sub="blue: optimal, cyan: suboptimal, red: not suitable")
+bg.legend <- c("blue", "cyan", "red")
+
+points(GBIFpres.suboptimal, pch=21, cex=1.2, bg=bg.legend[2])
+points(GBIFpres.optimal, pch=21, cex=1.2, bg=bg.legend[1])
+points(GBIFpres.not, pch=21, cex=1.2, bg=bg.legend[3])
+
+graphics::par(par.old)
 }
 
 }
