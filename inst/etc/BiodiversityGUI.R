@@ -1196,7 +1196,6 @@ accumGUI <- function(){
         if (var2 == "sites") {
             xlab <- paste(", xlab='sites'", sep="")
         }else{
-            var2 <- .variables[as.numeric(tkcurselection(scaleBox))]
             xlab <- paste(", xlab='", var2, "'", sep="")
         }
         if (method %in% c("exact", "exact (unconditioned)", "random", "rarefaction", "coleman", "collector")) {
@@ -1334,9 +1333,9 @@ diversityGUI <- function(){
         modelValue <- tclvalue(modelName)
         index <- indices[as.numeric(tkcurselection(indexBox))+1]
         method <- methods[as.numeric(tkcurselection(methodBox))+1]
-        data <- tclvalue(dataVariable) == "1"
+        data1 <- tclvalue(dataVariable) == "1"
         sortit <- tclvalue(sortVariable) == "1"
-        if (data==T) {sortit <- F}
+        if (data1==T) {sortit <- F}
         var <- variables[as.numeric(tkcurselection(subsetBox))+1]
         if (length(var) > 2) {
             logger(paste("more than 2 factors selected, whereas only 1 or 2 allowed"))
@@ -1378,9 +1377,9 @@ diversityGUI <- function(){
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
         doItAndPrint(paste(modelValue))
-        if (data==T && var=="(none)" && method=="separate per site" && index %in% c("richness", "abundance", "Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", "Jevenness", "Eevenness", "jack1", "jack2", "chao", "boot")) {
-            justDoIt(paste(.activeDataSet, "$", index, " <- diversityresult(", .communityDataSet, ", index='", index,"' ,method='", method,"')[,1]", sep=""))
-            logger(paste(.activeDataSet, "$", index, " <- diversityresult(", .communityDataSet, ", index='", index,"' ,method='", method,"')[,1]", sep=""))
+        if (data1==T && method=="each site" && index %in% c("richness", "abundance", "Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", "Jevenness", "Eevenness", "jack1", "jack2", "chao", "boot")) {
+            justDoIt(paste(.activeDataSet, "$", index, " <- diversityresult(", .communityDataSet, ", index='", index,"', method='each site')[,1]", sep=""))
+            logger(paste(.activeDataSet, "$", index, " <- diversityresult(", .communityDataSet, ", index='", index,"', method='each site')[,1]", sep=""))
             activeDataSet(.activeDataSet)
         }
     }
@@ -4926,7 +4925,9 @@ update.stacklist <- function(){
     stack.list2 <- stack.list
     for (i in 1:length(all.objects)) {
         eval1 <- eval(parse(text=paste(all.objects[i])), envir=.GlobalEnv)
-        if(class(eval1) == "RasterStack") {stack.list2 <- c(stack.list2, all.objects[i])}
+
+# changed to any(
+        if(any(class(eval1) == "RasterStack")) {stack.list2 <- c(stack.list2, all.objects[i])}
     }
     stack.list2 <- unique(stack.list2)
     stack.list2 <- stack.list2[stack.list2 != "eval1"]
@@ -5676,8 +5677,8 @@ batch.GUI <- function(){
     VIF.maxEntry <- tkentry(left1Frame, width=15, textvariable=VIF.maxVariable)
     PROBITVariable <- tclVar("1")
     PROBITCheckBox <- tkcheckbutton(left2Frame, variable=PROBITVariable)
-    AUC.weightsVariable <- tclVar("0")
-    AUC.weightsCheckBox <- tkcheckbutton(left2Frame, variable=AUC.weightsVariable)
+    get.blockVariable <- tclVar("0")
+    get.blockCheckBox <- tkcheckbutton(left2Frame, variable=get.blockVariable)
     infoFrame <- tkframe(firstFrame)
     info1Frame <- tkframe(infoFrame)
     if (is.null(stack.focal) == F) {stack.focalVariable <- tclVar(stack.focal)}
@@ -5786,7 +5787,7 @@ batch.GUI <- function(){
         if (CIRCLES.d > 0) {SSB.reduce <- TRUE}
         VIF.max <- tclvalue(VIF.maxVariable)
         PROBIT <- tclvalue(PROBITVariable) == "1"
-        AUC.weights <- tclvalue(AUC.weightsVariable) == "1"
+        get.block1 <- tclvalue(get.blockVariable) == "1"
         stack.focalValue <- tclvalue(stack.focalVariable)
         presence.focalValue <- tclvalue(presence.focalVariable)
         absence.focalValue <- tclvalue(absence.focalVariable)
@@ -5869,7 +5870,7 @@ batch.GUI <- function(){
         logger(paste("You can also monitor progress in the 'outputs' subfolder of the working directory: ", getwd(), sep=""))
         doItAndPrint(paste("batch.1 <- ensemble.batch(x=", stack.focalValue, ", xn=", stack.string, 
             ", species.presence=", presence.focalValue, ", species.absence=", absence.focalValue,
-            ", presence.min=20, SSB.reduce=", SSB.reduce, ", CIRCLES.d=", CIRCLES.d,
+            ", presence.min=20, get.block=", get.block1, ", SSB.reduce=", SSB.reduce, ", CIRCLES.d=", CIRCLES.d,
             ", k.splits=", k.splits,
             ", n.ensembles=", n.ensembles,
             ", VIF.max=", VIF.max, 
@@ -5884,7 +5885,7 @@ batch.GUI <- function(){
             ", RPART=", RPART, ", NNET=", NNET, ", FDA=", FDA, ", SVM=", SVM, 
             ", SVME=", SVME, ", GLMNET=", GLMNET, ", BIOCLIM.O=", BIOCLIMO, ", BIOCLIM=", BIOCLIM, 
             ", DOMAIN=", DOMAIN, ", MAHAL=", MAHAL, ", MAHAL01=", MAHAL01,
-            ", PROBIT=", PROBIT, ", AUC.weights=", AUC.weights, ")", sep=""))
+            ", PROBIT=", PROBIT, ")", sep=""))
         doItAndPrint(paste("batch.1"))
         if (is.null(presence.focal) == F) {
             if (n.ensembles > 1) {
@@ -5923,7 +5924,7 @@ batch.GUI <- function(){
         if (CIRCLES.d > 0) {SSB.reduce <- TRUE}
         VIF.max <- tclvalue(VIF.maxVariable)
         PROBIT <- tclvalue(PROBITVariable) == "1"
-        AUC.weights <- tclvalue(AUC.weightsVariable) == "1"
+        get.block1 <- tclvalue(get.blockVariable) == "1"
         stack.focalValue <- tclvalue(stack.focalVariable)
         presence.focalValue <- tclvalue(presence.focalVariable)
         absence.focalValue <- tclvalue(absence.focalVariable)
@@ -6009,7 +6010,7 @@ batch.GUI <- function(){
         logger(paste("You can also monitor progress in the 'outputs' subfolder of the working directory: ", getwd(), sep=""))
         doItAndPrint(paste("capture.output(batch.1 <- ensemble.batch(x=", stack.focalValue, ", xn=", stack.string, 
             ", species.presence=", presence.focalValue, ", species.absence=", absence.focalValue,
-            ", presence.min=20, SSB.reduce=", SSB.reduce, ", CIRCLES.d=", CIRCLES.d,
+            ", presence.min=20, get.block=", get.block1, ", SSB.reduce=", SSB.reduce, ", CIRCLES.d=", CIRCLES.d,
             ", k.splits=", k.splits,
             ", n.ensembles=", n.ensembles,
             ", VIF.max=", VIF.max, 
@@ -6024,7 +6025,7 @@ batch.GUI <- function(){
             ", RPART=", RPART, ", NNET=", NNET, ", FDA=", FDA, ", SVM=", SVM, 
             ", SVME=", SVME, ", GLMNET=", GLMNET, ", BIOCLIM.O=", BIOCLIMO, ", BIOCLIM=", BIOCLIM, 
             ", DOMAIN=", DOMAIN, ", MAHAL=", MAHAL, ", MAHAL01=", MAHAL01,
-            ", PROBIT=", PROBIT, ", AUC.weights=", AUC.weights, "), file=output.filename)", sep=""))
+            ", PROBIT=", PROBIT, "), file=output.filename)", sep=""))
         doItAndPrint(paste("batch.1"))
         if (is.null(presence.focal) == F) {
             if (n.ensembles > 1) {
@@ -6075,7 +6076,7 @@ batch.GUI <- function(){
     tkgrid(tklabel(left1Frame, text="CIRCLES.d (if > 0)", width=24), CIRCLES.dEntry, sticky="w")
     tkgrid(tklabel(left1Frame, text="VIF.max", width=22), VIF.maxEntry, sticky="w")
     tkgrid(PROBITCheckBox, tklabel(left2Frame, text="PROBIT transformations      "), sticky="w")
-    tkgrid(AUC.weightsCheckBox, tklabel(left2Frame, text="Use mean AUC as weights"), sticky="w")
+    tkgrid(get.blockCheckBox, tklabel(left2Frame, text="get.block for k-fold crossvalidation"), sticky="w")
 #    tkgrid(tklabel(left2Frame, text="    ", width=5), tklabel(left2Frame, text="    ", width=30), sticky="w")
     tkgrid(left1Frame, sticky="w")
     tkgrid(left2Frame, sticky="w")

@@ -132,7 +132,7 @@
     MGCVFIX.PROBIT.OLD <- EARTH.PROBIT.OLD <- RPART.PROBIT.OLD <- NNET.PROBIT.OLD <- FDA.PROBIT.OLD <- SVM.PROBIT.OLD <- SVME.PROBIT.OLD <- GLMNET.PROBIT.OLD <- BIOCLIM.O.PROBIT.OLD <- BIOCLIM.PROBIT.OLD <- DOMAIN.PROBIT.OLD <- MAHAL.PROBIT.OLD <- MAHAL01.PROBIT.OLD <- NULL
     if (is.null(models.list) == F) {
         if (is.null(models.list$MAXENT) == F) {MAXENT.OLD <- models.list$MAXENT}
-        if (is.null(models.list$MAXLIKE) == F) {GBM.OLD <- models.list$MAXLIKE}
+        if (is.null(models.list$MAXLIKE) == F) {MAXLIKE.OLD <- models.list$MAXLIKE}
         MAXLIKE.formula <- models.list$formulae$MAXLIKE.formula
         if (is.null(models.list$GBM) == F) {GBM.OLD <- models.list$GBM}
         if (is.null(models.list$GBMSTEP) == F) {GBMSTEP.OLD <- models.list$GBMSTEP}
@@ -188,8 +188,8 @@
     }
     if (MAXLIKE > 0) {
         if (! requireNamespace("maxlike")) {stop("Please install the maxlike package")}
-        MAXLIKE.formula <- ensemble.formulae(xn, factors=factors)$MAXLIKE.formula
-        environment(MAXLIKE.formula) <- .BiodiversityR
+#        MAXLIKE.formula <- ensemble.formulae(xn, factors=factors)$MAXLIKE.formula
+#        environment(MAXLIKE.formula) <- .BiodiversityR
     }
     if (GBM > 0) {
         if (! requireNamespace("gbm")) {stop("Please install the gbm package")}
@@ -404,7 +404,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pmaxent, p)/1000
                 abs1 <- raster::extract(pmaxent, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["MAXENT"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -416,7 +416,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pmaxent, pt)/1000
                 abs1 <- raster::extract(pmaxent, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -426,62 +426,52 @@
         }
     }
     if (output.weights["MAXLIKE"] > 0) {
-        results <- MAXLIKE.OLD
-        results$rasters <- models.list$x
-        if (all.equal(results$rasters, xn) == F) {
-             cat(paste("\n", "WARNING: Maxlike prediction function is problematic with new data", sep = ""))    
-             cat(paste("\n", "Maxlike predictions will not be done", sep = "")) 
-             cat(paste("\n", "You should recalibrate the ensemble model without MAXLIKE", "\n\n", sep = ""))        
-             output.weights["MAXLIKE"]  <- 0
-        }
-    }
-    if (output.weights["MAXLIKE"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Maxlike algorithm (package: maxlike)\n", sep=""))
         results <- MAXLIKE.OLD
-#        results$call$formula <- MAXLIKE.formula
-#        results$call$rasters <- as.name("x")
-#        results$rasters <- models.list$x
-#        class(results) <- "maxlikeFit"
-#        pmaxlike <- NULL
-#         tryCatch(pmaxlike <- predict(results, rasters=xn),
-#             error= function(err) {print(paste("MAXLIKE prediction failed"))},
-#             silent=F)
-
-# use raster layer from calibration
-        pmaxlike <- raster::raster("MAXLIKE_raster")
-        fullname <- paste("models//", RASTER.species.name, "_MAXLIKE", sep="")
-        results2 <- MAXLIKE.PROBIT.OLD
-        if (is.null(results2) == F) {
-            cat(paste("Probit transformation", "\n", sep=""))
-            fullname2 <- paste("models//", "MAXLIKE_step1", sep="")
-            raster::writeRaster(x=pmaxlike, filename=fullname2, progress='text', overwrite=TRUE)
-            explan.stack <- raster::stack(fullname2)
-            names(explan.stack) <- "MAXLIKE"
-            pmaxlike <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                filename=fullname, progress='text', overwrite=TRUE)                
-        }
-        pmaxlike <- trunc(1000*pmaxlike)
-        raster::writeRaster(x=pmaxlike, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        if(evaluate == T) {
-            eval1 <- pres1 <- abs1 <- NULL
-            cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-            pres1 <- raster::extract(pmaxlike, p)/1000
-            abs1 <- raster::extract(pmaxlike, a)/1000
-            eval1 <- evaluate(p=pres1, a=abs1)
-            print(eval1)
-            thresholds.raster["MAXLIKE"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
+        pmaxlike <- NULL
+        fullname <- paste("models/", RASTER.species.name, "_MAXLIKE", sep="")
+        tryCatch(pmaxlike <- raster::predict(object=xn, model=results, na.rm=TRUE, 
+                filename=fullname, progress='text', overwrite=TRUE),
+            error= function(err) {print(paste("MAXLIKE prediction failed"))},
+            silent=F)
+        if (is.null(pmaxlike) == F) {
+            results2 <- MAXLIKE.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste("models//", "MAXLIKE_step1", sep="")
+                raster::writeRaster(x=pmaxlike, filename=fullname2, progress='text', overwrite=TRUE)
+                explan.stack <- raster::stack(fullname2)
+                names(explan.stack) <- "MAXLIKE"
+                pmaxlike <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE)                
+            }
+            pmaxlike <- trunc(1000*pmaxlike)
+            raster::writeRaster(x=pmaxlike, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            if(evaluate == T) {
+                eval1 <- pres1 <- abs1 <- NULL
+                cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
+                pres1 <- raster::extract(pmaxlike, p)/1000
+                abs1 <- raster::extract(pmaxlike, a)/1000
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
+                print(eval1)
+                thresholds.raster["MAXLIKE"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
-            cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
-            print(as.numeric(thresholds.raster["MAXLIKE"]))
-        }
-        if(retest == T) {
-            eval1 <- pres1 <- abs1 <- NULL
-            cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-            pres1 <- raster::extract(pmaxlike, pt)/1000
-            abs1 <- raster::extract(pmaxlike, at)/1000
-            eval1 <- evaluate(p=pres1, a=abs1)
-            print(eval1)
+                cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
+                print(as.numeric(thresholds.raster["MAXLIKE"]))
+            }
+            if(retest == T) {
+                eval1 <- pres1 <- abs1 <- NULL
+                cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
+                pres1 <- raster::extract(pmaxlike, pt)/1000
+                abs1 <- raster::extract(pmaxlike, at)/1000
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
+                print(eval1)
+            }
+        }else{
+            cat(paste("\n", "WARNING: MAXLIKE prediction failed","\n\n", sep = ""))
+            prediction.failures <- TRUE
+            output.weights["MAXLIKE"] <- -1
         }
     }
     if (output.weights["GBM"] > 0) {
@@ -516,7 +506,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pgbm, p)/1000
                 abs1 <- raster::extract(pgbm, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GBM"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -528,7 +518,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pgbm, pt)/1000
                 abs1 <- raster::extract(pgbm, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -569,7 +559,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pgbms, p)/1000
                 abs1 <- raster::extract(pgbms, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GBMSTEP"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -581,7 +571,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pgbms, pt)/1000
                 abs1 <- raster::extract(pgbms, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -618,7 +608,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(prf, p)/1000
                 abs1 <- raster::extract(prf, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["RF"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -630,7 +620,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(prf, pt)/1000
                 abs1 <- raster::extract(prf, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -667,7 +657,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pglm, p)/1000
                 abs1 <- raster::extract(pglm, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GLM"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -679,7 +669,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pglm, pt)/1000
                 abs1 <- raster::extract(pglm, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -716,7 +706,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pglms, p)/1000
                 abs1 <- raster::extract(pglms, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GLMSTEP"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -728,7 +718,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pglms, pt)/1000
                 abs1 <- raster::extract(pglms, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -765,7 +755,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pgam, p)/1000
                 abs1 <- raster::extract(pgam, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GAM"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -777,7 +767,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pgam, pt)/1000
                 abs1 <- raster::extract(pgam, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -814,7 +804,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pgams, p)/1000
                 abs1 <- raster::extract(pgams, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GAMSTEP"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -826,7 +816,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pgams, pt)/1000
                 abs1 <- raster::extract(pgams, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -866,7 +856,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pmgcv, p)/1000
                 abs1 <- raster::extract(pmgcv, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["MGCV"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -878,7 +868,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pmgcv, pt)/1000
                 abs1 <- raster::extract(pmgcv, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -918,7 +908,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pmgcvf, p)/1000
                 abs1 <- raster::extract(pmgcvf, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["MGCVFIX"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -930,7 +920,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pmgcvf, pt)/1000
                 abs1 <- raster::extract(pmgcvf, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -970,7 +960,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pearth, p)/1000
                 abs1 <- raster::extract(pearth, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["EARTH"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -982,7 +972,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pearth, pt)/1000
                 abs1 <- raster::extract(pearth, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -1022,7 +1012,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(prpart, p)/1000
                 abs1 <- raster::extract(prpart, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["RPART"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -1034,7 +1024,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(prpart, pt)/1000
                 abs1 <- raster::extract(prpart, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -1074,7 +1064,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pnnet, p)/1000
                 abs1 <- raster::extract(pnnet, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["NNET"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -1086,7 +1076,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pnnet, pt)/1000
                 abs1 <- raster::extract(pnnet, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -1126,7 +1116,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pfda, p)/1000
                 abs1 <- raster::extract(pfda, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["FDA"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -1138,7 +1128,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pfda, pt)/1000
                 abs1 <- raster::extract(pfda, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -1179,7 +1169,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(psvm, p)/1000
                 abs1 <- raster::extract(psvm, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["SVM"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -1191,7 +1181,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(psvm, pt)/1000
                 abs1 <- raster::extract(psvm, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -1229,7 +1219,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(psvme, p)/1000
                 abs1 <- raster::extract(psvme, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["SVME"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -1241,7 +1231,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(psvme, pt)/1000
                 abs1 <- raster::extract(psvme, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -1282,7 +1272,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pglmnet, p)/1000
                 abs1 <- raster::extract(pglmnet, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GLMNET"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -1294,7 +1284,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pglmnet, pt)/1000
                 abs1 <- raster::extract(pglmnet, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -1331,7 +1321,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pbioO, p)/1000
                 abs1 <- raster::extract(pbioO, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["BIOCLIM.O"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -1343,7 +1333,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pbioO, pt)/1000
                 abs1 <- raster::extract(pbioO, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -1386,7 +1376,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pbio, p)/1000
                 abs1 <- raster::extract(pbio, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["BIOCLIM"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -1398,7 +1388,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pbio, pt)/1000
                 abs1 <- raster::extract(pbio, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -1445,7 +1435,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pdom, p)/1000
                 abs1 <- raster::extract(pdom, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["DOMAIN"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -1457,7 +1447,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pdom, pt)/1000
                 abs1 <- raster::extract(pdom, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -1509,7 +1499,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pmahal, p)/1000
                 abs1 <- raster::extract(pmahal, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["MAHAL"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -1521,7 +1511,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pmahal, pt)/1000
                 abs1 <- raster::extract(pmahal, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -1566,7 +1556,7 @@
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
                 pres1 <- raster::extract(pmahal01, p)/1000
                 abs1 <- raster::extract(pmahal01, a)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["MAHAL01"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
                     threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
@@ -1578,7 +1568,7 @@
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
                 pres1 <- raster::extract(pmahal01, pt)/1000
                 abs1 <- raster::extract(pmahal01, at)/1000
-                eval1 <- evaluate(p=pres1, a=abs1)
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
         }else{
@@ -1615,7 +1605,7 @@
     raster::setMinMax(ensemble)
     names(ensemble) <- raster.title
     raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-    enscount <- ensemble
+    enscount <- ensemble 
     raster::setMinMax(enscount)
     names(enscount) <- paste(raster.title, "_count", sep="")
     raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
@@ -1633,7 +1623,7 @@
     if (output.weights["MAXLIKE"] > 0) {
         ensemble <- ensemble + output.weights["MAXLIKE"] * pmaxlike
         raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
-        pmaxent <- pmaxlike >= 1000 * thresholds["MAXLIKE"]
+        pmaxlike <- pmaxlike >= 1000 * thresholds["MAXLIKE"]
         enscount <- enscount + pmaxlike
         raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
@@ -1828,7 +1818,7 @@
         cat(paste("\n", "Evaluation of created ensemble raster layer (", rasterfull, ") at locations p and a", "\n\n", sep = ""))
         pres_consensus <- raster::extract(ensemble, p)/1000
         abs_consensus <- raster::extract(ensemble, a)/1000
-        eval1 <- evaluate(p=pres_consensus, a=abs_consensus)
+        eval1 <- dismo::evaluate(p=pres_consensus, a=abs_consensus)
         print(eval1)
         thresholds["ENSEMBLE"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
             threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres_consensus, Abs=abs_consensus)
@@ -1840,7 +1830,7 @@
         cat(paste("\n", "Evaluation of created ensemble raster layer (", rasterfull, ") at locations pt and at", "\n\n", sep = ""))
         pres_consensus <- raster::extract(ensemble, pt)/1000
         abs_consensus <- raster::extract(ensemble, at)/1000
-        eval1 <- evaluate(p=pres_consensus, a=abs_consensus)
+        eval1 <- dismo::evaluate(p=pres_consensus, a=abs_consensus)
         print(eval1)
     }
     ensemble.statistics["ensemble.threshold"] <- thresholds["ENSEMBLE"]

@@ -30,7 +30,7 @@ ensemble.calibrate.models(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FA
     evaluations.keep = FALSE, 
     models.list = NULL, models.keep = FALSE, 
     models.save = FALSE, species.name = "Species001",
-    AUC.weights = TRUE, ENSEMBLE.tune = FALSE, 
+    ENSEMBLE.tune = FALSE, 
     ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1, 
     ENSEMBLE.weight.min = 0.05,
     input.weights = NULL, 
@@ -70,6 +70,7 @@ ensemble.calibrate.models(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FA
     MAHAL.shape = 1)
 
 ensemble.calibrate.weights(x = NULL, p = NULL, a = NULL, an = 1000, 
+    get.block = FALSE,
     SSB.reduce = FALSE, CIRCLES.d = 100000, 
     excludep = FALSE, 
     k = 4, 
@@ -80,7 +81,7 @@ ensemble.calibrate.weights(x = NULL, p = NULL, a = NULL, an = 1000,
     species.name = "Species001",
     threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
     threshold.PresenceAbsence = FALSE,
-    AUC.weights = TRUE, ENSEMBLE.tune = FALSE, 
+    ENSEMBLE.tune = FALSE, 
     ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1,
     ENSEMBLE.weight.min = 0.05,
     input.weights = NULL,
@@ -148,6 +149,7 @@ ensemble.drop1(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE,
     SINK = FALSE, 
     species.name = "Species001",
     difference = FALSE, variables.alone = FALSE,
+    ENSEMBLE.tune = FALSE,
     ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1,
     input.weights = NULL, 
     MAXENT = 1, MAXLIKE = 1, GBM = 1, GBMSTEP = 0, RF = 1, GLM = 1, GLMSTEP = 1, 
@@ -223,8 +225,7 @@ ensemble.VIF(x = NULL, a = NULL, an = 10000,
   \item{models.save}{ Save the list with model details to a file (if \code{TRUE}). The filename will be \code{species.name} with extension \code{.models}; this file will be saved in subfolder of \code{models}. When loading this file, model results will be available as \code{ensemble.models}. }
   \item{species.name}{ Name by which the model details will be saved to a file; see also argument \code{models.save} }
   \item{data.keep}{ Keep the data for each k-fold cross-validation run (if \code{TRUE}). }
-  \item{AUC.weights}{ If \code{TRUE}, then AUC values are used as weights for the ensemble model, scaled to sum to 1 for the ensemble model through \code{ensemble.weights}. If \code{FALSE}, then input weights are scaled to sum to 1 for the ensemble model, but AUC values are not considered. }
-  \item{ENSEMBLE.tune}{ Determine weights for the ensemble model based on AUC values through internal cross-validation procedures (if \code{TRUE}). See details. }
+  \item{ENSEMBLE.tune}{ Determine weights for the ensemble model based on AUC values (if \code{TRUE}). See details. }
   \item{ENSEMBLE.best}{ The number of individual suitability models to be used in the consensus suitability map (based on a weighted average). In case this parameter is smaller than 1 or larger than the number of positive input weights of individual models, then all individual suitability models with positive input weights are included in the consensus suitability map. In case a vector is provided, \code{ensemble.strategy} is called internally to determine weights for the ensemble model. }
   \item{ENSEMBLE.min}{ The minimum input weight (typically corresponding to AUC values) for a model to be included in the ensemble. In case a vector is provided, function \code{ensemble.strategy} is called internally to determine weights for the ensemble model.  }
   \item{ENSEMBLE.exponent}{ Exponent applied to AUC values to convert AUC values into weights (for example, an exponent of 2 converts input weights of 0.7, 0.8 and 0.9 into 0.7^2=0.49, 0.8^2=0.64 and 0.9^2=0.81). See details. }
@@ -304,6 +305,8 @@ ensemble.VIF(x = NULL, a = NULL, an = 10000,
   \item{BIOCLIM.O.fraction}{ Fraction of range representing the optimal limits, default value of 0.9 as in the original BIOCLIM software (\code{\link[BiodiversityR]{ensemble.bioclim}}).  }
   \item{MAHAL.shape}{ parameter that influences the transformation of output values of \code{\link[dismo]{mahal}}. See details section.  }
 
+  \item{get.block}{ if \code{TRUE}, instead of creating k-fold cross-validation subsets randomly (\code{\link[dismo]{kfold}}), create 4 subsets of presence and background locations with \code{\link[ENMeval]{get.block}}.  }
+
   \item{complexity}{ vector with values of complexity of individual trees (\code{tree.complexity}) for boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
   \item{learning}{ vector with values of weights applied to individual trees (\code{learning.rate}) for boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
 
@@ -342,7 +345,7 @@ As the Mahalanobis function (\code{\link[dismo]{mahal}}) does not always provide
 
 With parameter \code{ENSEMBLE.best}, the subset of best models (evaluated by the individual AUC values) can be selected and only those models will be used for calculating the ensemble model (in other words, weights for models not included in the ensemble will be set to zero). It is possible to further increase the contribution to the ensemble model for models with higher AUC values through parameter \code{ENSEMBLE.exponent}. With \code{ENSEMBLE.exponent = 2}, AUC values of 0.7, 0.8 and 0.9 are converted into weights of 0.7^2=0.49, 0.8^2=0.64 and 0.9^2=0.81). With \code{ENSEMBLE.exponent = 4}, AUC values of 0.7, 0.8 and 0.9 are converted into weights of 0.7^4=0.2401, 0.8^4=0.4096 and 0.9^2=0.6561). 
 
-\code{ENSEMBLE.tune} will result in an internal procedure whereby the best selection of parameter values for \code{ENSEMBLE.min}, \code{ENSEMBLE.best} or \code{ENSEMBLE.exponent} can be identified. Through a factorial procedure, the ensemble model with best AUC for a specific combination of parameter values is identified. The procedure also provides the weights that correspond to the best ensemble.  
+\code{ENSEMBLE.tune} will result in an internal procedure whereby the best selection of parameter values for \code{ENSEMBLE.min}, \code{ENSEMBLE.best} or \code{ENSEMBLE.exponent} can be identified. Through a factorial procedure, the ensemble model with best AUC for a specific combination of parameter values is identified. The procedure also provides the weights that correspond to the best ensemble. In case that \code{ENSEMBLE.tune} is set to \code{FALSE}, then the ensemble is calculated based on the input weights.
 
 Function \code{ensemble.calibrate.weights} splits the presence and background locations in a user-defined (\code{k}) number of subsets (i.e. k-fold cross-validation), then sequentially calibrates individual suitability models with (\code{k-1}) combined subsets and evaluates those with the remaining one subset, whereby each subset is used once for evaluation in the user-defined number (\code{k}) of runs. For example, \code{k = 4} results in splitting the locations in 4 subsets, then using one of these subsets in turn for evaluations (see also \code{\link[dismo]{kfold}}). Note that for the maximum entropy (MAXENT) algorithm, the same background data will be used in each cross-validation run (this is based on the assumption that a large number (~10000) of background locations are used).
 
@@ -434,6 +437,7 @@ glmformula <- as.formula(pb ~ bio5 + I(bio5^2) + I(bio5^3) +
 ensemble.nofactors <- ensemble.calibrate.models(x=predictors, p=pres_train, a=backg_train, 
     pt=pres_test, at=backg_test,
     species.name="Bradypus",
+    ENSEMBLE.tune=TRUE,
     ENSEMBLE.min = 0.65,
     MAXENT=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=0, 
     GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, NNET=0, FDA=0, 
@@ -464,6 +468,7 @@ ensemble.nofactors <- ensemble.calibrate.models(x=predictors,
     pt=pres_test, at=backg_test,
     layer.drops="biome",
     species.name="Bradypus",
+    ENSEMBLE.tune=TRUE,
     ENSEMBLE.min=0.65,
     SINK=TRUE,
     MAXENT=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=0, 
@@ -482,6 +487,7 @@ ensemble.nofactors <- ensemble.calibrate.models(x=predictors,
     layer.drops="biome",
     species.name="Bradypus",
     SINK=TRUE,
+    ENSEMBLE.tune=TRUE,
     ENSEMBLE.min=0.65,
     MAXENT=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=0, 
     GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, NNET=0, FDA=0, 
@@ -495,8 +501,6 @@ ensemble.nofactors <- ensemble.calibrate.models(x=predictors,
 # Instead of providing presence and background locations, provide data.frames.
 # Because 'biome' is a factor, RasterStack needs to be provided
 # to check for levels in the Training and Testing data set.
-# MAXLIKE can not use data.frames and locations will be used
-# (ensure that same locations are specified)
 TrainData1 <- prepareData(x=predictors, p=pres_train, b=backg_train, 
     factors=c("biome"), xy=FALSE)
 TestData1 <- prepareData(x=predictors, p=pres_test, b=backg_test, 
@@ -507,6 +511,7 @@ ensemble.factors1 <- ensemble.calibrate.models(x=predictors,
     pt=pres_test, at=backg_test,
     species.name="Bradypus",
     SINK=TRUE,
+    ENSEMBLE.tune=TRUE,
     ENSEMBLE.min=0.65,
     MAXENT=0, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=0, EARTH=1, RPART=1, NNET=1, FDA=1, 
@@ -522,6 +527,7 @@ ensemble.factors2 <- ensemble.calibrate.models(x=predictors,
     pt=pres_test, at=backg_test,
     species.name="Bradypus",
     SINK=TRUE,
+    ENSEMBLE.tune=TRUE,
     MAXENT=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
@@ -538,6 +544,7 @@ ensemble.nofactors2 <- ensemble.calibrate.weights(x=predictors,
     MAXENT=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
+    ENSEMBLE.tune=TRUE,
     ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3),
     ENSEMBLE.min=0.7,
     Yweights="BIOMOD", 
@@ -557,6 +564,7 @@ ensemble.variables <- ensemble.drop1(x=predictors,
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, GLMNET=1,
     BIOCLIM.O=0, BIOCLIM=0, DOMAIN=1, MAHAL=0, MAHAL01=1,
+    ENSEMBLE.tune=TRUE,
     ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3),
     ENSEMBLE.min=0.7,
     Yweights="BIOMOD", factors="biome")

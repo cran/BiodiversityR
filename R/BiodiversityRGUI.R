@@ -11,7 +11,7 @@ function(backward.compatibility.messages=TRUE)
         cat(paste("\n", "In prior versions, argument SSB.reduce was CIRCLES.at"))
 
         cat(paste("\n\n", "(The earlier name of ensemble.test originated from the first [2012] version of ensemble suitability"))
-        cat(paste("\n", "modelling where both ensemble.raster and ensemble test internally calibrated and evaluated [tested]"))
+        cat(paste("\n", "modelling where both ensemble.raster and ensemble.test internally calibrated and evaluated [tested]"))
         cat(paste("\n", "models, but only ensemble.raster went ahead with creating suitability raster layers.)", "\n\n\n"))
     }
 

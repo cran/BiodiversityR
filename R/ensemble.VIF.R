@@ -70,7 +70,7 @@
     while(VIF.result.max >= VIF.max) { 
         VIF.result <- ensemble.calibrate.models(x, p=p, a=a,
             layer.drops=var.drops, factors=NULL,
-            VIF=T, AUC.weights=F, ENSEMBLE.tune=F, 
+            VIF=T, ENSEMBLE.tune=F, 
             MAXENT=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=0, GLM=0, GLMSTEP=0, GAM=0, 
             GAMSTEP=0, MGCV=0, MGCVFIX=0,EARTH=0, RPART=0, NNET=0, FDA=0, 
             SVM=0, SVME=0, GLMNET=0,

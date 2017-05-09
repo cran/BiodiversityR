@@ -8,7 +8,7 @@
     evaluations.keep=FALSE, 
     models.list=NULL, models.keep=FALSE, 
     models.save=FALSE, species.name="Species001",
-    AUC.weights=TRUE, ENSEMBLE.tune=FALSE, 
+    ENSEMBLE.tune=FALSE, 
     ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1.0, ENSEMBLE.weight.min=0.05,
     input.weights=NULL, 
     MAXENT=1, MAXLIKE=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, 
@@ -95,7 +95,6 @@
 
 # modify list of variables
 # if TrainData is provided, then this data set takes precedence over raster x in the selection of variables
-# exception however for maxlike that can not be calibrated with a data.frame
 
 # 
 # modify TrainData if layer.drops
@@ -340,7 +339,7 @@
     if (ws["MAXLIKE"] > 0) {
         if (! requireNamespace("maxlike")) {stop("Please install the maxlike package")}
         if (is.null(MAXLIKE.formula) == T && formulae.defaults == T) {MAXLIKE.formula <- formulae$MAXLIKE.formula}
-        if (is.null(MAXLIKE.formula) == T  || raster::nlayers(x) == 0) {
+        if (is.null(MAXLIKE.formula) == T) {
             cat(paste("\n", "NOTE: not possible to calibrate MAXLIKE as no explanatory variables available" ,"\n", sep = ""))
             ws["MAXLIKE"] <- 0
         }else{
@@ -620,11 +619,13 @@
 
 # create TrainData and TestData
 
+#    if(length(ENSEMBLE.exponent) > 1 || length(ENSEMBLE.best) > 1 || length(ENSEMBLE.min) > 1) {ENSEMBLE.tune <- TRUE}
     no.tests <- FALSE
     if (is.null(pt)==T && is.null(at)==T && is.null(TestData)==T && k < 2) {
         no.tests <- TRUE
         if (ENSEMBLE.tune == T) {
             cat(paste("\n", "WARNING: not possible to tune (ENSEMBLE.tune=FALSE) as no Test Data available or will be created", sep = ""))
+            ENSEMBLE.tune <- FALSE
         }
     }
 
@@ -739,7 +740,7 @@
             }
             if (is.null(at) == F) {
                 TestValid <- complete.cases(TestData[TestData[,"pb"]==0,])
-                pt <- pt[TestValid,]
+                at <- at[TestValid,]
             }
             if (all(names(TestData)!="pb") == T) {stop("one column needed of 'pb' with presence and absence for TestData")} 
         }else{
@@ -973,7 +974,7 @@
     }
 #
 # make MAXENT.TrainData
-    if (ws["MAXENT"] > 0) {
+    if (ws["MAXENT"] > 0  || ws["MAXLIKE"] > 0) {
         if (is.null(MAXENT.a)==T) {
             MAXENT.a <- dismo::randomPoints(x[[1]], n=MAXENT.an, p=p, excludep=T)       
         }
@@ -1001,7 +1002,7 @@
         }
         MAXENT.pa <- as.vector(MAXENT.TrainData[ , "pb"])
         MAXENT.TrainData <- MAXENT.TrainData[, which(names(MAXENT.TrainData) != "pb"), drop=F]
-        cat(paste("\n", "Summary of Training data set used for calibration of MAXENT model (rows: ", nrow(MAXENT.TrainData),  ", presence locations: ", sum(MAXENT.pa), ")\n", sep = ""))
+        cat(paste("\n", "Summary of Training data set used for calibration of MAXENT or MAXLIKE model (rows: ", nrow(MAXENT.TrainData),  ", presence locations: ", sum(MAXENT.pa), ")\n", sep = ""))
         print(summary(MAXENT.TrainData))
         assign("MAXENT.TrainData", MAXENT.TrainData, envir=.BiodiversityR)
         assign("MAXENT.pa", MAXENT.pa, envir=.BiodiversityR)
@@ -1112,7 +1113,6 @@
 #
 # Different modelling algorithms
 #
-
     if(ws["MAXENT"] > 0 && length(names(MAXENT.TrainData)) == 0) {
         cat(paste("\n", "WARNING: no explanatory variables available", sep = ""))
         cat(paste("\n", "MAXENT model can therefore not be calibrated", "\n", sep = ""))
@@ -1133,7 +1133,7 @@
             results <- MAXENT.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "MAXENT calibration tested with calibration data of other algorithms","\n\n", sep = ""))
+            cat(paste("\n", "Evaluation with calibration data of other algorithms","\n\n", sep = ""))
             TrainData[,"MAXENT"] <- dismo::predict(object=results, x=TrainData.vars)
             if (PROBIT == T) {
                 if(is.null(MAXENT.PROBIT.OLD) == T) { 
@@ -1217,11 +1217,11 @@
     if (ws["MAXLIKE"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Maxlike algorithm (package: maxlike)\n", sep=""))
-        if(is.null(x) == T) {cat(paste("\n", "WARNING: not possible to calibrate as raster stack not available", "\n\n"))}
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
-        if (file.exists("MAXLIKE_raster")) {file.remove("MAXLIKE_raster")}
+        MAXLIKE.x <- MAXENT.TrainData[MAXENT.pa == 1, ]
+        MAXLIKE.z <- MAXENT.TrainData[MAXENT.pa == 0, ]
         if(is.null(MAXLIKE.OLD) == T) {
-            tryCatch(results <- maxlike::maxlike(formula=MAXLIKE.formula, rasters=x, points=p, 
+            tryCatch(results <- maxlike::maxlike(formula=MAXLIKE.formula, rasters=NULL, points=NULL, x=MAXLIKE.x, z=MAXLIKE.z, 
                 method=MAXLIKE.method, control=list(maxit=maxit)),
                 error= function(err) {print(paste("MAXLIKE calibration failed"))},
                 silent=F)
@@ -1229,17 +1229,8 @@
             results <- MAXLIKE.OLD
         }
         if (is.null(results) == F) {
-            cat(paste("\n", "Evaluation with calibration data", "\n\n", sep = ""))
-# maxlike can only predict raster layers
-            results$rasters <- x
-            results$call$formula <- MAXLIKE.formula
-            maxlike.predicted <- predict(results)
-            names(maxlike.predicted) <- "MAXLIKE_raster"
-            maxlike.predicted@crs <- x@crs
-            raster::writeRaster(x=maxlike.predicted, filename="MAXLIKE_raster", progress='text', overwrite=TRUE)
-            maxlike.raster <- raster::raster("MAXLIKE_raster")
-            TrainData[TrainData[,"pb"]==1, "MAXLIKE"] <- raster::extract(x=maxlike.raster, y=p)
-            TrainData[TrainData[,"pb"]==0, "MAXLIKE"] <- raster::extract(x=maxlike.raster, y=a)
+            cat(paste("\n", "Evaluation with calibration data of other algorithms", "\n\n", sep = ""))
+            TrainData[, "MAXLIKE"] <- predict(results, newdata=TrainData.numvars)
             if (PROBIT == T) {
                 if(is.null(MAXLIKE.PROBIT.OLD) == T) { 
                     probit.formula <- as.formula(paste("pb ~ MAXLIKE"))
@@ -1258,8 +1249,8 @@
             pred1[pred1 < 0.0000000001] <- 0.0000000001
             pred1[pred1 > 0.9999999999] <- 0.9999999999
             cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
-            TrainPres <- TrainData[TrainData[,"pb"]==1,"MAXLIKE"]
-            TrainAbs <- TrainData[TrainData[,"pb"]==0,"MAXLIKE"]
+            TrainPres <- TrainData[TrainData[,"pb"]==1, "MAXLIKE"]
+            TrainAbs <- TrainData[TrainData[,"pb"]==0, "MAXLIKE"]
             eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
             print(eval1)
 #            thresholds["MAXLIKE"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
@@ -1270,8 +1261,7 @@
             AUC.calibration["MAXLIKE"] <- max(c(eval1@auc, 0), na.rm=T)
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n", sep = ""))
-                TestData[TestData[,"pb"]==1, "MAXLIKE"] <- raster::extract(x=maxlike.raster, y=pt)
-                TestData[TestData[,"pb"]==0, "MAXLIKE"] <- raster::extract(x=maxlike.raster, y=at)
+                TestData[, "MAXLIKE"] <- predict(results, newdata=TestData.numvars)
                 if (PROBIT == T) {
                     TestData[,"MAXLIKE.step1"] <- TestData[,"MAXLIKE"]
                     TestData[,"MAXLIKE"] <- predict.glm(object=results2, newdata=TestData, type="response")
@@ -1502,7 +1492,6 @@
             if (models.keep==T) {
                 models$GBMSTEP <- results
                 models$GBMSTEP.PROBIT <- results2
-
             }
         }else{ 
             cat(paste("\n", "WARNING: stepwise GBM calibration failed", "\n", "\n"))
@@ -3363,41 +3352,12 @@
 #
     models$thresholds <- thresholds
 #
-    if (AUC.weights == T) {
-        if(length(ENSEMBLE.exponent) > 1 || length(ENSEMBLE.best) > 1 || length(ENSEMBLE.min) > 1) {ENSEMBLE.tune <- TRUE}
-        if(no.tests == T) {
-            ENSEMBLE.tune <- F
-            cat(paste("\n", "WARNING: not possible to tune weights as no test data available", "\n", "\n"))
-            if (length(ENSEMBLE.exponent) > 1) {ENSEMBLE.exponent <- 2}
-            if (length(ENSEMBLE.min) > 1) {ENSEMBLE.min <- 0.7}
-            if (length(ENSEMBLE.best) > 1) {ENSEMBLE.best <- 0}
-        }
-    }
     if(ENSEMBLE.tune == F) {
         if (sum(ws, na.rm=T) > 0) {
-            if (AUC.weights == T) {
-                cat(paste("\n", "AUC values used as input weights into ensemble.weights function", "\n", sep = ""))
-                print(weights)
-                weights <- ensemble.weights(weights=weights, exponent=ENSEMBLE.exponent, best=ENSEMBLE.best, min.weight=ENSEMBLE.min)
-                cat(paste("\n", "Ensemble weights calculated with parameters ENSEMBLE.min=", ENSEMBLE.min, ", ENSEMBLE.best=", ENSEMBLE.best, 
-                    " and ENSEMBLE.exponent=", ENSEMBLE.exponent, "\n", sep = ""))
-                print(weights)
-                ws <- weights
-
-                cat(paste("\n", "Minimum input weight is ",  ENSEMBLE.weight.min, "\n", sep=""))
-                ws2 <- ws
-                while(min(ws2) < ENSEMBLE.weight.min) {
-                    ws2 <- ws2[-which.min(ws2)]
-                    ws2 <- ensemble.weights(weights=ws2, exponent=1, best=0, min.weight=0)
-                }
-                ws[] <- 0
-                for (i in 1:length(ws2)) {ws[which(names(ws) == names(ws2)[i])] <- ws2[i]}
-                cat(paste("\n", "Weights for ensemble forecasting", "\n", sep = ""))
-                print(ws)
-            }else{
-                cat(paste("\n", "Ensemble weights based directly on input weights scaled to sum up to 1", "\n", sep = ""))
-                print(ws)
-            }
+            cat(paste("\n", "Ensemble weights based directly on input weights scaled to sum up to 1", "\n", sep = ""))
+            print(ws)
+        }else{
+            cat(paste("\n", "NOTE: no positive input weights", "\n", sep = ""))
         }
         if(evaluations.keep == T) {evaluations$ensemble.weights <- ws}
         if(models.keep==T) {models$output.weights <- ws}

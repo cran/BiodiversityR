@@ -1,5 +1,6 @@
 `ensemble.calibrate.weights` <- function(
-    x=NULL, p=NULL, a=NULL, an=1000, SSB.reduce=FALSE, CIRCLES.d=100000,
+    x=NULL, p=NULL, a=NULL, an=1000, 
+    get.block=FALSE, SSB.reduce=FALSE, CIRCLES.d=100000,
     excludep=FALSE, k=4, 
     TrainData=NULL,
     VIF=FALSE, COR=FALSE,
@@ -7,7 +8,7 @@
     data.keep=FALSE,
     species.name = "Species001",
     threshold.method="spec_sens", threshold.sensitivity=0.9, threshold.PresenceAbsence=FALSE,
-    AUC.weights=TRUE, ENSEMBLE.tune=FALSE, 
+    ENSEMBLE.tune=FALSE, 
     ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1, ENSEMBLE.weight.min=0.05,
     input.weights=NULL,
     MAXENT=1, MAXLIKE=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, 
@@ -95,7 +96,7 @@
         colnames(output) <- c(paste("T_", c(1:k), sep=""), "MEAN.T", paste("S_", c(1:k), sep=""), "MEAN")
     }
 
-# keep data for finaloutput.weights.T checks with suggested weights
+# keep data for final output.weights checks with suggested weights
     TestData.all <- vector("list", k)
 
 # create output file
@@ -122,7 +123,7 @@
         TrainData=TrainData, 
         VIF=F, COR=F,
         PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
-        AUC.weights=F, ENSEMBLE.tune=F,
+        ENSEMBLE.tune=F,
         ENSEMBLE.exponent=1, ENSEMBLE.best=1, ENSEMBLE.min=0.7,
         MAXENT=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=0, GLM=0, GLMSTEP=0, 
         GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, 
@@ -147,8 +148,15 @@
 
     p.all <- tests$evaluations$p
     a.all <- tests$evaluations$a
-    groupp <- dismo::kfold(p.all, k=k)
-    groupa <- dismo::kfold(a.all, k=k)
+    if (get.block == F) {
+        groupp <- dismo::kfold(p.all, k=k)
+        groupa <- dismo::kfold(a.all, k=k)
+    }else{
+        blocks <- ENMeval::get.block(occ=p.all, bg.coords=a.all)
+        groupp <- blocks$occ.grp
+        groupa <- blocks$bg.grp
+        k <- 4
+    }
 
 # Start cross-validations
     
@@ -166,7 +174,7 @@
                 VIF=VIF, COR=COR,
                 threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
                 PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
-                AUC.weights=AUC.weights, ENSEMBLE.tune=ENSEMBLE.tune,
+                ENSEMBLE.tune=ENSEMBLE.tune,
                 ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, ENSEMBLE.exponent=ENSEMBLE.exponent, ENSEMBLE.weight.min=ENSEMBLE.weight.min,
                 MAXENT=MAXENT, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
                 GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
@@ -272,8 +280,6 @@
     if(ENSEMBLE.tune == T) {
         output[,2*k+2] <- rowMeans(output[,c((k+2):(2*k+1))], na.rm=T)
         output[is.na(output[,2*k+2]),(2*k+2)] <- 0
-        output.weights.T <- output[,"MEAN.T"]
-        output.weights.T <- output.weights.T[names(output.weights.T) != "ENSEMBLE"]
     }
 #
     output.weights <- output[, "MEAN"]
@@ -290,52 +296,21 @@
     }
     print(output)
 
+    cat(paste("\n", "input weights for ensemble modelling based on MEAN column", "\n",  sep = ""))
+    print(output.weights)
+
     if(ENSEMBLE.tune == F) {
 # also downweight the average AUC with the same parameters
-        cat(paste("\n", "input weights for ensemble modelling based on MEAN column", "\n",  sep = ""))
-        print(output.weights)
-        cat(paste("\n\n", "parameters for final downweighting: ENSEMBLE.min=", ENSEMBLE.min1, ", ENSEMBLE.best=", ENSEMBLE.best1, 
-                    " and ENSEMBLE.exponent=", ENSEMBLE.exponent1, "\n\n", sep = ""))
+        cat(paste("\n\n", "parameters for next weighting: ENSEMBLE.min=", ENSEMBLE.min1, ", ENSEMBLE.best=", ENSEMBLE.best1, " and ENSEMBLE.exponent=", ENSEMBLE.exponent1, "\n\n", sep = ""))
         output.weights <- ensemble.weights(weights=output.weights, exponent=ENSEMBLE.exponent1, best=ENSEMBLE.best1, min.weight=ENSEMBLE.min1)
-        output.weights.T <- output.weights
         print(output.weights)
-    }
-
-    if(ENSEMBLE.tune == T) {
-        cat(paste("\n", "input weights for ensemble modelling based on MEAN.T column (average AUC)",  sep = ""))
-        cat(paste("\n", "(these weights are available from output vector: output.weights.AUC)", "\n\n",  sep = ""))
-        print(output.weights.T)
-        cat(paste("\n\n", "parameters for final downweighting: ENSEMBLE.min=", ENSEMBLE.min1, ", ENSEMBLE.best=", ENSEMBLE.best1, 
-                    " and ENSEMBLE.exponent=", ENSEMBLE.exponent1, "\n\n", sep = ""))
-        output.weights.T <- ensemble.weights(weights=output.weights.T, exponent=ENSEMBLE.exponent1, best=ENSEMBLE.best1, min.weight=ENSEMBLE.min1)
-        print(output.weights.T)
-    # test with suggested weights
-        output3 <- numeric(length=k+1)
-        names(output3)[1:k] <- paste("T_", c(1:k), sep="")
-        names(output3)[k+1] <- c("MEAN.T")
-        for (i in 1:k) {
-            TestData <- TestData.all[[i]]
-            TestData[,"ENSEMBLE"] <- output.weights.T["MAXENT"]*TestData[,"MAXENT"] + output.weights.T["MAXLIKE"]*TestData[,"MAXLIKE"] + output.weights.T["GBM"]*TestData[,"GBM"] +
-                output.weights.T["GBMSTEP"]*TestData[,"GBMSTEP"] + output.weights.T["RF"]*TestData[,"RF"] + output.weights.T["GLM"]*TestData[,"GLM"] +
-                output.weights.T["GLMSTEP"]*TestData[,"GLMSTEP"] + output.weights.T["GAM"]*TestData[,"GAM"] + output.weights.T["GAMSTEP"]*TestData[,"GAMSTEP"] +
-                output.weights.T["MGCV"]*TestData[,"MGCV"] + output.weights.T["MGCVFIX"]*TestData[,"MGCVFIX"] + output.weights.T["EARTH"]*TestData[,"EARTH"] +
-                output.weights.T["RPART"]*TestData[,"RPART"] + output.weights.T["NNET"]*TestData[,"NNET"] + output.weights.T["FDA"]*TestData[,"FDA"] +
-                output.weights.T["SVM"]*TestData[,"SVM"] + output.weights.T["SVME"]*TestData[,"SVME"] + output.weights.T["GLMNET"]*TestData[,"GLMNET"] +
-                output.weights.T["BIOCLIM.O"]*TestData[,"BIOCLIM.O"] + output.weights.T["BIOCLIM"]*TestData[,"BIOCLIM"] +
-                output.weights.T["DOMAIN"]*TestData[,"DOMAIN"] + output.weights.T["MAHAL"]*TestData[,"MAHAL"] + output.weights.T["MAHAL01"]*TestData[,"MAHAL01"]
-            eval1 <- eval2 <- NULL
-            TestPres <- as.numeric(TestData[TestData[,"pb"]==1, "ENSEMBLE"])
-            TestAbs <- as.numeric(TestData[TestData[,"pb"]==0, "ENSEMBLE"])
-            eval1 <- dismo::evaluate(p=TestPres, a=TestAbs)
-            output3[i] <- eval1@auc
+    }else{
+# if possible, select best models (models with highest weights)
+        if (ENSEMBLE.best1 > 0) {
+            cat(paste("\n\n", "parameters for next weighting: ENSEMBLE.min=0, ENSEMBLE.best=", ENSEMBLE.best1, " and ENSEMBLE.exponent=1", "\n\n", sep = ""))
+            output.weights <- ensemble.weights(weights=output.weights, exponent=1, best=ENSEMBLE.best1, min.weight=0)
+            print(output.weights)
         }
-        output3[k+1] <- mean(output3[1:k])
-        cat(paste("\n", "AUC for ensemble models based on input weights based on MEAN.T column (using presence and background data sets generated for ", k, "-fold cross-validations)",  "\n", sep = ""))
-        print(output3)
-#
-        cat(paste("\n", "input weights for ensemble modelling (based on MEAN column)",  "\n", sep = ""))
-        output.weights.T <- ensemble.weights(output.weights.T, exponent=1, best=0, min.weight=0)
-        print(output.weights.T)
     }
 
 # remove models with low input weights (mainly to reduce the number of models for final calibrations and mapping)
@@ -374,16 +349,10 @@
     cat(paste("\n", "AUC for ensemble models based on suggested input weights (using presence and background data sets generated for ", k, "-fold cross-validations)",  "\n", sep = ""))
     print(output2)
 
-    if(ENSEMBLE.tune == F) {
-        output.weights.T <- output.weights
-        output3 <- output2
-    }
-
     if (SINK==T && OLD.SINK==F) {sink(file=NULL, append=T)}
     if (data.keep == F) {
         cat(paste("\n\n"))
         return(list(AUC.table=output, table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, 
-            output.weights.AUC=output.weights.T, AUC.with.suggested.weights.AUC=output3,
             data=TestData.all, 
             x=x, p=p.all, a=a.all, MAXENT.a=MAXENT.a,
             var.names=var.names, factors=factors2, dummy.vars=dummy.vars2, dummy.vars.noDOMAIN=dummy.vars.noDOMAIN,
@@ -393,7 +362,6 @@
         cat(paste("\n\n"))
         return(list(data=TestData.all, 
             AUC.table=output, table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, 
-            output.weights.AUC=output.weights.T, AUC.with.suggested.weights.AUC=output3,
             data=TestData.all, 
             x=x, p=p.all, a=a.all, MAXENT.a=MAXENT.a,
             var.names=var.names, factors=factors2, dummy.vars=dummy.vars2, dummy.vars.noDOMAIN=dummy.vars.noDOMAIN,

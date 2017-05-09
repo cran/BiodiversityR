@@ -14,6 +14,32 @@ BiodiversityR versions
 	http://www.worldagroforestry.org/downloads/Publications/PDFS/B13695.pdf
 
 
+Version 2.8-2 (May 2017)
+
+	* full integration of the MAXLIKE algorithm in ensemble suitability modelling
+
+	* new argument of 'get.block' in ensemble.calibrate.weights and ensemble.batch. 
+		The argument splits 4-fold cross-validation presence and background point 
+		location data sets along longitudinaland latidudinal lines through function 
+		get.block of the ENMeval package.
+
+	* new argument of 'mmax' in the CAPdiscrim function. This argument limits the search for
+		the optimal m (number of PCoA axes) to a a maximum number of axes equal to mmax.
+		The argument was introduced to deal with the lda error of a variable appearing 
+		to be constant within groups. 
+
+	* function CAPdiscrim saves correct predictions per factor level
+
+	* function ordisymbol now allows different palettes
+
+	* errors corrected in the 'diversity indices' menu in saving results in the 
+		environmental data set
+
+	* function evaluation.strip.data includes suitability values prior to the probit
+		transformation. Errors obtained for MAHAL, MAHAL01 and DOMAIN algorithms were
+		corrected for the same function.
+
+
 Version 2.8-1 (January 2017, malaria recovery version)
 
 	* compatible with Rcmdr	2.3-1 (October 2016)

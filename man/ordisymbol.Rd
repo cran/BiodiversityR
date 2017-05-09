@@ -12,7 +12,9 @@ Functions to add some other graphical itmes to ordination diagrams than provided
 }
 
 \usage{
-ordisymbol(ordiplot, y, factor, col = 1, rainbow = TRUE, 
+ordisymbol(ordiplot, y, factor, col = 1, colors = TRUE, pchs = TRUE,
+    rainbow = TRUE, heat.colors = FALSE, terrain.colors = FALSE,
+    topo.colors = FALSE, cm.colors = FALSE,
     legend = TRUE, legend.x = "topleft", legend.ncol = 1, ...)
 ordibubble(ordiplot,var,...)
 ordicluster2(ordiplot, cluster, mingroups = 1, maxgroups = nrow(ordiplot$sites), ...)
@@ -26,7 +28,13 @@ ordivector(ordiplot, spec, lty=2,...)
   \item{factor}{ Variable of the environmental data frame that defines subsets to be given different symbols. }
   \item{var}{ Continous variable of the environmental dataset or species from the community dataset. }
   \item{col}{ Colour (as \code{\link[graphics]{points}}). }
-  \item{rainbow}{ Use rainbow colours.  }
+  \item{colors}{ Apply different colours to different factor levels }
+  \item{pchs}{ Apply different symbols (plotting characters) to different factor levels (as in \code{\link[graphics]{points}})) }
+  \item{rainbow}{ Use rainbow colours  }
+  \item{heat.colors}{ Use heat colours  }
+  \item{terrain.colors}{ Use terrain colours  }
+  \item{topo.colors}{ Use topo colours  }
+  \item{cm.colors}{ Use cm colours  }
   \item{legend}{ Add the legend. }
   \item{legend.x}{ Location of the legend; see also \code{\link[graphics]{legend}}. }
   \item{legend.ncol}{ the number of columns in which to set the legend items; see also \code{\link[graphics]{legend}}  }
@@ -40,7 +48,7 @@ ordivector(ordiplot, spec, lty=2,...)
 }
 
 \details{
-Function \code{ordisymbol} plots different levels of the specified variable in different symbols and different colours  (if \code{rainbow} option was selected).
+Function \code{ordisymbol} plots different levels of the specified variable in different symbols and different colours. In case more than one colour palettes are selected, the last palette selected will be used. 
  
 Function \code{ordibubble} draws bubble diagrams indicating the value of the specified continuous variable. Circles indicate positive values, squares indicate negative values.
   

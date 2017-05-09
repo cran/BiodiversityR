@@ -15,7 +15,9 @@ The main function allows for batch processing of different species and different
 ensemble.batch(x = NULL, xn = c(x), 
     species.presence = NULL, species.absence = NULL, 
     presence.min = 20,
-    an = 1000, excludep = FALSE, SSB.reduce = FALSE, CIRCLES.d = 250000, 
+    an = 1000, excludep = FALSE, 
+    get.block = FALSE,
+    SSB.reduce = FALSE, CIRCLES.d = 250000, 
     k.splits = 4, k.test = 0, 
     n.ensembles = 1,
     VIF.max = 10, 
@@ -32,7 +34,7 @@ ensemble.batch(x = NULL, xn = c(x),
     GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, RPART = 1, NNET = 1, 
     FDA = 1, SVM = 1, SVME = 1, GLMNET = 1,
     BIOCLIM.O = 0, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, MAHAL01 = 1,
-    PROBIT = FALSE, AUC.weights = FALSE,
+    PROBIT = FALSE,
     Yweights = "BIOMOD", 
     layer.drops = NULL, factors = NULL, dummy.vars = NULL,
     formulae.defaults = TRUE, maxit = 100,
@@ -94,6 +96,7 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{presence.min}{ minimum number of presence locations for the organism (if smaller, no models are fitted).  }
   \item{an}{ number of background points for calibration to be selected with \code{\link[dismo]{randomPoints}} in case argument \code{a} or \code{species.absence} is missing  }
   \item{excludep}{ parameter that indicates (if \code{TRUE}) that presence points will be excluded from the background points; see also \code{\link[dismo]{randomPoints}} }
+  \item{get.block}{ if \code{TRUE}, instead of creating k-fold cross-validation subsets randomly (\code{\link[dismo]{kfold}}), create 4 subsets of presence and background locations with \code{\link[ENMeval]{get.block}}.  }
   \item{SSB.reduce}{ If \code{TRUE}, then new background points that will be used for evaluationg the suitability models will be selected (\code{\link[dismo]{randomPoints}}) in circular neighbourhoods (created with \code{\link[dismo]{circles}}) around presence locations (p and pt). The abbreviation of SSB refers to spatial sorting bias; see also \code{\link[dismo]{ssb}}.  }
   \item{CIRCLES.d}{ Radius in m of circular neighbourhoods (created with \code{\link[dismo]{circles}}) around presence locations (p and pt).  }
   \item{k}{ If larger than 1, the mumber of groups to split between calibration (k-1) and evaluation (1) data sets (for example, \code{k=5} results in 4/5 of presence and background points to be used for calibrating the models, and 1/5 of presence and background points to be used for evaluating the models). See also \code{\link[dismo]{kfold}}.  }
@@ -141,7 +144,6 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{MAHAL}{ Input weight for the Mahalonobis algorithm (\code{\link[dismo]{mahal}}). (Only weights > 0 will be used.)  }
   \item{MAHAL01}{ Input weight for the Mahalanobis algorithm (\code{\link[dismo]{mahal}}), using a transformation method afterwards whereby output is within the range between 0 and 1. (Only weights > 0 will be used.) }
   \item{PROBIT}{ If \code{TRUE}, then subsequently to the fitting of the individual algorithm (e.g. maximum entropy or GAM) a generalized linear model (\code{\link[stats]{glm}}) with probit link \code{family=binomial(link="probit")} will be fitted to transform the predictions, using the previous predictions as explanatory variable. This transformation results in all model predictions to be probability estimates.  }
-  \item{AUC.weights}{ If \code{TRUE}, then use the average of the AUC for the different submodels in the different crossvalidation runs as weights for the 'full' ensemble model. See \code{\link{ensemble.calibrate.weights}} for details.  }
   \item{Yweights}{ chooses how cases of presence and background (absence) are weighted; \code{"BIOMOD"} results in equal weighting of all presence and all background cases, \code{"equal"} results in equal weighting of all cases. The user can supply a vector of weights similar to the number of cases in the calibration data set. }
   \item{layer.drops}{ vector that indicates which layers should be removed from RasterStack \code{x}. See also \code{\link[raster]{addLayer}}.  }
   \item{factors}{ vector that indicates which variables are factors; see also \code{\link[dismo]{prepareData}}  }
@@ -283,7 +285,7 @@ predictors3 <- stack(predictors3)
 predictors3@title <- "south"
 
 # fit 3 ensembles with batch processing, choosing the best ensemble model based on the 
-# average AUC of 4-fold split of calibration and testing data
+# average weights of 4-fold split of calibration and testing data
 # final models use all available presence data and average weights determined by the 
 # ensemble.calibrate.weights function (called internally)
 # batch processing can handle several species by using 3-column species.presence and 
@@ -300,7 +302,7 @@ ensemble.nofactors <- ensemble.batch(x=predictors,
     layer.drops=c("biome"),
     ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3), 
     ENSEMBLE.min=0.7,
-    MAXENT=1, MAXLIKE=0, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
+    MAXENT=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
     GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
     SVM=1, SVME=1, GLMNET=1,
     BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,

@@ -85,6 +85,7 @@
     MGCVFIX.PROBIT.OLD <- EARTH.PROBIT.OLD <- RPART.PROBIT.OLD <- NNET.PROBIT.OLD <- FDA.PROBIT.OLD <- SVM.PROBIT.OLD <- SVME.PROBIT.OLD <- GLMNET.PROBIT.OLD <- BIOCLIM.O.PROBIT.OLD <- BIOCLIM.PROBIT.OLD <- DOMAIN.PROBIT.OLD <- MAHAL.PROBIT.OLD <- MAHAL01.PROBIT.OLD <- NULL
     if (is.null(models.list) == F) {
         if (is.null(models.list$MAXENT) == F) {MAXENT.OLD <- models.list$MAXENT}
+        if (is.null(models.list$MAXLIKE) == F) {MAXLIKE.OLD <- models.list$MAXLIKE}
         if (is.null(models.list$GBM) == F) {GBM.OLD <- models.list$GBM}
         if (is.null(models.list$GBMSTEP) == F) {GBMSTEP.OLD <- models.list$GBMSTEP}
         if (is.null(models.list$RF) == F) {RF.OLD <- models.list$RF}
@@ -110,6 +111,7 @@
         MAHAL.shape <- models.list$formulae$MAHAL.shape
 # probit models
         if (is.null(models.list$MAXENT.PROBIT) == F) {MAXENT.PROBIT.OLD <- models.list$MAXENT.PROBIT}
+        if (is.null(models.list$MAXLIKE.PROBIT) == F) {MAXLIKE.PROBIT.OLD <- models.list$MAXLIKE.PROBIT}
         if (is.null(models.list$GBM.PROBIT) == F) {GBM.PROBIT.OLD <- models.list$GBM.PROBIT}
         if (is.null(models.list$GBMSTEP.PROBIT) == F) {GBMSTEP.PROBIT.OLD <- models.list$GBMSTEP.PROBIT}
         if (is.null(models.list$RF.PROBIT) == F) {RF.PROBIT.OLD <- models.list$RF.PROBIT}
@@ -135,6 +137,9 @@
     if (MAXENT > 0) {
 	jar <- paste(system.file(package="dismo"), "/java/maxent.jar", sep='')
 	if (!file.exists(jar)) {stop('maxent program is missing: ', jar, '\nPlease download it here: http://www.cs.princeton.edu/~schapire/maxent/')}
+    }
+    if (MAXLIKE > 0) {
+        if (! requireNamespace("maxlike")) {stop("Please install the maxlike package")}
     }
     if (GBM > 0) {
         if (! requireNamespace("gbm")) {stop("Please install the gbm package")}
@@ -174,6 +179,9 @@
             p <- predict(model, newdata, probability=T)
             return(attr(p, "probabilities")[,1])
          }
+    }
+    if (FDA > 0) {
+        if (! requireNamespace("mda")) {stop("Please install the mda package")}
     }
     if (GLMNET > 0) {
         if (! requireNamespace("glmnet")) {stop("Please install the glmnet package")}
@@ -268,17 +276,6 @@
 # 
     ws <- input.weights
 
-    if (MAXLIKE > 0) {
-        cat(paste("\n", "WARNING: evaluation strip not available for MAXLIKE as MAXLIKE does not accept data.frames as input", "\n", sep = ""))
-        cat(paste("\n", "weights were therefore slightly changed for the ensemble to sum to 1", "\n", sep = ""))
-        cat(paste("\n", "original weights", "\n", sep = ""))
-        print(ws)
-        cat(paste("\n", "modified weights", "\n", sep = ""))
-        ws["MAXLIKE"] <- 0
-        ws <- ensemble.weights(weights=ws, exponent=1, best=0, min.weight=0)
-        print(ws)
-    }
-
 #
 # prepare data set
     vars.xn <- names(xn)
@@ -333,25 +330,36 @@
     }
 # declare factor variables
     plot.data.vars <- data.frame(plot.data)
-    plot.data.numvars <- plot.data.vars[, which(names(plot.data.vars) %in% vars), drop=F]
+    plot.data.vars <- plot.data.vars[, which(names(plot.data.vars) %in% vars), drop=F]
+    plot.data.numvars <- plot.data.vars
+
     for (i in 1:nvars) {
         if(any(vars[i] == factors) == T) {
             plot.data.vars[,i+2] <- factor(plot.data.vars[,i+2], levels=models.list$categories[[vars[i]]])
             plot.data.numvars <- plot.data.numvars[, which(names(plot.data.numvars) != vars[i]), drop=F]
         }
     }
-    plot.data.numvars.mahal <- plot.data.numvars
-    if(is.null(dummy.vars) == F) {
-        for (i in 1:length(dummy.vars)) {
-            plot.data.numvars.mahal <- plot.data.numvars.mahal[, which(names(plot.data.numvars.mahal) != dummy.vars[i]), drop=F]
+
+    plot.data.domain <- plot.data.numvars
+    for (i in 1:nvars) {
+        if(any(vars[i] == dummy.vars) == T) {
+            plot.data.domain <- plot.data.domain[, which(names(plot.data.domain) != dummy.vars[i]), drop=F]
+        }
+    }
+
+    plot.data.mahal <- plot.data.numvars
+    for (i in 1:nvars) {
+        if(any(vars[i] == dummy.vars) == T) {
+            plot.data.mahal <- plot.data.mahal[, which(names(plot.data.mahal) != dummy.vars[i]), drop=F]
         }
     }
 
     assign("plot.data.vars", plot.data.vars, envir=.BiodiversityR)
     assign("plot.data.numvars", plot.data.numvars, envir=.BiodiversityR)
-    assign("plot.data.numvars.mahal", plot.data.numvars.mahal, envir=.BiodiversityR)
+    assign("plot.data.domain", plot.data.domain, envir=.BiodiversityR)
+    assign("plot.data.mahal", plot.data.mahal, envir=.BiodiversityR)
 
-    modelnames <- c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
+    modelnames <- c("MAXENT", "MAXLIKE", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
         "MGCVFIX", "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET", 
         "BIOCLIM.O", "BIOCLIM", "DOMAIN", "MAHAL", "MAHAL01", "ENSEMBLE")
     nmodels <- length(modelnames)
@@ -379,7 +387,21 @@
             error= function(err) {print(paste("MAXENT prediction failed"))},
             silent=F)
         results2 <- MAXENT.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"MAXENT"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"MAXENT.step1"] <- plot.data[, "MAXENT"]
+            plot.data[,"MAXENT"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
+    }
+    if (MAXLIKE > 0) {
+        results <- MAXLIKE.OLD
+        tryCatch(plot.data[,"MAXLIKE"] <- predict(object=results, newdata=plot.data.vars),
+            error= function(err) {print(paste("MAXLIKE prediction failed"))},
+            silent=F)
+        results2 <- MAXLIKE.PROBIT.OLD
+        if (is.null(results2) == F) {
+            plot.data[, "MAXLIKE.step1"] <- plot.data[, "MAXLIKE"]
+            plot.data[,"MAXLIKE"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (GBM > 0) {
         results <- GBM.OLD
@@ -387,7 +409,10 @@
             error= function(err) {print(paste("GBM prediction failed"))},
             silent=F)
         results2 <- GBM.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"GBM"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[, "GBM.step1"] <- plot.data[, "GBM"]
+            plot.data[,"GBM"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (GBMSTEP > 0) {
         results <- GBMSTEP.OLD
@@ -395,7 +420,10 @@
             error= function(err) {print(paste("stepwise GBM prediction failed"))},
             silent=F)
         results2 <- GBMSTEP.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"GBMSTEP"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"GBMSTEP.step1"] <- plot.data[, "GBMSTEP"]
+            plot.data[,"GBMSTEP"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (RF > 0) {
         results <- RF.OLD
@@ -403,7 +431,10 @@
             error= function(err) {print(paste("RF prediction failed"))},
             silent=F)
         results2 <- RF.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"RF"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"RF.step1"] <- plot.data[,"RF"]
+            plot.data[,"RF"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (GLM > 0) {
         results <- GLM.OLD
@@ -411,7 +442,10 @@
             error= function(err) {print(paste("GLM prediction failed"))},
             silent=F)
         results2 <- GLM.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"GLM"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"GLM.step1"] <- plot.data[, "GLM"]
+            plot.data[,"GLM"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (GLMSTEP > 0) {
         results <- GLMSTEP.OLD
@@ -419,7 +453,10 @@
             error= function(err) {print(paste("stepwise GLM prediction failed"))},
             silent=F)
         results2 <- GLMSTEP.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"GLMSTEP"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"GLMSTEP.step1"] <- plot.data[, "GLMSTEP"]
+            plot.data[,"GLMSTEP"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (GAM > 0) {
         results <- GAM.OLD
@@ -427,7 +464,10 @@
             error= function(err) {print(paste("GAM (package: gam) prediction failed"))},
             silent=F)
         results2 <- GAM.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"GAM"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"GAM.step1"] <- plot.data[, "GAM"]
+            plot.data[,"GAM"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (GAMSTEP > 0) {
         results <- GAMSTEP.OLD
@@ -435,7 +475,10 @@
             error= function(err) {print(paste("stepwise GAM prediction (gam package) failed"))},
             silent=F)
         results2 <- GAMSTEP.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"GAMSTEP"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[, "GAMSTEP.step1"] <- plot.data[, "GAMSTEP"]
+            plot.data[,"GAMSTEP"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (MGCV > 0) {
         results <- MGCV.OLD
@@ -443,7 +486,10 @@
             error= function(err) {print(paste("GAM prediction (mgcv package) failed"))},
             silent=F)
         results2 <- MGCV.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"MGCV"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"MGCV.step1"] <- plot.data[,"MGCV"]
+            plot.data[,"MGCV"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (MGCVFIX > 0) {
         results <- MGCVFIX.OLD
@@ -459,7 +505,10 @@
             error= function(err) {print(paste("MARS prediction (earth package) failed"))},
             silent=F)
         results2 <- EARTH.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"EARTH"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"EARTH.step1"] <- plot.data[,"EARTH"]
+            plot.data[,"EARTH"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (RPART > 0) {
         results <- RPART.OLD
@@ -467,7 +516,10 @@
             error= function(err) {print(paste("RPART prediction failed"))},
             silent=F)
         results2 <- RPART.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"RPART"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"RPART.step1"] <- plot.data[,"RPART"]
+            plot.data[,"RPART"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (NNET > 0) {
         results <- NNET.OLD
@@ -475,7 +527,10 @@
             error= function(err) {print(paste("ANN prediction (nnet package) failed"))},
             silent=F)
         results2 <- NNET.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"NNET"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"NNET.step1"] <- plot.data[,"NNET"]
+            plot.data[,"NNET"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (FDA > 0) {
         results <- FDA.OLD
@@ -483,7 +538,10 @@
             error= function(err) {print(paste("FDA prediction failed"))},
             silent=F)
         results2 <- FDA.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"FDA"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"FDA.step1"] <- plot.data[,"FDA"]
+            plot.data[,"FDA"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (SVM > 0) {
         results <- SVM.OLD
@@ -491,7 +549,10 @@
             error= function(err) {print(paste("SVM prediction (kernlab package) failed"))},
             silent=F)
         results2 <- SVM.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"SVM"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"SVM.step1"] <- plot.data[,"SVM"]
+            plot.data[,"SVM"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (SVME > 0) {
         results <- SVME.OLD
@@ -500,7 +561,10 @@
             warning= function(war) {print(paste("SVM prediction (e1071 package) failed"))},
             silent=F)
         results2 <- SVME.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"SVME"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"SVME.step1"] <- plot.data[,"SVME"]
+            plot.data[,"SVME"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (GLMNET > 0) {
         results <- GLMNET.OLD
@@ -509,7 +573,10 @@
             warning= function(war) {print(paste("GLMNET prediction (glmnet package) failed"))},
             silent=F)
         results2 <- GLMNET.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"GLMNET"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"GLMNET.step1"] <- plot.data[,"GLMNET"]
+            plot.data[,"GLMNET"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (BIOCLIM.O > 0) {
         results <- BIOCLIM.O.OLD
@@ -517,7 +584,10 @@
             error= function(err) {print(paste("original BIOCLIM prediction failed"))},
             silent=F)
         results2 <- BIOCLIM.O.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"BIOCLIM.O"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"BIOCLIM.O.step1"] <- plot.data[,"BIOCLIM.O"]
+            plot.data[,"BIOCLIM.O"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (BIOCLIM > 0 || DOMAIN > 0 || MAHAL > 0) {
         if(is.null(factors)==F) {
@@ -532,42 +602,46 @@
             error= function(err) {print(paste("BIOCLIM prediction failed"))},
             silent=F)
         results2 <- BIOCLIM.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"BIOCLIM"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"BIOCLIM.step1"] <- plot.data[,"BIOCLIM"]
+            plot.data[,"BIOCLIM"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (DOMAIN > 0) {
-        if(is.null(dummy.vars.noDOMAIN) == F) {
-            for (i in 1:length(dummy.vars.noDOMAIN)) {
-                plot.data.vars <- plot.data.vars[, which(names(plot.data.vars) != dummy.vars.noDOMAIN[i]), drop=F]
-            }
-        }
-        results <- DOMAIN.OLD
-        tryCatch(plot.data[,"DOMAIN"] <- dismo::predict(object=results, x=plot.data.vars),
+        tryCatch(plot.data[,"DOMAIN"] <- dismo::predict(object=results, x=plot.data.domain),
             error= function(err) {print(paste("DOMAIN prediction failed"))},
             silent=F)
         results2 <- DOMAIN.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"DOMAIN"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"DOMAIN.step1"] <- plot.data[,"DOMAIN"]
+            plot.data[,"DOMAIN"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
     if (MAHAL > 0) {
         results <- MAHAL.OLD
         results2 <- MAHAL.PROBIT.OLD
-        if (is.null(results2) == F) {
-            tryCatch(plot.data[,"MAHAL"] <- predict.MAHAL(model=results, newdata=plot.data.numvars.mahal, PROBIT=FALSE),
+        if (is.null(results2) == T) {
+            tryCatch(plot.data[,"MAHAL"] <- predict.MAHAL(model=results, newdata=plot.data.mahal, PROBIT=FALSE),
                 error= function(err) {print(paste("Mahalanobis prediction failed"))},
                 silent=F)
         }else{
-            tryCatch(plot.data[,"MAHAL"] <- predict.MAHAL(model=results, newdata=plot.data.numvars.mahal, PROBIT=TRUE),
+            tryCatch(plot.data[,"MAHAL"] <- predict.MAHAL(model=results, newdata=plot.data.mahal, PROBIT=TRUE),
                 error= function(err) {print(paste("Mahalanobis prediction failed"))},
                 silent=F)
+            plot.data[,"MAHAL.step1"] <- plot.data[,"MAHAL"]
             plot.data[,"MAHAL"] <- predict.glm(object=results2, newdata=plot.data, type="response")
         }
     }
     if (MAHAL01 > 0) {
         results <- MAHAL01.OLD
-        tryCatch(plot.data[,"MAHAL01"] <- predict.MAHAL01(model=results, newdata=plot.data.numvars.mahal, MAHAL.shape=MAHAL.shape),
+        tryCatch(plot.data[,"MAHAL01"] <- predict.MAHAL01(model=results, newdata=plot.data.mahal, MAHAL.shape=MAHAL.shape),
             error= function(err) {print(paste("transformed Mahalanobis prediction failed"))},
             silent=F)
         results2 <- MAHAL.PROBIT.OLD
-        if (is.null(results2) == F) {plot.data[,"MAHAL01"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
+        if (is.null(results2) == F) {
+            plot.data[,"MAHAL01.step1"] <- plot.data[,"MAHAL01"]
+            plot.data[,"MAHAL01"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
     }
 #
     plot.data[,"ENSEMBLE"] <- ws["MAXENT"]*plot.data[,"MAXENT"] + ws["GBM"]*plot.data[,"GBM"] +
@@ -588,7 +662,8 @@
 
     remove(plot.data.vars, envir=.BiodiversityR)
     remove(plot.data.numvars, envir=.BiodiversityR)
-    remove(plot.data.numvars.mahal, envir=.BiodiversityR)
+    remove(plot.data.domain, envir=.BiodiversityR)
+    remove(plot.data.mahal, envir=.BiodiversityR)
 
     return(out)
 

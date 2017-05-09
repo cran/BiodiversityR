@@ -2,7 +2,9 @@
     x=NULL, xn=c(x), 
     species.presence=NULL, species.absence=NULL, 
     presence.min=20,
-    an=1000, excludep=FALSE, SSB.reduce=FALSE, CIRCLES.d=250000,
+    an=1000, excludep=FALSE, 
+    get.block=FALSE,
+    SSB.reduce=FALSE, CIRCLES.d=250000,
     k.splits=4, k.test=0, 
     n.ensembles=1, 
     VIF.max=10,
@@ -17,7 +19,7 @@
     MGCVFIX=0, EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, GLMNET=1,
     BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, 
     MAHAL=1, MAHAL01=1, 
-    PROBIT=FALSE, AUC.weights=FALSE,
+    PROBIT=FALSE,
     Yweights="BIOMOD", 
     layer.drops=NULL, factors=NULL, dummy.vars=NULL, 
     formulae.defaults=TRUE, maxit=100,
@@ -44,11 +46,6 @@
 )
 {
     .BiodiversityR <- new.env()
-#
-    if (MAXLIKE > 0) {
-        cat(paste("\n", "WARNING: MAXLIKE algorithm will not be implemented as MAXLIKE does not accept (new) data.frames as input", "\n", sep = ""))
-        MAXLIKE <- 0
-    }
 #
     k.test <- as.integer(k.test)
     k.splits <- as.integer(k.splits)
@@ -182,7 +179,7 @@
         }
 
 #1. first ensemble tests
-    calibration1 <- ensemble.calibrate.weights(x=x, p=ps, a=as, k=k.splits, 
+    calibration1 <- ensemble.calibrate.weights(x=x, p=ps, a=as, k=k.splits, get.block=get.block,
         SSB.reduce=SSB.reduce, CIRCLES.d=CIRCLES.d,
         ENSEMBLE.tune=T,
         ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, 
@@ -241,11 +238,7 @@
         AUC.table.out <- rbind(AUC.table.out, AUC.table)
     }
 
-    if (AUC.weights == TRUE) {
-        AUC.ensemble <- calibration1$AUC.with.suggested.weights.AUC
-    }else{
-        AUC.ensemble <- calibration1$AUC.with.suggested.weights
-    }
+    AUC.ensemble <- calibration1$AUC.with.suggested.weights
     AUC.ensemble <- c(runs, AUC.ensemble)
     names(AUC.ensemble)[1] <- "ensemble"
 
@@ -260,25 +253,8 @@
 #    xn.f <- eval(as.name(xn.focal))
     cat(paste("\n", "Final model calibrations for species: ", RASTER.species.name1,  "\n", sep = ""))
 
-# reason to define AUC.weights later is to find out in step 1 what consequences of using mean weights (eg tuning) would be
-    if (AUC.weights == TRUE) {
-        cat(paste("\n\n", "Input weights for ensemble.calibrate.models are AUC.weights determined by ensemble.calibrate.weights function", "\n", sep=""))
-        output.weights <- calibration1$output.weights.AUC
-    }else{
-        cat(paste("\n\n", "Input weights for ensemble.calibrate.models are average weights determined by ensemble.calibrate.weights function", "\n", sep=""))        
-        output.weights <- calibration1$output.weights
-    }
-    print(output.weights)
-
-    cat(paste("\n\n", "Minimum input weight is ",  ENSEMBLE.weight.min, "\n", sep=""))
-    ws2 <- output.weights
-    while(min(ws2) < ENSEMBLE.weight.min) {
-        ws2 <- ws2[-which.min(ws2)]
-        ws2 <- ensemble.weights(weights=ws2, exponent=1, best=0, min.weight=0)
-    }
-    output.weights[] <- 0
-    for (i in 1:length(ws2)) {output.weights[which(names(output.weights) == names(ws2)[i])] <- ws2[i]}
-    cat(paste("\n", "Weights for ensemble forecasting", "\n", sep = ""))
+    cat(paste("\n\n", "Input weights for ensemble.calibrate.models are average weights determined by ensemble.calibrate.weights function", "\n", sep=""))        
+    output.weights <- calibration1$output.weights
     print(output.weights)
 
     output.weights <- c(runs, output.weights)
@@ -298,7 +274,7 @@
         models.keep=TRUE, evaluations.keep=TRUE,
         PLOTS=F,
         models.save=models.save, species.name=RASTER.species.name1,
-        AUC.weights=F, ENSEMBLE.tune=F,
+        ENSEMBLE.tune=F,
         input.weights=output.weights,
         threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
         PROBIT=PROBIT, VIF=T,
@@ -329,7 +305,7 @@
         AUC.table.out[which(rownames(AUC.table.out) == paste("MAXENT", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["MAXENT"]
         AUC.table.out[which(rownames(AUC.table.out) == paste("MAXLIKE", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["MAXLIKE"]
         AUC.table.out[which(rownames(AUC.table.out) == paste("GBM", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["GBM"]
-        AUC.table.out[which(rownames(AUC.table.out) == paste("GBMSTEP", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["GMSTEP"]
+        AUC.table.out[which(rownames(AUC.table.out) == paste("GBMSTEP", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["GBMSTEP"]
         AUC.table.out[which(rownames(AUC.table.out) == paste("RF", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["RF"]
         AUC.table.out[which(rownames(AUC.table.out) == paste("GLM", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["GLM"]
         AUC.table.out[which(rownames(AUC.table.out) == paste("GLMSTEP", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["GLMSTEP"]

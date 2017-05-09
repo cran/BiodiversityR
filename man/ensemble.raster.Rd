@@ -153,10 +153,7 @@ ensemble.calibrate.step1 <- ensemble.calibrate.weights(
     PLOTS=FALSE, formulae.defaults=TRUE)
 
 # step 1 generated the weights for each algorithm
-# Choice here to use the weights calculated directly from AUC
-# and not the tuned weights
-# However, results show what AUC would be with tuned parameters
-model.weights <- ensemble.calibrate.step1$output.weights.AUC
+model.weights <- ensemble.calibrate.step1$output.weights
 x.batch <- ensemble.calibrate.step1$x
 p.batch <- ensemble.calibrate.step1$p
 a.batch <- ensemble.calibrate.step1$a
@@ -172,7 +169,7 @@ ensemble.calibrate.step2 <- ensemble.calibrate.models(
     SINK=TRUE, species.name="Bradypus",
     models.keep=TRUE,
     input.weights=model.weights,
-    AUC.weights=FALSE, ENSEMBLE.tune=FALSE, PROBIT=TRUE,
+    ENSEMBLE.tune=FALSE, PROBIT=TRUE,
     Yweights="BIOMOD",
     PLOTS=FALSE, formulae.defaults=TRUE)
 
@@ -207,7 +204,7 @@ ensemble.calibrate2.step1 <- ensemble.calibrate.weights(
     Yweights="BIOMOD",
     PLOTS=FALSE, formulae.defaults=TRUE)
 
-model.weights2 <- ensemble.calibrate2.step1$output.weights.AUC
+model.weights2 <- ensemble.calibrate2.step1$output.weights
 
 ensemble.calibrate2.step2 <- ensemble.calibrate.models(
     x=x.batch, p=p.batch, a=a.batch, MAXENT.a=MAXENT.a.batch, 
@@ -215,7 +212,7 @@ ensemble.calibrate2.step2 <- ensemble.calibrate.models(
     SINK=TRUE, species.name="Bradypus",
     models.keep=TRUE,
     input.weights=model.weights2,
-    AUC.weights=FALSE, ENSEMBLE.tune=FALSE, PROBIT=TRUE,
+    ENSEMBLE.tune=FALSE, PROBIT=TRUE,
     Yweights="BIOMOD",
     PLOTS=FALSE, formulae.defaults=TRUE)
 
