@@ -3550,7 +3550,7 @@ conordiGUI <- function(){
     methodScroll <- tkscrollbar(method1Frame, repeatinterval=5, command=function(...) tkyview(methodBox, ...))
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
     methods <- c("RDA", "CCA", "capscale", "capscale (lingoes)", "capscale (cailliez)", "dbrda", "dbrda (lingoes)", "dbrda (cailliez)", "CAPdiscrim", "prc", 
-        "multiconstrained (RDA)", "multiconstrained (CCA)", "multiconstrained (capscale)", "multiconstrained (capscale add)")
+        "multiconstrained (RDA)", "multiconstrained (CCA)", "multiconstrained (capscale)", "multiconstrained (capscale add)", "multiconstrained (dbrda)")
     for (x in methods) tkinsert(methodBox, "end", x)
     distBox <- tklistbox(method2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
@@ -3812,6 +3812,16 @@ conordiGUI <- function(){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
         }
+        if (method=="multiconstrained (dbrda)") {
+            if(treatasdist==T){
+                logger(paste(.communityDataSet, " <- as.dist(", .communityDataSet, ")", sep=""))
+                assign(.communityDataSet, justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            }
+            command <- paste("multiconstrained(method='dbrda',", formula, ", ", .activeDataSet, ",dist='", dist, "', add=F, contrast=0, step=", perm, ")", sep="")
+            if(treatasdist==F){
+                doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+            }
+        }
         modelValue <- tclvalue(modelName)
 #        if (!is.valid.name(modelValue)){
 #            tkmessageBox(message=paste('"', modelValue, '" is not a valid name.', 
@@ -3828,7 +3838,7 @@ conordiGUI <- function(){
         sum <- tclvalue(summaryVariable) == "1"
         scaling <- tclvalue(scalingVariable)
         if (sum==T) {
-            if (method=="CAPdiscrim" || method=="multiconstrained (RDA)" || method=="multiconstrained (CCA)" || method=="multiconstrained (capscale)" || method=="multiconstrained (capscale add)") {
+            if (method %in% c("CAPdiscrim", "multiconstrained (RDA)", "multiconstrained (CCA)", "multiconstrained (capscale)", "multiconstrained (capscale add)", "multiconstrained (dbrda)")) {
                 doItAndPrint(paste(modelValue, sep=""))
             }else{
                 doItAndPrint(paste("summary(", modelValue, ", scaling='", scaling, "')", sep=""))
@@ -3841,7 +3851,7 @@ conordiGUI <- function(){
                 doItAndPrint(paste("goodness(", modelValue, ", display='sites', statistic='explained')", sep=""))            
                 doItAndPrint(paste("inertcomp(", modelValue, ", display='sites', statistic='explained', proportional=T)", sep="")) 
             }
-            if (perm>0  && method !="CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)") {
+            if (perm>0  && method !="CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)" && method!="multiconstrained (dbrda)") {
                 doItAndPrint(paste("permutest(", modelValue, ", permutations=", perm, ")", sep=""))
 #               doItAndPrint(paste("permutest(", modelValue, ", permutations=", perm, ", first=T)", sep=""))
                 if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='terms')", sep=""))}
@@ -3864,14 +3874,14 @@ conordiGUI <- function(){
         cex <- tclvalue(cexVariable)
         col <- tclvalue(colVariable)
         treatasdist <- tclvalue(treatasdistVariable)==1
-        if (plottype == "plot"  && method != "CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+        if (plottype == "plot"  && method != "CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)" && method!="multiconstrained (dbrda)"){
             justDoIt(paste("par(cex=",cex,")", sep=""))
             logger(paste("par(cex=",cex,")", sep=""))
             justDoIt(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "')", sep=""))
             logger(paste("plot1 <- plot(", modelValue, ", choices=c(", choices, "), scaling='", scaling, "')", sep=""))
             }
         if (plottype == "ordiplot"){
-            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)" && method!="multiconstrained (dbrda)"){
                 justDoIt(paste("par(cex=",cex,")", sep=""))
                 logger(paste("par(cex=",cex,")", sep=""))
                 if (method == "CAPdiscrim") {
@@ -3884,7 +3894,7 @@ conordiGUI <- function(){
             }
         }
         if (plottype == "ordiplot empty"){
-            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)" && method!="multiconstrained (dbrda)"){
                 justDoIt(paste("par(cex=",cex,")", sep=""))
                 logger(paste("par(cex=",cex,")", sep=""))
                 if (method == "CAPdiscrim") {
@@ -3946,7 +3956,7 @@ conordiGUI <- function(){
             doItAndPrint(paste("abline(v = 0, lty = 3)", sep=""))
         }
         if (plottype == "ordiresids"){
-            if (method != "CAPdiscrim"  && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+            if (method != "CAPdiscrim"  && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)" && method!="multiconstrained (dbrda)"){
                 justDoIt(paste("par(cex=",cex,")", sep=""))
                 logger(paste("par(cex=",cex,")", sep=""))
                 justDoIt(paste("ordiresids(", modelValue, ", kind='residuals')", sep=""))              
@@ -3954,7 +3964,7 @@ conordiGUI <- function(){
             }
         }
         if (plottype == "orditkplot sites"){
-            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)" && method!="multiconstrained (dbrda)"){
                 justDoIt(paste("par(cex=",cex,")", sep=""))
                 logger(paste("par(cex=",cex,")", sep=""))
                 if (method != "CAPdiscrim") {
@@ -3967,7 +3977,7 @@ conordiGUI <- function(){
             }
         }
         if (plottype == "orditkplot species"){
-            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)" && method!="multiconstrained (dbrda)"){
                 justDoIt(paste("par(cex=",cex,")", sep=""))
                 logger(paste("par(cex=",cex,")", sep=""))
                 if (method != "CAPdiscrim") {
@@ -3980,7 +3990,7 @@ conordiGUI <- function(){
             }
         }
         if (plottype == "orditkplot pointlabel"){
-            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)"){
+            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)" && method!="multiconstrained (dbrda)"){
                 justDoIt(paste("par(cex=",cex,")", sep=""))
                 logger(paste("par(cex=",cex,")", sep=""))
                 if (method != "CAPdiscrim") {
@@ -5506,20 +5516,10 @@ make.absences <- function(an=1000, x, excludep=F, presence.data=NULL) {
     }
 }
 
-old.predictors <- FALSE
-if (exists("calibration0") == T) {
-    predictors.old <- predictors
-    old.predictors <- TRUE
-}
 predictor.files <- list.files(path=paste(system.file(package="dismo"), '/ex', sep=''),
     pattern='grd', full.names=TRUE)
-calibration0 <- raster::stack(predictor.files)
-BradypusAbsence <- make.absences(x=calibration0, excludep=T, presence.data=BradypusPresence)
-if (old.predictors == T) {
-    assign("calibration0", predictors.old, envir=.GlobalEnv)
-}else{
-    assign("calibration0", NULL, envir=.GlobalEnv)    
-}
+calibration00000 <- raster::stack(predictor.files)
+BradypusAbsence <- make.absences(x=calibration00000, excludep=T, presence.data=BradypusPresence)
 
 if (exists("absence.focal") == F) {assign("absence.focal", NULL, envir=.GlobalEnv)}
 absence.focalP <- function() {return(!is.null(absence.focal))}

@@ -14,6 +14,16 @@ BiodiversityR versions
 	http://www.worldagroforestry.org/downloads/Publications/PDFS/B13695.pdf
 
 
+Version 2.8-3 (June 2017)
+
+	* corrected error that prevented loading of the Graphical User Interface after previous
+		workspace was saved
+
+	* corrected error in function multiconstrained
+
+	* option added of method="dbrda" in function multiconstrained
+
+
 Version 2.8-2 (May 2017)
 
 	* full integration of the MAXLIKE algorithm in ensemble suitability modelling

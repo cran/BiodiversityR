@@ -4,7 +4,7 @@
 \title{Pairwise Comparisons for All Levels of a Categorical Variable by RDA, CCA or Capscale}
 
 \description{
-This function implements pairwise comparisons for categorical variable through \code{\link[vegan]{capscale}}, \code{\link[vegan]{cca}} or \code{\link[vegan:cca]{rda}} followed by \code{\link[vegan]{anova.cca}}. The function simply repeats constrained ordination analysis by selecting subsets of data that correspond to two factor levels. 
+This function implements pairwise comparisons for categorical variable through \code{\link[vegan]{capscale}}, \code{\link[vegan]{cca}}, \code{\link[vegan]{dbrda}} or \code{\link[vegan:cca]{rda}} followed by \code{\link[vegan]{anova.cca}}. The function simply repeats constrained ordination analysis by selecting subsets of data that correspond to two factor levels. 
 }
 
 \usage{
@@ -13,7 +13,7 @@ multiconstrained(method="capscale", formula, data, distance = "bray"
 }
 
 \arguments{
-  \item{method}{ Method for constrained ordination analysis; one of "rda", "cca"or "capscale". }
+  \item{method}{ Method for constrained ordination analysis; one of "rda", "cca", "dbrda" or "capscale". }
   \item{formula}{ Model formula as in \code{\link[vegan]{capscale}},  \code{\link[vegan]{cca}} or  \code{\link[vegan:cca]{rda}}. The LHS can be a community data matrix or a distance matrix for \code{\link[vegan]{capscale}}. }
   \item{data}{ Data frame containing the variables on the right hand side of the model formula as in \code{\link[vegan]{capscale}}, \code{\link[vegan]{cca}} or  \code{\link[vegan:cca]{rda}}. }
   \item{distance}{ Dissimilarity (or distance) index in vegdist used if the LHS of the formula is a data frame instead of dissimilarity matrix; used only with function \code{\link[vegan]{vegdist}} and partial match to "manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "morisita", "horn" or "mountford". This argument is only used for \code{\link[vegan]{capscale}} in case that the LHS of the formula is a community matrix.  }
@@ -56,8 +56,8 @@ data(dune)
 data(dune.env)
 multiconstrained(method="capscale", dune~Management, data=dune.env,
     distance="bray",add=TRUE)
-multiconstrained(method="capscale", dune~Management+Condition(A1),
-    data=dune.env, distance="bray", add=TRUE, contrast=3)
+multiconstrained(method="capscale", dune~Management, data=dune.env, 
+    distance="bray", add=TRUE, contrast=3)
 }
 }
 

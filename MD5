@@ -1,4 +1,4 @@
-146582cef1c65ccf190fe90bc85070be *DESCRIPTION
+7093b4767328d9cf9b7953af71958b5c *DESCRIPTION
 3da1e9082f55b3faee88e5dfd5d53d42 *NAMESPACE
 8db90d97657867123c41192aa9225e5f *R/BiodiversityRGUI.R
 639870b2ed264ef05e84f7c471c4f963 *R/CAPdiscrim.R
@@ -55,7 +55,7 @@ de86e470d29efb3445d017f12e8a2fb3 *R/import.from.Access.R
 2c955efbc311b3136f96f6976dc4aab5 *R/importancevalue.R
 240084dd1a3764e92e89fc0297e490c9 *R/loaded.citations.R
 6142a17ae54e4bfcfd9255158a1db925 *R/makecommunitydataset.R
-2878569abbc52ee36601cc9d09979b7f *R/multiconstrained.R
+7ec55d2a400dcc3795dd14577dc6eea6 *R/multiconstrained.R
 884944692024c56e3e6566b6cd9e27e6 *R/nested.anova.dbrda.R
 ae865a1d17642e84f86722ab075aa03f *R/nested.npmanova.R
 215ad3e6a46f4c70e0ee5f8ff75275e7 *R/nnetrandom.R
@@ -93,9 +93,9 @@ b843662ae71f93a8afb8b0f4d3e1692b *data/ifri.txt.gz
 37351079a5ac672b82707ef8e4c36719 *data/warcom.txt.gz
 93b84b8b327e4963bd31bc89f9d10154 *data/warenv.txt.gz
 c2e89e25151ea992f2f15b7e22d67e53 *inst/CITATION
-35401a40a0a0d6099a7ba7c75c02c462 *inst/ChangeLog
+cdf745d66ccf20bebbaa80c4aae0cab1 *inst/ChangeLog
 4a04a73994976b3c65330d079e4e3d13 *inst/doc/Getting-started-ensemble-GUI.txt
-70f2f3b29c61b7c98d17a5f4207c9b0a *inst/etc/BiodiversityGUI.R
+8ec10a833583f431d350e323ca0df464 *inst/etc/BiodiversityGUI.R
 0f0c99bcd5dfda6a45038994713abfd0 *inst/etc/BiodiversityR-menus.txt
 22a8a26570fc6d836ed86e2f124b668b *inst/etc/Nations.txt
 2a1ecb07b4897fb1f7de5be3704d5d2b *inst/etc/R-logo-old.gif
@@ -169,7 +169,7 @@ a06a6304f6aa438de7dcb2357ae4f051 *man/faramea.Rd
 8a54a886239904fc341078dc20144a53 *man/importancevalue.Rd
 778f7a9b1428d0bed3af5fdc52598e1e *man/loaded.citations.Rd
 de11dcd33b89d5c510249a511766f98d *man/makecommunitydataset.Rd
-588a3047770daf2e65becc1f51a2dde1 *man/multiconstrained.Rd
+b708197eb541b6ec6b14633ef3387fde *man/multiconstrained.Rd
 848c352aca57a4d59452c60474e37409 *man/nested.anova.dbrda.Rd
 b87fb361bb2d19d6b93d0d65ee809669 *man/nnetrandom.Rd
 59be11048dad3ceb6a65669ae39a9c19 *man/ordicoeno.Rd

@@ -1,6 +1,6 @@
 `multiconstrained` <-
 function (method ="capscale", formula, data, distance = "bray", comm = NULL, add = FALSE, multicomp="", contrast=0,...) { 
-    METHODS <- c("rda", "cca", "capscale")
+    METHODS <- c("rda", "cca", "capscale", "dbrda")
     method <- match.arg(method, METHODS)
     commun <- eval(as.name((all.vars(formula)[1])))
     if (inherits(commun, "dist")) {
@@ -16,7 +16,7 @@ function (method ="capscale", formula, data, distance = "bray", comm = NULL, add
     pairs <- utils::combn(l,2)
     p <- ncol(pairs)
     df <- chi <- Fval <- nperm <- Pval <- numeric(p)
-    result <- data.frame(df,chi,Fval,nperm,Pval)
+    result <- data.frame(df,chi,Fval,Pval)
     for (i in 1:p) {
         level1 <- levels[pairs[1,i]]
         level2 <- levels[pairs[2,i]]
@@ -52,10 +52,11 @@ function (method ="capscale", formula, data, distance = "bray", comm = NULL, add
         if (method == "rda") {ordinationresult <- rda(formula1, data=newenvdata)}
         if (method == "cca") {ordinationresult <- cca(formula1, data=newenvdata)}
         if (method == "capscale") {ordinationresult <- capscale(formula1, data=newenvdata, distance=distance, add=add)}
+        if (method == "dbrda") {ordinationresult <- dbrda(formula1, data=newenvdata, distance=distance, add=add)}
         if (contrast==i) {
             comm1 <- data.frame(as.matrix(comm1))
             cat("Multiple comparisons for", method, "for", multicomp, "\n")
-            if (method=="capscale") {
+            if (method=="capscale"  || method=="dbrda") {
                 if (wasdist == T) {cat("Analysis done with distance matrix and add=", add, "\n")
                 }else{cat("Analysis done with", distance, "distance and add=", add, "\n")}
             }
@@ -68,7 +69,7 @@ function (method ="capscale", formula, data, distance = "bray", comm = NULL, add
     }
     remove("newenvdata",envir=.BiodiversityR)
     remove("newcommunity",envir=.BiodiversityR)
-    colnames(result) <- c("Df", "Var", "F", "N.Perm", "Pr(>F)")
+    colnames(result) <- c("Df", "SumOfSqs", "F", "Pr(>F)")
     head <- paste("Multiple comparisons for", method, "for all contrasts of", multicomp, "\n")
     mod <- paste("Model: ", c(match.call()), "\n")
     structure(result, heading = c(head,mod), Random.seed = NULL, 
