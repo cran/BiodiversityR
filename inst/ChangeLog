@@ -14,6 +14,11 @@ BiodiversityR versions
 	http://www.worldagroforestry.org/downloads/Publications/PDFS/B13695.pdf
 
 
+Version 2.8-4 (September 2017)
+
+	* compatible with Rcmdr 2.4-0 (August 2017)
+
+
 Version 2.8-3 (June 2017)
 
 	* corrected error that prevented loading of the Graphical User Interface after previous

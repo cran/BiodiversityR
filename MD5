@@ -1,4 +1,4 @@
-7093b4767328d9cf9b7953af71958b5c *DESCRIPTION
+c02a3f7455c5196a36624ec68b6d081c *DESCRIPTION
 3da1e9082f55b3faee88e5dfd5d53d42 *NAMESPACE
 8db90d97657867123c41192aa9225e5f *R/BiodiversityRGUI.R
 639870b2ed264ef05e84f7c471c4f963 *R/CAPdiscrim.R
@@ -93,9 +93,9 @@ b843662ae71f93a8afb8b0f4d3e1692b *data/ifri.txt.gz
 37351079a5ac672b82707ef8e4c36719 *data/warcom.txt.gz
 93b84b8b327e4963bd31bc89f9d10154 *data/warenv.txt.gz
 c2e89e25151ea992f2f15b7e22d67e53 *inst/CITATION
-cdf745d66ccf20bebbaa80c4aae0cab1 *inst/ChangeLog
+2d417086ed75a9691b7182ebce458212 *inst/ChangeLog
 4a04a73994976b3c65330d079e4e3d13 *inst/doc/Getting-started-ensemble-GUI.txt
-8ec10a833583f431d350e323ca0df464 *inst/etc/BiodiversityGUI.R
+9dc9d0a34151149c11940c3cdd8e078e *inst/etc/BiodiversityGUI.R
 0f0c99bcd5dfda6a45038994713abfd0 *inst/etc/BiodiversityR-menus.txt
 22a8a26570fc6d836ed86e2f124b668b *inst/etc/Nations.txt
 2a1ecb07b4897fb1f7de5be3704d5d2b *inst/etc/R-logo-old.gif
@@ -105,7 +105,8 @@ f2d7a27d016369f2bd616744b24c1f67 *inst/etc/R-logo.gif
 c2128aa27494eb3df882dadd7ed576da *inst/etc/Rcmdr-Markdown-Template.Rmd
 1fea754af8282215d75681de6781c6d2 *inst/etc/Rcmdr-RMarkdown-Template.Rmd
 3ce4fee044b7cd447276fa41c65125db *inst/etc/Rcmdr-knitr-Template.Rnw
-cfcca98daaada7b3df1d94c12ef88bb5 *inst/etc/Rcmdr-menus.txt
+3d53e4b820a2510f74245df3c88691aa *inst/etc/Rcmdr-menus.txt
+271cadea1aefb431d6600c7704cb7bfa *inst/etc/Rcmdr-model-capabilities.txt
 fa78c02ed480d3d08dcdca26a8515e1a *inst/etc/Rcmdr.xbm
 df9255d1f7ced44df68c65ef7d9e2c42 *inst/etc/apply.gif
 f80f0f625d1ab499497068dc27b6334d *inst/etc/blank.gif
@@ -132,6 +133,7 @@ aba9e0fd899f3dd8c827e7e29d7d3a5b *inst/etc/ok.gif
 9ec4ac5e48064e9f81751620a2f5340e *inst/etc/redo.gif
 147d76b2d0bbdf6a67567ef4493d90c9 *inst/etc/remove.gif
 bd7489f77f67150334544ab2c51c77dc *inst/etc/reset.gif
+1c86a2f9f7c09438f67710dbd017fc57 *inst/etc/save-edits.gif
 ca3abe919a2e8bdda6cb3ea2cad42264 *inst/etc/submit.gif
 675baac39acb4ad494b2d4cec835a79b *inst/etc/submit.xbm
 6cbe4b339278d1f229af126010bd6d68 *inst/etc/undo.gif

@@ -23,8 +23,10 @@
 # rw2011\COPYING. Use the citation() or loaded.citations() function for acknowledgments in publications for 
 # any package that you made use of.
 
-putRcmdr(".communityDataSet", NULL)
-putRcmdr("operatorFont", tkfont.create(family="courier", size=getRcmdr("log.font.size")))
+# library(Rcmdr, quietly=TRUE)
+
+Rcmdr::putRcmdr(".communityDataSet", NULL)
+Rcmdr::putRcmdr("operatorFont", tkfont.create(family="courier", size=Rcmdr::getRcmdr("log.font.size")))
 
 
 #changed based on R Commander 1.9-6 (data-Menu.R)
@@ -92,17 +94,17 @@ communityDataSet <- function(dsname, flushModel=TRUE, flushDialogMemory=TRUE){
 				dsname, "))", sep="")
 		doItAndPrint(command)
 	}
-	if (!is.null(.communityDataSet) && getRcmdr("attach.data.set")
+	if (!is.null(.communityDataSet) && Rcmdr::getRcmdr("attach.data.set")
 			&& (length(grep(.communityDataSet, search())) !=0)) {
 		detach(pos = match(.communityDataSet, search()))
 		logger(paste("detach(", .communityDataSet, ")", sep=""))
 	}
 	if (flushModel) {
-		putRcmdr(".activeModel", NULL)
+		Rcmdr::putRcmdr(".activeModel", NULL)
 		RcmdrTclSet("modelName", gettextRcmdr("<No active model>"))
-		if (!is.SciViews()) tkconfigure(getRcmdr("modelLabel"), foreground="red") else refreshStatus()
+		if (!is.SciViews()) tkconfigure(Rcmdr::getRcmdr("modelLabel"), foreground="red") else refreshStatus()
 	}
-	if (flushDialogMemory) putRcmdr("dialog.values", list())
+	if (flushDialogMemory) Rcmdr::putRcmdr("dialog.values", list())
 	# -PhG tkconfigure(.modelLabel, foreground="red")
 	CommunityDataSet(dsname)
 	Message(sprintf(gettextRcmdr("The dataset %s has %d rows and %d columns."), dsname,
@@ -119,12 +121,12 @@ communityDataSet <- function(dsname, flushModel=TRUE, flushDialogMemory=TRUE){
 # changed 2014 all to #
 #	RcmdrTclSet("dataSetName", paste(" ", dsname, " "))
 	# -PhG tkconfigure(.dataSetLabel, foreground="blue")
-#	if (!is.SciViews()) tkconfigure(getRcmdr("dataSetLabel"), foreground="blue") else refreshStatus() # +PhG
-# 	if (getRcmdr("attach.data.set")){
+#	if (!is.SciViews()) tkconfigure(Rcmdr::getRcmdr("dataSetLabel"), foreground="blue") else refreshStatus() # +PhG
+# 	if (Rcmdr::getRcmdr("attach.data.set")){
 # 		attach(get(dsname, envir=.GlobalEnv), name=dsname)
 # 		logger(paste("attach(", dsname, ")", sep=""))
 # 	}
-#	if (is.SciViews()) refreshStatus() else if (flushModel) tkconfigure(getRcmdr("modelLabel"), foreground="red") # +PhG (& J.Fox, 25Dec04)
+#	if (is.SciViews()) refreshStatus() else if (flushModel) tkconfigure(Rcmdr::getRcmdr("modelLabel"), foreground="red") # +PhG (& J.Fox, 25Dec04)
 	activateMenus()
 	dsname
 }
@@ -147,39 +149,39 @@ checkCommunityDataSet <- function(){
 
 CommunityDataSet <- function(name){
 	if (missing(name)) {
-		temp <- getRcmdr(".communityDataSet")
+		temp <- Rcmdr::getRcmdr(".communityDataSet")
 		if (is.null(temp))
 			return(NULL)
 		else
 		if (!exists(temp) || !is.data.frame(get(temp,envir=.GlobalEnv))) {
 			Message(sprintf(gettextRcmdr("the dataset %s is no longer available"),
 							temp), type="error")
-			putRcmdr(".communityDataSet", NULL)
+			Rcmdr::putRcmdr(".communityDataSet", NULL)
 			RcmdrTclSet("dataSetName", gettextRcmdr("<No active dataset>"))
-			putRcmdr(".activeModel", NULL)
+			Rcmdr::putRcmdr(".activeModel", NULL)
 			RcmdrTclSet("modelName", gettextRcmdr("<No active model>"))
 			if (!is.SciViews()) {
-				tkconfigure(getRcmdr("dataSetLabel"), foreground="red") 
-				tkconfigure(getRcmdr("modelLabel"), foreground="red") 
+				tkconfigure(Rcmdr::getRcmdr("dataSetLabel"), foreground="red") 
+				tkconfigure(Rcmdr::getRcmdr("modelLabel"), foreground="red") 
 			} 
 			else refreshStatus()
 			activateMenus()
-			if (getRcmdr("suppress.menus") && RExcelSupported()) return(NULL)
+			if (Rcmdr::getRcmdr("suppress.menus") && RExcelSupported()) return(NULL)
 		}
 		return(temp)
 	}
-	else putRcmdr(".communityDataSet", name)
+	else Rcmdr::putRcmdr(".communityDataSet", name)
 }
 
 
 CVariables <- function(cnames){
-    if (missing(cnames)) getRcmdr("cvariables")
-    else putRcmdr("cvariables", cnames)
+    if (missing(cnames)) Rcmdr::getRcmdr("cvariables")
+    else Rcmdr::putRcmdr("cvariables", cnames)
     }
 
 listCVariables <- function(dataSet=CommunityDataSet()) {
     cvars <- eval(parse(text=paste("names(", dataSet,")")), envir=.GlobalEnv)
-    if (getRcmdr("sort.names")) sort(cvars) else cvars
+    if (Rcmdr::getRcmdr("sort.names")) sort(cvars) else cvars
     }
 
 communityDataSetP <- function() !is.null(CommunityDataSet())
@@ -343,7 +345,7 @@ importfromExcelGUI <- function() {
         levelValue <- tclvalue(slevel)
         file <- tclvalue(tkgetOpenFile(filetypes='{"Excel Files" {".xls" ".XLS"}} {"All Files" {"*"}}'))
         if (file == "") {
-            if (getRcmdr("grab.focus")) tkgrab.release(top)
+            if (Rcmdr::getRcmdr("grab.focus")) tkgrab.release(top)
             tkdestroy(top)
             return()
             }
@@ -429,7 +431,7 @@ importfromExcel2007GUI <- function() {
         levelValue <- tclvalue(slevel)
         file <- tclvalue(tkgetOpenFile(filetypes='{"Excel Files" {".xlsx" ".XLSX"}} {"All Files" {"*"}}'))
         if (file == "") {
-            if (getRcmdr("grab.focus")) tkgrab.release(top)
+            if (Rcmdr::getRcmdr("grab.focus")) tkgrab.release(top)
             tkdestroy(top)
             return()
             }
@@ -516,7 +518,7 @@ importfromAccessGUI <- function() {
         levelValue <- tclvalue(slevel)
         file <- tclvalue(tkgetOpenFile(filetypes='{"Access Files" {".mdb" ".MDB"}} {"All Files" {"*"}}'))
         if (file == "") {
-            if (getRcmdr("grab.focus")) tkgrab.release(top)
+            if (Rcmdr::getRcmdr("grab.focus")) tkgrab.release(top)
             tkdestroy(top)
             return()
             }
@@ -602,7 +604,7 @@ importfromAccess2007GUI <- function() {
         levelValue <- tclvalue(slevel)
         file <- tclvalue(tkgetOpenFile(filetypes='{"Access Files" {".mdbx" ".MDBX"}} {"All Files" {"*"}}'))
         if (file == "") {
-            if (getRcmdr("grab.focus")) tkgrab.release(top)
+            if (Rcmdr::getRcmdr("grab.focus")) tkgrab.release(top)
             tkdestroy(top)
             return()
             }
@@ -2216,7 +2218,7 @@ countGUI <- function(){
         tkfocus(CommanderWindow())
         tkdestroy(top)  
     }
-    .operatorFont <- getRcmdr("operatorFont")
+    .operatorFont <- Rcmdr::getRcmdr("operatorFont")
     plusButton <- tkbutton(x3Frame, text="+", width="3", command=onPlus, 
         font=.operatorFont)
     timesButton <- tkbutton(x3Frame, text="*", width="3", command=onTimes, 
@@ -2748,7 +2750,7 @@ presabsGUI <- function(){
         tkfocus(CommanderWindow())
         tkdestroy(top)  
     }
-    .operatorFont <- getRcmdr("operatorFont")
+    .operatorFont <- Rcmdr::getRcmdr("operatorFont")
     plusButton <- tkbutton(x3Frame, text="+", width="3", command=onPlus, 
         font=.operatorFont)
     timesButton <- tkbutton(x3Frame, text="*", width="3", command=onTimes, 
@@ -4182,7 +4184,7 @@ conordiGUI <- function(){
         tkfocus(CommanderWindow())
         tkdestroy(top)  
         }
-    .operatorFont <- getRcmdr("operatorFont")
+    .operatorFont <- Rcmdr::getRcmdr("operatorFont")
     plusButton <- tkbutton(x3Frame, text="+", width="3", command=onPlus, 
         font=.operatorFont)
     timesButton <- tkbutton(x3Frame, text="*", width="3", command=onTimes, 
@@ -4902,7 +4904,7 @@ ens.directory <- function() {
 ens.workspace <- function(){
     logger(paste("Select .RData file", sep=""))
     doItAndPrint(paste("load(choose.files(default='*.RData', multi=F))", sep=""))
-    putRcmdr("dialog.values", list())
+    Rcmdr::putRcmdr("dialog.values", list())
     activateMenus()
 }
 
@@ -4996,7 +4998,7 @@ stack.create.GUI <- function(){
             assign("stack.list", stack.list, envir=.GlobalEnv)
             if (length(stack.list) == 1) {assign("stack.focal", stack.list[1], envir=.GlobalEnv)}
         }
-        putRcmdr("dialog.values", list())
+        Rcmdr::putRcmdr("dialog.values", list())
         activateMenus()
 	closeDialog()
 	tkfocus(CommanderWindow())
@@ -5052,7 +5054,7 @@ stack.select.GUI <- function(){
         doItAndPrint(paste(stack.focal, "@title", sep=""))
         logger(paste("Note that GUI assumes that stack name and stack title are the same", sep=""))
         logger(paste("If stack name and stack title are different, create the stack via the GUI", sep=""))
-        putRcmdr("dialog.values", list())
+        Rcmdr::putRcmdr("dialog.values", list())
         activateMenus()
 	closeDialog()
 	tkfocus(CommanderWindow())
@@ -5394,7 +5396,7 @@ make.presence.GUI <- function(){
         assign("presence.focal", modelValue, envir=.GlobalEnv)
         doItAndPrint(paste(presence.focal, "[, 'species'] <- as.factor(gsub(' ', '_', ", presence.focal, "[, 'species']))", sep=""))
         doItAndPrint(paste("summary(", presence.focal, ")", sep=""))
-        putRcmdr("dialog.values", list())
+        Rcmdr::putRcmdr("dialog.values", list())
         activateMenus()
 	closeDialog()
 	tkfocus(CommanderWindow())
@@ -5455,7 +5457,7 @@ presence.select.GUI <- function(){
         if (all.equal(presence.names, c('species', 'x', 'y')) == F) {doItAndPrint(paste("WARNING: variable names are not 'species', 'x' and 'y'", sep=""))}
         doItAndPrint(paste(presence.focal, "[, 'species'] <- as.factor(gsub(' ', '_', ", presence.focal, "[, 'species']))", sep=""))
         doItAndPrint(paste("summary(", presence.focal, ")", sep=""))
-        putRcmdr("dialog.values", list())
+        Rcmdr::putRcmdr("dialog.values", list())
         activateMenus()
 	closeDialog()
 	tkfocus(CommanderWindow())
@@ -5555,7 +5557,7 @@ make.absence.GUI <- function(){
         }
         if (is.null(absence.focal) == T) {assign("absence.focal", modelValue, envir=.GlobalEnv)}
         doItAndPrint(paste("summary(", absence.focal, ")", sep="")) 
-        putRcmdr("dialog.values", list())
+        Rcmdr::putRcmdr("dialog.values", list())
         activateMenus()
 	closeDialog()
 	tkfocus(CommanderWindow())
@@ -5612,7 +5614,7 @@ absence.select.GUI <- function(){
             doItAndPrint(paste(absence.focal, "[, 'species'] <- as.factor(gsub(' ', '_', ", absence.focal, "[, 'species']))", sep=""))
         }
         doItAndPrint(paste("summary(", absence.focal, ")", sep="")) 
-        putRcmdr("dialog.values", list())
+        Rcmdr::putRcmdr("dialog.values", list())
         activateMenus()
 	closeDialog()
 	tkfocus(CommanderWindow())
@@ -5908,7 +5910,7 @@ batch.GUI <- function(){
                 }
             }
         }
-        putRcmdr("dialog.values", list())
+        Rcmdr::putRcmdr("dialog.values", list())
         activateMenus()
 	closeDialog()
 	tkfocus(CommanderWindow())
@@ -6049,7 +6051,7 @@ batch.GUI <- function(){
             }
             logger(paste("You can find the results in: ", output.filename, sep=""))
         }
-        putRcmdr("dialog.values", list())
+        Rcmdr::putRcmdr("dialog.values", list())
         activateMenus()
 	closeDialog()
 	tkfocus(CommanderWindow())
@@ -6353,7 +6355,7 @@ model.select.menu <- function(){
         assign("focal.ensemble.object", ensemble.models, envir=.GlobalEnv)          
         logger(paste("Focal ensemble models (object focal.ensemble.object) loaded from: ", models.file, sep=""))
     }
-    putRcmdr("dialog.values", list())
+    Rcmdr::putRcmdr("dialog.values", list())
     activateMenus()
 }
 

@@ -1,6 +1,6 @@
 # R Commander Menu Definitions
 
-# last modified 2016-07-19 by J. Fox
+# last modified 2017-04-17 by J. Fox
 
 #   type    menu/item      operation/parent  label                                          command/menu                activation  install?
 
@@ -57,6 +57,7 @@
     item    importMenu      command         "from text file, clipboard, or URL..."          readDataSet                 ""          ""
     item    importMenu      command         "from SPSS data set..."                         importSPSS                  ""          "packageAvailable('foreign')"
     item    importMenu      command         "from SAS xport file..."                        importSAS                   ""           "packageAvailable('foreign')"
+    item    importMenu      command         "from SAS b7dat file..."                        importSASb7dat                   ""           "packageAvailable('RcmdrMisc')"
     item    importMenu      command         "from Minitab data set..."                      importMinitab               ""          "packageAvailable('foreign')"
     item    importMenu      command         "from STATA data set..."                        importSTATA                 ""          "packageAvailable('foreign')"
 #    item    importMenu      command         "from Excel, Access or dBase data set..."       importRODBCtable            ""          "WindowsP() && packageAvailable('RODBC') && (.Platform$r_arch == 'i386')"
@@ -108,7 +109,7 @@
     item    summariesMenu   command         "Correlation matrix..."                         correlationMatrix           "numericP(2)"               "packageAvailable('RcmdrMisc')"
     item    summariesMenu   command         "Correlation test..."                           correlationTest             "numericP(2)"               "packageAvailable('RcmdrMisc')"
 #    item    summariesMenu   command         "Shapiro-Wilk test of normality..."             ShapiroTest                 "numericP()"                ""
-    item    summariesMenu   command         "Test of normality..."                          normalityTest               "numericP()"                "packageAvailable('nortest')"
+    item    summariesMenu   command         "Test of normality..."                          NormalityTest               "numericP()"                "packageAvailable('nortest')"
     menu    tablesMenu      statisticsMenu  ""                                              ""                          ""          ""
     item    tablesMenu      command         "Two-way table..."                              twoWayTable                 "factorsP(2)" "packageAvailable('RcmdrMisc') && packageAvailable('abind')"
     item    tablesMenu      command         "Multi-way table..."                            multiWayTable               "factorsP(3)" "packageAvailable('RcmdrMisc') && packageAvailable('abind')"
@@ -164,6 +165,7 @@
     item    graphsMenu      command         "Index plot..."                                 indexPlot                   "numericP()"          "packageAvailable('RcmdrMisc')"
     item    graphsMenu      command         "Dot plot..."                                   DotPlot                     "numericP()"          "packageAvailable('RcmdrMisc')"
     item    graphsMenu      command         "Histogram..."                                  Histogram                   "numericP()"          "packageAvailable('RcmdrMisc')"
+    item    graphsMenu      command         "Plot discrete numeric variable..."             DiscretePlot                "numericP()"          "packageAvailable('RcmdrMisc')"
     item    graphsMenu      command         "Density estimate..."                           DensityPlot         "numericP()"          ""
     item    graphsMenu      command         "Stem-and-leaf display..."                      stemAndLeaf                 "numericP()"  "packageAvailable('aplpack')"
     item    graphsMenu      command         "Boxplot..."                                    boxPlot                     "numericP()" 		  ""
@@ -192,39 +194,39 @@
     item    topMenu         cascade         "Graphs"                                        graphsMenu                  ""          ""
     menu    modelsMenu      topMenu         ""                                              ""                          ""          ""
     item    modelsMenu      command         "Select active model..."                        selectActiveModel           "modelsP()"          ""
-    item    modelsMenu      command         "Summarize model"                               summarizeModel              "activeModelP()"          ""
-    item    modelsMenu      command         "Compare model coefficients..."                 compareCoefficients         "modelsP(2)"               ""
+    item    modelsMenu      command         "Summarize model"                               summarizeModel              "modelCapability('sum')" ""
+    item    modelsMenu      command         "Compare model coefficients..."                 compareCoefficients         "modelCapability('compc') && modelsP(2)"               ""
     item    modelsMenu      command         "Add observation statistics to data..."         addObservationStatistics    "activeModelP()"          ""
     item    modelsMenu      separator       ""                                              ""                          ""          ""
-    item	modelsMenu		command			"Akaike Information Criterion (AIC)"			aic							"activeModelP()"		  ""
-    item	modelsMenu		command			"Bayesian Information Criterion (BIC)"			bic							"activeModelP()"		  ""
-    item	modelsMenu		command			"Stepwise model selection..."						stepwiseRegression			"aicP()" 		 "packageAvailable('RcmdrMisc') && packageAvailable('MASS')"
-    item	modelsMenu		command			"Subset model selection..."						subsetRegression			"lmP()"			 "packageAvailable('leaps')"
+    item	modelsMenu		command			"Akaike Information Criterion (AIC)"			aic							"modelCapability('aic')"		  ""
+    item	modelsMenu		command			"Bayesian Information Criterion (BIC)"			bic							"modelCapability('bic')"		  ""
+    item	modelsMenu		command			"Stepwise model selection..."						stepwiseRegression			"modelCapability('stp')" 		 "packageAvailable('RcmdrMisc') && packageAvailable('MASS')"
+    item	modelsMenu		command			"Subset model selection..."						subsetRegression			"modelCapability('sub')"			 "packageAvailable('leaps')"
     item    modelsMenu      separator       ""                                              ""                          ""          ""
-    item    modelsMenu      command         "Confidence intervals..."                       confidenceIntervals         "activeModelP()" "packageAvailable('MASS') && packageAvailable('abind')"
-    item    modelsMenu      command         "Bootstrap confidence intervals..."             Bootstrap                   "activeModelP() && (glmP() || lmP())" "packageAvailable('boot')"
-    item    modelsMenu      command         "Delta method confidence interval..."           DeltaMethodConfInt          "activeModelP() && (!multinomP())" ""
+    item    modelsMenu      command         "Confidence intervals..."                       confidenceIntervals         "modelCapability('con')" "packageAvailable('MASS') && packageAvailable('abind')"
+    item    modelsMenu      command         "Bootstrap confidence intervals..."             Bootstrap                   "modelCapability('boot')" "packageAvailable('boot')"
+    item    modelsMenu      command         "Delta method confidence interval..."           DeltaMethodConfInt          "modelCapability('del')" ""
     menu    hypothesisMenu  modelsMenu      ""                                              ""                          ""          ""
     item    modelsMenu      cascade         "Hypothesis tests"                              hypothesisMenu              ""          ""
-    item    hypothesisMenu  command         "ANOVA table..."                                anovaTable                  "activeModelP()" "packageAvailable('car')"
-    item    hypothesisMenu  command         "Compare two models..."                         compareModels               "modelsP(2)"          ""
-    item    hypothesisMenu  command         "Linear hypothesis..."                          testLinearHypothesis        "activeModelP()" "packageAvailable('car')"
+    item    hypothesisMenu  command         "ANOVA table..."                                anovaTable                  "modelCapability('aov') || modelCapability('Aov')" "packageAvailable('car')"
+    item    hypothesisMenu  command         "Compare two models..."                         compareModels               "modelCapability('compm') && modelsP(2)"          ""
+    item    hypothesisMenu  command         "Linear hypothesis..."                          testLinearHypothesis        "modelCapability('lin')" "packageAvailable('car')"
     item    modelsMenu      separator       ""                                              ""                          ""          ""
     menu    diagnosticsMenu modelsMenu      ""                                              ""                          ""          ""
     item    modelsMenu      cascade         "Numerical diagnostics"                         diagnosticsMenu             ""          ""
-    item    diagnosticsMenu command         "Variance-inflation factors"                    VIF                         "(lmP() || glmP())" "packageAvailable('car')"
-    item    diagnosticsMenu command         "Breusch-Pagan test for heteroscedasticity..."  BreuschPaganTest            "lmP()" "packageAvailable('lmtest')"
-    item    diagnosticsMenu command         "Durbin-Watson test for autocorrelation..."     DurbinWatsonTest            "lmP()" "packageAvailable('lmtest')"
-    item    diagnosticsMenu command         "RESET test for nonlinearity..."                RESETtest                   "lmP()" "packageAvailable('lmtest')"
-    item    diagnosticsMenu command         "Bonferroni outlier test"                       OutlierTest                 "(lmP() || glmP())" "packageAvailable('car')"
+    item    diagnosticsMenu command         "Variance-inflation factors"                    VIF                         "modelCapability('vif')" "packageAvailable('car')"
+    item    diagnosticsMenu command         "Breusch-Pagan test for heteroscedasticity..."  BreuschPaganTest            "modelCapability('bpt')" "packageAvailable('lmtest')"
+    item    diagnosticsMenu command         "Durbin-Watson test for autocorrelation..."     DurbinWatsonTest            "modelCapability('dwt')" "packageAvailable('lmtest')"
+    item    diagnosticsMenu command         "RESET test for nonlinearity..."                RESETtest                   "modelCapability('rse')" "packageAvailable('lmtest')"
+    item    diagnosticsMenu command         "Bonferroni outlier test"                       OutlierTest                 "modelCapability('bon')" "packageAvailable('car')"
     menu    modelsGraphsMenu      modelsMenu      ""                                              ""                          ""          ""
     item    modelsMenu      cascade         "Graphs"                                        modelsGraphsMenu                  ""          ""
-    item    modelsGraphsMenu      command         "Basic diagnostic plots"                        plotModel                   "lmP() || glmP()"          ""
-    item    modelsGraphsMenu      command         "Residual quantile-comparison plot..."          residualQQPlot              "lmP()" "packageAvailable('car')"
-    item    modelsGraphsMenu      command         "Component+residual plots"                      CRPlots                     "(lmP() || glmP())" "packageAvailable('car')"
-    item    modelsGraphsMenu      command         "Added-variable plots"                          AVPlots                     "(lmP() || glmP())" "packageAvailable('car')"
-    item    modelsGraphsMenu      command         "Influence plot"                                InfluencePlot               "(lmP() || glmP())" "packageAvailable('car')"
-    item    modelsGraphsMenu      command         "Effect plots"                                  effectPlots                 "(lmP() || glmP()) || polrP() || multinomP()" "packageAvailable('effects')"
+    item    modelsGraphsMenu      command         "Basic diagnostic plots"                        plotModel                   "modelCapability('plt')"          ""
+    item    modelsGraphsMenu      command         "Residual quantile-comparison plot..."          residualQQPlot              "modelCapability('qqp')" "packageAvailable('car')"
+    item    modelsGraphsMenu      command         "Component+residual plots..."                      CRPlots                     "modelCapability('crp')" "packageAvailable('car')"
+    item    modelsGraphsMenu      command         "Added-variable plots..."                          AVPlots                     "modelCapability('avp')" "packageAvailable('car')"
+    item    modelsGraphsMenu      command         "Influence plot..."                                InfluencePlot               "modelCapability('infp')" "packageAvailable('car')"
+    item    modelsGraphsMenu      command         "Effect plots..."                                  effectPlots                 "modelCapability('effp')" "packageAvailable('effects')"
     item    topMenu         cascade         "Models"                                        modelsMenu                  ""          ""
 
     # Distributions
@@ -409,6 +411,7 @@
     item    helpMenu        command         "Using R Markdown"                              browseRMarkdown             ""          ""
     item    topMenu         cascade         "Help"                                          helpMenu                    ""          ""
 
+
     # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
     # DEC 2016
 
@@ -507,9 +510,4 @@
     item    ensMenu         cascade         "Absence data set"                              absMenu                     ""          ""
     item    ensMenu         cascade         "Ensemble suitability modeling"                 calibMenu                   ""          ""
     item    biodivMenu      cascade         "Help"                                          helpbioMenu                 ""          ""
-
-
-
-
-
 
