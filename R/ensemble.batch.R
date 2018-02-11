@@ -1,14 +1,14 @@
 `ensemble.batch` <- function(
     x=NULL, xn=c(x), 
     species.presence=NULL, species.absence=NULL, 
-    presence.min=20,
+    presence.min=20, thin.km=0.1,
     an=1000, excludep=FALSE, 
     get.block=FALSE,
     SSB.reduce=FALSE, CIRCLES.d=250000,
     k.splits=4, k.test=0, 
     n.ensembles=1, 
-    VIF.max=10,
-    SINK=FALSE,
+    VIF.max=10, VIF.keep=NULL,
+    SINK=FALSE, CATCH.OFF=FALSE,
     RASTER.format="raster", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
     KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
     models.save=FALSE,
@@ -73,7 +73,6 @@
         }
     }
     species.presence <- data.frame(species.presence)
-    species.absence <- data.frame(species.absence)
     if (ncol(species.presence) < 2) {stop("species.presence expected to be 3-column data.frame with species, x (e.g., lon) and y (e.g., lat) columns")}
     if (ncol(species.presence) == 2) {
         cat(paste("\n", "species.presence was expected to be 3-column data.frame with columns representing species, x (e.g., lon) and y (e.g., lat)", sep = ""))        
@@ -93,6 +92,7 @@
         species.presence[,3] <- as.numeric(species.presence[,3])
         names(species.presence) <- c("species", "x", "y")
     }
+    if (is.null(species.absence)==F) {species.absence <- data.frame(species.absence)}
     if (is.null(species.absence)==F && ncol(species.absence) < 2) {stop("species.absence expected to be a 2-column data.frame with x (e.g., lon) and y (e.g., lat),  or 3-column data.frame with species, x (e.g., lon) and y (e.g., lat) columns")}
     if (is.null(species.absence)==F && ncol(species.absence)> 3) {
         cat(paste("\n", "species.absence was expected to be 3-column data.frame with species, x (e.g., lon) and y (e.g., lat) columns", sep = ""))        
@@ -115,7 +115,7 @@
 # check for variables below the maximum VIF
 # note that the ensemble.VIF function does not remove factor variables
 #
-    VIF.result <- ensemble.VIF(x=x, VIF.max=VIF.max, 
+    VIF.result <- ensemble.VIF(x=x, VIF.max=VIF.max, keep=VIF.keep,
         layer.drops=layer.drops, factors=factors, dummy.vars=dummy.vars)
 
     layer.drops <- VIF.result$var.drops
@@ -125,13 +125,34 @@
 # process species by species
     species.names <- levels(droplevels(factor(species.presence[,1])))
 
+    AUC.table.out <- AUC.ensemble.out <- output.weights.out <- ensemble.highest <- NULL
+
     for (s in 1:length(species.names)) {
         focal.species <- species.names[s]
 
-# check if species has required minimum number of presence points
-        n.pres <- nrow(species.presence[species.presence[,1]==focal.species,])
-        if (n.pres < presence.min) { 
-            cat(paste("\n", "Species: ", focal.species, " only has ", n.pres, " presence locations", sep = ""))
+        ps <- species.presence[species.presence[,1]==focal.species, c(2:3)]
+        n.pres <- nrow(ps)
+
+# check after spatial thinning if species has required minimum number of presence points
+# already calculate all the spatially thinned data sets for each run
+
+	if (thin.km > 0) {
+
+        cat(paste("\n", "Generation of spatially thinned presence data sets for each ensemble", "\n\n", sep = ""))    
+
+            ps.thins <- vector("list", n.ensembles)
+            for (i in 1:n.ensembles) {
+                ps.thins[[i]] <- ensemble.spatialThin(ps, thin.km=thin.km)
+                if (nrow(ps.thins[[i]]) < n.pres) {n.pres <- nrow(ps.thins[[i]])}
+            }
+        }
+
+        if (n.pres < presence.min) {
+            if (thin.km > 0) {
+                cat(paste("\n", "Species: ", focal.species, " only has ", n.pres, " presence locations in one of the spatially thinned data sets", sep = ""))
+            }else{
+                cat(paste("\n", "Species: ", focal.species, " only has ", n.pres, " presence locations", sep = ""))
+            }
             cat(paste("\n", "This species therefore not included in batch processing", "\n\n", sep = ""))
 
         }else{
@@ -155,9 +176,25 @@
 #
     cat(paste("\n", "Evaluations for species: ", focal.species, "\n", sep = ""))
     ps <- species.presence[species.presence[,1]==focal.species, c(2:3)]
+
+# repeat the whole process for n.ensembles
+
+    RASTER.species.name1 <- focal.species
+    for (runs in 1:n.ensembles) {
+        if (n.ensembles > 1) { 
+            cat(paste("\n", focal.species, ": ENSEMBLE ", runs, "\n\n", sep = ""))
+            RASTER.species.name1 <- paste(focal.species, "_ENSEMBLE_", runs, sep="")
+        }
+
+    if (thin.km > 0) {
+        ps <- ps.thins[[runs]]
+    }
+
     if (is.null(species.absence)==F && ncol(species.absence) == 3) {
         as <- species.absence[species.absence[,1]==focal.species, c(2:3)]
     }
+
+# random selection of background locations for each run
     if (is.null(species.absence)==T) {
         if (excludep == T) {
             as <- dismo::randomPoints(x[[1]], n=an, p=ps, excludep=T)
@@ -169,18 +206,10 @@
     assign("ps", ps, envir=.BiodiversityR)
     assign("as", as, envir=.BiodiversityR)
 
-# repeat the whole process for n.ensembles
-
-    RASTER.species.name1 <- focal.species
-    for (runs in 1:n.ensembles) {
-        if (n.ensembles > 1) { 
-            cat(paste("\n", focal.species, ": ENSEMBLE ", runs, "\n\n", sep = ""))
-            RASTER.species.name1 <- paste(focal.species, "_ENSEMBLE_", runs, sep="")
-        }
-
 #1. first ensemble tests
     calibration1 <- ensemble.calibrate.weights(x=x, p=ps, a=as, k=k.splits, get.block=get.block,
         SSB.reduce=SSB.reduce, CIRCLES.d=CIRCLES.d,
+        CATCH.OFF=CATCH.OFF,
         ENSEMBLE.tune=T,
         ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, 
         ENSEMBLE.exponent=ENSEMBLE.exponent, ENSEMBLE.weight.min=ENSEMBLE.weight.min,
@@ -272,7 +301,7 @@
     calibration2 <- ensemble.calibrate.models(
         x=x.batch, p=p.batch, a=a.batch, k=k.test, pt=NULL, at=NULL,
         models.keep=TRUE, evaluations.keep=TRUE,
-        PLOTS=F,
+        PLOTS=FALSE, CATCH.OFF=CATCH.OFF, 
         models.save=models.save, species.name=RASTER.species.name1,
         ENSEMBLE.tune=F,
         input.weights=output.weights,

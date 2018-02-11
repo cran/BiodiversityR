@@ -2,7 +2,7 @@
     xn=NULL, ext=NULL,
     models.list=NULL, 
     input.weights=models.list$output.weights,
-    steps=200
+    steps=200, CATCH.OFF=FALSE
 )
 {
     .BiodiversityR <- new.env()
@@ -383,9 +383,13 @@
 #
     if (MAXENT > 0) {
         results <- MAXENT.OLD
-        tryCatch(plot.data[,"MAXENT"] <- dismo::predict(object=results, x=plot.data.vars),
-            error= function(err) {print(paste("MAXENT prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"MAXENT"] <- dismo::predict(object=results, x=plot.data.vars),
+                error= function(err) {print(paste("MAXENT prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"MAXENT"] <- dismo::predict(object=results, x=plot.data.vars)
+        }
         results2 <- MAXENT.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"MAXENT.step1"] <- plot.data[, "MAXENT"]
@@ -394,9 +398,13 @@
     }
     if (MAXLIKE > 0) {
         results <- MAXLIKE.OLD
-        tryCatch(plot.data[,"MAXLIKE"] <- predict(object=results, newdata=plot.data.vars),
-            error= function(err) {print(paste("MAXLIKE prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"MAXLIKE"] <- predict(object=results, newdata=plot.data.vars),
+                error= function(err) {print(paste("MAXLIKE prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"MAXLIKE"] <- predict(object=results, newdata=plot.data.vars)
+        }
         results2 <- MAXLIKE.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[, "MAXLIKE.step1"] <- plot.data[, "MAXLIKE"]
@@ -405,9 +413,13 @@
     }
     if (GBM > 0) {
         results <- GBM.OLD
-        tryCatch(plot.data[,"GBM"] <- gbm::predict.gbm(object=results, newdata=plot.data.vars, n.trees=results$n.trees, type="response"),
-            error= function(err) {print(paste("GBM prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"GBM"] <- gbm::predict.gbm(object=results, newdata=plot.data.vars, n.trees=results$n.trees, type="response"),
+                error= function(err) {print(paste("GBM prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"GBM"] <- gbm::predict.gbm(object=results, newdata=plot.data.vars, n.trees=results$n.trees, type="response")
+        }
         results2 <- GBM.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[, "GBM.step1"] <- plot.data[, "GBM"]
@@ -416,9 +428,13 @@
     }
     if (GBMSTEP > 0) {
         results <- GBMSTEP.OLD
-        tryCatch(plot.data[,"GBMSTEP"] <- gbm::predict.gbm(object=results, newdata=plot.data.vars, n.trees=results$n.trees, type="response"),
-            error= function(err) {print(paste("stepwise GBM prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"GBMSTEP"] <- gbm::predict.gbm(object=results, newdata=plot.data.vars, n.trees=results$n.trees, type="response"),
+                error= function(err) {print(paste("stepwise GBM prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"GBMSTEP"] <- gbm::predict.gbm(object=results, newdata=plot.data.vars, n.trees=results$n.trees, type="response")
+        }
         results2 <- GBMSTEP.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"GBMSTEP.step1"] <- plot.data[, "GBMSTEP"]
@@ -427,9 +443,13 @@
     }
     if (RF > 0) {
         results <- RF.OLD
-        tryCatch(plot.data[,"RF"] <- predict.RF(object=results, newdata=plot.data.vars),
-            error= function(err) {print(paste("RF prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"RF"] <- predict.RF(object=results, newdata=plot.data.vars),
+                error= function(err) {print(paste("RF prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"RF"] <- predict.RF(object=results, newdata=plot.data.vars)
+        }
         results2 <- RF.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"RF.step1"] <- plot.data[,"RF"]
@@ -438,9 +458,13 @@
     }
     if (GLM > 0) {
         results <- GLM.OLD
-        tryCatch(plot.data[,"GLM"] <- predict.glm(object=results, newdata=plot.data.vars, type="response"),
-            error= function(err) {print(paste("GLM prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"GLM"] <- predict.glm(object=results, newdata=plot.data.vars, type="response"),
+                error= function(err) {print(paste("GLM prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"GLM"] <- predict.glm(object=results, newdata=plot.data.vars, type="response")
+        }
         results2 <- GLM.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"GLM.step1"] <- plot.data[, "GLM"]
@@ -449,9 +473,13 @@
     }
     if (GLMSTEP > 0) {
         results <- GLMSTEP.OLD
-        tryCatch(plot.data[,"GLMSTEP"] <- predict.glm(object=results, newdata=plot.data.vars, type="response"),
-            error= function(err) {print(paste("stepwise GLM prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"GLMSTEP"] <- predict.glm(object=results, newdata=plot.data.vars, type="response"),
+                error= function(err) {print(paste("stepwise GLM prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"GLMSTEP"] <- predict.glm(object=results, newdata=plot.data.vars, type="response")
+        }
         results2 <- GLMSTEP.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"GLMSTEP.step1"] <- plot.data[, "GLMSTEP"]
@@ -460,9 +488,13 @@
     }
     if (GAM > 0) {
         results <- GAM.OLD
-        tryCatch(plot.data[,"GAM"] <- gam::predict.gam(object=results, newdata=plot.data.vars, type="response"),
-            error= function(err) {print(paste("GAM (package: gam) prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"GAM"] <- gam::predict.gam(object=results, newdata=plot.data.vars, type="response"),
+                error= function(err) {print(paste("GAM (package: gam) prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"GAM"] <- gam::predict.gam(object=results, newdata=plot.data.vars, type="response")
+        }
         results2 <- GAM.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"GAM.step1"] <- plot.data[, "GAM"]
@@ -471,9 +503,13 @@
     }
     if (GAMSTEP > 0) {
         results <- GAMSTEP.OLD
-        tryCatch(plot.data[,"GAMSTEP"] <- gam::predict.gam(object=results, newdata=plot.data.vars, type="response"),
-            error= function(err) {print(paste("stepwise GAM prediction (gam package) failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"GAMSTEP"] <- gam::predict.gam(object=results, newdata=plot.data.vars, type="response"),
+                error= function(err) {print(paste("stepwise GAM prediction (gam package) failed"))},
+                silent=F)
+        }else{
+            plot.data[,"GAMSTEP"] <- gam::predict.gam(object=results, newdata=plot.data.vars, type="response")
+        }
         results2 <- GAMSTEP.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[, "GAMSTEP.step1"] <- plot.data[, "GAMSTEP"]
@@ -482,9 +518,13 @@
     }
     if (MGCV > 0) {
         results <- MGCV.OLD
-        tryCatch(plot.data[,"MGCV"] <- predict.MGCV(object=results, newdata=plot.data.vars),
-            error= function(err) {print(paste("GAM prediction (mgcv package) failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"MGCV"] <- predict.MGCV(object=results, newdata=plot.data.vars),
+                error= function(err) {print(paste("GAM prediction (mgcv package) failed"))},
+                silent=F)
+        }else{
+            plot.data[,"MGCV"] <- predict.MGCV(object=results, newdata=plot.data.vars)
+        }
         results2 <- MGCV.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"MGCV.step1"] <- plot.data[,"MGCV"]
@@ -493,17 +533,25 @@
     }
     if (MGCVFIX > 0) {
         results <- MGCVFIX.OLD
-        tryCatch(plot.data[,"MGCVFIX"] <- predict.MGCV(object=results, newdata=plot.data.vars),
-            error= function(err) {print(paste("MGCVFIX prediction (mgcv package) failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"MGCVFIX"] <- predict.MGCV(object=results, newdata=plot.data.vars),
+                error= function(err) {print(paste("MGCVFIX prediction (mgcv package) failed"))},
+                silent=F)
+        }else{
+            plot.data[,"MGCVFIX"] <- predict.MGCV(object=results, newdata=plot.data.vars)
+        }
         results2 <- MGCVFIX.PROBIT.OLD
         if (is.null(results2) == F) {plot.data[,"MGCVFIX"] <- predict.glm(object=results2, newdata=plot.data, type="response")}
     }
     if (EARTH > 0) {
         results <- EARTH.OLD
-        tryCatch(plot.data[,"EARTH"] <- predict.EARTH(object=results, newdata=plot.data.numvars),
-            error= function(err) {print(paste("MARS prediction (earth package) failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"EARTH"] <- predict.EARTH(object=results, newdata=plot.data.numvars),
+                error= function(err) {print(paste("MARS prediction (earth package) failed"))},
+                silent=F)
+        }else{
+            plot.data[,"EARTH"] <- predict.EARTH(object=results, newdata=plot.data.numvars)
+        }
         results2 <- EARTH.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"EARTH.step1"] <- plot.data[,"EARTH"]
@@ -512,9 +560,13 @@
     }
     if (RPART > 0) {
         results <- RPART.OLD
-        tryCatch(plot.data[,"RPART"] <- predict(object=results, newdata=plot.data.vars, type="prob")[,2],
-            error= function(err) {print(paste("RPART prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"RPART"] <- predict(object=results, newdata=plot.data.vars, type="prob")[,2],
+                error= function(err) {print(paste("RPART prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"RPART"] <- predict(object=results, newdata=plot.data.vars, type="prob")[,2]
+        }
         results2 <- RPART.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"RPART.step1"] <- plot.data[,"RPART"]
@@ -523,9 +575,13 @@
     }
     if (NNET > 0) {
         results <- NNET.OLD
-        tryCatch(plot.data[,"NNET"] <- predict.NNET(object=results, newdata=plot.data.vars),
-            error= function(err) {print(paste("ANN prediction (nnet package) failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"NNET"] <- predict.NNET(object=results, newdata=plot.data.vars),
+                error= function(err) {print(paste("ANN prediction (nnet package) failed"))},
+                silent=F)
+        }else{
+            plot.data[,"NNET"] <- predict.NNET(object=results, newdata=plot.data.vars)
+        }
         results2 <- NNET.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"NNET.step1"] <- plot.data[,"NNET"]
@@ -534,9 +590,13 @@
     }
     if (FDA > 0) {
         results <- FDA.OLD
-        tryCatch(plot.data[,"FDA"] <- predict(object=results, newdata=plot.data.vars, type="posterior")[,2],
-            error= function(err) {print(paste("FDA prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"FDA"] <- predict(object=results, newdata=plot.data.vars, type="posterior")[,2],
+                error= function(err) {print(paste("FDA prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"FDA"] <- predict(object=results, newdata=plot.data.vars, type="posterior")[,2]
+        }
         results2 <- FDA.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"FDA.step1"] <- plot.data[,"FDA"]
@@ -545,9 +605,13 @@
     }
     if (SVM > 0) {
         results <- SVM.OLD
-        tryCatch(plot.data[,"SVM"] <- kernlab::predict(object=results, newdata=plot.data.vars, type="probabilities")[,2],
-            error= function(err) {print(paste("SVM prediction (kernlab package) failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"SVM"] <- kernlab::predict(object=results, newdata=plot.data.vars, type="probabilities")[,2],
+                error= function(err) {print(paste("SVM prediction (kernlab package) failed"))},
+                silent=F)
+        }else{
+            plot.data[,"SVM"] <- kernlab::predict(object=results, newdata=plot.data.vars, type="probabilities")[,2]
+        }
         results2 <- SVM.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"SVM.step1"] <- plot.data[,"SVM"]
@@ -556,10 +620,14 @@
     }
     if (SVME > 0) {
         results <- SVME.OLD
-        tryCatch(plot.data[,"SVME"] <- predict.SVME(model=results, newdata=plot.data.vars),
-            error= function(err) {print(paste("SVM prediction (e1071 package) failed"))},
-            warning= function(war) {print(paste("SVM prediction (e1071 package) failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"SVME"] <- predict.SVME(model=results, newdata=plot.data.vars),
+                error= function(err) {print(paste("SVM prediction (e1071 package) failed"))},
+                warning= function(war) {print(paste("SVM prediction (e1071 package) failed"))},
+                silent=F)
+        }else{
+            plot.data[,"SVME"] <- predict.SVME(model=results, newdata=plot.data.vars)
+        }
         results2 <- SVME.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"SVME.step1"] <- plot.data[,"SVME"]
@@ -568,10 +636,14 @@
     }
     if (GLMNET > 0) {
         results <- GLMNET.OLD
-        tryCatch(plot.data[,"GLMNET"] <- predict.GLMNET(model=results, newdata=plot.data.numvars, GLMNET.class=GLMNET.class),
-            error= function(err) {print(paste("GLMNET prediction (glmnet package) failed"))},
-            warning= function(war) {print(paste("GLMNET prediction (glmnet package) failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"GLMNET"] <- predict.GLMNET(model=results, newdata=plot.data.numvars, GLMNET.class=GLMNET.class),
+                error= function(err) {print(paste("GLMNET prediction (glmnet package) failed"))},
+                warning= function(war) {print(paste("GLMNET prediction (glmnet package) failed"))},
+                silent=F)
+        }else{
+            plot.data[,"GLMNET"] <- predict.GLMNET(model=results, newdata=plot.data.numvars, GLMNET.class=GLMNET.class)
+        }
         results2 <- GLMNET.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"GLMNET.step1"] <- plot.data[,"GLMNET"]
@@ -580,9 +652,13 @@
     }
     if (BIOCLIM.O > 0) {
         results <- BIOCLIM.O.OLD
-        tryCatch(plot.data[,"BIOCLIM.O"] <- predict.BIOCLIM.O(object=results, newdata=plot.data.vars),
-            error= function(err) {print(paste("original BIOCLIM prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"BIOCLIM.O"] <- predict.BIOCLIM.O(object=results, newdata=plot.data.vars),
+                error= function(err) {print(paste("original BIOCLIM prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"BIOCLIM.O"] <- predict.BIOCLIM.O(object=results, newdata=plot.data.vars)
+        }
         results2 <- BIOCLIM.O.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"BIOCLIM.O.step1"] <- plot.data[,"BIOCLIM.O"]
@@ -598,9 +674,13 @@
     }
     if (BIOCLIM > 0) {
         results <- BIOCLIM.OLD
-        tryCatch(plot.data[,"BIOCLIM"] <- dismo::predict(object=results, x=plot.data.vars),
-            error= function(err) {print(paste("BIOCLIM prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"BIOCLIM"] <- dismo::predict(object=results, x=plot.data.vars),
+                error= function(err) {print(paste("BIOCLIM prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"BIOCLIM"] <- dismo::predict(object=results, x=plot.data.vars)
+        }
         results2 <- BIOCLIM.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"BIOCLIM.step1"] <- plot.data[,"BIOCLIM"]
@@ -608,9 +688,13 @@
         }
     }
     if (DOMAIN > 0) {
-        tryCatch(plot.data[,"DOMAIN"] <- dismo::predict(object=results, x=plot.data.domain),
-            error= function(err) {print(paste("DOMAIN prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"DOMAIN"] <- dismo::predict(object=results, x=plot.data.domain),
+                error= function(err) {print(paste("DOMAIN prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"DOMAIN"] <- dismo::predict(object=results, x=plot.data.domain)
+        }
         results2 <- DOMAIN.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"DOMAIN.step1"] <- plot.data[,"DOMAIN"]
@@ -621,22 +705,34 @@
         results <- MAHAL.OLD
         results2 <- MAHAL.PROBIT.OLD
         if (is.null(results2) == T) {
-            tryCatch(plot.data[,"MAHAL"] <- predict.MAHAL(model=results, newdata=plot.data.mahal, PROBIT=FALSE),
-                error= function(err) {print(paste("Mahalanobis prediction failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(plot.data[,"MAHAL"] <- predict.MAHAL(model=results, newdata=plot.data.mahal, PROBIT=FALSE),
+                    error= function(err) {print(paste("Mahalanobis prediction failed"))},
+                    silent=F)
+            }else{
+                plot.data[,"MAHAL"] <- predict.MAHAL(model=results, newdata=plot.data.mahal, PROBIT=FALSE)
+            }
         }else{
-            tryCatch(plot.data[,"MAHAL"] <- predict.MAHAL(model=results, newdata=plot.data.mahal, PROBIT=TRUE),
-                error= function(err) {print(paste("Mahalanobis prediction failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(plot.data[,"MAHAL"] <- predict.MAHAL(model=results, newdata=plot.data.mahal, PROBIT=TRUE),
+                    error= function(err) {print(paste("Mahalanobis prediction failed"))},
+                    silent=F)
+            }else{
+                plot.data[,"MAHAL"] <- predict.MAHAL(model=results, newdata=plot.data.mahal, PROBIT=TRUE)
+            }
             plot.data[,"MAHAL.step1"] <- plot.data[,"MAHAL"]
             plot.data[,"MAHAL"] <- predict.glm(object=results2, newdata=plot.data, type="response")
         }
     }
     if (MAHAL01 > 0) {
         results <- MAHAL01.OLD
-        tryCatch(plot.data[,"MAHAL01"] <- predict.MAHAL01(model=results, newdata=plot.data.mahal, MAHAL.shape=MAHAL.shape),
-            error= function(err) {print(paste("transformed Mahalanobis prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"MAHAL01"] <- predict.MAHAL01(model=results, newdata=plot.data.mahal, MAHAL.shape=MAHAL.shape),
+                error= function(err) {print(paste("transformed Mahalanobis prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"MAHAL01"] <- predict.MAHAL01(model=results, newdata=plot.data.mahal, MAHAL.shape=MAHAL.shape)
+        }
         results2 <- MAHAL.PROBIT.OLD
         if (is.null(results2) == F) {
             plot.data[,"MAHAL01.step1"] <- plot.data[,"MAHAL01"]

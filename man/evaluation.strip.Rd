@@ -12,7 +12,7 @@ These functions provide a dataframe which can subsequently be used to evaluate t
 evaluation.strip.data(xn = NULL, ext = NULL,
     models.list = NULL, 
     input.weights = models.list$output.weights,
-    steps=200
+    steps=200, CATCH.OFF = FALSE
 )
 
 evaluation.strip.plot(data, TrainData=NULL,
@@ -28,6 +28,7 @@ evaluation.strip.plot(data, TrainData=NULL,
   \item{models.list}{ list with 'old' model objects such as \code{MAXENT} or \code{RF}. }
   \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.calibrate.weights} can be used. }
   \item{steps}{ number of steps within the range of a continuous explanatory variable }
+  \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
 
   \item{data}{ data set with ranges of environmental variables and fitted suitability models, typically returned by \code{evaluation.strip.data} }
   \item{TrainData}{ Data set representing the calibration data set. If provided, then a boxplot will be added for presence locations via \code{\link[graphics]{boxplot}} }
@@ -53,6 +54,7 @@ function \code{evaluation.strip.data} creates a data frame, function code{evalua
 }
 
 \references{
+Kindt R. 2018. Ensemble species distribution modelling with transformed suitability values. Environmental Modelling & Software 100: 136-145. \url{https://doi.org/10.1016/j.envsoft.2017.11.009}
 Elith J, Ferrier S, Huettmann F & Leathwick J. 2005. The evaluation strip: A new and robust method for plotting predicted responses from species distribution models. Ecological Modelling 186: 280-289 
 }
 

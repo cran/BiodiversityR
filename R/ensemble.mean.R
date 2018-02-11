@@ -87,6 +87,15 @@
     names(working.raster) <- filename0
     raster::writeRaster(working.raster, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
+# nicheOverlap
+    nicheOverlaps <- numeric(length(names(ensemble.stack)))
+    names(nicheOverlaps) <- names(ensemble.stack)
+    for (i in 1:length(names(ensemble.stack))) {
+        nicheOverlaps[i] <- dismo::nicheOverlap((ensemble.stack[[i]]/1000), (ensemble.mean/1000), stat="I", checkNegatives=F)
+    }
+    cat(paste("\n", "niche overlap (dismo::nicheOverlap with stat='I') between mean suitability and input suitability files", "\n\n", sep = ""))
+    print(as.data.frame(nicheOverlaps))
+#
 # standard deviation
     ensemble.sd <- raster::calc(ensemble.stack, fun=sd)
     ensemble.sd <- trunc(ensemble.sd)
@@ -217,6 +226,6 @@
                 colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
         }
     }
-    return(list(threshold=threshold.mean, call=match.call() ))
+    return(list(threshold=threshold.mean, nicheOverlaps=nicheOverlaps, call=match.call() ))
 }
 

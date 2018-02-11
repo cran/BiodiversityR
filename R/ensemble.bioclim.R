@@ -103,7 +103,8 @@
     x=NULL, bioclim.object=NULL, 
     RASTER.object.name=bioclim.object$species.name, RASTER.stack.name = x@title,
     RASTER.format="raster",
-    KML.out=TRUE, KML.blur=10, KML.maxpixels=100000 
+    KML.out=TRUE, KML.blur=10, KML.maxpixels=100000,
+    CATCH.OFF=FALSE
 )
 {
     .BiodiversityR <- new.env()
@@ -164,10 +165,15 @@
   
 #
 # predict
-    tryCatch(bioclim.raster <- raster::predict(object=x, model=bioclim.object, fun=predict.bioclim, na.rm=TRUE, 
-                                           filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format),
+    if (CATCH.OFF == F) {
+        tryCatch(bioclim.raster <- raster::predict(object=x, model=bioclim.object, fun=predict.bioclim, na.rm=TRUE, 
+               filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format),
            error= function(err) {print(paste("prediction of bioclim failed"))},
            silent=F)
+    }else{
+        bioclim.raster <- raster::predict(object=x, model=bioclim.object, fun=predict.bioclim, na.rm=TRUE, 
+           filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format)
+    }
 #    bioclim.raster <- trunc(1000*bioclim.raster)
 #    cat(paste("\n", "raster layer created (probabilities multiplied by 1000)", "\n", sep = ""))
     raster::setMinMax(bioclim.raster)

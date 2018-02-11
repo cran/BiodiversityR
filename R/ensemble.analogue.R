@@ -57,7 +57,8 @@
     RASTER.object.name=analogue.object$name, RASTER.stack.name=x@title,
     RASTER.format="raster", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
     KML.out=T, KML.blur=10, KML.maxpixels = 100000, 
-    limits=c(1, 5, 20, 50), limit.colours=c('red', 'orange', 'blue', 'grey')
+    limits=c(1, 5, 20, 50), limit.colours=c('red', 'orange', 'blue', 'grey'),
+    CATCH.OFF=FALSE
 )
 {
     .BiodiversityR <- new.env()
@@ -114,10 +115,15 @@
   
 #
 # predict
-    tryCatch(analogue.raster <- raster::predict(object=x, model=analogue.object, fun=predict.analogue, na.rm=TRUE, 
-                                           filename=rasterfull, progress='text', overwrite=T, format=RASTER.format),
+    if (CATCH.OFF == F) {
+        tryCatch(analogue.raster <- raster::predict(object=x, model=analogue.object, fun=predict.analogue, na.rm=TRUE, 
+               filename=rasterfull, progress='text', overwrite=T, format=RASTER.format),
            error= function(err) {print(paste("prediction of analogue raster failed"))},
            silent=F)
+    }else{
+       analogue.raster <- raster::predict(object=x, model=analogue.object, fun=predict.analogue, na.rm=TRUE, 
+           filename=rasterfull, progress='text', overwrite=T, format=RASTER.format)
+    }
     analogue.raster <- round(analogue.raster, digits=8)
     raster::setMinMax(analogue.raster)
     print(analogue.raster)

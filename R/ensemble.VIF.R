@@ -1,6 +1,6 @@
 `ensemble.VIF` <- function(
     x=NULL, a=NULL, an=10000, 
-    VIF.max=10, 
+    VIF.max=10, keep=NULL,
     layer.drops=NULL, factors=NULL, dummy.vars=NULL
 )
 {
@@ -77,8 +77,13 @@
             BIOCLIM.O=0, BIOCLIM=0, DOMAIN=0, MAHAL=0, MAHAL01=0)$VIF
         i <- i+1
         for (v in 1:length(VIF.result)) {result[i, which(names(result) == names(VIF.result)[v])] <- VIF.result[which(names(VIF.result) == names(VIF.result)[v])]}
-        VIF.result.max <- VIF.result[1]
-        var.drops <- c(var.drops, names(VIF.result)[1])     
+
+	j <- 1
+	while(names(VIF.result[j]) %in% keep && j <= length(VIF.result)) {j <- j+1}
+	if (j <= length(VIF.result)){
+		VIF.result.max <- VIF.result[j]
+        	var.drops <- c(var.drops, names(VIF.result)[j])
+	}
     }
 
 # remove last variable included
@@ -123,4 +128,5 @@
     return(list(stepwise.results=result, var.drops=var.drops, vars.included=vars.included,
         factors=factors, dummy.vars.included=dummy.vars, VIF.final=VIF.result))
 }
+
 

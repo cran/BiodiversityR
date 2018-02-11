@@ -15,7 +15,8 @@ ensemble.zones(presence.raster = NULL, centroid.object = NULL,
     x = NULL, ext = NULL,
     RASTER.species.name = centroid.object$name, RASTER.stack.name = x@title, 
     RASTER.format = "raster", RASTER.datatype = "INT1S", RASTER.NAflag = -127, 
-    KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10)
+    KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
+    CATCH.OFF = FALSE)
 
 ensemble.centroids(presence.raster = NULL, x = NULL, categories.raster = NULL,
     an = 10000, ext = NULL, name = "Species001", 
@@ -37,6 +38,7 @@ ensemble.centroids(presence.raster = NULL, x = NULL, categories.raster = NULL,
   \item{KML.out}{ If \code{TRUE}, then kml files will be saved in a subfolder 'kml/zones'.  }
   \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
   \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
+  \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
 
   \item{categories.raster}{ RasterLayer object (\code{\link[raster]{raster}}) documenting predefined zones such as vegetation types. In case this object is provided, then centroids will be calculated for each zone. }
   \item{an}{ Number of presence points to be used for Principal Components Analysis (via \code{\link[vegan]{rda}}); see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }

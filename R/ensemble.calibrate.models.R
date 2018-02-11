@@ -1,9 +1,10 @@
 `ensemble.calibrate.models` <- function(
-    x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, 
+    x=NULL, p=NULL,
+    a=NULL, an=1000, excludep=FALSE, 
     k=0, pt=NULL, at=NULL, SSB.reduce=FALSE, CIRCLES.d=250000,
     TrainData=NULL, TestData=NULL,
     VIF=FALSE, COR=FALSE,
-    SINK=FALSE, PLOTS=TRUE, 
+    SINK=FALSE, PLOTS=FALSE, CATCH.OFF=FALSE,
     threshold.method="spec_sens", threshold.sensitivity=0.9, threshold.PresenceAbsence=FALSE,
     evaluations.keep=FALSE, 
     models.list=NULL, models.keep=FALSE, 
@@ -1017,9 +1018,13 @@
 # create possible response
         TrainDataNum[,"pb"] <- mean(as.numeric(TrainDataNum[,2]))
         vifresult <- NULL
-        tryCatch(vifresult <- car::vif(lm(formula=LM.formula, data=TrainDataNum)),
-            error= function(err) {print(paste("\n", "WARNING: VIF (package: car) evaluation failed", "\n", sep=""))},
-                    silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(vifresult <- car::vif(lm(formula=LM.formula, data=TrainDataNum)),
+                error= function(err) {print(paste("\n", "WARNING: VIF (package: car) evaluation failed", "\n", sep=""))},
+                        silent=F)
+        }else{
+            vifresult <- car::vif(lm(formula=LM.formula, data=TrainDataNum))
+        }
         if (is.null(vifresult) == F) {
             cat(paste("\n", "Variance inflation (package: car)", "\n", sep = ""))        
             print(vifresult)
@@ -1126,9 +1131,13 @@
         # the file 'maxent.jar' can be obtained from from http://www.cs.princeton.edu/~schapire/maxent/.
         jar <- paste(system.file(package="dismo"), "/java/maxent.jar", sep='')
         if(is.null(MAXENT.OLD) == T) {
-            tryCatch(results <- dismo::maxent(x=MAXENT.TrainData, p=MAXENT.pa, factors=factors, path=MAXENT.path),
-                error= function(err) {print(paste("MAXENT calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- dismo::maxent(x=MAXENT.TrainData, p=MAXENT.pa, factors=factors, path=MAXENT.path),
+                    error= function(err) {print(paste("MAXENT calibration failed"))},
+                    silent=F)
+            }else{
+                results <- dismo::maxent(x=MAXENT.TrainData, p=MAXENT.pa, factors=factors, path=MAXENT.path)
+            }
         }else{ 
             results <- MAXENT.OLD
         }
@@ -1175,17 +1184,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"MAXENT"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MAXENT"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("MAXENT evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["MAXENT"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MAXENT"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="MAXENT", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: MAXENT evaluation failed","\n\n",sep = ""))
                     ws["MAXENT"] <- 0
@@ -1221,10 +1224,15 @@
         MAXLIKE.x <- MAXENT.TrainData[MAXENT.pa == 1, ]
         MAXLIKE.z <- MAXENT.TrainData[MAXENT.pa == 0, ]
         if(is.null(MAXLIKE.OLD) == T) {
-            tryCatch(results <- maxlike::maxlike(formula=MAXLIKE.formula, rasters=NULL, points=NULL, x=MAXLIKE.x, z=MAXLIKE.z, 
-                method=MAXLIKE.method, control=list(maxit=maxit)),
-                error= function(err) {print(paste("MAXLIKE calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- maxlike::maxlike(formula=MAXLIKE.formula, rasters=NULL, points=NULL, x=MAXLIKE.x, z=MAXLIKE.z, 
+                    method=MAXLIKE.method, control=list(maxit=maxit)),
+                    error= function(err) {print(paste("MAXLIKE calibration failed"))},
+                    silent=F)
+            }else{
+                results <- maxlike::maxlike(formula=MAXLIKE.formula, rasters=NULL, points=NULL, x=MAXLIKE.x, z=MAXLIKE.z, 
+                    method=MAXLIKE.method, control=list(maxit=maxit))
+            }
         }else{ 
             results <- MAXLIKE.OLD
         }
@@ -1271,17 +1279,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1, "MAXLIKE"]
                 TestAbs <- TestData[TestData[,"pb"]==0, "MAXLIKE"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("MAXLIKE evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["MAXLIKE"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MAXLIKE"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="MAXLIKE", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: MAXLIKE evaluation failed","\n\n",sep = ""))
                     ws["MAXLIKE"] <- 0
@@ -1315,12 +1317,18 @@
         mc <- mc+1
         cat(paste("\n", mc, ". Generalized boosted regression modeling (package: gbm) \n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
-        if(is.null(GBM.OLD) == T) {       
-            tryCatch(results <- gbm::gbm(formula=GBM.formula, data=TrainData, weights=Yweights1, distribution="bernoulli", 
+        if(is.null(GBM.OLD) == T) {
+            if (CATCH.OFF == F) {    
+                tryCatch(results <- gbm::gbm(formula=GBM.formula, data=TrainData, weights=Yweights1, distribution="bernoulli", 
                     interaction.depth=7, shrinkage=0.001, bag.fraction=0.5, train.fraction=1, 
                     n.trees=GBM.n.trees, verbose=F, cv.folds=5),
                 error= function(err) {print(paste("GBM calibration failed"))},
                 silent=F)
+            }else{
+                results <- gbm::gbm(formula=GBM.formula, data=TrainData, weights=Yweights1, distribution="bernoulli", 
+                    interaction.depth=7, shrinkage=0.001, bag.fraction=0.5, train.fraction=1, 
+                    n.trees=GBM.n.trees, verbose=F, cv.folds=5)
+            }
         }else{ 
             results <- GBM.OLD
         }
@@ -1366,17 +1374,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GBM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GBM"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("GBM evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["GBM"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GBM"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="BRT (gbm)", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: GBM evaluation failed","\n\n",sep = ""))
                     ws["GBM"] <- 0
@@ -1412,12 +1414,18 @@
         cat(paste("\n", mc, ". gbm step algorithm (package: dismo)\n", sep=""))
 #        require(gbm, quietly=T)        
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
-        if(is.null(GBMSTEP.OLD) == T) {       
-            tryCatch(results <- dismo::gbm.step(data=TrainData, gbm.y=1, gbm.x=GBMSTEP.gbm.x, family="bernoulli",
+        if(is.null(GBMSTEP.OLD) == T) {
+            if (CATCH.OFF == F) {   
+                tryCatch(results <- dismo::gbm.step(data=TrainData, gbm.y=1, gbm.x=GBMSTEP.gbm.x, family="bernoulli",
                     site.weights=Yweights1, tree.complexity=GBMSTEP.tree.complexity, learning.rate = GBMSTEP.learning.rate, 
                     bag.fraction=GBMSTEP.bag.fraction, step.size=GBMSTEP.step.size, verbose=F, silent=F, plot.main=F),
                 error= function(err) {print(paste("stepwise GBM calibration failed"))},
                 silent=F)
+            }else{
+                results <- dismo::gbm.step(data=TrainData, gbm.y=1, gbm.x=GBMSTEP.gbm.x, family="bernoulli",
+                    site.weights=Yweights1, tree.complexity=GBMSTEP.tree.complexity, learning.rate = GBMSTEP.learning.rate, 
+                    bag.fraction=GBMSTEP.bag.fraction, step.size=GBMSTEP.step.size, verbose=F, silent=F, plot.main=F)
+            }
         }else{ 
             results <- GBMSTEP.OLD
         }
@@ -1465,17 +1473,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GBMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GBMSTEP"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("stepwise GBM evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["GBMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GBMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="BRT (gbm.step)", cex=2, adj=0, col.main="blue")
-                   }
                 }else{
                     cat(paste("\n", "WARNING: stepwise GBM evaluation failed","\n\n",sep = ""))
                     ws["GBMSTEP"] <- 0
@@ -1509,10 +1511,14 @@
         mc <- mc+1
         cat(paste("\n", mc, ". Random forest algorithm (package: randomForest)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
-        if(is.null(RF.OLD) == T) {        
-            tryCatch(results <- randomForest::randomForest(formula=RF.formula, ntree=RF.ntree, mtry=RF.mtry, data=TrainData, na.action=na.omit),
-                error= function(err) {print(paste("random forest calibration failed"))},
-                silent=F)
+        if(is.null(RF.OLD) == T) {
+            if (CATCH.OFF == F) {     
+                tryCatch(results <- randomForest::randomForest(formula=RF.formula, ntree=RF.ntree, mtry=RF.mtry, data=TrainData, na.action=na.omit),
+                    error= function(err) {print(paste("random forest calibration failed"))},
+                    silent=F)
+            }else{
+                results <- randomForest::randomForest(formula=RF.formula, ntree=RF.ntree, mtry=RF.mtry, data=TrainData, na.action=na.omit)
+            }
         }else{ 
             results <- RF.OLD
         }
@@ -1558,17 +1564,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"RF"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"RF"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("random forest evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["RF"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["RF"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="RF", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: random forest evaluation failed","\n\n",sep = ""))
                     ws["RF"] <- 0
@@ -1602,10 +1602,14 @@
         mc <- mc+1
         cat(paste("\n", mc, ". Generalized Linear Model \n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
-        if(is.null(GLM.OLD) == T) { 
-            tryCatch(results <- glm(formula=GLM.formula, family=GLM.family, data=TrainData, weights=Yweights1, control=glm.control(maxit=maxit)),
-                error= function(err) {print(paste("GLM calibration failed"))},
-                silent=F)
+        if(is.null(GLM.OLD) == T) {
+            if (CATCH.OFF == F) {
+                tryCatch(results <- glm(formula=GLM.formula, family=GLM.family, data=TrainData, weights=Yweights1, control=glm.control(maxit=maxit)),
+                    error= function(err) {print(paste("GLM calibration failed"))},
+                    silent=F)
+            }else{
+                results <- glm(formula=GLM.formula, family=GLM.family, data=TrainData, weights=Yweights1, control=glm.control(maxit=maxit))
+            }
         }else{ 
             results <- GLM.OLD
         }
@@ -1651,17 +1655,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GLM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GLM"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("GLM evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["GLM"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GLM"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="GLM", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: GLM evaluation failed","\n\n",sep = ""))
                     ws["GLM"] <- 0
@@ -1696,12 +1694,20 @@
         cat(paste("\n", mc, ". Stepwise Generalized Linear Model \n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GLMSTEP.OLD) == T) {
-            tryCatch(results <- glm(formula=STEP.formula, family=GLM.family, data=TrainData, weights=Yweights1, control=glm.control(maxit=maxit)),
-                error= function(err) {print(paste("first step of stepwise GLM calibration failed"))},
-                silent=F)
-            tryCatch(results2 <- MASS::stepAIC(results, scope=GLMSTEP.scope, direction="both", trace=F, steps=GLMSTEP.steps, k=GLMSTEP.k),
-                error= function(err) {print(paste("stepwise GLM calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- glm(formula=STEP.formula, family=GLM.family, data=TrainData, weights=Yweights1, control=glm.control(maxit=maxit)),
+                    error= function(err) {print(paste("first step of stepwise GLM calibration failed"))},
+                    silent=F)
+            }else{
+                results <- glm(formula=STEP.formula, family=GLM.family, data=TrainData, weights=Yweights1, control=glm.control(maxit=maxit))
+            }
+            if (CATCH.OFF == F) {
+                tryCatch(results2 <- MASS::stepAIC(results, scope=GLMSTEP.scope, direction="both", trace=F, steps=GLMSTEP.steps, k=GLMSTEP.k),
+                    error= function(err) {print(paste("stepwise GLM calibration failed"))},
+                    silent=F)
+            }else{
+                results2 <- MASS::stepAIC(results, scope=GLMSTEP.scope, direction="both", trace=F, steps=GLMSTEP.steps, k=GLMSTEP.k)
+            }
         }else{ 
             results2 <- GLMSTEP.OLD
         }
@@ -1751,17 +1757,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GLMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GLMSTEP"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("stepwise GLM evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["GLMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GLMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="STEPWISE GLM", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: stepwise GLM evaluation failed","\n\n",sep = ""))
                     ws["GLMSTEP"] <- 0
@@ -1797,9 +1797,13 @@
         cat(paste("\n", mc, ". Generalized Additive Model (package: gam)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GAM.OLD) == T) {
-            tryCatch(results <- gam::gam(formula=GAM.formula, family=GAM.family, data=TrainData, weights=Yweights1, control=gam::gam.control(maxit=maxit, bf.maxit=50)),
-                error= function(err) {print(paste("GAM (package: gam) calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- gam::gam(formula=GAM.formula, family=GAM.family, data=TrainData, weights=Yweights1, control=gam::gam.control(maxit=maxit, bf.maxit=50)),
+                    error= function(err) {print(paste("GAM (package: gam) calibration failed"))},
+                    silent=F)
+            }else{
+                results <- gam::gam(formula=GAM.formula, family=GAM.family, data=TrainData, weights=Yweights1, control=gam::gam.control(maxit=maxit, bf.maxit=50))
+            }
         }else{ 
             results <- GAM.OLD
         }
@@ -1845,17 +1849,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GAM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GAM"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("GAM (package: gam) evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["GAM"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GAM"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="GAM (gam)", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: GAM (package: gam) evaluation failed","\n\n",sep = ""))
                     ws["GAM"] <- 0
@@ -1890,15 +1888,23 @@
         cat(paste("\n", mc, ". Stepwise Generalized Additive Model (package: gam)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GAMSTEP.OLD) == T) {
-            tryCatch(results <- gam::gam(formula=STEP.formula, family=GAM.family, data=TrainData, weights=Yweights1, control=gam::gam.control(maxit=maxit, bf.maxit=50)), 
-                error= function(err) {print(paste("first step of stepwise GAM (package: gam) calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- gam::gam(formula=STEP.formula, family=GAM.family, data=TrainData, weights=Yweights1, control=gam::gam.control(maxit=maxit, bf.maxit=50)), 
+                    error= function(err) {print(paste("first step of stepwise GAM (package: gam) calibration failed"))},
+                    silent=F)
+            }else{
+                results <- gam::gam(formula=STEP.formula, family=GAM.family, data=TrainData, weights=Yweights1, control=gam::gam.control(maxit=maxit, bf.maxit=50))
+            }
             assign("TrainData", TrainData, pos=GAMSTEP.pos)
             assign("GAM.family", GAM.family, pos=GAMSTEP.pos)
-            assign("maxit", maxit, pos=GAMSTEP.pos)   
-            tryCatch(results2 <- gam::step.gam(results, scope=GAMSTEP.scope, direction="both", trace=F, steps=GAMSTEP.steps), 
-                error= function(err) {print(paste("stepwise GAM (package: gam) calibration failed"))},
-                silent=F)
+            assign("maxit", maxit, pos=GAMSTEP.pos)
+            if (CATCH.OFF == F) {
+                tryCatch(results2 <- gam::step.gam(results, scope=GAMSTEP.scope, direction="both", trace=F, steps=GAMSTEP.steps), 
+                    error= function(err) {print(paste("stepwise GAM (package: gam) calibration failed"))},
+                    silent=F)
+            }else{
+                results2 <- gam::step.gam(results, scope=GAMSTEP.scope, direction="both", trace=F, steps=GAMSTEP.steps)
+            }
             remove(TrainData, pos=GAMSTEP.pos)
             remove(GAM.family, pos=GAMSTEP.pos)
             remove(maxit, pos=GAMSTEP.pos)
@@ -1951,17 +1957,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GAMSTEP"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GAMSTEP"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("stepwise GAM (package: gam) evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["GAMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GAMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="STEPWISE GAM (gam)", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: stepwise GAM (package: gam) evaluation failed","\n\n",sep = ""))
                     ws["GAMSTEP"] <- 0
@@ -1997,10 +1997,15 @@
         cat(paste("\n", mc, ". Generalized Additive Model (package: mgcv)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(MGCV.OLD) == T) {
-            tryCatch(results <- mgcv::gam(formula=MGCV.formula, family=GAM.family, data=TrainData, weights=Yweights1, 
-                        select=MGCV.select, control=mgcv::gam.control(maxit=maxit)),
+            if (CATCH.OFF == F) {
+                tryCatch(results <- mgcv::gam(formula=MGCV.formula, family=GAM.family, data=TrainData, weights=Yweights1, 
+                    select=MGCV.select, control=mgcv::gam.control(maxit=maxit)),
                 error= function(err) {print(paste("GAM (package: mgcv) calibration failed"))},
                 silent=F)
+            }else{
+                results <- mgcv::gam(formula=MGCV.formula, family=GAM.family, data=TrainData, weights=Yweights1, 
+                    select=MGCV.select, control=mgcv::gam.control(maxit=maxit))
+            }
         }else{ 
             results <- MGCV.OLD
         }
@@ -2046,17 +2051,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"MGCV"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MGCV"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("GAM (package: mgcv) evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["MGCV"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MGCV"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="GAM (mgcv)", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: GAM (package: mgcv) evaluation failed","\n\n",sep = ""))
                     ws["MGCV"] <- 0
@@ -2091,9 +2090,13 @@
         cat(paste("\n", mc, ". GAM with fixed d.f. regression splines (package: mgcv)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(MGCVFIX.OLD) == T) {
-            tryCatch(results <- mgcv::gam(formula=MGCVFIX.formula, family=GAM.family, data=TrainData, weights=Yweights1, select=FALSE, control=mgcv::gam.control(maxit=maxit)),
-                error= function(err) {print(paste("GAM with fixed d.f. regression splines (package: mgcv) calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- mgcv::gam(formula=MGCVFIX.formula, family=GAM.family, data=TrainData, weights=Yweights1, select=FALSE, control=mgcv::gam.control(maxit=maxit)),
+                    error= function(err) {print(paste("GAM with fixed d.f. regression splines (package: mgcv) calibration failed"))},
+                    silent=F)
+            }else{
+                results <- mgcv::gam(formula=MGCVFIX.formula, family=GAM.family, data=TrainData, weights=Yweights1, select=FALSE, control=mgcv::gam.control(maxit=maxit))
+            }
         }else{ 
             results <- MGCVFIX.OLD
         }
@@ -2139,17 +2142,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"MGCVFIX"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MGCVFIX"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("GAM with fixed d.f. regression splines (package: mgcv) evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["MGCVFIX"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MGCVFIX"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="GAM (mgcv)", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: GAM with fixed d.f. regression splines (package: mgcv) evaluation failed","\n\n",sep = ""))
                     ws["MGCVFIX"] <- 0
@@ -2187,9 +2184,13 @@
         } 
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(EARTH.OLD) == T) {
-            tryCatch(results <- earth::earth(formula=EARTH.formula, glm=EARTH.glm, data=TrainData, degree=2),
-                error= function(err) {print(paste("MARS (package: earth) calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- earth::earth(formula=EARTH.formula, glm=EARTH.glm, data=TrainData, degree=2),
+                    error= function(err) {print(paste("MARS (package: earth) calibration failed"))},
+                    silent=F)
+            }else{
+                results <- earth::earth(formula=EARTH.formula, glm=EARTH.glm, data=TrainData, degree=2)
+            }
         }else{ 
             results <- EARTH.OLD
         }
@@ -2235,17 +2236,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"EARTH"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"EARTH"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("MARS (package: earth) evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["EARTH"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["EARTH"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="MARS (earth)", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: MARS (package: earth) evaluation failed","\n\n",sep = ""))
                     ws["EARTH"] <- 0
@@ -2280,10 +2275,15 @@
         cat(paste("\n", mc, ". Recursive Partitioning And Regression Trees (package: rpart)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(RPART.OLD) == T) {
-            tryCatch(results <- rpart::rpart(formula=RPART.formula, data=TrainData, weights=Yweights1,
+            if (CATCH.OFF == F) {
+                tryCatch(results <- rpart::rpart(formula=RPART.formula, data=TrainData, weights=Yweights1,
                     control=rpart::rpart.control(xval=RPART.xval, minbucket=5, minsplit=5, cp=0.001, maxdepth=25)),
-                error= function(err) {print(paste("RPART calibration failed"))},
+                    error= function(err) {print(paste("RPART calibration failed"))},
                 silent=F)
+            }else{
+                results <- rpart::rpart(formula=RPART.formula, data=TrainData, weights=Yweights1,
+                    control=rpart::rpart.control(xval=RPART.xval, minbucket=5, minsplit=5, cp=0.001, maxdepth=25))
+            }
         }else{ 
             results <- RPART.OLD
         }
@@ -2329,18 +2329,12 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"RPART"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"RPART"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("RPART evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(TestPres) == F && is.null(TestAbs) == F) {
                     eval2 <-  dismo::evaluate(p=TestPres, a=TestAbs)
                     print(eval2)
                     weights["RPART"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["RPART"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="RPART", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: RPART evaluation failed","\n\n",sep = ""))
                     ws["RPART"] <- 0
@@ -2375,10 +2369,15 @@
         cat(paste("\n", mc, ". Artificial Neural Network (package: nnet)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(NNET.OLD) == T) {
-            tryCatch(results <- nnet::nnet(formula=NNET.formula, size=NNET.size, decay=NNET.decay, data=TrainData, weights=Yweights1, 
+            if (CATCH.OFF == F) {
+                tryCatch(results <- nnet::nnet(formula=NNET.formula, size=NNET.size, decay=NNET.decay, data=TrainData, weights=Yweights1, 
                     rang=0.1, maxit=maxit, trace=F),
                 error= function(err) {print(paste("Artificial Neural Network (package: nnet) calibration failed"))},
                 silent=F)
+            }else{
+                results <- nnet::nnet(formula=NNET.formula, size=NNET.size, decay=NNET.decay, data=TrainData, weights=Yweights1, 
+                    rang=0.1, maxit=maxit, trace=F)
+            }
         }else{ 
             results <- NNET.OLD
         }
@@ -2424,17 +2423,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"NNET"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"NNET"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("Artificial Neural Network (package: nnet) evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["NNET"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["NNET"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="NNET", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: Artificial Neural Network (package: nnet) evaluation failed","\n\n",sep = ""))
                     ws["NNET"] <- 0
@@ -2469,9 +2462,13 @@
         cat(paste("\n", mc, ". Flexible Discriminant Analysis (package: mda)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(FDA.OLD) == T) {
-            tryCatch(results <- mda::fda(formula=FDA.formula, method=mda::mars, data=TrainData, weights=Yweights1),
-                error= function(err) {print(paste("Flexible Discriminant Analysis calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- mda::fda(formula=FDA.formula, method=mda::mars, data=TrainData, weights=Yweights1),
+                    error= function(err) {print(paste("Flexible Discriminant Analysis calibration failed"))},
+                    silent=F)
+            }else{
+                results <- mda::fda(formula=FDA.formula, method=mda::mars, data=TrainData, weights=Yweights1)
+            }
         }else{ 
             results <- FDA.OLD
         }
@@ -2517,17 +2514,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"FDA"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"FDA"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("Flexible Discriminant Analysis evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["FDA"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["FDA"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="FDA", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: Flexible Discriminant Analysis evaluation failed","\n\n",sep = ""))
                     ws["FDA"] <- 0
@@ -2562,9 +2553,13 @@
         cat(paste("\n", mc, ". Support Vector Machines (package: kernlab)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(SVM.OLD) == T) {
-            tryCatch(results <- kernlab::ksvm(SVM.formula, data=TrainData, type="C-svc", prob.model=T),
-                error= function(err) {print(paste("Support Vector Machines (package: kernlab) calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- kernlab::ksvm(SVM.formula, data=TrainData, type="C-svc", prob.model=T),
+                    error= function(err) {print(paste("Support Vector Machines (package: kernlab) calibration failed"))},
+                    silent=F)
+            }else{
+                results <- kernlab::ksvm(SVM.formula, data=TrainData, type="C-svc", prob.model=T)
+            }
         }else{ 
             results <- SVM.OLD
         }
@@ -2610,17 +2605,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"SVM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"SVM"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("Support Vector Machines (package: kernlab) evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["SVM"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["SVM"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="SVM (kernlab package)", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: Support Vector Machines (package: kernlab)  evaluation failed","\n\n",sep = ""))
                     ws["SVM"] <- 0
@@ -2655,9 +2644,13 @@
         cat(paste("\n", mc, ". Support Vector Machines (package: e1071)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(SVME.OLD) == T) {
-            tryCatch(results <- e1071::svm(SVME.formula, data=TrainData, type="C-classification", kernel="polynomial", degree=3, probability=TRUE),
-                error= function(err) {print(paste("Support Vector Machines (package: e1071) calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- e1071::svm(SVME.formula, data=TrainData, type="C-classification", kernel="polynomial", degree=3, probability=TRUE),
+                    error= function(err) {print(paste("Support Vector Machines (package: e1071) calibration failed"))},
+                    silent=F)
+            }else{
+                results <- e1071::svm(SVME.formula, data=TrainData, type="C-classification", kernel="polynomial", degree=3, probability=TRUE)
+            }
         }else{ 
             results <- SVME.OLD
         }
@@ -2703,17 +2696,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"SVME"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"SVME"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("Support Vector Machines (package: e1071) evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["SVME"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["SVME"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="SVM (e1017 package)", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: Support Vector Machines (package: e1071) evaluation failed","\n\n",sep = ""))
                     ws["SVME"] <- 0
@@ -2751,9 +2738,13 @@
         } 
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GLMNET.OLD) == T) {
-            tryCatch(results <- glmnet::glmnet(x=as.matrix(TrainData.numvars), y=TrainData[, "pb"], family="binomial", weights=Yweights1, nlambda=GLMNET.nlambda),
-                error= function(err) {print(paste("GLMNET calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- glmnet::glmnet(x=as.matrix(TrainData.numvars), y=TrainData[, "pb"], family="binomial", weights=Yweights1, nlambda=GLMNET.nlambda),
+                    error= function(err) {print(paste("GLMNET calibration failed"))},
+                    silent=F)
+            }else{
+                results <- glmnet::glmnet(x=as.matrix(TrainData.numvars), y=TrainData[, "pb"], family="binomial", weights=Yweights1, nlambda=GLMNET.nlambda)
+            }
         }else{ 
             results <- GLMNET.OLD
         }
@@ -2799,17 +2790,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"GLMNET"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"GLMNET"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("GLMNET evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["GLMNET"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GLMNET"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="GLMNET (glmnet package)", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: GLMNET evaluation failed","\n\n",sep = ""))
                     ws["GLMNET"] <- 0
@@ -2845,9 +2830,13 @@
         cat(paste("\n", mc, ". original BIOCLIM algorithm (package: BiodiversityR)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(BIOCLIM.O.OLD) == T) {
-            tryCatch(results <- BiodiversityR::ensemble.bioclim.object(x=TrainData.pres, fraction=BIOCLIM.O.fraction, species.name=species.name, factors=factors),
-                error= function(err) {print(paste("original BIOCLIM calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- BiodiversityR::ensemble.bioclim.object(x=TrainData.pres, fraction=BIOCLIM.O.fraction, species.name=species.name, factors=factors),
+                    error= function(err) {print(paste("original BIOCLIM calibration failed"))},
+                    silent=F)
+            }else{
+                results <- BiodiversityR::ensemble.bioclim.object(x=TrainData.pres, fraction=BIOCLIM.O.fraction, species.name=species.name, factors=factors)
+            }
         }else{ 
             results <- BIOCLIM.O.OLD
         }
@@ -2893,17 +2882,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"BIOCLIM.O"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"BIOCLIM.O"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("original BIOCLIM evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["BIOCLIM.O"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["BIOCLIM.O"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="BIOCLIM.O", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: original BIOCLIM evaluation failed","\n\n",sep = ""))
                     ws["BIOCLIM.O"] <- 0
@@ -2946,9 +2929,13 @@
         cat(paste("\n", mc, ". BIOCLIM algorithm (package: dismo)\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(BIOCLIM.OLD) == T) {
-            tryCatch(results <- dismo::bioclim(x=TrainData.pres),
-                error= function(err) {print(paste("BIOCLIM calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- dismo::bioclim(x=TrainData.pres),
+                    error= function(err) {print(paste("BIOCLIM calibration failed"))},
+                    silent=F)
+            }else{
+                results <- dismo::bioclim(x=TrainData.pres)
+            }
         }else{ 
             results <- BIOCLIM.OLD
         }
@@ -2994,17 +2981,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"BIOCLIM"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"BIOCLIM"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("BIOCLIM evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["BIOCLIM"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["BIOCLIM"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="BIOCLIM", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: BIOCLIM evaluation failed","\n\n",sep = ""))
                     ws["BIOCLIM"] <- 0
@@ -3057,9 +3038,13 @@
 
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(DOMAIN.OLD) == T) {
-            tryCatch(results <- dismo::domain(x=TrainData.pres),
-                error= function(err) {print(paste("DOMAIN calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- dismo::domain(x=TrainData.pres),
+                    error= function(err) {print(paste("DOMAIN calibration failed"))},
+                    silent=F)
+            }else{
+                results <- dismo::domain(x=TrainData.pres)
+            }
         }else{ 
             results <- DOMAIN.OLD
         }
@@ -3105,17 +3090,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"DOMAIN"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"DOMAIN"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("DOMAIN evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["DOMAIN"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["DOMAIN"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="DOMAIN", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: DOMAIN evaluation failed","\n\n",sep = ""))
                     ws["DOMAIN"] <- 0
@@ -3164,9 +3143,13 @@
 
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(MAHAL.OLD) == T) {
-            tryCatch(results <- dismo::mahal(x=TrainData.pres),
-                error= function(err) {print(paste("Mahalanobis calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- dismo::mahal(x=TrainData.pres),
+                    error= function(err) {print(paste("Mahalanobis calibration failed"))},
+                    silent=F)
+            }else{
+                results <- dismo::mahal(x=TrainData.pres)
+            }
         }else{ 
             results <- MAHAL.OLD
         }
@@ -3212,17 +3195,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1,"MAHAL"]
                 TestAbs <- TestData[TestData[,"pb"]==0,"MAHAL"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("Mahalanobis evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["MAHAL"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MAHAL"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="MAHAL", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: Mahalanobis evaluation failed","\n\n",sep = ""))
                     ws["MAHAL"] <- 0
@@ -3266,9 +3243,13 @@
         cat(paste("\n", mc, ". Mahalanobis algorithm (transformed within 0 to 1 interval)", "\n", sep=""))
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(MAHAL01.OLD) == T) {
-            tryCatch(results <- dismo::mahal(x=TrainData.pres),
-                error= function(err) {print(paste("transformed Mahalanobis calibration failed"))},
-                silent=F)
+            if (CATCH.OFF == F) {
+                tryCatch(results <- dismo::mahal(x=TrainData.pres),
+                    error= function(err) {print(paste("transformed Mahalanobis calibration failed"))},
+                    silent=F)
+            }else{
+                results <- dismo::mahal(x=TrainData.pres)
+            }
         }else{ 
             results <- MAHAL01.OLD
         }
@@ -3314,17 +3295,11 @@
                 }
                 TestPres <- TestData[TestData[,"pb"]==1, "MAHAL01"]
                 TestAbs <- TestData[TestData[,"pb"]==0, "MAHAL01"]
-                tryCatch(eval2 <- dismo::evaluate(p=TestPres, a=TestAbs),
-                    error= function(err) {print(paste("transformed Mahalanobis evaluation failed"))},
-                    silent=F)
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                 if (is.null(eval2) == F) {
                     print(eval2)
                     weights["MAHAL01"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MAHAL01"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="MAHAL01", cex=2, adj=0, col.main="blue")
-                    }
                 }else{
                     cat(paste("\n", "WARNING: transformed Mahalanobis evaluation failed","\n\n",sep = ""))
                     ws["MAHAL01"] <- 0
@@ -3447,10 +3422,6 @@
                     eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                     print(eval2)
                     AUC.testing["ENSEMBLE"] <- max(c(eval2@auc, 0), na.rm=T)
-                    if(PLOTS==T) {
-                        graphics::plot(eval2, "ROC") 
-                        graphics::title(main="ENSEMBLE", cex=2, adj=0, col.main="blue")
-                    }
                 }
             }
             if(evaluations.keep==T) {

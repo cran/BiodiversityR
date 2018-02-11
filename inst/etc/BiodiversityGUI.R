@@ -4975,6 +4975,7 @@ stack.create.GUI <- function(){
             if (dismoValue == T) {
                 dismo.dir <- normalizePath(paste(system.file(package="dismo"), '/ex', sep=''), mustWork=F)
                 assign("dismo.ex", dismo.dir, envir=.GlobalEnv)
+                logger(paste("dismo.ex <- '", dismo.dir, "'", sep=""))
                 doItAndPrint(paste("selected.files <- list.files(path=dismo.ex, pattern='.grd', full.names=TRUE)", sep=""))
             }else{
                 doItAndPrint(paste("selected.files <- list.files(path=getwd(), pattern='.grd', full.names=TRUE)", sep=""))
@@ -5872,10 +5873,10 @@ batch.GUI <- function(){
         logger(paste("You can also monitor progress in the 'outputs' subfolder of the working directory: ", getwd(), sep=""))
         doItAndPrint(paste("batch.1 <- ensemble.batch(x=", stack.focalValue, ", xn=", stack.string, 
             ", species.presence=", presence.focalValue, ", species.absence=", absence.focalValue,
-            ", presence.min=20, get.block=", get.block1, ", SSB.reduce=", SSB.reduce, ", CIRCLES.d=", CIRCLES.d,
+            ", presence.min=20, thin.km=0.1, get.block=", get.block1, ", SSB.reduce=", SSB.reduce, ", CIRCLES.d=", CIRCLES.d,
             ", k.splits=", k.splits,
             ", n.ensembles=", n.ensembles,
-            ", VIF.max=", VIF.max, 
+            ", VIF.max=", VIF.max, ", VIF.keep=NULL", 
             ", KML.out=TRUE, models.save=TRUE",
             ", threshold.method='", var, "', threshold.sensitivity=", sensitivity, 
             ", threshold.PresenceAbsence=", PRESABS,
@@ -6012,10 +6013,10 @@ batch.GUI <- function(){
         logger(paste("You can also monitor progress in the 'outputs' subfolder of the working directory: ", getwd(), sep=""))
         doItAndPrint(paste("capture.output(batch.1 <- ensemble.batch(x=", stack.focalValue, ", xn=", stack.string, 
             ", species.presence=", presence.focalValue, ", species.absence=", absence.focalValue,
-            ", presence.min=20, get.block=", get.block1, ", SSB.reduce=", SSB.reduce, ", CIRCLES.d=", CIRCLES.d,
+            ", presence.min=20, thin.km=0.1, get.block=", get.block1, ", SSB.reduce=", SSB.reduce, ", CIRCLES.d=", CIRCLES.d,
             ", k.splits=", k.splits,
             ", n.ensembles=", n.ensembles,
-            ", VIF.max=", VIF.max, 
+            ", VIF.max=", VIF.max, ", VIF.keep=NULL", 
             ", KML.out=TRUE, models.save=TRUE",
             ", threshold.method='", var, "', threshold.sensitivity=", sensitivity, 
             ", threshold.PresenceAbsence=", PRESABS,

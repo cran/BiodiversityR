@@ -14,14 +14,14 @@ The main function allows for batch processing of different species and different
 \usage{
 ensemble.batch(x = NULL, xn = c(x), 
     species.presence = NULL, species.absence = NULL, 
-    presence.min = 20,
+    presence.min = 20, thin.km = 0.1,
     an = 1000, excludep = FALSE, 
     get.block = FALSE,
     SSB.reduce = FALSE, CIRCLES.d = 250000, 
     k.splits = 4, k.test = 0, 
     n.ensembles = 1,
-    VIF.max = 10, 
-    SINK = FALSE,
+    VIF.max = 10, VIF.keep = NULL, 
+    SINK = FALSE, CATCH.OFF = FALSE, 
     RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767, 
     KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
     models.save = FALSE,
@@ -84,7 +84,11 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
     threshold = -1,
     threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
     threshold.PresenceAbsence = FALSE,
-    abs.breaks = 6, pres.breaks = 6, sd.breaks = 9,
+    abs.breaks = 6, abs.col = NULL,
+    pres.breaks = 6, pres.col = NULL,
+    sd.breaks = 9, sd.col = NULL,
+    absencePresence.col = NULL,
+    count.col = NULL,
     maptools.boundaries = TRUE, maptools.col = "dimgrey", ...)
 }
 
@@ -94,6 +98,7 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{species.presence}{ presence points used for calibrating the suitability models, available in 3-column (species, x, y) or (species, lon, lat) dataframe  }
   \item{species.absence}{ background points used for calibrating the suitability models, either available in a 3-column (species, x, y) or (species, lon, lat), or available in a 2-column (x, y) or (lon, lat) dataframe. In case of a 2-column dataframe, the same background locations will be used for all species.  }
   \item{presence.min}{ minimum number of presence locations for the organism (if smaller, no models are fitted).  }
+  \item{thin.km}{ Threshold for minimum distance (km) between presence point locations for focal species for model calibrations in each run. A new data set is randomly selected via \code{\link{ensemble.spatialThin}} in each of ensemble run.  }
   \item{an}{ number of background points for calibration to be selected with \code{\link[dismo]{randomPoints}} in case argument \code{a} or \code{species.absence} is missing  }
   \item{excludep}{ parameter that indicates (if \code{TRUE}) that presence points will be excluded from the background points; see also \code{\link[dismo]{randomPoints}} }
   \item{get.block}{ if \code{TRUE}, instead of creating k-fold cross-validation subsets randomly (\code{\link[dismo]{kfold}}), create 4 subsets of presence and background locations with \code{\link[ENMeval]{get.block}}.  }
@@ -104,7 +109,9 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{k.test}{ If larger than 1, the mumber of groups to split between calibration (k-1) and evaluation (1) data sets when calibrating the final models (for example, \code{k=5} results in 4/5 of presence and background points to be used for calibrating the models, and 1/5 of presence and background points to be used for evaluating the models). See also \code{\link[dismo]{kfold}}.  }
   \item{n.ensembles}{ If larger than 1, the number of different ensembles generated per species in batch processing. }
   \item{VIF.max}{ Maximum Variance Inflation Factor of variables; see \code{\link[BiodiversityR]{ensemble.VIF}}.  }
+  \item{VIF.keep}{ character vector with names of the variables to be kept; see \code{\link[BiodiversityR]{ensemble.VIF}}.  }
   \item{SINK}{ Append the results to a text file in subfolder 'outputs' (if \code{TRUE}). The name of file is based on species names. In case a file already exists, then results are appended. See also \code{\link[base]{sink}}.  }
+  \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
   \item{RASTER.format}{ Format of the raster files that will be generated. See \code{\link[raster]{writeFormats}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.datatype}{ Format of the raster files that will be generated. See \code{\link[raster]{dataType}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.NAflag}{ Value that is used to store missing data. See \code{\link[raster]{writeRaster}}.  }
@@ -211,6 +218,11 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{dev.new.width}{ Width for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
   \item{dev.new.height}{ Heigth for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
   \item{main}{ main title for the plots.  }
+  \item{abs.col}{ specify colours for absence (see examples on how not to plot areas where the species is predicted absent)   }
+  \item{pres.col}{ specify colours for presence  }
+  \item{sd.col}{ specify colours for standard deviation   }
+  \item{absencePresence.col}{ specify colours for absence - presence maps (see examples on how not to plot areas where the species is predicted absent)   }
+  \item{count.col}{ specify colours for number of algorithms or ensembles (see examples on how not to plot areas where the species is predicted absent)   }
   \item{maptools.boundaries}{ If \code{TRUE}, then plot approximate country boundaries \code{\link[maptools]{wrld_simpl}}   }
   \item{maptools.col}{ Colour for approximate country boundaries plotted via \code{\link[maptools]{wrld_simpl}}   }
   \item{...}{ Other items passed to function \code{\link[raster]{plot}}. }
@@ -218,7 +230,9 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
 }
 
 \details{
-This function allows for batch processing of different species and different environmental RasterStacks. The function makes internal calls to \code{\link{ensemble.calibrate.weights}}, \code{\link{ensemble.calibrate.models}} and \code{\link{ensemble.raster}}. 
+This function allows for batch processing of different species and different environmental RasterStacks. The function makes internal calls to \code{\link{ensemble.spatialThin}}, \code{\link{ensemble.VIF}}, \code{\link{ensemble.calibrate.weights}}, \code{\link{ensemble.calibrate.models}} and \code{\link{ensemble.raster}}. 
+
+Different ensemble runs allow for different random selection of k-fold subsets, background locations or spatial thinning of presence locations.
 
 \code{\link{ensemble.calibrate.weights}} results in a cross-validation procedure whereby the data set is split in calibration and testing subsets and the best weights for the ensemble model are determined (including the possibility for weights = 0).
 
@@ -226,7 +240,7 @@ This function allows for batch processing of different species and different env
 
 \code{\link{ensemble.raster}} is the final step whereby raster layers are produced for the ensemble model.
 
-Function \code{ensemble.mean} results in raster layers that are based on the summary of several ensemble layers: the new ensemble has probability values that are the mean of the probabilities of the different raster layers, the presence-absence threshold is derived for this new ensemble layer, whereas the count reflects the number of ensemble layers where presence was predicted. Note the assumption that input probabilities are scaled between 0 and 1000 (as the output from \code{\link{ensemble.raster}}), whereas thresholds are based on actual probabilities (scaled between 0 and 1).
+Function \code{ensemble.mean} results in raster layers that are based on the summary of several ensemble layers: the new ensemble has probability values that are the mean of the probabilities of the different raster layers, the presence-absence threshold is derived for this new ensemble layer, whereas the count reflects the number of ensemble layers where presence was predicted. Note the assumption that input probabilities are scaled between 0 and 1000 (as the output from \code{\link{ensemble.raster}}), whereas thresholds are based on actual probabilities (scaled between 0 and 1). After the mean probability has been calculated, the niche overlap (\code{\link[dismo]{nicheOverlap}}) with the different input layers is calculated. 
 
 Function \code{ensemble.plot} plots suitability, presence-absence or count maps. In the case of suitability maps, the presence-absence threshold needs to be provide as suitabilities smaller than the threshold will be coloured red to orange, whereas suitabilities larger than the threshold will be coloured light blue to dark blue.
 
@@ -238,6 +252,8 @@ The function finally results in ensemble raster layers for each species, includi
 }
 
 \references{
+Kindt R. 2018. Ensemble species distribution modelling with transformed suitability values. Environmental Modelling & Software 100: 136-145. \url{https://doi.org/10.1016/j.envsoft.2017.11.009}
+
 Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in ensemble forecasting of species distribution. Global Change Biology 16: 1145-1157
 }
 
@@ -318,11 +334,33 @@ ensemble.nofactors <- ensemble.batch(x=predictors,
 ensemble.mean(RASTER.species.name="Bradypus", RASTER.stack.name="base",
     p=pres, a=background)
 
-# plot mean suitability 
+# plot mean suitability without specifying colours
 plot1 <- ensemble.plot(RASTER.species.name="Bradypus", RASTER.stack.name="base",
     plot.method="consensussuitability",
     p=pres, a=background, abs.breaks=4, pres.breaks=9)
 plot1
+
+# only colour the areas where species is predicted to be present
+# option is invoked by having no absence breaks
+# same colourscheme as \url{http://www.worldagroforestry.org/atlas-central-america}
+LAatlascols <- grDevices::colorRampPalette(c("#FFFF80", "#38E009","#1A93AB", "#0C1078"))
+plot2 <- ensemble.plot(RASTER.species.name="Bradypus", RASTER.stack.name="base",
+    plot.method="consensussuitability",
+    p=pres, a=background, abs.breaks=0, pres.breaks=9, pres.col=LAatlascols(8))
+plot2
+
+# only colour the areas where species is predicted to be present
+# option is invoked by only setting one colour for absence-presence
+plot3 <- ensemble.plot(RASTER.species.name="Bradypus", RASTER.stack.name="base",
+    plot.method="consensuspresence",
+    absencePresence.col=c("#90EE90"))
+
+# only colour presence area by specifying colours > 0
+plot4 <- ensemble.plot(RASTER.species.name="Bradypus", RASTER.stack.name="base",
+    plot.method="consensuscount",
+    count.col=LAatlascols(3))
+
+
 
 }
 

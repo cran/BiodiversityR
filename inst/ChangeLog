@@ -14,6 +14,49 @@ BiodiversityR versions
 	http://www.worldagroforestry.org/downloads/Publications/PDFS/B13695.pdf
 
 
+Version 2.9-1 (February 2018; Ty Segall's Freedom's Goblin version)
+
+	* new function ensemble.spatialThin that creates a spatially thinned point location
+	data set where all pairwise distances are above a threshold distance. Although similar
+	to functions in the spThin or red packages, the geodesic is calculated more accurately
+	via the geosphere package. The function was documented separately and also was 
+	integrated in the ensemble.batch function.
+
+	* an article that documents the ensemble suitability modelling options of BiodiversityR
+	has been published (Kindt R. 2018. Ensemble species distribution modelling with 
+	transformed suitability values. Environmental Modelling & Software 100: 136-145. URL 
+	https://doi.org/10.1016/j.envsoft.2017.11.009. References to this article has been
+	included in the documentation of various functions.
+
+	* a new argument of 'keep' in ensemble.VIF allows to always keep a subset of
+	explanatory variables within the final subset of variables
+
+	* in the output of the ensemble.mean function, niche overlap between input suitability
+	layers and the mean (consensus) layer is calculated via Warren's I index that is based
+	on the Hellinger distance (dismo::nicheOverlap; Warren et al. 2008. Evolution 
+	62-11: 2868–2883)
+
+	* in the ensemble.batch function, random selection of background locations (if an 
+	option) is repeated in each run
+
+	* included options in ensemble.plot to specify colours for absence and presence 
+	suitabilities, including a new option only to plot areas where the species is predicted
+	to be present. (Also included an example how to generate the colour scheme used in the
+	http://www.worldagroforestry.org/atlas-central-america climate change atlas.)
+
+	* It is now possible to disable calls to the tryCatch function in the ensemble 
+	suitability (parameter CATCH.OFF). This option was implemented to facilitate error 
+	checking (such as problems when not all packages were installed).
+
+	* An error was encountered when attempting to plot evaluation results. This error seems
+	to be caused by interpretation of the ModelEvaluation signature. The error was 
+	circumvened by disabling plotting in the ensemble functions, but giving an example of
+	getting plot results in the examples. Error reported by Thomas Fremout 22-JAN-2018.
+
+	* the location of the dismo examples folder is provided explicitly in the GUI for 
+	creation of raster stacks
+
+
 Version 2.8-4 (September 2017)
 
 	* compatible with Rcmdr 2.4-0 (August 2017)

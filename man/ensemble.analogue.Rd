@@ -15,7 +15,8 @@ ensemble.analogue(x = NULL, analogue.object = NULL, analogues = 1,
     RASTER.object.name = analogue.object$name, RASTER.stack.name = x@title,
     RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
     KML.out = T, KML.blur = 10, KML.maxpixels = 100000, 
-    limits = c(1, 5, 20, 50), limit.colours = c('red', 'orange', 'blue', 'grey'))
+    limits = c(1, 5, 20, 50), limit.colours = c('red', 'orange', 'blue', 'grey'),
+    CATCH.OFF = FALSE)
 
 ensemble.analogue.object(ref.location, future.stack, current.stack, name = "reference1", 
     method = "mahal", an = 10000, probs = c(0.025, 0.975), weights = NULL, z = 2)
@@ -36,6 +37,7 @@ ensemble.analogue.object(ref.location, future.stack, current.stack, name = "refe
   \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
   \item{limits}{ Limits indicating the accumulated number of closest analogue sites. These limits will correspond to different colours in the KML map. In the default setting, the closest analogue will be coloured red and the second to fifth closest analogues will be coloured orange.  }
   \item{limit.colours}{ Colours for the different limits based on number of analogues.  }
+  \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
 
   \item{ref.location}{ Location of the reference location for which analogues are searched for and from which climatic distance will be calculated, typically available in 2-column (lon, lat) dataframe; see also \code{\link[raster]{extract}}. }
   \item{future.stack}{ RasterStack object (\code{\link[raster]{stack}}) containing the environmental layers (climatic variables) to obtain the conditions of the reference location. For climate change research, this RasterStack object corresponds to the future climatic conditions of the reference location. }

@@ -1,6 +1,7 @@
 `ensemble.ecocrop.object` <- function(
     temp.thresholds, rain.thresholds, name="crop01", 
-    temp.multiply=10, annual.temps=TRUE, transform=1)
+    temp.multiply=10, annual.temps=TRUE, transform=1
+)
 {
     temps <- as.numeric(temp.thresholds[order(temp.thresholds)])
     temps <- temps*temp.multiply
@@ -16,7 +17,8 @@
     x=NULL, ecocrop.object=NULL, 
     RASTER.object.name=ecocrop.object$name, RASTER.stack.name = x@title,
     RASTER.format="raster", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
-    KML.out=TRUE, KML.blur=10, KML.maxpixels=100000 
+    KML.out=TRUE, KML.blur=10, KML.maxpixels=100000,
+    CATCH.OFF=FALSE
 )
 {
     .BiodiversityR <- new.env()
@@ -116,10 +118,15 @@
   
 #
 # predict
-    tryCatch(ecocrop.raster <- raster::predict(object=x, model=ecocrop.object, fun=predict.ecocrop, na.rm=TRUE, 
-                                           filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format),
+    if (CATCH.OFF == F) {
+        tryCatch(ecocrop.raster <- raster::predict(object=x, model=ecocrop.object, fun=predict.ecocrop, na.rm=TRUE, 
+               filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format),
            error= function(err) {print(paste("prediction of novel zones failed"))},
            silent=F)
+    }else{
+        ecocrop.raster <- raster::predict(object=x, model=ecocrop.object, fun=predict.ecocrop, na.rm=TRUE, 
+           filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format)
+    }
     ecocrop.raster <- trunc(1000*ecocrop.raster)
     cat(paste("\n", "raster layer created (probabilities multiplied by 1000)", "\n", sep = ""))
     raster::setMinMax(ecocrop.raster)

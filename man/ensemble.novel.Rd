@@ -14,7 +14,8 @@ Function \code{ensemble.novel} creates the map with novel conditions. Function \
 ensemble.novel(x = NULL, novel.object = NULL,
     RASTER.object.name = novel.object$name, RASTER.stack.name = x@title,
     RASTER.format = "raster", RASTER.datatype = "INT1S", RASTER.NAflag = -127, 
-    KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10)
+    KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
+    CATCH.OFF = FALSE)
 
 ensemble.novel.object(x = NULL, name = "reference1", mask.raster = NULL,
     quantiles = FALSE, probs = c(0.05, 0.95), factors = NULL)
@@ -32,6 +33,7 @@ ensemble.novel.object(x = NULL, name = "reference1", mask.raster = NULL,
   \item{KML.out}{ If \code{TRUE}, then kml files will be saved in a subfolder 'kml/zones'.  }
   \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
   \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
+  \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
 
   \item{name}{ Name of the object, expect to expected to identify the area and time period for which ranges were calculated and where no novel conditions will be detected }
   \item{mask.raster}{ RasterLayer object (\code{\link[raster]{raster}}) that can be used to select the area for which reference values are obtained (see \code{\link[raster]{mask}})  }

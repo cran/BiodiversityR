@@ -10,7 +10,8 @@
     KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
     evaluate=FALSE, SINK=FALSE,
     p=models.list$p, a=models.list$a,
-    pt=models.list$pt, at=models.list$at
+    pt=models.list$pt, at=models.list$at,
+    CATCH.OFF=FALSE
 )
 {
     .BiodiversityR <- new.env()
@@ -382,10 +383,15 @@
         results <- MAXENT.OLD
         pmaxent <- NULL
         fullname <- paste("models/", RASTER.species.name, "_MAXENT", sep="")
-        tryCatch(pmaxent <- raster::predict(object=results, x=xn, na.rm=TRUE, 
-                filename=fullname, progress='text', overwrite=TRUE),
-            error= function(err) {print(paste("MAXENT prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(pmaxent <- raster::predict(object=results, x=xn, na.rm=TRUE, 
+                    filename=fullname, progress='text', overwrite=TRUE),
+                error= function(err) {print(paste("MAXENT prediction failed"))},
+                silent=F)
+            }else{
+                pmaxent <- raster::predict(object=results, x=xn, na.rm=TRUE, 
+                    filename=fullname, progress='text', overwrite=TRUE)
+            }
         if (is.null(pmaxent) == F) {
             results2 <- MAXENT.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -431,10 +437,15 @@
         results <- MAXLIKE.OLD
         pmaxlike <- NULL
         fullname <- paste("models/", RASTER.species.name, "_MAXLIKE", sep="")
-        tryCatch(pmaxlike <- raster::predict(object=xn, model=results, na.rm=TRUE, 
-                filename=fullname, progress='text', overwrite=TRUE),
-            error= function(err) {print(paste("MAXLIKE prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(pmaxlike <- raster::predict(object=xn, model=results, na.rm=TRUE, 
+                    filename=fullname, progress='text', overwrite=TRUE),
+                error= function(err) {print(paste("MAXLIKE prediction failed"))},
+                silent=F)
+        }else{
+            pmaxlike <- raster::predict(object=xn, model=results, na.rm=TRUE, 
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pmaxlike) == F) {
             results2 <- MAXLIKE.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -483,11 +494,15 @@
         results <- GBM.OLD
         pgbm <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GBM", sep="")
-        tryCatch(pgbm <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factors,
-                n.trees=results$n.trees, type="response", 
-                filename=fullname, progress='text', overwrite=TRUE),
-            error= function(err) {print(paste("GBM prediction failed"))},
-            silent=F)
+        if (CATCH.OFF == F) {
+            tryCatch(pgbm <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factors,
+                    n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE),
+                error= function(err) {print(paste("GBM prediction failed"))},
+                silent=F)
+        }else{
+            raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factors,
+                n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pgbm) == F) {
             results2 <- GBM.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -536,11 +551,15 @@
         results <- GBMSTEP.OLD
         pgbms <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GBMSTEP", sep="")
-        tryCatch(pgbms <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factors,
-                n.trees=results$n.trees, type="response", 
-                filename=fullname, progress='text', overwrite=TRUE),
+        if (CATCH.OFF == F) {
+            tryCatch(pgbms <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factors,
+                n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("stepwise GBM prediction failed"))},
             silent=F)
+        }else{
+            pgbms <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factors,
+                n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pgbms) == F) {
             results2 <- GBMSTEP.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -586,10 +605,15 @@
         results <- RF.OLD
         prf <- NULL
         fullname <- paste("models/", RASTER.species.name, "_RF", sep="")
-        tryCatch(prf <- raster::predict(object=xn, model=results, fun=predict.RF, na.rm=TRUE, factors=factors,
+        if (CATCH.OFF == F) {
+            tryCatch(prf <- raster::predict(object=xn, model=results, fun=predict.RF, na.rm=TRUE, factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("random forest prediction failed"))},
             silent=F)
+        }else{
+            prf <- raster::predict(object=xn, model=results, fun=predict.RF, na.rm=TRUE, factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(prf) == F) {
             results2 <- RF.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -635,10 +659,15 @@
         results <- GLM.OLD
         pglm <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GLM", sep="")
-        tryCatch(pglm <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factors,
+        if (CATCH.OFF == T) {
+            tryCatch(pglm <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("GLM prediction failed"))},
             silent=F)
+        }else{
+            pglm <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pglm) == F) {
             results2 <- GLM.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -684,10 +713,15 @@
         results <- GLMSTEP.OLD
         pglms <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GLMSTEP", sep="")
-        tryCatch(pglms <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factors,
+        if (CATCH.OFF == F) {
+            tryCatch(pglms <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("stepwise GLM prediction failed"))},
             silent=F)
+        }else{
+            pglms <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pglms) == F) {
             results2 <- GLMSTEP.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -733,10 +767,15 @@
         results <- GAM.OLD
         pgam <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GAM", sep="")
-        tryCatch(pgam <- raster::predict(object=xn, model=results, fun=gam::predict.gam, na.rm=TRUE, type="response", factors=factors,
+        if (CATCH.OFF == F) {
+            tryCatch(pgam <- raster::predict(object=xn, model=results, fun=gam::predict.gam, na.rm=TRUE, type="response", factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("GAM (package: gam) prediction failed"))},
             silent=F)
+        }else{
+            pgam <- raster::predict(object=xn, model=results, fun=gam::predict.gam, na.rm=TRUE, type="response", factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pgam) == F) {
             results2 <- GAM.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -782,10 +821,15 @@
         results <- GAMSTEP.OLD
         pgams <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GAMSTEP", sep="")
-        tryCatch(pgams <- raster::predict(object=xn, model=results, fun=gam::predict.gam, type="response", na.rm=TRUE, factors=factors,
+        if (CATCH.OFF == F) {
+            tryCatch(pgams <- raster::predict(object=xn, model=results, fun=gam::predict.gam, type="response", na.rm=TRUE, factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("stepwise GAM (package: gam) prediction failed"))},
             silent=F)
+        }else{
+            pgams <- raster::predict(object=xn, model=results, fun=gam::predict.gam, type="response", na.rm=TRUE, factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pgams) == F) {
             results2 <- GAMSTEP.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -834,10 +878,15 @@
         results <- MGCV.OLD
         pmgcv <- NULL
         fullname <- paste("models/", RASTER.species.name, "_MGCV", sep="")
-        tryCatch(pmgcv <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factors,
+        if (CATCH.OFF == F) {
+            tryCatch(pmgcv <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("GAM (package: mgcv) prediction failed"))},
             silent=F)
+        }else{
+            pmgcv <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pmgcv) == F) {
             results2 <- MGCV.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -886,10 +935,15 @@
         results <- MGCVFIX.OLD
         pmgcvf <- NULL
         fullname <- paste("models/", RASTER.species.name, "_MGCVFIX", sep="")
-        tryCatch(pmgcvf <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factors,
+        if (CATCH.OFF == F) {
+            tryCatch(pmgcvf <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("GAM with fixed d.f. regression splines (package: mgcv) prediction failed"))},
             silent=F)
+        }else{
+            pmgcvf <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pmgcvf) == F) {
             results2 <- MGCVFIX.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -938,10 +992,15 @@
         results <- EARTH.OLD
         pearth <- NULL
         fullname <- paste("models/", RASTER.species.name, "_EARTH", sep="")
-        tryCatch(pearth <- raster::predict(object=xn, model=results, fun=predict.EARTH, na.rm=TRUE, type="response", factors=factors,
+        if (CATCH.OFF == F) {
+            tryCatch(pearth <- raster::predict(object=xn, model=results, fun=predict.EARTH, na.rm=TRUE, type="response", factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("MARS (package: earth) prediction failed"))},
             silent=F)
+        }else{
+            pearth <- raster::predict(object=xn, model=results, fun=predict.EARTH, na.rm=TRUE, type="response", factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pearth) == F) {
             results2 <- EARTH.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -990,10 +1049,15 @@
         results <- RPART.OLD
         prpart <- NULL
         fullname <- paste("models/", RASTER.species.name, "_RPART", sep="")
-        tryCatch(prpart <- raster::predict(object=xn, model=results, na.rm=TRUE, type="prob", index=2, factors=factors,
+        if (CATCH.OFF == F) {
+            tryCatch(prpart <- raster::predict(object=xn, model=results, na.rm=TRUE, type="prob", index=2, factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("RPART prediction failed"))},
             silent=F)
+        }else{
+            prpart <- raster::predict(object=xn, model=results, na.rm=TRUE, type="prob", index=2, factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(prpart) == F) {
             results2 <- RPART.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -1042,10 +1106,15 @@
         results <- NNET.OLD
         pnnet <- NULL
         fullname <- paste("models/", RASTER.species.name, "_NNET", sep="")
-        tryCatch(pnnet <- raster::predict(object=xn, model=results, fun=predict.NNET, na.rm=TRUE, factors=factors,
+        if (CATCH.OFF == F){
+            tryCatch(pnnet <- raster::predict(object=xn, model=results, fun=predict.NNET, na.rm=TRUE, factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("Artificial Neural Network (package: nnet) prediction failed"))},
             silent=F)
+        }else{
+            pnnet <- raster::predict(object=xn, model=results, fun=predict.NNET, na.rm=TRUE, factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pnnet) == F) {
             results2 <- NNET.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -1094,10 +1163,15 @@
         results <- FDA.OLD
         pfda <- NULL
         fullname <- paste("models/", RASTER.species.name, "_FDA", sep="")
-        tryCatch(pfda <- raster::predict(object=xn, model=results, na.rm=TRUE, type="posterior", index=2, factors=factors,
+        if (CATCH.OFF == F) {
+            tryCatch(pfda <- raster::predict(object=xn, model=results, na.rm=TRUE, type="posterior", index=2, factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("FDA prediction failed"))},
             silent=F)
+        }else{
+            pfda <- raster::predict(object=xn, model=results, na.rm=TRUE, type="posterior", index=2, factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pfda) == F) {
             results2 <- FDA.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -1147,10 +1221,15 @@
         psvm <- NULL
         fullname <- paste("models/", RASTER.species.name, "_SVM", sep="")
         predict.svm2 <- as.function(kernlab::predict)
-        tryCatch(psvm <- raster::predict(object=xn, model=results, fun=predict.svm2, na.rm=TRUE, type="probabilities", index=2, factors=factors,
+        if (CATCH.OFF == F) {
+            tryCatch(psvm <- raster::predict(object=xn, model=results, fun=predict.svm2, na.rm=TRUE, type="probabilities", index=2, factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("Support Vector Machines (package: kernlab) prediction failed"))},
             silent=F)
+        }else{
+            psvm <- raster::predict(object=xn, model=results, fun=predict.svm2, na.rm=TRUE, type="probabilities", index=2, factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(psvm) == F) {
             results2 <- SVM.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -1196,11 +1275,16 @@
         results <- SVME.OLD
         psvme <- NULL
         fullname <- paste("models/", RASTER.species.name, "_SVME", sep="")
-        tryCatch(psvme <- raster::predict(object=xn, model=results, fun=predict.SVME, na.rm=TRUE, factors=factors,
+        if (CATCH.OFF == F) {
+            tryCatch(psvme <- raster::predict(object=xn, model=results, fun=predict.SVME, na.rm=TRUE, factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("SVM prediction (e1071 package) failed"))},
             warning= function(war) {print(paste("SVM prediction (e1071 package) failed"))},
             silent=F)
+        }else{
+            psvme <- raster::predict(object=xn, model=results, fun=predict.SVME, na.rm=TRUE, factors=factors,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(psvme) == F) {
             results2 <- SVME.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -1249,11 +1333,16 @@
         results <- GLMNET.OLD
         pglmnet <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GLMNET", sep="")
-        tryCatch(pglmnet <- raster::predict(object=xn, model=results, fun=predict.GLMNET, na.rm=TRUE, GLMNET.class=GLMNET.class,
+        if (CATCH.OFF == F) {
+            tryCatch(pglmnet <- raster::predict(object=xn, model=results, fun=predict.GLMNET, na.rm=TRUE, GLMNET.class=GLMNET.class,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("GLMNET prediction (glmnet package) failed"))},
             warning= function(war) {print(paste("GLMNET prediction (glmnet package) failed"))},
             silent=F)
+        }else{
+            pglmnet <- raster::predict(object=xn, model=results, fun=predict.GLMNET, na.rm=TRUE, GLMNET.class=GLMNET.class,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pglmnet) == F) {
             results2 <- GLMNET.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -1299,10 +1388,15 @@
         results <- BIOCLIM.O.OLD
         pbioO <- NULL
         fullname <- paste("models/", RASTER.species.name, "_BIOCLIMO", sep="")
-        tryCatch(pbioO <- raster::predict(object=xn, model=results, fun=predict.BIOCLIM.O, na.rm=TRUE, 
+        if (CATCH.OFF == F){
+            tryCatch(pbioO <- raster::predict(object=xn, model=results, fun=predict.BIOCLIM.O, na.rm=TRUE, 
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("original BIOCLIM prediction failed"))},
             silent=F)
+        }else{
+            pbioO <- raster::predict(object=xn, model=results, fun=predict.BIOCLIM.O, na.rm=TRUE, 
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pbioO) == F) {
             results2 <- BIOCLIM.O.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -1354,10 +1448,15 @@
         results <- BIOCLIM.OLD
         pbio <- NULL
         fullname <- paste("models/", RASTER.species.name, "_BIOCLIM", sep="")
-        tryCatch(pbio <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
+        if (CATCH.OFF == F) {
+            tryCatch(pbio <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("BIOCLIM prediction failed"))},
             silent=F)
+        }else{
+            pbio <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pbio) == F) {
             results2 <- BIOCLIM.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -1413,10 +1512,15 @@
         results <- DOMAIN.OLD
         pdom <- NULL
         fullname <- paste("models/", RASTER.species.name, "_DOMAIN", sep="")
-        tryCatch(pdom <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
+        if (CATCH.OFF == F) {
+            tryCatch(pdom <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("DOMAIN prediction failed"))},
             silent=F)
+        }else{
+            pdom <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pdom) == F) {
             results2 <- DOMAIN.PROBIT.OLD
             if (is.null(results2) == F) {
@@ -1470,19 +1574,32 @@
         fullname <- paste("models/", RASTER.species.name, "_MAHAL", sep="")
 # not possible to use the predict.mahal function as raster::predict automatically reverts to dismo::predict for 'DistModel' objects
         results2 <- MAHAL.PROBIT.OLD
+# PROBIT FALSE        
         if (is.null(results2) == F) {
-            tryCatch(pmahal <- raster::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=FALSE,
+            if (CATCH.OFF == F) {
+                tryCatch(pmahal <- raster::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=FALSE,
                     filename=fullname, progress='text', overwrite=TRUE),
                 error= function(err) {print(paste("Mahalanobis prediction failed"))},
                 silent=F)
+            }else{       
+                pmahal <- raster::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=FALSE,
+                    filename=fullname, progress='text', overwrite=TRUE)
+            }
+# PROBIT TRUE
         }else{
-            tryCatch(pmahal <- raster::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=TRUE,
+            if (CATCH.OFF == F) {
+                tryCatch(pmahal <- raster::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=TRUE,
                     filename=fullname, progress='text', overwrite=TRUE),
                 error= function(err) {print(paste("Mahalanobis prediction failed"))},
                 silent=F)
+            }else{
+                pmahal <- raster::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=TRUE,
+                    filename=fullname, progress='text', overwrite=TRUE)
+            }
         }
+
         if (is.null(pmahal) == F) {
-            results2 <- MAHAL.PROBIT.OLD
+#            results2 <- MAHAL.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
                 fullname2 <- paste(fullname, "_step1", sep="")
@@ -1531,10 +1648,15 @@
         pmahal <- NULL
         fullname <- paste("models/", RASTER.species.name, "_MAHAL01", sep="")
 # not possible to use the predict.mahal function as raster::predict automatically reverts to dismo::predict for 'DistModel' objects
-        tryCatch(pmahal01 <- raster::predict(object=xn, model=results, fun=predict.MAHAL01, na.rm=TRUE, MAHAL.shape=MAHAL.shape,
+        if (CATCH.OFF == F) {
+            tryCatch(pmahal01 <- raster::predict(object=xn, model=results, fun=predict.MAHAL01, na.rm=TRUE, MAHAL.shape=MAHAL.shape,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("transformed Mahalanobis prediction failed"))},
             silent=F)
+        }else{
+            pmahal01 <- raster::predict(object=xn, model=results, fun=predict.MAHAL01, na.rm=TRUE, MAHAL.shape=MAHAL.shape,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
         if (is.null(pmahal01) == F) {
 #            pmahal <- pmahal - 1 - MAHAL.shape
 #            pmahal <- abs(pmahal)

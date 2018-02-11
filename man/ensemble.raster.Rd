@@ -23,7 +23,8 @@ ensemble.raster(xn = NULL,
     KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
     evaluate = FALSE, SINK = FALSE,
     p = models.list$p, a = models.list$a,
-    pt = models.list$pt, at = models.list$at)
+    pt = models.list$pt, at = models.list$at,
+    CATCH.OFF = FALSE)
 
 ensemble.habitat.change(base.map = file.choose(), 
     other.maps = utils::choose.files(),
@@ -56,6 +57,7 @@ ensemble.area(x=NULL, km2=TRUE)
   \item{a}{ background points used for calibrating the suitability models, typically available in 2-column (x, y) or (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{pt}{ presence points used for evaluating the suitability models, typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}}  }
   \item{at}{ background points used for calibrating the suitability models, typicall available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
+  \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
 
   \item{base.map}{ filename with baseline map used to produce maps that show changes in suitable habitat }
   \item{other.maps}{ files with other maps used to produce maps that show changes in suitable habitat from a defined base.map  }
@@ -91,6 +93,7 @@ If desired by the user, the \code{ensemble.raster} function also saves details o
 }
 
 \references{
+Kindt R. 2018. Ensemble species distribution modelling with transformed suitability values. Environmental Modelling & Software 100: 136-145. \url{https://doi.org/10.1016/j.envsoft.2017.11.009}
 Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in ensemble forecasting of species distribution. Global Change Biology 16: 1145-1157
 }
 

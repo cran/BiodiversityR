@@ -14,7 +14,8 @@ Implementation of the BIOCLIM algorithm more similar to the original BIOCLIM alg
 ensemble.bioclim(x = NULL, bioclim.object = NULL, 
     RASTER.object.name = bioclim.object$species.name, RASTER.stack.name = x@title,
     RASTER.format = "raster",
-    KML.out = TRUE, KML.blur = 10, KML.maxpixels = 100000)
+    KML.out = TRUE, KML.blur = 10, KML.maxpixels = 100000,
+    CATCH.OFF = FALSE)
 
 ensemble.bioclim.object(x = NULL, p = NULL, fraction = 0.9,
     quantiles = TRUE, 
@@ -31,6 +32,7 @@ ensemble.bioclim.object(x = NULL, p = NULL, fraction = 0.9,
   \item{KML.out}{ If \code{TRUE}, then kml files will be saved in a subfolder 'kml/zones'.  }
   \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
   \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
+  \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
 
   \item{p}{ presence points used for calibrating the suitability models, typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}.  }
   \item{fraction}{ Fraction of range representing the optimal limits, default value of 0.9 as in the original BIOCLIM software.  }

@@ -1,7 +1,7 @@
 `ensemble.novel.object` <- function(
     x=NULL, name="reference1", mask.raster=NULL, 
     quantiles=FALSE, probs=c(0.05, 0.95),
-    factors=NULL   
+    factors=NULL
 )
 {
     vars <- names(x)
@@ -50,7 +50,8 @@
   x=NULL, novel.object=NULL, 
   RASTER.object.name=novel.object$name, RASTER.stack.name = x@title,
   RASTER.format="raster", RASTER.datatype="INT1S", RASTER.NAflag=-127,
-  KML.out=FALSE, KML.maxpixels=100000, KML.blur=10
+  KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
+  CATCH.OFF=FALSE
 )
 {
   .BiodiversityR <- new.env()
@@ -148,11 +149,15 @@
   
   #
   # predict
-  tryCatch(novel.raster <- raster::predict(object=x, model=novel.object, fun=predict.novel, na.rm=TRUE, 
-                                           filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format),
+  if (CATCH.OFF == F) {  
+      tryCatch(novel.raster <- raster::predict(object=x, model=novel.object, fun=predict.novel, na.rm=TRUE, 
+               filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format),
            error= function(err) {print(paste("prediction of novel zones failed"))},
            silent=F)
-  
+  }else{
+      novel.raster <- raster::predict(object=x, model=novel.object, fun=predict.novel, na.rm=TRUE, 
+           filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format)
+  }
   # save as integer
   novel.raster <- trunc(novel.raster)
   raster::setMinMax(novel.raster)

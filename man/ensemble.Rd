@@ -24,7 +24,7 @@ ensemble.calibrate.models(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FA
     k = 0, pt = NULL, at = NULL, SSB.reduce = FALSE, CIRCLES.d = 250000, 
     TrainData = NULL, TestData = NULL, 
     VIF = FALSE, COR = FALSE,
-    SINK = FALSE, PLOTS = TRUE, 
+    SINK = FALSE, PLOTS = FALSE, CATCH.OFF = FALSE, 
     threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
     threshold.PresenceAbsence = FALSE,
     evaluations.keep = FALSE, 
@@ -69,14 +69,14 @@ ensemble.calibrate.models(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FA
     BIOCLIM.O.fraction = 0.9,
     MAHAL.shape = 1)
 
-ensemble.calibrate.weights(x = NULL, p = NULL, a = NULL, an = 1000, 
+ensemble.calibrate.weights(x = NULL, p = NULL, 
+    a = NULL, an = 1000, 
     get.block = FALSE,
     SSB.reduce = FALSE, CIRCLES.d = 100000, 
     excludep = FALSE, 
     k = 4, 
-    TrainData = NULL,
     VIF = FALSE, COR = FALSE,
-    SINK = FALSE, PLOTS = FALSE, 
+    SINK = FALSE, PLOTS = FALSE, CATCH.OFF = FALSE, 
     data.keep = FALSE,
     species.name = "Species001",
     threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
@@ -195,7 +195,7 @@ ensemble.threshold(eval, threshold.method = "spec_sens", threshold.sensitivity =
     threshold.PresenceAbsence = FALSE, Pres, Abs) 
 
 ensemble.VIF(x = NULL, a = NULL, an = 10000, 
-    VIF.max = 10, 
+    VIF.max = 10, keep = NULL,
     layer.drops = NULL, factors = NULL, dummy.vars = NULL)
 }
 
@@ -215,7 +215,8 @@ ensemble.VIF(x = NULL, a = NULL, an = 10000,
   \item{VIF}{ Estimate the variance inflation factors based on a linear model calibrated on the training data  (if \code{TRUE}). Only background locations will be used and the response variable 'pb' will be replaced by a random variable. See also \code{\link[car]{vif}}.  }
   \item{COR}{ Provide information on the correlation between the numeric explanatory variables  (if \code{TRUE}). See also \code{\link[stats]{cor}}.  }
   \item{SINK}{ Append the results to a text file in subfolder 'outputs' (if \code{TRUE}). The name of file is based on argument \code{species.name}. In case the file already exists, then results are appended. See also \code{\link[base]{sink}}.  }
-  \item{PLOTS}{ Plot the results of evaluation for the various suitability models (if \code{TRUE}). See also \code{\link[dismo]{evaluate}}.  }
+  \item{PLOTS}{ Disabled option of plotting evaluation results(BiodiversityR version 2.9-1) - see examples how to plot results afterwards and also \code{\link[dismo]{evaluate}}.  }
+  \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
   \item{threshold.method}{ Method to calculate the threshold between predicted absence and presence; possibilities include \code{spec_sens} (highest sum of the true positive rate and the true negative rate), \code{kappa} (highest kappa value), \code{no_omission} (highest threshold that corresponds to no omission), \code{prevalence} (modeled prevalence is closest to observed prevalence) and \code{equal_sens_spec} (equal true positive rate and true negative rate). See \code{\link[dismo]{threshold}}. Options specific to the BiodiversityR implementation are: \code{threshold2005.mean}, \code{threshold2005.min}, \code{threshold2013.mean} and \code{threshold2013.min} (resulting in calculating the mean or minimum value of recommended threshold values by studies published in 2005 and 2013; see details below).   }
   \item{threshold.sensitivity}{ Sensitivity value for \code{threshold.method = 'sensitivity'}. See \code{\link[dismo]{threshold}}.  }
   \item{threshold.PresenceAbsence}{ If \code{TRUE} calculate thresholds with the PresenceAbsence package. See \code{\link[PresenceAbsence]{optimal.thresholds}}.  }
@@ -329,11 +330,12 @@ ensemble.VIF(x = NULL, a = NULL, an = 10000,
   \item{Abs}{ Suitabilities (probabilities) at background locations }
 
   \item{VIF.max}{ Maximum Variance Inflation Factor of the selected subset of variables. In case that at least one of the variables has VIF larger than VIF.max, then the variable with the highest VIF will be removed in the next step.  }
+  \item{keep}{ character vector with names of the variables to be kept.  }
 
 }
 
 \details{
-The basic function \code{ensemble.calibrate.models} first calibrates individual suitability models based on presence locations \code{p} and background locations \code{a}, then evaluates these suitability models based on presence locations \code{pt} and background locations \code{at}. While calibrating and testing individual models, results obtained via the \code{\link[dismo]{evaluate}} function are shown in the GUI, and possibly plotted (\code{PLOTS}) or saved (\code{evaluations.keep}).
+The basic function \code{ensemble.calibrate.models} first calibrates individual suitability models based on presence locations \code{p} and background locations \code{a}, then evaluates these suitability models based on presence locations \code{pt} and background locations \code{at}. While calibrating and testing individual models, results obtained via the \code{\link[dismo]{evaluate}} function can be saved (\code{evaluations.keep}).
 
 As an alternative to providing presence locations \code{p}, models can be calibrated with data provided in \code{TrainData}. In case that both \code{p} and \code{TrainData} are provided, then models will be calibrated with \code{TrainData}.
 
@@ -377,6 +379,8 @@ Functions \code{ensemble.calibrate.models.gbm} and \code{ensemble.calibrate.mode
 }
 
 \references{
+Kindt R. 2018. Ensemble species distribution modelling with transformed suitability values. Environmental Modelling & Software 100: 136-145. \url{https://doi.org/10.1016/j.envsoft.2017.11.009}
+
 Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in ensemble forecasting of species distribution. Global Change Biology 16: 1145-1157
 
 Liu C, Berry PM, Dawson TP and Pearson RC. 2005. Selecting thresholds of occurrence in the prediction of species distributions. Ecography 28: 385-393
@@ -444,7 +448,7 @@ ensemble.nofactors <- ensemble.calibrate.models(x=predictors, p=pres_train, a=ba
     SVM=0, SVME=0, GLMNET=0,
     BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=0,
     Yweights="BIOMOD",
-    PLOTS=FALSE, evaluations.keep=TRUE, models.keep=TRUE,
+    evaluations.keep=TRUE, models.keep=TRUE,
     RF.formula=rfformula,
     GLM.formula=glmformula)
 
@@ -458,6 +462,7 @@ ensemble.nofactors$models$formulae
 
 # evaluations are kept in different slot
 attributes(ensemble.nofactors$evaluations)
+plot(ensemble.nofactors$evaluations$RF.T, "ROC")
 
 # fit four ensemble models (RF, GLM, BIOCLIM, DOMAIN) using default formulae
 # variable 'biome' is not included as explanatory variable
@@ -476,7 +481,7 @@ ensemble.nofactors <- ensemble.calibrate.models(x=predictors,
     SVM=0, SVME=0, GLMNET=0,
     BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=0,
     Yweights="BIOMOD", 
-    PLOTS=FALSE, evaluations.keep=TRUE,
+    evaluations.keep=TRUE,
     formulae.defaults=TRUE)    
 
 # after fitting the individual algorithms (submodels),
@@ -495,7 +500,7 @@ ensemble.nofactors <- ensemble.calibrate.models(x=predictors,
     BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=0,
     PROBIT=TRUE,
     Yweights="BIOMOD", factors="biome",
-    PLOTS=FALSE, evaluations.keep=TRUE,
+    evaluations.keep=TRUE,
     formulae.defaults=TRUE)    
 
 # Instead of providing presence and background locations, provide data.frames.
@@ -518,7 +523,7 @@ ensemble.factors1 <- ensemble.calibrate.models(x=predictors,
     SVM=1, SVME=1, GLMNET=1,
     BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
     Yweights="BIOMOD", factors="biome",
-    PLOTS=FALSE, evaluations.keep=TRUE)
+    evaluations.keep=TRUE)
 
 # compare different methods of calculating ensembles
 ensemble.factors2 <- ensemble.calibrate.models(x=predictors, 
@@ -533,7 +538,7 @@ ensemble.factors2 <- ensemble.calibrate.models(x=predictors,
     SVM=1, SVME=1, BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
     ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(1, 2, 3),
     Yweights="BIOMOD", factors="biome",
-    PLOTS=FALSE, evaluations.keep=TRUE)
+    evaluations.keep=TRUE)
 
 # test performance of different suitability models
 # data are split in 4 subsets, each used once for evaluation
@@ -548,7 +553,7 @@ ensemble.nofactors2 <- ensemble.calibrate.weights(x=predictors,
     ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3),
     ENSEMBLE.min=0.7,
     Yweights="BIOMOD", 
-    PLOTS=FALSE, formulae.defaults=TRUE)
+    formulae.defaults=TRUE)
 ensemble.nofactors2$AUC.table
 
 # test the result of leaving out one of the variables from the model
@@ -582,6 +587,10 @@ predictors <- stack(predictor.files)
 predictors <- subset(predictors, subset=c("bio1", "bio5", "bio6", "bio8", 
     "bio12", "bio16", "bio17", "biome"))
 VIF.analysis <- ensemble.VIF(predictors, factors="biome")
+VIF.analysis
+# alternative solution where bio1 and bio12 are kept
+VIF.analysis <- ensemble.VIF(predictors, factors="biome", 
+    keep=c("bio1", "bio12"))
 VIF.analysis
 }
 }

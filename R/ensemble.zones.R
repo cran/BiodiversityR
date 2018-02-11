@@ -2,7 +2,8 @@
     presence.raster=NULL, centroid.object=NULL, x=NULL, ext=NULL,
     RASTER.species.name=centroid.object$name, RASTER.stack.name = x@title,
     RASTER.format="raster", RASTER.datatype="INT1S", RASTER.NAflag=-127,
-    KML.out=FALSE, KML.maxpixels=100000, KML.blur=10
+    KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
+    CATCH.OFF=FALSE
 )
 {
     .BiodiversityR <- new.env()
@@ -73,10 +74,15 @@ predict.zone <- function(object=centroid.object, newdata=newdata) {
 
 #
 # predict
-    tryCatch(zones.raster <- raster::predict(object=x, model=centroid.object, fun=predict.zone, na.rm=TRUE, 
+    if (CATCH.OFF == F) {
+        tryCatch(zones.raster <- raster::predict(object=x, model=centroid.object, fun=predict.zone, na.rm=TRUE, 
             filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format),
         error= function(err) {print(paste("prediction of zones failed"))},
         silent=F)
+    }else{
+        zones.raster <- raster::predict(object=x, model=centroid.object, fun=predict.zone, na.rm=TRUE, 
+            filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format)
+    }
 
 # mask the presence area, including areas that are NA in presence raster
     zones.raster <- raster::mask(zones.raster, presence.raster, inverse=T, maskvalue=1)

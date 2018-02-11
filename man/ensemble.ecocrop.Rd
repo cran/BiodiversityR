@@ -14,7 +14,8 @@ Function \code{ensemble.novel} creates the map with novel conditions. Function \
 ensemble.ecocrop(x = NULL, ecocrop.object = NULL, 
     RASTER.object.name = ecocrop.object$name, RASTER.stack.name = x@title,
     RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
-    KML.out = TRUE, KML.blur = 10, KML.maxpixels = 100000)
+    KML.out = TRUE, KML.blur = 10, KML.maxpixels = 100000,
+    CATCH.OFF = FALSE)
 
 ensemble.ecocrop.object(temp.thresholds, rain.thresholds, name = "crop01", 
     temp.multiply = 10, annual.temps = TRUE, transform = 1)
@@ -32,6 +33,7 @@ ensemble.ecocrop.object(temp.thresholds, rain.thresholds, name = "crop01",
   \item{KML.out}{ If \code{TRUE}, then kml files will be saved in a subfolder 'kml/zones'.  }
   \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
   \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
+  \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
 
   \item{temp.thresholds}{ Optimal and absolute thresholds for temperatures. These will be sorted as: absolute minimum temperature, optimal minimum temperature, optimal maximum temperature and absolute maximum temperature.  }
   \item{rain.thresholds}{ Optimal and absolute thresholds for annual rainfall. These will be sorted as: absolute minimum rainfall, optimal minimum rainfall, optimal maximum rainfall and absolute maximum rainfall.  }

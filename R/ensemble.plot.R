@@ -8,7 +8,11 @@
     p=NULL, a=NULL,
     threshold=-1,
     threshold.method="spec_sens", threshold.sensitivity=0.9, threshold.PresenceAbsence=FALSE,
-    abs.breaks=6, pres.breaks=6, sd.breaks=9,
+    abs.breaks=6, abs.col=NULL,
+    pres.breaks=6, pres.col=NULL,
+    sd.breaks=9, sd.col=NULL,
+    absencePresence.col=NULL, 
+    count.col=NULL,
     maptools.boundaries=TRUE, maptools.col="dimgrey", ...
 )
 {
@@ -20,8 +24,8 @@
     if (threshold < 0  && plot.method=="suitability") {
         if (is.null(p)==T || is.null(a)==T) {stop(paste("Please provide locations p and a to calculate thresholds", "\n", sep = ""))}
     }
-    names(p) <- c("x", "y")
-    names(a) <- c("x", "y")
+    if(is.null(p) == F) {names(p) <- c("x", "y")}
+    if(is.null(a) == F) {names(a) <- c("x", "y")}
 #
 # get raster files
 # basic assumption is that different ensemble files are named as species_ENSEMBLE_1, species_ENSEMBLE_2, ... i.e. output from ensemble.batch
@@ -132,39 +136,68 @@
                 cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
                 print(as.numeric(threshold.mean))
             }
-            seq1 <- round(seq(from=raster.min, to=threshold.mean, length.out=abs.breaks), 4)
-            seq1 <- seq1[1:(abs.breaks-1)]
-            seq1[-abs.breaks]
-            seq1 <- unique(seq1)
-            seq2 <- round(seq(from = threshold.mean, to = raster.max, length.out=pres.breaks), 4)
-            seq2 <- unique(seq2)
-            if (dev.new.width > 0 && dev.new.height > 0) {grDevices::dev.new(width=dev.new.width, height=dev.new.height)}
-            raster::plot(raster.focus, breaks = c(seq1, seq2), col = c(grDevices::rainbow(n=length(seq1), start=0, end =1/6), grDevices::rainbow(n=length(seq2)-1, start=3/6, end=4/6)), colNA = NA, 
-                legend.shrink=0.8, cex.axis=0.8, main=main, sub=subtitle, ...)
+            if (abs.breaks > 0) {
+                seq1 <- round(seq(from=raster.min, to=threshold.mean, length.out=abs.breaks), 4)
+                seq1 <- seq1[1:(abs.breaks-1)]
+                seq1[-abs.breaks]
+                seq1 <- unique(seq1)
+                seq2 <- round(seq(from = threshold.mean, to = raster.max, length.out=pres.breaks), 4)
+                seq2 <- unique(seq2)
+                if (dev.new.width > 0 && dev.new.height > 0) {grDevices::dev.new(width=dev.new.width, height=dev.new.height)}
+                if (is.null(abs.col) == T) {abs.col <- grDevices::rainbow(n=length(seq1), start=0, end =1/6)}
+                if (is.null(pres.col) == T) {pres.col <- grDevices::rainbow(n=length(seq2)-1, start=3/6, end=4/6)}
+                raster::plot(raster.focus, breaks = c(seq1, seq2), col = c(abs.col, pres.col), colNA = NA, 
+                    legend.shrink=0.8, cex.axis=0.8, main=main, sub=subtitle, ...)
+            }else{
+                seq1 <- NULL
+                abs.col <- NULL
+                seq2 <- round(seq(from = threshold.mean, to = raster.max, length.out=pres.breaks), 4)
+                seq2 <- unique(seq2)
+                if (is.null(pres.col) == T) {pres.col <- grDevices::rainbow(n=length(seq2)-1, start=3/6, end=4/6)}
+                if (dev.new.width > 0 && dev.new.height > 0) {grDevices::dev.new(width=dev.new.width, height=dev.new.height)}
+                raster::plot(raster.focus, breaks = seq2, col = pres.col, colNA = NA, 
+                    lab.breaks=seq2, legend.shrink=0.8, cex.axis=0.8, main=main, sub=subtitle, ...)
+            }
         }
 
         if (plot.method %in% c("presence", "consensuspresence")) {
             if (dev.new.width > 0 && dev.new.height > 0) {grDevices::dev.new(width=dev.new.width, height=dev.new.height)}
-            raster::plot(raster.focus, breaks=c(0, 0.5, 1), col = c("grey", "green"), colNA = NA, 
-                legend.shrink=0.6, cex.axis=0.8, lab.breaks=c("", "a", "p"), main=main, sub=subtitle, ...)
+            if (is.null(absencePresence.col) == T) {absencePresence.col <- c("grey", "green")}
+            if (length(absencePresence.col) == 2) {
+                raster::plot(raster.focus, breaks=c(0, 0.5, 1), col = absencePresence.col, colNA = NA, 
+                    legend.shrink=0.6, cex.axis=0.8, lab.breaks=c("", "a", "p"), main=main, sub=subtitle, ...)
+            }
+            if (length(absencePresence.col) == 1) {
+                raster::plot(raster.focus, breaks=c(0.5, 1), col = absencePresence.col, colNA = NA, 
+                    legend.shrink=0.6, cex.axis=0.8, lab.breaks=c("a", "p"), main=main, sub=subtitle, ...)
+            }
         }
 
         if (plot.method %in% c("count", "consensuscount")) {
             nmax <- raster::maxValue(raster.focus)
             if (dev.new.width > 0 && dev.new.height > 0) {grDevices::dev.new(width=dev.new.width, height=dev.new.height)}
-            if (nmax > 3) {
-                raster::plot(raster.focus, breaks=seq(from=-1, to=nmax, by=1), col=c("grey", "black", grDevices::rainbow(n=(nmax-2), start=0, end=1/3), "blue"), 
+            if (is.null(count.col) == T) {
+                if (nmax > 3) {
+                    count.col <- c("grey", "black", grDevices::rainbow(n=(nmax-2), start=0, end=1/3), "blue")
+                }else{
+                    count.col <- c("grey", grDevices::rainbow(n=nmax, start=0, end=1/3))
+                }
+            }
+            seq1 <- seq(from=-1, to=nmax, by=1)
+            if (length(count.col) == (length(seq1)-1)) {
+                raster::plot(raster.focus, breaks=seq(from=-1, to=nmax, by=1), col=count.col, 
                     legend.shrink=0.8, cex.axis=0.8, main=main, sub=subtitle, ...)
             }else{
-                raster::plot(raster.focus, breaks=seq(from=-1, to=nmax, by=1), col=c("grey", grDevices::rainbow(n=nmax, start=0, end=1/3)), 
-                    legend.shrink=0.8, cex.axis=0.8, main=main, sub=subtitle, ...)
+                raster::plot(raster.focus, breaks=c(0.1, seq(from=1, to=nmax, by=1)), col=count.col, 
+                    lab.breaks=seq(from=0, to=nmax, by=1), legend.shrink=0.8, cex.axis=0.8, main=main, sub=subtitle, ...)
             }
         }
 
         if (plot.method == "consensussd") {
             sd.max <- raster::maxValue(raster.focus)
             seq1 <- seq(from = 0, to = sd.max, length.out = sd.breaks)
-            raster::plot(raster.focus, breaks=seq1, col=grDevices::rainbow(n = length(seq1)-1, start = 1/6, end = 4/6), 
+            if (is.null(sd.col) == T) {sd.col <- grDevices::rainbow(n = length(seq1)-1, start = 1/6, end = 4/6)}
+            raster::plot(raster.focus, breaks=seq1, col=sd.col, 
                 legend.shrink=0.8, cex.axis=0.8, main=main, sub=subtitle, ...)
        }
 

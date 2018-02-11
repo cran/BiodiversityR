@@ -1,10 +1,10 @@
 `ensemble.calibrate.weights` <- function(
-    x=NULL, p=NULL, a=NULL, an=1000, 
+    x=NULL, p=NULL,
+    a=NULL, an=1000, 
     get.block=FALSE, SSB.reduce=FALSE, CIRCLES.d=100000,
     excludep=FALSE, k=4, 
-    TrainData=NULL,
     VIF=FALSE, COR=FALSE,
-    SINK=FALSE, PLOTS=FALSE, 
+    SINK=FALSE, PLOTS=FALSE, CATCH.OFF=FALSE,
     data.keep=FALSE,
     species.name = "Species001",
     threshold.method="spec_sens", threshold.sensitivity=0.9, threshold.PresenceAbsence=FALSE,
@@ -120,7 +120,7 @@
 # run ensemble.calibrate.models first to obtain MAXENT.a and var.names
     tests <- ensemble.calibrate.models(x=x, 
         p=p, a=a, an=an, pt=NULL, at=NULL, excludep=excludep, k=0, 
-        TrainData=TrainData, 
+        TrainData=NULL, 
         VIF=F, COR=F,
         PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
         ENSEMBLE.tune=F,
@@ -148,6 +148,7 @@
 
     p.all <- tests$evaluations$p
     a.all <- tests$evaluations$a
+
     if (get.block == F) {
         groupp <- dismo::kfold(p.all, k=k)
         groupa <- dismo::kfold(a.all, k=k)
@@ -173,7 +174,8 @@
                 p=p1, a=a1, pt=p2, at=a2, SSB.reduce=SSB.reduce, CIRCLES.d=CIRCLES.d,
                 VIF=VIF, COR=COR,
                 threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
-                PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
+                PLOTS=PLOTS, CATCH.OFF=CATCH.OFF,
+                evaluations.keep=T, models.keep=F,
                 ENSEMBLE.tune=ENSEMBLE.tune,
                 ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, ENSEMBLE.exponent=ENSEMBLE.exponent, ENSEMBLE.weight.min=ENSEMBLE.weight.min,
                 MAXENT=MAXENT, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
