@@ -1,17 +1,32 @@
 
 BiodiversityR versions
 
-	This ChangeLog provides information on new functions integrated in
-	the package and some required updates. Updates related to error
-	messages for new versions of the base and loaded packages are
-	typically not included here (as these were addressed).
+	This ChangeLog provides information on new functions integrated in the package and some 
+	required updates. Updates related to error messages for new versions of the base and 
+	loaded packages are typically not included here (as these were addressed).
 
 	BiodiversityR details on installation are available from:
 	http://www.worldagroforestry.org/output/tree-diversity-analysis
 
-	The manual accompanying the original version of BiodiversityR is
-	available from:
+	The manual accompanying the original version of BiodiversityR is available from:
 	http://www.worldagroforestry.org/downloads/Publications/PDFS/B13695.pdf
+
+	An article that documents the ensemble suitability modelling options of BiodiversityR
+	is available from https://doi.org/10.1016/j.envsoft.2017.11.009
+
+
+Version 2.9-2 (27 February 2018)
+
+	* modified gam (version 1.13 of 2018-02-25) functions to gam::predict.Gam and 
+	gam::step.Gam in ensemble.calibrate.models, ensemble.raster and evaluation.strip.data
+	to safely retain BiodiversityR on CRAN (problems reported on 2018-02-26).
+
+	* corrected error in for R-devel for rankabuncomp
+
+	* new argument 'srt' for rankabunplot to allow rotation of species labels in rank-
+	abundance graphs
+
+	* new method 'max' for diversityresult and diversitycomp functions
 
 
 Version 2.9-1 (February 2018; Ty Segall's Freedom's Goblin version)

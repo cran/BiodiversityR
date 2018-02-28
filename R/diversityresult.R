@@ -3,7 +3,7 @@
     index=c("Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", 
         "richness", "abundance", "Jevenness", "Eevenness", 
         "jack1", "jack2", "chao", "boot"),
-    method=c("pooled", "each site", "mean", "sd", "jackknife"),
+    method=c("pooled", "each site", "mean", "sd", "max", "jackknife"),
     sortit=FALSE, digits=8)
 {
 
@@ -12,7 +12,7 @@
         "jack1", "jack2", "chao", "boot")
     if ((index %in% INDEX) == F) {stop(paste("choose an accepted index, not index: ", index, sep=""))}
 
-    METHOD <- c("pooled", "each site", "mean", "sd", "jackknife")
+    METHOD <- c("pooled", "each site", "mean", "sd", "max", "jackknife")
     if ((method %in% METHOD) == F) {stop(paste("choose an accepted method, not method: ", method, sep=""))}
 
     if (is.null(y) == F) {
@@ -134,6 +134,11 @@
         result <- result2[1]
         result[1] <- mean(result2)
     }
+    if (method == "max") {
+        result2 <- result
+        result <- result2[1]
+        result[1] <- max(result2)
+    }
     if (method == "sd") {
         result2 <- result
         result <- result2[1]
@@ -147,8 +152,9 @@
     }
     if (method=="pooled") {rownames(result2) <- "pooled"}
     if (method=="mean") {rownames(result2) <- "mean"}
+    if (method=="max") {rownames(result2) <- "max"}
     if (method=="sd") {rownames(result2) <- "sd"}
-    if (method!="pooled" && method!="jackknife" && method!="mean" && method!="sd") {rownames(result2) <- names(result)}
+    if (method!="pooled" && method!="jackknife" && method!="mean" && method!="max" && method!="sd") {rownames(result2) <- names(result)}
 
     return(result2)
 }

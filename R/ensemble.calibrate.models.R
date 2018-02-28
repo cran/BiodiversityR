@@ -1809,7 +1809,7 @@
         }
         if (is.null(results) == F) {
             cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
-            TrainData[,"GAM"] <- gam::predict.gam(object=results, newdata=TrainData.vars, type="response")
+            TrainData[,"GAM"] <- gam::predict.Gam(object=results, newdata=TrainData.vars, type="response")
             if (PROBIT == T) {
                 if(is.null(GAM.PROBIT.OLD) == T) { 
                     probit.formula <- as.formula(paste("pb ~ GAM"))
@@ -1839,7 +1839,7 @@
             AUC.calibration["GAM"] <- max(c(eval1@auc, 0), na.rm=T)
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
-                TestData[,"GAM"] <- gam::predict.gam(object=results, newdata=TestData.vars, type="response")
+                TestData[,"GAM"] <- gam::predict.Gam(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
                     TestData[,"GAM.step1"] <- TestData[,"GAM"]
                     TestData[,"GAM"] <- predict.glm(object=results2, newdata=TestData, type="response")
@@ -1899,11 +1899,11 @@
             assign("GAM.family", GAM.family, pos=GAMSTEP.pos)
             assign("maxit", maxit, pos=GAMSTEP.pos)
             if (CATCH.OFF == F) {
-                tryCatch(results2 <- gam::step.gam(results, scope=GAMSTEP.scope, direction="both", trace=F, steps=GAMSTEP.steps), 
+                tryCatch(results2 <- gam::step.Gam(results, scope=GAMSTEP.scope, direction="both", trace=F, steps=GAMSTEP.steps), 
                     error= function(err) {print(paste("stepwise GAM (package: gam) calibration failed"))},
                     silent=F)
             }else{
-                results2 <- gam::step.gam(results, scope=GAMSTEP.scope, direction="both", trace=F, steps=GAMSTEP.steps)
+                results2 <- gam::step.Gam(results, scope=GAMSTEP.scope, direction="both", trace=F, steps=GAMSTEP.steps)
             }
             remove(TrainData, pos=GAMSTEP.pos)
             remove(GAM.family, pos=GAMSTEP.pos)
@@ -1917,7 +1917,7 @@
             cat(paste("\n", "stepwise GAM formula (gam package)","\n\n",sep = ""))
             print(formula(results))
             cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
-            TrainData[,"GAMSTEP"] <- gam::predict.gam(object=results, newdata=TrainData.vars, type="response")
+            TrainData[,"GAMSTEP"] <- gam::predict.Gam(object=results, newdata=TrainData.vars, type="response")
             if (PROBIT == T) {
                 if(is.null(GAMSTEP.PROBIT.OLD) == T) { 
                     probit.formula <- as.formula(paste("pb ~ GAMSTEP"))
@@ -1947,7 +1947,7 @@
             AUC.calibration["GAMSTEP"] <- max(c(eval1@auc, 0), na.rm=T)
             if (no.tests == F) {
                 cat(paste("\n", "Evaluation with test data","\n\n","\n", sep = ""))
-                TestData[,"GAMSTEP"] <- gam::predict.gam(object=results, newdata=TestData.vars, type="response")
+                TestData[,"GAMSTEP"] <- gam::predict.Gam(object=results, newdata=TestData.vars, type="response")
                 if (PROBIT == T) {
                     TestData[,"GAMSTEP.step1"] <- TestData[,"GAMSTEP"]
                     TestData[,"GAMSTEP"] <- predict.glm(object=results2, newdata=TestData, type="response")

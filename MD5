@@ -1,4 +1,4 @@
-a0b042d16967e6e1dbc947ea21975693 *DESCRIPTION
+94c2ea5bd347798275f24f4e6105c2f1 *DESCRIPTION
 c599fa5dfdd849efba8d8e9e028f1d95 *NAMESPACE
 8db90d97657867123c41192aa9225e5f *R/BiodiversityRGUI.R
 639870b2ed264ef05e84f7c471c4f963 *R/CAPdiscrim.R
@@ -18,8 +18,8 @@ df65b5e57c9ae65f8f1665da875a74ed *R/dist.eval.R
 6460c34c986aa82d27afb7d387b11a83 *R/dist.zeroes.R
 e78a59cf6a90066f72b143649302a1cc *R/distdisplayed.R
 71303075bc0459b8168d93ceef1d8510 *R/disttransform.R
-506e82caa6be442b8341b60c9b9ee9c4 *R/diversitycomp.R
-771fd0ea7a0c3efc48063799bf6f4e83 *R/diversityresult.R
+20469d5a1257a4678f510424bd9770af *R/diversitycomp.R
+1058b26380c2dd535d15075c804bd7d9 *R/diversityresult.R
 f1f823d98d932931cc7a4b600be64508 *R/diversityvariables.R
 974722ae1c9061d40b9c84f3bf84cc93 *R/ensemble.VIF.R
 b6f8a3877c7b08755e21be8085cbca57 *R/ensemble.accepted.categories.R
@@ -29,7 +29,7 @@ a4e4e54e3ac2c8e64f4333925e8ff2b8 *R/ensemble.area.R
 f49438efa67956324a0ecabfd6aef95a *R/ensemble.batch.presence.R
 fc7862410850893764c9455d1a3a6ce0 *R/ensemble.bioclim.R
 9e6953a302c61b5d7ffe57955b45fba1 *R/ensemble.bioclim.graph.R
-f33403544a918932f28daad35f8006e1 *R/ensemble.calibrate.models.R
+e2bcec0191afcc6e1d5e18a672b6beb1 *R/ensemble.calibrate.models.R
 e7b4e748490e8599e8cf6dfc5dd484ae *R/ensemble.calibrate.models.gbm.R
 e824ec0b3a3e8bd060c1ca3f6d5b8cc5 *R/ensemble.calibrate.models.nnet.R
 3a7df993adb3d7996fe93ab7031602da *R/ensemble.calibrate.weights.R
@@ -41,15 +41,16 @@ a0d05521ad23bdb1ca247f1fc41b0061 *R/ensemble.dummy.variables.R
 58474d4a941ad5a7b0a63d4dd09acd38 *R/ensemble.habitat.change.R
 de760f0454e87b4acf6b26fddeb63628 *R/ensemble.mean.R
 c8738959e6d1883c027eea267abf6b1f *R/ensemble.novel.R
+c5bf87e4f4bc72a10c5732812ce9389c *R/ensemble.pairs.R
 a0da78694b980b99f5367dd806498422 *R/ensemble.plot.R
-b5235f17b253089d16f842d0f966cff1 *R/ensemble.raster.R
+160db1bc3b23282f866de9d6f654188e *R/ensemble.raster.R
 b964acbb401d31776fc79a96bee5ec67 *R/ensemble.simplified.categories.R
 f11946d65d799bdc2f1bea77f927a66c *R/ensemble.spatialThin.R
 37bf06dad749de53923005cae7033888 *R/ensemble.strategy.R
 07833797c0522a33aac8ec5fd616c4f8 *R/ensemble.threshold.R
 9571a53e61551b54ed445aabf596f99c *R/ensemble.weights.R
 443cb23998fc96114e0d7d0015da2875 *R/ensemble.zones.R
-9cd2bf0844c8fe09c57226155c0dbce0 *R/evaluation.strip.data.R
+bd1875f1b9839bfec55f0f8fbcf4381d *R/evaluation.strip.data.R
 be06734fb6ae77d18cb05ac5243e4e03 *R/evaluation.strip.plot.R
 de86e470d29efb3445d017f12e8a2fb3 *R/import.from.Access.R
 6d48382a72ac322d5ab79cab3c156cd5 *R/import.from.Excel.R
@@ -69,9 +70,9 @@ d7e441c2e50ed08a034f3791426fb9ad *R/ordicoeno.R
 c4f2df0d2950afcb1e119ad62d917032 *R/ordivector.R
 6a1d533c2a2c6e26b632b9b3319f8038 *R/prepare.bioenv.R
 f9f586b2c8257b59cf158ef1c0cd03de *R/radfitresult.R
-43d2b5348dc8215929a079498df9113e *R/rankabuncomp.R
+8382f905abcbe6dd856ae9ba9fe29a46 *R/rankabuncomp.R
 993757b3805b1d97f572693888b3396b *R/rankabundance.R
-7bc1ff7e6c8b4e61e2fe35f0236f2e4f *R/rankabunplot.R
+420f814f3701d8157ea2a46aee8149e3 *R/rankabunplot.R
 c6a508102938e844dee2316cb1f7b404 *R/removeNAcomm.R
 9aabc8dfe5ff747f12ce49e1ceff2e3a *R/removeNAenv.R
 7124c09125d73382440bc4c0029b8900 *R/removezerospecies.R
@@ -94,7 +95,7 @@ b843662ae71f93a8afb8b0f4d3e1692b *data/ifri.txt.gz
 37351079a5ac672b82707ef8e4c36719 *data/warcom.txt.gz
 93b84b8b327e4963bd31bc89f9d10154 *data/warenv.txt.gz
 c2e89e25151ea992f2f15b7e22d67e53 *inst/CITATION
-2b77e322c44791b0e17dcfd5ffa09043 *inst/ChangeLog
+da4f5ec4f40e1cbf4526d4bbf72bb8c8 *inst/ChangeLog
 4a04a73994976b3c65330d079e4e3d13 *inst/doc/Getting-started-ensemble-GUI.txt
 d2b7ba65efa43870ecc2447a6d563c14 *inst/etc/BiodiversityGUI.R
 0f0c99bcd5dfda6a45038994713abfd0 *inst/etc/BiodiversityR-menus.txt
@@ -155,7 +156,7 @@ a15dbd897e484cfffbe3be641b289fd8 *man/deviancepercentage.Rd
 4a6b24aa443ab9e5419fa9002c617e3e *man/dist.zeroes.Rd
 d6b9de9d2240c6369e1b87d031bf099d *man/distdisplayed.Rd
 98359367f65dd7e73232b51500611c34 *man/disttransform.Rd
-002879577725268c3f177adbf449b213 *man/diversityresult.Rd
+6d6b84c02ac8bb215a4e961a1be06d7f *man/diversityresult.Rd
 b3f5b0abb908877854536bd3f131a917 *man/ensemble.Rd
 f9d0f9c3d5cac166cb2df8ff1157bbb2 *man/ensemble.analogue.Rd
 20b27d831620e822cb2593730b1cd156 *man/ensemble.batch.Rd
@@ -179,7 +180,7 @@ b87fb361bb2d19d6b93d0d65ee809669 *man/nnetrandom.Rd
 59be11048dad3ceb6a65669ae39a9c19 *man/ordicoeno.Rd
 c84b279f5eb74ff86fbff8fb3720f53c *man/ordisymbol.Rd
 463f0a3178bf0b8fc2408c69aaddd91d *man/radfitresult.Rd
-30a5df68dab777cae159cf01a6d1b80b *man/rankabundance.Rd
+854608c86317dbb1b8a4cba02d3fe4d1 *man/rankabundance.Rd
 2533519eb8af8d1649fe12fceaec69ed *man/removeNAcomm.Rd
 bb576155702ec9410bea91ea3a0342ae *man/renyiresult.Rd
 a06c3160a26ebc7ee811a978649e691b *man/residualssurface.Rd

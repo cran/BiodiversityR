@@ -768,12 +768,12 @@
         pgam <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GAM", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pgam <- raster::predict(object=xn, model=results, fun=gam::predict.gam, na.rm=TRUE, type="response", factors=factors,
+            tryCatch(pgam <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, na.rm=TRUE, type="response", factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("GAM (package: gam) prediction failed"))},
             silent=F)
         }else{
-            pgam <- raster::predict(object=xn, model=results, fun=gam::predict.gam, na.rm=TRUE, type="response", factors=factors,
+            pgam <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, na.rm=TRUE, type="response", factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pgam) == F) {
@@ -822,12 +822,12 @@
         pgams <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GAMSTEP", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pgams <- raster::predict(object=xn, model=results, fun=gam::predict.gam, type="response", na.rm=TRUE, factors=factors,
+            tryCatch(pgams <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, type="response", na.rm=TRUE, factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("stepwise GAM (package: gam) prediction failed"))},
             silent=F)
         }else{
-            pgams <- raster::predict(object=xn, model=results, fun=gam::predict.gam, type="response", na.rm=TRUE, factors=factors,
+            pgams <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, type="response", na.rm=TRUE, factors=factors,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pgams) == F) {

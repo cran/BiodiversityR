@@ -10,11 +10,16 @@ Provides methods of calculating rank-abundance curves.
 }
 
 \usage{
-rankabundance(x,y="",factor="",level,digits=1,t=qt(0.975,df=n-1))
-rankabunplot(xr,addit=F,labels="",scale="abundance",scaledx=F,type="o",
-    xlim=c(min(xpos),max(xpos)),ylim=c(0,max(x[,scale])),specnames=c(1:5),...)
-rankabuncomp(x,y="",factor,scale="abundance",scaledx=F,type="o",rainbow=T,
-    legend=T,xlim=c(1,max1), ylim=c(0,max2), ...)
+rankabundance(x, y="", factor="", level, digits=1, t=qt(0.975, df=n-1))
+
+rankabunplot(xr, addit=F, labels="", scale="abundance", scaledx=F, type="o",
+    xlim=c(min(xpos), max(xpos)),
+    ylim=c(0, max(x[,scale])),
+    specnames=c(1:5), srt=0, ...)
+
+rankabuncomp(x, y="", factor, scale="abundance", 
+    scaledx=F, type="o", rainbow=T,
+    legend=T, xlim=c(1, max1), ylim=c(0, max2), ...)
 }
 
 \arguments{
@@ -24,6 +29,7 @@ rankabuncomp(x,y="",factor,scale="abundance",scaledx=F,type="o",rainbow=T,
   \item{level}{ Level of the variable to create the subset to calculate rank abundance curves. }
   \item{digits}{ Number of digits in the results. }
   \item{t}{ t-value to calculate confidence interval limits for the species proportion for cluster sampling (following Hayek and Buzas 1997).  }
+
   \item{xr}{ Result from \code{rankabundance}. }
   \item{addit}{ Add rank abundance curve to an existing graph. }
   \item{labels}{ Labels to plot at left of the rank abundance curves. }
@@ -33,6 +39,8 @@ rankabuncomp(x,y="",factor,scale="abundance",scaledx=F,type="o",rainbow=T,
   \item{xlim}{ Limits for the horizontal axis. }
   \item{ylim}{ Limits for the vertical axis. }
   \item{specnames}{ Vector positions of species names to add to the rank-abundance curve. }
+  \item{srt}{ The string rotation in degrees of the species names (as in \code{\link[graphics]{par}}). }
+
   \item{rainbow}{ Use rainbow colouring for the different curves. }
   \item{legend}{ Add the legend (you need to click in the graph where the legend needs to be plotted). }
   \item{...}{ Other arguments to be passed to functions \code{\link[graphics]{plot}} or \code{\link[graphics]{points}}. }
@@ -74,7 +82,9 @@ data(dune.env)
 data(dune)
 RankAbun.1 <- rankabundance(dune)
 RankAbun.1
-rankabunplot(RankAbun.1,scale='abundance', addit=FALSE, specnames=c(1,2,3))
+rankabunplot(RankAbun.1, scale='abundance', addit=FALSE, specnames=c(1,2,3))
+rankabunplot(RankAbun.1, scale='logabun', addit=FALSE, specnames=c(1:30), 
+    srt=45, ylim=c(1,100))
 rankabuncomp(dune, y=dune.env, factor='Management', 
     scale='proportion', legend=FALSE)
 ## CLICK IN THE GRAPH TO INDICATE WHERE THE LEGEND NEEDS TO BE PLACED

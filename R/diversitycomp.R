@@ -3,7 +3,7 @@
     index=c("Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", 
         "richness", "abundance", "Jevenness", "Eevenness", 
         "jack1", "jack2", "chao", "boot"),
-    method=c("pooled", "mean", "sd", "jackknife"), 
+    method=c("pooled", "mean", "sd", "max", "jackknife"), 
     sortit=FALSE, digits=8) 
 {
 
@@ -12,7 +12,7 @@
         "jack1", "jack2", "chao", "boot")
     if ((index %in% INDEX) == F) {stop(paste("choose an accepted index, not index: ", index, sep=""))}
 
-    METHOD <- c("pooled", "mean", "sd", "jackknife")
+    METHOD <- c("pooled", "mean", "sd", "max", "jackknife")
     if ((method %in% METHOD) == F) {stop(paste("choose an accepted method, not method: ", method, sep=""))}
 
     if (is.null(y) == F) {
@@ -35,7 +35,7 @@
         dimnames(result) <- list(factor1=levels, c("n", index))
         names(dimnames(result)) <- c(factor1, "")
         for (i in 1:m) {
-            if (method %in% c("pooled", "mean", "sd")) {result[i, 2] <- as.numeric(diversityresult(x, y, factor=factor1, level=levels[i], method=method, index=index, digits=digits))}
+            if (method %in% c("pooled", "mean", "max", "sd")) {result[i, 2] <- as.numeric(diversityresult(x, y, factor=factor1, level=levels[i], method=method, index=index, digits=digits))}
             if (method=="jackknife") {
                 resultx <- diversityresult(x, y, factor=factor1, level=levels[i], method="jackknife", index=index, digits=digits)
                 result[i, 2] <- as.numeric(resultx$jack.estimate)

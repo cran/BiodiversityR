@@ -1,12 +1,17 @@
 `rankabunplot` <-
-function(xr,addit=F,labels="",scale="abundance",scaledx=F,type="o",xlim=c(min(xpos),max(xpos)),ylim=c(0,max(x[,scale])),specnames=c(1:5),...) {
+function(xr, addit=F, labels="", 
+    scale="abundance",scaledx=F,type="o",
+    xlim=c(min(xpos),max(xpos)),
+    ylim=c(0,max(x[,scale])),
+    specnames=c(1:5), srt=0, ...) {
     x <- xr
     xpos <- 1:nrow(x)
     if (scaledx==T) {xpos <- xpos/nrow(x)*100}
     if (scale=="accumfreq") {type <- "o"}
     if (addit==F) {
-        if (scale=="logabun") {
-            graphics::plot(xpos, x[,"abundance"], xlab="species rank", ylab="abundance", type=type, bty="l", log="y", xlim=xlim,...)
+        if (scale == "logabun") {
+            if (all.equal(ylim, c(0, max(x[,scale]))) == T) {ylim <- c(1, max(x[, "abundance"]))}
+            graphics::plot(xpos, x[,"abundance"], xlab="species rank", ylab="abundance", type=type, bty="l", log="y", xlim=xlim, ylim=ylim, ...)
         }else{
             graphics::plot(xpos, x[,scale], xlab="species rank", ylab=scale, type=type, bty="l", ylim=ylim, xlim=xlim,...)
         }
@@ -18,11 +23,12 @@ function(xr,addit=F,labels="",scale="abundance",scaledx=F,type="o",xlim=c(min(xp
         }
     }
     if (length(specnames) > 0) {
+        names.space <- paste0("  ", rownames(x))
         for (i in specnames) {
             if (scale=="logabun") {
-                graphics::text(i+0.5, x[i,"abundance"], rownames(x)[i], pos=4)
+                graphics::text(i, x[i, "abundance"], names.space[i], pos=4, srt=srt, offset=0, adj=1)
             }else{
-                graphics::text(i+0.5, x[i,scale], rownames(x)[i], pos=4)
+                graphics::text(i, x[i, scale], names.space[i], pos=4, srt=srt, offset=0, adj=1)
             }
         }
     }

@@ -489,11 +489,11 @@
     if (GAM > 0) {
         results <- GAM.OLD
         if (CATCH.OFF == F) {
-            tryCatch(plot.data[,"GAM"] <- gam::predict.gam(object=results, newdata=plot.data.vars, type="response"),
+            tryCatch(plot.data[,"GAM"] <- gam::predict.Gam(object=results, newdata=plot.data.vars, type="response"),
                 error= function(err) {print(paste("GAM (package: gam) prediction failed"))},
                 silent=F)
         }else{
-            plot.data[,"GAM"] <- gam::predict.gam(object=results, newdata=plot.data.vars, type="response")
+            plot.data[,"GAM"] <- gam::predict.Gam(object=results, newdata=plot.data.vars, type="response")
         }
         results2 <- GAM.PROBIT.OLD
         if (is.null(results2) == F) {
@@ -504,11 +504,11 @@
     if (GAMSTEP > 0) {
         results <- GAMSTEP.OLD
         if (CATCH.OFF == F) {
-            tryCatch(plot.data[,"GAMSTEP"] <- gam::predict.gam(object=results, newdata=plot.data.vars, type="response"),
+            tryCatch(plot.data[,"GAMSTEP"] <- gam::predict.Gam(object=results, newdata=plot.data.vars, type="response"),
                 error= function(err) {print(paste("stepwise GAM prediction (gam package) failed"))},
                 silent=F)
         }else{
-            plot.data[,"GAMSTEP"] <- gam::predict.gam(object=results, newdata=plot.data.vars, type="response")
+            plot.data[,"GAMSTEP"] <- gam::predict.Gam(object=results, newdata=plot.data.vars, type="response")
         }
         results2 <- GAMSTEP.PROBIT.OLD
         if (is.null(results2) == F) {
