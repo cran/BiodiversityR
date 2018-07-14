@@ -9,6 +9,7 @@
 \alias{ensemble.strategy}
 \alias{ensemble.threshold}
 \alias{ensemble.VIF}
+\alias{ensemble.pairs}
 
 \title{
 Suitability mapping based on ensembles of modelling algorithms: calibration of models and weights
@@ -197,6 +198,8 @@ ensemble.threshold(eval, threshold.method = "spec_sens", threshold.sensitivity =
 ensemble.VIF(x = NULL, a = NULL, an = 10000, 
     VIF.max = 10, keep = NULL,
     layer.drops = NULL, factors = NULL, dummy.vars = NULL)
+
+ensemble.pairs(x = NULL, a = NULL, an = 10000)
 }
 
 \arguments{
@@ -368,6 +371,8 @@ The \code{ensemble.strategy} function is used internally by the \code{ensemble.c
 The \code{ensemble.threshold} function is used internally by the \code{ensemble.calibrate.models}, \code{ensemble.mean} and \code{ensemble.plot} functions. \code{threshold2005.mean} results in calculating the mean value of threshold methods that resulted in better results (calculated by \code{\link[PresenceAbsence]{optimal.thresholds}} with methods of \code{ObsPrev}, \code{MeanProb}, \code{MaxSens+Spec}, \code{Sens=Spec} and \code{MinROCdist}) in a study by Liu et al. (Ecography 28: 385-393. 2005). \code{threshold2005.min} results in calculating the mean value of threshold methods that resulted in better results (calculated by \code{\link[PresenceAbsence]{optimal.thresholds}} with methods of \code{ObsPrev}, \code{MeanProb} and \code{MaxSens+Spec}) in a study by Liu et al. (Ecography 28: 385-393. 2005). \code{threshold2013.mean} results in calculating the mean value of threshold methods that resulted in better results (calculated by \code{\link[PresenceAbsence]{optimal.thresholds}} with methods of \code{ObsPrev}, \code{MeanProb}, \code{MaxSens+Spec}, \code{Sens=Spec} and \code{MinROCdist}) in a study by Liu et al. (J. Biogeogr. 40: 778-789. 2013). \code{threshold2013.min} results in calculating the minimum value of threshold methods that resulted in better results (calculated by \code{\link[PresenceAbsence]{optimal.thresholds}} with methods of \code{ObsPrev}, \code{MeanProb}, \code{MaxSens+Spec}, \code{Sens=Spec} and \code{MinROCdist}) in a study by Liu et al. (J. Biogeogr. 40: 778-789. 2013).
 
 Function \code{ensemble.VIF} implements a stepwise procedure whereby the explanatory variable with highest Variance Inflation Factor is removed from the list of variables. The procedure ends when no variable has VIF larger than parameter \code{VIF.max}.
+
+Function \code{ensemble.pairs} provides a matrix of scatterplots similar to the example of \code{\link[graphics]{pairs}} for version 3.4.3 of that package.
 }
 
 \value{
@@ -586,6 +591,9 @@ ensemble.variables
 predictors <- stack(predictor.files)
 predictors <- subset(predictors, subset=c("bio1", "bio5", "bio6", "bio8", 
     "bio12", "bio16", "bio17", "biome"))
+
+ensemble.pairs(predictors)
+
 VIF.analysis <- ensemble.VIF(predictors, factors="biome")
 VIF.analysis
 # alternative solution where bio1 and bio12 are kept

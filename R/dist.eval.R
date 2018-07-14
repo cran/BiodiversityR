@@ -6,7 +6,7 @@ function(x, dist){
         cat("Warning: the community matrix contains some sites with only zero abundances\n")
         cat("You may want to use functions removezerospecies or dist.zeroes from Biodiversity.R\n")
     }else{
-        tests <- c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+        tests <- c("manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
             "chao", "cao", "mahalanobis")
         op <- options()
         options(warn=-1)

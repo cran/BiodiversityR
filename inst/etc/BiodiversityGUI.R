@@ -1060,7 +1060,7 @@ accumGUI <- function(){
     ciEntry <- tkentry(optionFrame, width=10, textvariable=cia)
     cexa <- tclVar("1")
     cexEntry <- tkentry(optionFrame, width=10, textvariable=cexa)
-    colour <- tclVar("1")
+    colour <- tclVar("blue")
     colourEntry <- tkentry(optionFrame, width=10, textvariable=colour)
     option2Frame <- tkframe(choicesFrame)   
     scaleBox <- tklistbox(option2Frame, width=27, height=6,
@@ -1201,7 +1201,7 @@ accumGUI <- function(){
             xlab <- paste(", xlab='", var2, "'", sep="")
         }
         if (method %in% c("exact", "exact (unconditioned)", "random", "rarefaction", "coleman", "collector")) {
-            doItAndPrint(paste("accumplot(", modelValue, ", addit=", addit, ", ci=", ci, ", ci.type='bar', col='", col, "', cex=", cex, xlab, ", ylab='species richness'", xlim, ylim, ", pch=", pch, ", labels='", sub ,"')", sep=""))
+            doItAndPrint(paste("accumplot(", modelValue, ", addit=", addit, ", col='", col,  "', ci=", ci, ", , ci.col='black', ci.lty=3, ci.length=0.1, cex=", cex, xlab, ", ylab='species richness'", xlim, ylim, ", pch=", pch, ", labels='", sub ,"')", sep=""))
         }
         if (method %in% c("poolaccum", "estaccumR")) {
             doItAndPrint(paste("plot(", modelValue, ")", sep=""))
@@ -2859,32 +2859,127 @@ distmatrixGUI <- function(){
     distBox <- tklistbox(method2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 
     distScroll <- tkscrollbar(method2Frame, repeatinterval=5, command=function(...) tkyview(distBox, ...))
+    printVariable <- tclVar("0")
+    printCheckBox <- tkcheckbutton(method2Frame, variable=printVariable)
     treatasdistVariable <- tclVar("0")
     treatasdistCheckBox <- tkcheckbutton(method2Frame, variable=treatasdistVariable)
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
-    distances <- c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+    distances <- c("manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
         "chao", "cao", "mahalanobis",
+        "hellinger", "scaled hellinger", "chord", "scaled chord", 
         "w", "-1", "c", "wb", "r", "I", "e", "t", "me", "j", "sor", "m", "-2", "co", "cc", "g", "-3", "l", "19", "hk", "rlb", "sim", "gl", "z",
-        "designdist")
+        "designdist", "chaodist",
+        "averaged manhattan", "averaged euclidean", "averaged canberra", "averaged clark", "averaged bray", "averaged kulczynski", "averaged jaccard", "averaged gower", "averaged altGower", "averaged morisita", "averaged horn", "averaged mountford", "averaged raup" , "averaged binomial", 
+        "averaged chao", "averaged cao", "averaged mahalanobis")
     for (x in distances) tkinsert(distBox, "end", x)
     onOK <- function(){
         dist <- distances[as.numeric(tkcurselection(distBox))+1]
         modelValue <- tclvalue(modelName)
-        if (dist %in% c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+        if (dist %in% c("manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
             "chao", "cao", "mahalanobis")) {
             logger(paste(modelValue, " <- vegdist(", .communityDataSet, ", method='", dist, "', na.rm=T)", sep=""))
             assign(modelValue, justDoIt(paste("vegdist(",.communityDataSet, ", method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
+            doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+        }
+        if (dist == "hellinger") {
+            logger(paste(modelValue, " <- vegdist(disttransform(", .communityDataSet, ", method='hellinger'), method='euclidean', na.rm=T)", sep=""))
+            assign(modelValue, justDoIt(paste("vegdist(disttransform(", .communityDataSet, ", method='hellinger'), method='euclidean', na.rm=T)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "scaled hellinger") {
+            logger(paste(modelValue, " <- vegdist(disttransform(", .communityDataSet, ", method='hellinger'), method='euclidean', na.rm=T)/sqrt(2)", sep=""))
+            assign(modelValue, justDoIt(paste("vegdist(disttransform(", .communityDataSet, ", method='hellinger'), method='euclidean', na.rm=T)/sqrt(2)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "chord") {
+            logger(paste(modelValue, " <- vegdist(disttransform(", .communityDataSet, ", method='chord'), method='euclidean', na.rm=T)", sep=""))
+            assign(modelValue, justDoIt(paste("vegdist(disttransform(", .communityDataSet, ", method='chord'), method='euclidean', na.rm=T)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "scaled chord") {
+            logger(paste(modelValue, " <- vegdist(disttransform(", .communityDataSet, ", method='chord'), method='euclidean', na.rm=T)/sqrt(2)", sep=""))
+            assign(modelValue, justDoIt(paste("vegdist(disttransform(", .communityDataSet, ", method='chord'), method='euclidean', na.rm=T)/sqrt(2)", sep="")), envir=.GlobalEnv)
         }
         if (dist %in% c("w", "-1", "c", "wb", "r", "I", "e", "t", "me", "j", "sor", "m", "-2", "co", "cc", "g", "-3", "l", "19", "hk", "rlb", "sim", "gl", "z")) {
             logger(paste(modelValue, " <- betadiver(", .communityDataSet, ", method='", dist, "')", sep=""))
             assign(modelValue, justDoIt(paste("betadiver(",.communityDataSet, ", method='",dist, "')", sep="")), envir=.GlobalEnv)
+            doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
         }
         if (dist == "designdist") {
             logger(paste(modelValue, " <- designdist(", .communityDataSet, ", method='(A+B-2*J)/(A+B)', terms='minimum')", sep=""))
             assign(modelValue, justDoIt(paste("designdist(", .communityDataSet, ", method='(A+B-2*J)/(A+B)', terms='minimum')", sep="")), envir=.GlobalEnv)
         }
-        doItAndPrint(paste(modelValue))
-        doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
+        if (dist == "chaodist") {
+            logger(paste(modelValue, " <- designdist(", .communityDataSet, ", method='1 - 2*U*V/(U+V)')", sep=""))
+            assign(modelValue, justDoIt(paste("designdist(", .communityDataSet, ", method='1 - 2*U*V/(U+V)')", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged manhattan") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='manhattan', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='manhattan', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged euclidean") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='euclidean', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='euclidean', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged canberra") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='canberra', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='canberra', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged clark") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='clark', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='clark', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged bray") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='bray', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='bray', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged kulczynski") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='kulczynski', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='kulczynski', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged jaccard") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='jaccard', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='jaccard', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged gower") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='gower', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='gower', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged altGower") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='altGower', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='altGower', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged morisita") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='morisita', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='morisita', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged horn") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='horn', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='horn', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged mountford") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='mountford', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='mountford', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged raup") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='raup', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='raup', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged binomial") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='binomial', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='binomial', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged chao") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='chao', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='chao', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged cao") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='cao', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='cao', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        if (dist == "averaged mahalanobis") {
+            logger(paste(modelValue, " <- avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='mahalanobis', iterations=1000)", sep=""))
+            assign(modelValue, justDoIt(paste("avgdist(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), meanfun=mean, distfun=vegdist, dmethod='mahalanobis', iterations=1000)", sep="")), envir=.GlobalEnv)
+        }
+        printdist <- tclvalue(printVariable)==1
+        if (printdist==T) {doItAndPrint(paste(modelValue))}
         treatasdist <- tclvalue(treatasdistVariable)==1
         if (treatasdist==T) {
             logger(paste(modelValue, " <- data.frame(as.matrix(", modelValue, "))", sep=""))
@@ -2904,7 +2999,8 @@ distmatrixGUI <- function(){
     tkgrid(modelFrame, sticky="w")
     tkgrid(tklabel(method2Frame, text="Distance"), sticky="w")
     tkgrid(distBox, distScroll,sticky="w")
-    tkgrid(tklabel(method2Frame, text="Make community dataset", width=25),treatasdistCheckBox, sticky="w")
+    tkgrid(tklabel(method2Frame, text="Print distance matrix", width=25), printCheckBox, sticky="w")
+    tkgrid(tklabel(method2Frame, text="Make community dataset", width=25), treatasdistCheckBox, sticky="w")
     tkgrid(method2Frame, sticky="w")
     tkgrid(OKbutton, cancelButton)
     tkgrid(buttonsFrame, sticky="w")
@@ -2948,7 +3044,7 @@ unconordiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     distScroll <- tkscrollbar(method2Frame, repeatinterval=5, command=function(...) tkyview(distBox, ...))
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
-    distances <- c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+    distances <- c("manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
             "chao", "cao", "mahalanobis")
     for (x in distances) tkinsert(distBox, "end", x)
     summaryVariable <- tclVar("1")
@@ -3149,18 +3245,18 @@ unconordiGUI <- function(){
             doItAndPrint(paste("check.ordiscores(", .communityDataSet, ", ", modelValue, ", check.species=F)", sep=""))
         }
         if (sum==T) {
-            if (method %in% c("PCA", "CA", "DCA")) {
+            if (method %in% c("PCA", "CA")) {
                 doItAndPrint(paste("summary(", modelValue, ", scaling='", scaling, "')", sep=""))
                 doItAndPrint(paste("eigenvals(", modelValue, ")", sep=""))
                 if (method=="PCA") {doItAndPrint(paste("PCAsignificance(", modelValue, ")", sep=""))}
-                doItAndPrint(paste("goodness(", modelValue, ", display='sites', choices=c(1:4), model='CA', statistic='explained')", sep=""))
-                doItAndPrint(paste("inertcomp(", modelValue, ", display='sites', statistic='explained', proportional=F)", sep=""))
+                doItAndPrint(paste("goodness(", modelValue, ", display='sites', model='CA'", sep=""))
+                doItAndPrint(paste("inertcomp(", modelValue, ", display='sites', unity=T)", sep=""))
             }         
             if (method %in% c("PCA (prcomp)", "PCoA", "PCoA (Cailliez)", "metaMDS", "monoMDS", "wcmdscale", "wcmdscale (lingoes)", "wcmdscale (cailliez)", "pcnm", "NMS (standard)")) {
                 doItAndPrint(paste(modelValue, sep=""))
                 if (method=="metaMDS" || method=="monoMDS") {doItAndPrint(paste("goodness(", modelValue, ")", sep=""))}
             }
-            if (method=="isomap") {doItAndPrint(paste("summary(", modelValue, ")", sep=""))}
+            if (method %in% c("DCA", "isomap")) {doItAndPrint(paste("summary(", modelValue, ")", sep=""))}
         }
     }
     onPlot <- function(){
@@ -3558,7 +3654,7 @@ conordiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     distScroll <- tkscrollbar(method2Frame, repeatinterval=5, command=function(...) tkyview(distBox, ...))
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
-    distances <- c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+    distances <- c("manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
             "chao", "cao", "mahalanobis")
     for (x in distances) tkinsert(distBox, "end", x)
     summaryVariable <- tclVar("1")
@@ -3850,12 +3946,14 @@ conordiGUI <- function(){
                 doItAndPrint(paste("RsquareAdj(", modelValue, ")", sep=""))
                 doItAndPrint(paste("deviance(", modelValue, ")", sep=""))
                 doItAndPrint(paste("vif.cca(", modelValue, ")", sep=""))
-                doItAndPrint(paste("goodness(", modelValue, ", display='sites', statistic='explained')", sep=""))            
-                doItAndPrint(paste("inertcomp(", modelValue, ", display='sites', statistic='explained', proportional=T)", sep="")) 
+                if (method=="RDA" || method=="CCA") {
+                    doItAndPrint(paste("goodness(", modelValue, ", display='sites', model='CCA')", sep=""))            
+                    doItAndPrint(paste("inertcomp(", modelValue, ", display='sites', proportional=T)", sep="")) 
+                }
             }
             if (perm>0  && method !="CAPdiscrim" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)" && method!="multiconstrained (dbrda)") {
                 doItAndPrint(paste("permutest(", modelValue, ", permutations=", perm, ")", sep=""))
-#               doItAndPrint(paste("permutest(", modelValue, ", permutations=", perm, ", first=T)", sep=""))
+                doItAndPrint(paste("permutest(", modelValue, ", permutations=", perm, ", first=T)", sep=""))
                 if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='terms')", sep=""))}
                 if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='margin')", sep=""))}
             }
@@ -4289,7 +4387,7 @@ clusterGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     distScroll <- tkscrollbar(method2Frame, repeatinterval=5, command=function(...) tkyview(distBox, ...))
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
-    distances <- c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+    distances <- c("manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
         "chao", "cao", "mahalanobis")
     for (x in distances) tkinsert(distBox, "end", x)
     treatasdistVariable <- tclVar("0")
@@ -4574,7 +4672,7 @@ mantelGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     dist1Scroll <- tkscrollbar(method3Frame, repeatinterval=5, command=function(...) tkyview(dist1Box, ...))
     tkconfigure(dist1Box, yscrollcommand=function(...) tkset(dist1Scroll, ...))
-    distances <- c("manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
+    distances <- c("manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
         "chao", "cao", "mahalanobis")
     for (x in distances) tkinsert(dist1Box, "end", x)
     dist2Box <- tklistbox(method2Frame, width=27, height=5,
@@ -5691,7 +5789,7 @@ batch.GUI <- function(){
     if (is.null(presence.focal) == T) {presence.focalVariable <- tclVar("(insert presence)")}
     presence.focalEntry <- tkentry(info1Frame, width=25, textvariable=presence.focalVariable)
     if (is.null(absence.focal) == F) {absence.focalVariable <- tclVar(absence.focal)}
-    if (is.null(absence.focal) == T) {absence.focalVariable <- tclVar("(insert absence)")}
+    if (is.null(absence.focal) == T) {absence.focalVariable <- tclVar("NULL")}
     absence.focalEntry <- tkentry(info1Frame, width=25, textvariable=absence.focalVariable)
     info2Frame <- tkframe(infoFrame)
     secondFrame <- tkframe(top, relief="groove", borderwidth=2)

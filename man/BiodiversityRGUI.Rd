@@ -20,10 +20,11 @@ help menu.
 }
 
 \usage{
-BiodiversityRGUI(backward.compatibility.messages = TRUE)
+BiodiversityRGUI(changeLog = FALSE, backward.compatibility.messages = FALSE)
 }
 
 \arguments{
+  \item{changeLog}{ Show the changeLog file }
   \item{backward.compatibility.messages}{ Some notes on backward compatiblity }
 }
 

@@ -17,7 +17,7 @@ export(BiodiversityRGUI, check.datasets, check.ordiscores, spatialsample, makeco
     ensemble.mean, ensemble.plot, ensemble.centroids, ensemble.zones, ensemble.novel, ensemble.novel.object, ensemble.area, 
     ensemble.analogue, ensemble.analogue.object, ensemble.ecocrop, ensemble.ecocrop.object, ensemble.threshold,
     ensemble.bioclim.object, ensemble.bioclim, ensemble.bioclim.graph, ensemble.bioclim.graph.data, ensemble.VIF,
-    ensemble.spatialThin,
+    ensemble.spatialThin, BiodiversityR.changeLog, ensemble.pairs, ensemble.chull.create, ensemble.chull.apply, ensemble.red,
     .onAttach)
 
 if(tools:::.OStype() == "windows") {

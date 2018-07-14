@@ -1,9 +1,11 @@
-`ensemble.pairs` <- function(x)
+`ensemble.pairs` <- function(
+    x=NULL, a=NULL, an=10000
+)
 {
 
 # application of the graphics::pairs function including auxillary functions shown in the documentation (graphics 3.4.3)
 # 
-# ecospat::ecospat.cor.plot is a similar function 
+# raster package has a similar function 
 
 ## obtained from graphics::pairs example
 ## put histograms on the diagonal
@@ -13,7 +15,7 @@
         h <- graphics::hist(x, plot = FALSE)
         breaks <- h$breaks; nB <- length(breaks)
         y <- h$counts; y <- y/max(y)
-        graphics::rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
+        graphics::rect(breaks[-nB], 0, breaks[-1], y, col = "green", ...)
     }
 
 ## obtained from graphics::pairs example
@@ -38,7 +40,13 @@
 
     }
 
-    x <- as.data.frame(x)
+    if(is.null(x) == T) {stop("value for parameter x is missing (RasterStack object)")}
+    if(inherits(x,"RasterStack") == F) {stop("x is not a RasterStack object")}
+    if(is.null(a) == F) {names(a) <- c("x", "y")}
+    if (is.null(a) == T) {a <- dismo::randomPoints(x[[1]], n=an, p=NULL, excludep=F)}
+    x.data <- raster::extract(x, y=a)
+    x <- as.data.frame(x.data)
+    x <- na.omit(x)
     graphics::pairs(x, lower.panel=graphics::panel.smooth, diag.panel=panel.hist, upper.panel=panel.cor)
 }
 

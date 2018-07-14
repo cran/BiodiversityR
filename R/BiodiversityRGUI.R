@@ -1,5 +1,5 @@
 `BiodiversityRGUI` <-
-function(backward.compatibility.messages=TRUE)
+function(changeLog=FALSE, backward.compatibility.messages=FALSE)
 {
 
     if (backward.compatibility.messages == T) {
@@ -14,6 +14,8 @@ function(backward.compatibility.messages=TRUE)
         cat(paste("\n", "modelling where both ensemble.raster and ensemble.test internally calibrated and evaluated [tested]"))
         cat(paste("\n", "models, but only ensemble.raster went ahead with creating suitability raster layers.)", "\n\n\n"))
     }
+
+    if (changeLog == T) {BiodiversityR.changeLog()}
 
     if (! requireNamespace("vegan")) {stop("Please install the vegan package")}
     if (! requireNamespace("dismo")) {stop("Please install the dismo package")}

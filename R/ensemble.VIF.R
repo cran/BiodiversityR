@@ -75,15 +75,18 @@
             GAMSTEP=0, MGCV=0, MGCVFIX=0,EARTH=0, RPART=0, NNET=0, FDA=0, 
             SVM=0, SVME=0, GLMNET=0,
             BIOCLIM.O=0, BIOCLIM=0, DOMAIN=0, MAHAL=0, MAHAL01=0)$VIF
+
         i <- i+1
         for (v in 1:length(VIF.result)) {result[i, which(names(result) == names(VIF.result)[v])] <- VIF.result[which(names(VIF.result) == names(VIF.result)[v])]}
 
 	j <- 1
 	while(names(VIF.result[j]) %in% keep && j <= length(VIF.result)) {j <- j+1}
 	if (j <= length(VIF.result)){
-		VIF.result.max <- VIF.result[j]
-        	var.drops <- c(var.drops, names(VIF.result)[j])
-	}
+	    VIF.result.max <- VIF.result[j]
+            var.drops <- c(var.drops, names(VIF.result)[j])
+	}else{
+            VIF.result.max <- VIF.max-1
+        }
     }
 
 # remove last variable included
