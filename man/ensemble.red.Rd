@@ -8,7 +8,7 @@ Area of Occupancy (AOO) and Extent of Occurrence (EOO) via the \pkg{red} library
 }
 
 \description{
-Function \code{ensemble.red} is a wrapper function for estimation of AOO and EOO computed for redlisting of species based on IUCN criteria (\url{http://www.iucnredlist.org/static/categories_criteria_3_1}). Function \code{ensemble.chull.create} creates a mask layer based on a convex hull around known presence locations, inspired by \code{mcp} argument of the \code{\link[red]{map.sdm}} function. 
+Function \code{ensemble.red} is a wrapper function for estimation of AOO and EOO computed for redlisting of species based on IUCN criteria (\url{https://www.iucnredlist.org/about/regional}). Function \code{ensemble.chull.create} creates a mask layer based on a convex hull around known presence locations, inspired by \code{mcp} argument of the \code{\link[red]{map.sdm}} function. 
 }
 
 \usage{
@@ -98,10 +98,10 @@ ensembles <- ensemble.batch(x=predictors,
     SINK=TRUE, 
     ENSEMBLE.best=10, ENSEMBLE.exponent=c(1, 2, 3), 
     ENSEMBLE.min=0.6,
-    MAXENT=0, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
-    GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
-    SVM=1, SVME=1, GLMNET=1,
-    BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
+    MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, CF=1,
+    GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=1, 
+    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, 
+    BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
     PROBIT=TRUE,
     Yweights="BIOMOD",
     formulae.defaults=TRUE)

@@ -41,20 +41,56 @@ function(file=file.choose(), data.type="community", sheet=NULL, sitenames="sites
     data.type <- match.arg(data.type, TYPES)
     if (is.null(sheet) == TRUE) {sheet <- data.type}
     if (data.type == "stacked") {
-        stackeddata <- RODBC::sqlFetch(dataplace,sheet)  
-        result <- makecommunitydataset(stackeddata,row=sitenames,column=column,value=value,factor=factor,level=level)
+        stackeddata <- RODBC::sqlFetch(dataplace, sheet)  
+        result <- makecommunitydataset(stackeddata, row=sitenames, column=column, value=value, factor=factor, level=level)
     }else{
          result <- RODBC::sqlFetch(dataplace,sheet,rownames=sitenames)
     }
     close(dataplace)
-    rownames(result) <- make.names(rownames(result),unique=T)
+    rownames(result) <- make.names(rownames(result), unique=T)
     if (cepnames == TRUE && data.type == "community") {
         colnames(result) <- make.cepnames(colnames(result))
     }else{
-        colnames(result) <- make.names(colnames(result),unique=T)
+        colnames(result) <- make.names(colnames(result), unique=T)
     }
     if (write.csv == TRUE) {utils::write.table(x=result, file=csv.file, row.names=T, col.names=T, sep=',')}
     return(result)
 }
 
 }
+
+`import.with.readxl` <-
+function(file=file.choose(), data.type="community", sheet=NULL, sitenames="sites", 
+    column="species", value="abundance", factor="", level="", cepnames=FALSE, 
+    write.csv=FALSE, csv.file=paste(data.type, ".csv", sep="") )
+{
+    if (is.null(data.type) == TRUE) {data.type <- sheet}
+    TYPES <- c("community", "environmental", "stacked")
+    data.type <- match.arg(data.type, TYPES)
+    if (is.null(sheet) == TRUE) {sheet <- data.type}
+    if (data.type == "stacked") {
+        stackeddata <- readxl::read_excel(file, sheet=sheet)
+        stackeddata <- as.data.frame(stackeddata)
+        result <- makecommunitydataset(stackeddata, row=sitenames, column=column, value=value, factor=factor, level=level)
+    }else{
+        result <- readxl::read_excel(file, sheet=sheet)
+        result <- as.data.frame(result)
+        rownames(result) <- result[, sitenames]
+        result <- result[, which(names(result) != sitenames)]
+    }
+    rownames(result) <- make.names(rownames(result), unique=T)
+    if (cepnames == TRUE && data.type == "community") {
+        colnames(result) <- make.cepnames(colnames(result))
+    }else{
+        colnames(result) <- make.names(colnames(result), unique=T)
+    }
+    if (data.type == "environmental") {
+        for (i in 1:ncol(result)) {
+            if (is.character(result[, i])) {result[, i] <- as.factor(result[, i])}
+        }
+    }
+    if (write.csv == TRUE) {utils::write.table(x=result, file=csv.file, row.names=T, col.names=T, sep=',')}
+    return(result)
+}
+
+

@@ -3,10 +3,11 @@
 )
 {
 
-    results <- list(GBM.formula=NULL, RF.formula=NULL, GLM.formula=NULL, STEP.formula=NULL, GLMSTEP.scope=NULL,  
+    results <- list(MAXLIKE.formula=NULL, GBM.formula=NULL, RF.formula=NULL, CF.formula=NULL,
+        GLM.formula=NULL, STEP.formula=NULL, GLMSTEP.scope=NULL,  
         GAM.formula=NULL, GAMSTEP.scope=NULL, MGCV.formula=NULL, MGCVFIX.formula=NULL,
         EARTH.formula=NULL, RPART.formula=NULL, NNET.formula=NULL,
-        FDA.formula=NULL, SVM.formula=NULL, SVME.formula=NULL, MAXLIKE.formula=NULL)
+        FDA.formula=NULL, SVM.formula=NULL, SVME.formula=NULL)
 
 # in older version of raster used layerNames instead of names
     vars <- names(x)
@@ -97,6 +98,7 @@
     }
     results$GBM.formula <- as.formula(paste(numpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
     results$RF.formula <- as.formula(paste(numpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
+    results$CF.formula <- as.formula(paste(catpb, paste(allvars, sep="", collapse="+"), sep="", collapse="+"))
     results$GLM.formula <- as.formula(paste(numpb, paste(glmvars, sep="", collapse="+"), sep="", collapse="+"))
     results$STEP.formula <- as.formula(paste(numpb, stepvars, sep="", collapse="+"))
     results$GLMSTEP.scope <- list(upper=as.formula(paste("~", paste(glmvars, sep="", collapse="+"), sep="", collapse="+")), lower=as.formula(paste("~1")))

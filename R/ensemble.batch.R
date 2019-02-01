@@ -2,8 +2,8 @@
     x=NULL, xn=c(x), 
     species.presence=NULL, species.absence=NULL, 
     presence.min=20, thin.km=0.1,
-    an=1000, excludep=FALSE, 
-    get.block=FALSE,
+    an=1000, excludep=FALSE, target.groups=FALSE,
+    get.block=FALSE, block.default=runif(1)>0.5, get.subblocks=FALSE,
     SSB.reduce=FALSE, CIRCLES.d=250000,
     k.splits=4, k.test=0, 
     n.ensembles=1, 
@@ -15,8 +15,9 @@
     threshold.method="spec_sens", threshold.sensitivity=0.9, threshold.PresenceAbsence=FALSE,
     ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1, ENSEMBLE.weight.min=0.05,
     input.weights=NULL,
-    MAXENT=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, 
-    MGCVFIX=0, EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, GLMNET=1,
+    MAXENT=1, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, CF=1,
+    GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0, 
+    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, GLMNET=1,
     BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, 
     MAHAL=1, MAHAL01=1, 
     PROBIT=FALSE,
@@ -24,11 +25,14 @@
     layer.drops=NULL, factors=NULL, dummy.vars=NULL, 
     formulae.defaults=TRUE, maxit=100,
     MAXENT.a=NULL, MAXENT.an=10000, MAXENT.path=paste(getwd(), "/models/maxent", sep=""),
+    MAXNET.classes="default", MAXNET.clamp=FALSE, MAXNET.type="cloglog",
     MAXLIKE.formula=NULL, MAXLIKE.method="BFGS",
     GBM.formula=NULL, GBM.n.trees=2001,
-    GBMSTEP.gbm.x=2:(1+raster::nlayers(x)), GBMSTEP.tree.complexity=5, GBMSTEP.learning.rate=0.005, 
+#    GBMSTEP.gbm.x=c(2:(1+raster::nlayers(x))), 
+    GBMSTEP.tree.complexity=5, GBMSTEP.learning.rate=0.005, 
     GBMSTEP.bag.fraction=0.5, GBMSTEP.step.size=100,
     RF.formula=NULL, RF.ntree=751, RF.mtry=floor(sqrt(raster::nlayers(x))), 
+    CF.formula=NULL, CF.ntree=751, CF.mtry=floor(sqrt(raster::nlayers(x))), 
     GLM.formula=NULL, GLM.family=binomial(link="logit"), 
     GLMSTEP.steps=1000, STEP.formula=NULL, GLMSTEP.scope=NULL, GLMSTEP.k=2,
     GAM.formula=NULL, GAM.family=binomial(link="logit"), 
@@ -194,8 +198,21 @@
         as <- species.absence[species.absence[,1]==focal.species, c(2:3)]
     }
 
+# target group sampling
+    if (is.null(as)==F && target.groups==T) {
+        cat(paste("\n", "target group (biased pseudo-absence locations) in centres of cells with locations of all target group species ('species.absence')", "\n\n", sep = ""))
+        p.cell <- unique(raster::cellFromXY(x[[1]], ps))
+        a.cell <- unique(raster::cellFromXY(x[[1]], as))
+        if (excludep == T) {a.cell <- a.cell[!(a.cell %in% p.cell)]}
+        as <- raster::xyFromCell(x[[1]], cell=a.cell, spatial=F)
+   }
+
 # random selection of background locations for each run
-    if (is.null(species.absence)==T) {
+    if (is.null(as)==T) {
+        if (target.groups == T) {
+            cat(paste("\n", "WARNING: not possible for target group pseudo-absence data as 'species.absence' (locations of all species) not specified", sep = ""))
+            cat(paste("\n", "Instead background locations selected randomly", "\n\n", sep = ""))
+        }
         if (excludep == T) {
             as <- dismo::randomPoints(x[[1]], n=an, p=ps, excludep=T)
         }else{
@@ -207,7 +224,8 @@
     assign("as", as, envir=.BiodiversityR)
 
 #1. first ensemble tests
-    calibration1 <- ensemble.calibrate.weights(x=x, p=ps, a=as, k=k.splits, get.block=get.block,
+    calibration1 <- ensemble.calibrate.weights(x=x, p=ps, a=as, k=k.splits, 
+        get.block=get.block, block.default=block.default, get.subblocks=get.subblocks,
         SSB.reduce=SSB.reduce, CIRCLES.d=CIRCLES.d,
         CATCH.OFF=CATCH.OFF,
         ENSEMBLE.tune=T,
@@ -216,22 +234,24 @@
         species.name = RASTER.species.name1,
         threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
         input.weights=input.weights,
-        MAXENT=MAXENT, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
-        GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
-        NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, GLMNET=GLMNET,
+        MAXENT=MAXENT, MAXNET=MAXNET, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, CF=CF, 
+        GLM=GLM, GLMSTEP=GLMSTEP, GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, 
+        EARTH=EARTH, RPART=RPART, NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, GLMNET=GLMNET,
         BIOCLIM.O=BIOCLIM.O, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, MAHAL=MAHAL, MAHAL01=MAHAL01,
         PROBIT=PROBIT, VIF=T,
         Yweights=Yweights, 
         layer.drops=layer.drops, factors=factors, dummy.vars=dummy.vars,
         maxit=maxit,
-        MAXENT.a=MAXENT.a, MAXENT.an=MAXENT.an, 
-        MAXENT.path=MAXENT.path,
+        MAXENT.a=MAXENT.a, MAXENT.an=MAXENT.an, MAXENT.path=MAXENT.path,
+        MAXNET.classes=MAXNET.classes, MAXNET.clamp=MAXNET.clamp, MAXNET.type=MAXNET.type,
         MAXLIKE.formula=MAXLIKE.formula, MAXLIKE.method=MAXLIKE.method,
         GBM.formula=GBM.formula, GBM.n.trees=GBM.n.trees,
-        GBMSTEP.gbm.x=GBMSTEP.gbm.x, GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
+#        GBMSTEP.gbm.x=GBMSTEP.gbm.x, 
+        GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
         GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction,
         GBMSTEP.step.size=GBMSTEP.step.size,
         RF.formula=RF.formula, RF.ntree=RF.ntree, RF.mtry=RF.mtry, 
+        CF.formula=CF.formula, CF.ntree=CF.ntree, CF.mtry=CF.mtry, 
         GLM.formula=GLM.formula, GLM.family=GLM.family, 
         GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=STEP.formula, GLMSTEP.scope=GLMSTEP.scope, 
         GAM.formula=GAM.formula, GAM.family=GAM.family, 
@@ -311,12 +331,15 @@
         factors=factors.batch, dummy.vars=dummy.vars.batch,
         maxit=maxit,
         MAXENT.a=MAXENT.a.batch, MAXENT.path=MAXENT.path,
+        MAXNET.classes=MAXNET.classes, MAXNET.clamp=MAXNET.clamp, MAXNET.type=MAXNET.type,
         MAXLIKE.formula=MAXLIKE.formula, MAXLIKE.method=MAXLIKE.method,
         GBM.formula=GBM.formula, GBM.n.trees=GBM.n.trees,
-        GBMSTEP.gbm.x=GBMSTEP.gbm.x, GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
+#        GBMSTEP.gbm.x=GBMSTEP.gbm.x, 
+        GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
         GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction,
         GBMSTEP.step.size=GBMSTEP.step.size,
         RF.formula=RF.formula, RF.ntree=RF.ntree, RF.mtry=RF.mtry, 
+        CF.formula=CF.formula, CF.ntree=CF.ntree, CF.mtry=CF.mtry, 
         GLM.formula=GLM.formula, GLM.family=GLM.family, 
         GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=STEP.formula, GLMSTEP.scope=GLMSTEP.scope, 
         GAM.formula=GAM.formula, GAM.family=GAM.family, 
@@ -332,10 +355,12 @@
         MAHAL.shape=MAHAL.shape) 
 
         AUC.table.out[which(rownames(AUC.table.out) == paste("MAXENT", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["MAXENT"]
+        AUC.table.out[which(rownames(AUC.table.out) == paste("MAXNET", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["MAXNET"]
         AUC.table.out[which(rownames(AUC.table.out) == paste("MAXLIKE", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["MAXLIKE"]
         AUC.table.out[which(rownames(AUC.table.out) == paste("GBM", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["GBM"]
         AUC.table.out[which(rownames(AUC.table.out) == paste("GBMSTEP", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["GBMSTEP"]
         AUC.table.out[which(rownames(AUC.table.out) == paste("RF", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["RF"]
+        AUC.table.out[which(rownames(AUC.table.out) == paste("CF", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["CF"]
         AUC.table.out[which(rownames(AUC.table.out) == paste("GLM", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["GLM"]
         AUC.table.out[which(rownames(AUC.table.out) == paste("GLMSTEP", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["GLMSTEP"]
         AUC.table.out[which(rownames(AUC.table.out) == paste("GAM", "_", runs, sep="")), ncol(AUC.table.out)] <- calibration2$AUC.calibration["GAM"]

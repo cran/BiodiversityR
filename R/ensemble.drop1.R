@@ -1,5 +1,6 @@
 `ensemble.drop1` <- function(
-    x=NULL, p=NULL, a=NULL, an=1000, excludep=FALSE, 
+    x=NULL, p=NULL, 
+    a=NULL, an=1000, excludep=FALSE, target.groups=FALSE,
     k=0, pt=NULL, at=NULL, SSB.reduce=FALSE, CIRCLES.d=100000,
     TrainData=NULL, TestData=NULL,
     VIF=FALSE, COR=FALSE,
@@ -8,7 +9,8 @@
     ENSEMBLE.tune=FALSE,
     ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1,
     input.weights=NULL,
-    MAXENT=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, 
+    MAXENT=1, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, CF=1,
+    GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, 
     MGCVFIX=0, EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, GLMNET=1,
     BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=1, MAHAL01=1,
     PROBIT=FALSE,
@@ -17,11 +19,13 @@
     maxit=100,
     MAXENT.a=NULL, MAXENT.an=10000, 
     MAXENT.path=paste(getwd(), "/models/maxent_", species.name,  sep=""), 
+    MAXNET.classes="default", MAXNET.clamp=FALSE, MAXNET.type="cloglog",
     MAXLIKE.method="BFGS",
     GBM.n.trees=2001, 
     GBMSTEP.tree.complexity=5, GBMSTEP.learning.rate=0.005, 
     GBMSTEP.bag.fraction=0.5, GBMSTEP.step.size=100, 
-    RF.ntree=751,  
+    RF.ntree=751, 
+    CF.ntree=751,
     GLM.family=binomial(link="logit"), 
     GLMSTEP.steps=1000, GLMSTEP.scope=NULL, GLMSTEP.k=2, 
     GAM.family=binomial(link="logit"), 
@@ -99,7 +103,7 @@
     cat(paste("\n\n", "RESULTS WITH ALL VARIABLES", "\n\n", sep=""))
 
     tests <- ensemble.calibrate.models(x=x, 
-        p=p, a=a, an=an, excludep=excludep, 
+        p=p, a=a, an=an, excludep=excludep, target.groups=target.groups,
         k=k, pt=pt, at=at, SSB.reduce=SSB.reduce, CIRCLES.d=CIRCLES.d,
         TrainData=NULL, TestData=NULL,
         PLOTS=FALSE, evaluations.keep=T, models.keep=F,
@@ -109,7 +113,8 @@
         ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min,
         ENSEMBLE.exponent=ENSEMBLE.exponent,
         input.weights=input.weights,
-        MAXENT=MAXENT, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
+        MAXENT=MAXENT, MAXNET=MAXNET, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, CF=CF,
+        GLM=GLM, GLMSTEP=GLMSTEP, 
         GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
         NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, GLMNET=GLMNET,
         BIOCLIM.O=BIOCLIM.O, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, 
@@ -117,13 +122,15 @@
         PROBIT=PROBIT,
         Yweights=Yweights, 
         layer.drops=layer.drops, factors=factors, dummy.vars=dummy.vars,
-        MAXENT.a=MAXENT.a, MAXENT.an=MAXENT.an,
+        MAXENT.a=MAXENT.a, MAXENT.an=MAXENT.an, MAXENT.path=MAXENT.path,
+        MAXNET.classes=MAXNET.classes, MAXNET.clamp=MAXNET.clamp, MAXNET.type=MAXNET.type,
         MAXLIKE.formula=NULL, MAXLIKE.method=MAXLIKE.method,
         GBM.formula=NULL, GBM.n.trees=GBM.n.trees,
         GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
         GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction,
         GBMSTEP.step.size=GBMSTEP.step.size,
         RF.formula=NULL, RF.ntree=RF.ntree, 
+        CF.formula=NULL, CF.ntree=CF.ntree, 
         GLM.formula=NULL, GLM.family=GLM.family, 
         GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=NULL, GLMSTEP.scope=NULL, 
         GAM.formula=NULL, GAM.family=GAM.family, 
@@ -148,7 +155,8 @@
     a1 <- tests$evaluations$a
     a2 <- tests$evaluations$at
 
-    model.names <- c("MAXENT", "MAXLIKE", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
+    model.names <- c("MAXENT", "MAXNET", "MAXLIKE", "GBM", "GBMSTEP", "RF", "CF",
+        "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
         "MGCVFIX", "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET",
         "BIOCLIM.O", "BIOCLIM", "DOMAIN", "MAHAL", "MAHAL01", "ENSEMBLE")
 
@@ -173,6 +181,11 @@
     if(sum(tests$evaluations$TrainData$MAXENT) > 0) {output.LLC["MAXENT",1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$MAXENT)}
     if(sum(tests$evaluations$TestData$MAXENT) > 0) {output.LLT["MAXENT",1] <- loglik.calculation(obs=tests$evaluations$TestData$pb, preds=tests$evaluations$TestData$MAXENT)}
 
+    if(is.null(tests$evaluations$MAXNET.C)==F) {output.C["MAXNET",1] <- tests$evaluations$MAXNET.C@auc}
+    if(is.null(tests$evaluations$MAXNET.T)==F) {output.T["MAXNET",1] <- tests$evaluations$MAXNET.T@auc}
+    if(sum(tests$evaluations$TrainData$MAXNET) > 0) {output.LLC["MAXNET",1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$MAXNET)}
+    if(sum(tests$evaluations$TestData$MAXNET) > 0) {output.LLT["MAXNET",1] <- loglik.calculation(obs=tests$evaluations$TestData$pb, preds=tests$evaluations$TestData$MAXNET)}
+
     if(is.null(tests$evaluations$MAXLIKE.C)==F) {output.C["MAXLIKE",1] <- tests$evaluations$MAXLIKE.C@auc}
     if(is.null(tests$evaluations$MAXLIKE.T)==F) {output.T["MAXLIKE",1] <- tests$evaluations$MAXLIKE.T@auc}
     if(sum(tests$evaluations$TrainData$MAXLIKE) > 0) {output.LLC["MAXLIKE",1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$MAXLIKE)}
@@ -192,6 +205,11 @@
     if(is.null(tests$evaluations$RF.T)==F) {output.T["RF",1] <- tests$evaluations$RF.T@auc}
     if(sum(tests$evaluations$TrainData$RF) > 0) {output.LLC["RF",1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$RF)}
     if(sum(tests$evaluations$TestData$RF) > 0) {output.LLT["RF",1] <- loglik.calculation(obs=tests$evaluations$TestData$pb, preds=tests$evaluations$TestData$RF)}
+
+    if(is.null(tests$evaluations$CF.C)==F) {output.C["CF",1] <- tests$evaluations$CF.C@auc}
+    if(is.null(tests$evaluations$CF.T)==F) {output.T["CF",1] <- tests$evaluations$CF.T@auc}
+    if(sum(tests$evaluations$TrainData$CF) > 0) {output.LLC["CF",1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$CF)}
+    if(sum(tests$evaluations$TestData$CF) > 0) {output.LLT["CF",1] <- loglik.calculation(obs=tests$evaluations$TestData$pb, preds=tests$evaluations$TestData$CF)}
 
     if(is.null(tests$evaluations$GLM.C)==F) {output.C["GLM",1] <- tests$evaluations$GLM.C@auc} 
     if(is.null(tests$evaluations$GLM.T)==F) {output.T["GLM",1] <- tests$evaluations$GLM.T@auc} 
@@ -365,21 +383,23 @@
         ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min,
         ENSEMBLE.exponent=ENSEMBLE.exponent,
         input.weights=input.weights,
-        MAXENT=MAXENT, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
-        GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
-        NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, GLMNET=GLMNET,
+        MAXENT=MAXENT, MAXNET=MAXNET, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, CF=CF,
+        GLM=GLM, GLMSTEP=GLMSTEP, GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, 
+        EARTH=EARTH, RPART=RPART, NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, GLMNET=GLMNET,
         BIOCLIM.O=BIOCLIM.O, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, 
         MAHAL=MAHAL, MAHAL01=MAHAL01,
         PROBIT=PROBIT,
         Yweights=Yweights, 
         layer.drops=layer.drops2, factors=factors2, dummy.vars=dummy.vars2,
         MAXENT.a=MAXENT.a, MAXENT.path=MAXENT.path,
+        MAXNET.classes=MAXNET.classes, MAXNET.clamp=MAXNET.clamp, MAXNET.type=MAXNET.type,
         MAXLIKE.formula=NULL, MAXLIKE.method=MAXLIKE.method,
         GBM.formula=NULL, GBM.n.trees=GBM.n.trees,
         GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
         GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction,
         GBMSTEP.step.size=GBMSTEP.step.size,
         RF.formula=NULL, RF.ntree=RF.ntree, 
+        CF.formula=NULL, CF.ntree=CF.ntree, 
         GLM.formula=NULL, GLM.family=GLM.family, 
         GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=NULL, GLMSTEP.scope=NULL, 
         GAM.formula=NULL, GAM.family=GAM.family, 
@@ -398,6 +418,11 @@
     if(is.null(tests$evaluations$MAXENT.T)==F) {output.T["MAXENT",i+1] <- tests$evaluations$MAXENT.T@auc}
     if(sum(tests$evaluations$TrainData$MAXENT) > 0) {output.LLC["MAXENT",i+1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$MAXENT)}
     if(sum(tests$evaluations$TestData$MAXENT) > 0) {output.LLT["MAXENT",i+1] <- loglik.calculation(obs=tests$evaluations$TestData$pb, preds=tests$evaluations$TestData$MAXENT)}
+
+    if(is.null(tests$evaluations$MAXNET.C)==F) {output.C["MAXNET",i+1] <- tests$evaluations$MAXNET.C@auc}
+    if(is.null(tests$evaluations$MAXNET.T)==F) {output.T["MAXNET",i+1] <- tests$evaluations$MAXNET.T@auc}
+    if(sum(tests$evaluations$TrainData$MAXNET) > 0) {output.LLC["MAXNET",i+1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$MAXNET)}
+    if(sum(tests$evaluations$TestData$MAXNET) > 0) {output.LLT["MAXNET",i+1] <- loglik.calculation(obs=tests$evaluations$TestData$pb, preds=tests$evaluations$TestData$MAXNET)}
 
     if(is.null(tests$evaluations$MAXLIKE.C)==F) {output.C["MAXLIKE",i+1] <- tests$evaluations$MAXLIKE.C@auc}
     if(is.null(tests$evaluations$MAXLIKE.T)==F) {output.T["MAXLIKE",i+1] <- tests$evaluations$MAXLIKE.T@auc}
@@ -418,6 +443,11 @@
     if(is.null(tests$evaluations$RF.T)==F) {output.T["RF",i+1] <- tests$evaluations$RF.T@auc}
     if(sum(tests$evaluations$TrainData$RF) > 0) {output.LLC["RF",i+1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$RF)}
     if(sum(tests$evaluations$TestData$RF) > 0) {output.LLT["RF",i+1] <- loglik.calculation(obs=tests$evaluations$TestData$pb, preds=tests$evaluations$TestData$RF)}
+
+    if(is.null(tests$evaluations$CF.C)==F) {output.C["CF",i+1] <- tests$evaluations$CF.C@auc}
+    if(is.null(tests$evaluations$CF.T)==F) {output.T["CF",i+1] <- tests$evaluations$CF.T@auc}
+    if(sum(tests$evaluations$TrainData$CF) > 0) {output.LLC["CF",i+1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$CF)}
+    if(sum(tests$evaluations$TestData$CF) > 0) {output.LLT["CF",i+1] <- loglik.calculation(obs=tests$evaluations$TestData$pb, preds=tests$evaluations$TestData$CF)}
 
     if(is.null(tests$evaluations$GLM.C)==F) {output.C["GLM",i+1] <- tests$evaluations$GLM.C@auc} 
     if(is.null(tests$evaluations$GLM.T)==F) {output.T["GLM",i+1] <- tests$evaluations$GLM.T@auc} 
@@ -577,21 +607,23 @@
         ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min,
         ENSEMBLE.exponent=ENSEMBLE.exponent,
         input.weights=input.weights,
-        MAXENT=MAXENT, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
-        GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
-        NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, GLMNET=GLMNET,
+        MAXENT=MAXENT, MAXNET=MAXNET, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, CF=CF,
+        GLM=GLM, GLMSTEP=GLMSTEP, GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, 
+        EARTH=EARTH, RPART=RPART, NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, GLMNET=GLMNET,
         BIOCLIM.O=BIOCLIM.O, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, 
         MAHAL=MAHAL, MAHAL01=MAHAL01,
         PROBIT=PROBIT,
         Yweights=Yweights, 
         factors=factors2, dummy.vars=dummy.vars2,
         MAXENT.a=MAXENT.a, MAXENT.path=MAXENT.path,
+        MAXNET.classes=MAXNET.classes, MAXNET.clamp=MAXNET.clamp, MAXNET.type=MAXNET.type,
         MAXLIKE.formula=NULL, MAXLIKE.method=MAXLIKE.method,
         GBM.formula=NULL, GBM.n.trees=GBM.n.trees,
         GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
         GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction,
         GBMSTEP.step.size=GBMSTEP.step.size,
         RF.formula=NULL, RF.ntree=RF.ntree, 
+        CF.formula=NULL, CF.ntree=CF.ntree, 
         GLM.formula=NULL, GLM.family=GLM.family, 
         GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=NULL, GLMSTEP.scope=NULL, 
         GAM.formula=NULL, GAM.family=GAM.family, 
@@ -610,6 +642,11 @@
     if(is.null(tests$evaluations$MAXENT.T)==F) {output1.T["MAXENT",i+1] <- tests$evaluations$MAXENT.T@auc}
     if(sum(tests$evaluations$TrainData$MAXENT) > 0) {output1.LLC["MAXENT",i+1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$MAXENT)}
     if(sum(tests$evaluations$TestData$MAXENT) > 0) {output1.LLT["MAXENT",i+1] <- loglik.calculation(obs=tests$evaluations$TestData$pb, preds=tests$evaluations$TestData$MAXENT)}
+
+    if(is.null(tests$evaluations$MAXNET.C)==F) {output1.C["MAXNET",i+1] <- tests$evaluations$MAXNET.C@auc}
+    if(is.null(tests$evaluations$MAXNET.T)==F) {output1.T["MAXNET",i+1] <- tests$evaluations$MAXNET.T@auc}
+    if(sum(tests$evaluations$TrainData$MAXNET) > 0) {output1.LLC["MAXNET",i+1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$MAXNET)}
+    if(sum(tests$evaluations$TestData$MAXNET) > 0) {output1.LLT["MAXNET",i+1] <- loglik.calculation(obs=tests$evaluations$TestData$pb, preds=tests$evaluations$TestData$MAXNET)}
 
     if(is.null(tests$evaluations$MAXLIKE.C)==F) {output1.C["MAXLIKE",i+1] <- tests$evaluations$MAXLIKE.C@auc}
     if(is.null(tests$evaluations$MAXLIKE.T)==F) {output1.T["MAXLIKE",i+1] <- tests$evaluations$MAXLIKE.T@auc}
@@ -630,6 +667,11 @@
     if(is.null(tests$evaluations$RF.T)==F) {output1.T["RF",i+1] <- tests$evaluations$RF.T@auc}
     if(sum(tests$evaluations$TrainData$RF) > 0) {output1.LLC["RF",i+1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$RF)}
     if(sum(tests$evaluations$TestData$RF) > 0) {output1.LLT["RF",i+1] <- loglik.calculation(obs=tests$evaluations$TestData$pb, preds=tests$evaluations$TestData$RF)}
+
+    if(is.null(tests$evaluations$CF.C)==F) {output1.C["CF",i+1] <- tests$evaluations$CF.C@auc}
+    if(is.null(tests$evaluations$CF.T)==F) {output1.T["CF",i+1] <- tests$evaluations$CF.T@auc}
+    if(sum(tests$evaluations$TrainData$CF) > 0) {output1.LLC["CF",i+1] <- loglik.calculation(obs=tests$evaluations$TrainData$pb, preds=tests$evaluations$TrainData$CF)}
+    if(sum(tests$evaluations$TestData$CF) > 0) {output1.LLT["CF",i+1] <- loglik.calculation(obs=tests$evaluations$TestData$pb, preds=tests$evaluations$TestData$CF)}
 
     if(is.null(tests$evaluations$GLM.C)==F) {output1.C["GLM",i+1] <- tests$evaluations$GLM.C@auc} 
     if(is.null(tests$evaluations$GLM.T)==F) {output1.T["GLM",i+1] <- tests$evaluations$GLM.T@auc} 
@@ -821,11 +863,11 @@
 
 
     cat(paste("\n", "Percentage explained for calibration data",  "\n\n", sep = ""))
-    percentage.LLC <- percentage.LLC[order(percentage.LLC[,"all_vars"], decreasing=T),]
+    percentage.LLC <- percentage.LLC[order(percentage.LLC[,"all_vars"], decreasing=F),]
     print(percentage.LLC)
 
     cat(paste("\n", "Percentage explained for testing data",  "\n\n", sep = ""))
-    percentage.LLT <- percentage.LLT[order(percentage.LLT[,"all_vars"], decreasing=T),]
+    percentage.LLT <- percentage.LLT[order(percentage.LLT[,"all_vars"], decreasing=F),]
     print (percentage.LLT)
 
 ## Models with one variable only
@@ -853,7 +895,7 @@
             output1.T[,i+1] <- output1.T[,i+1] - output1.T[,1]
         }
     }
-    output1.T <- output1.T[order(output1.T[,"all_vars"], decreasing=T),]
+    output1.T <- output1.T[order(output1.T[,"all_vars"], decreasing=F),]
     cat(paste("\n", "AUC for testing data (as percentage)", "\n\n", sep = ""))
     if (difference == T) {
         cat(paste("\n", "Results for variables show change from full models", sep = ""))
@@ -919,11 +961,11 @@
 
 
     cat(paste("\n", "Percentage explained for calibration data",  "\n\n", sep = ""))
-    percentage1.LLC <- percentage1.LLC[order(percentage1.LLC[,"all_vars"], decreasing=T),]
+    percentage1.LLC <- percentage1.LLC[order(percentage1.LLC[,"all_vars"], decreasing=F),]
     print(percentage1.LLC)
 
     cat(paste("\n", "Percentage explained for testing data",  "\n\n", sep = ""))
-    percentage1.LLT <- percentage1.LLT[order(percentage1.LLT[,"all_vars"], decreasing=T),]
+    percentage1.LLT <- percentage1.LLT[order(percentage1.LLT[,"all_vars"], decreasing=F),]
     print (percentage1.LLT)
 
 #

@@ -1,13 +1,14 @@
     # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
-    # DEC 2016
+    # DEC 2018
 
     menu    biodivMenu      topMenu         ""                                              ""                          ""          ""
     menu    communMenu      biodivMenu      ""                                              ""                          ""          ""
     item    communMenu      command         "Select community data set..."                  selectCommunityDataSet      "dataSetsP()"          ""
-    item    communMenu      command         "Import datasets from Excel..."                 importfromExcelGUI          ""          ""
-    item    communMenu      command         "Import datasets from Excel2007..."             importfromExcel2007GUI      ""          ""
-    item    communMenu      command         "Import datasets from Access..."                importfromAccessGUI         ""          ""
-    item    communMenu      command         "Import datasets from Access2007..."            importfromAccess2007GUI     ""          ""
+    item    communMenu      command         "Import datasets from Excel..."                 importfromExcelGUI2         ""          ""
+    item    communMenu      command         "Import datasets from Excel (RODBC)..."         importfromExcelGUI          ""          ""
+    item    communMenu      command         "Import datasets from Excel2007 (RODBC)..."     importfromExcel2007GUI      ""          ""
+    item    communMenu      command         "Import datasets from Access (RODBC)..."        importfromAccessGUI         ""          ""
+    item    communMenu      command         "Import datasets from Access2007 (RODBC)..."    importfromAccess2007GUI     ""          ""
     item    communMenu      command         "Make community data set..."                    makecommunityGUI            "activeDataSetP()"          ""
     item    communMenu      command         "View community data set"                       viewcommunity               "communityDataSetP()"          ""
     item    communMenu      command         "Edit community data set"                       editcommunity               "communityDataSetP()"          ""
@@ -64,6 +65,8 @@
     item    presMenu        command         "View selected presence data set"               viewpresence                "presence.focalP()"          ""
     item    presMenu        command         "Select data set to create presence data..."    selectActiveDataSet         "dataSetsP()"          ""
     item    presMenu        command         "Create species presence data set..."           make.presence.GUI           "activeDataSetP()"          ""
+    item    presMenu        command         "Spatial thinning..."                           spatial.thin.GUI            "presence.focalP()"          ""
+    item    presMenu        command         "Environmental thinning..."                     environmental.thin.GUI      "stack.focalP() && presence.focalP()"          ""
     menu    absMenu         ensMenu         ""                                              ""                          ""          ""
     item    absMenu         command         "Select absence data set..."                    absence.select.GUI          "dataSetsP()"          ""
     item    absMenu         command         "View selected absence data set"                viewabsence                 "absence.focalP()"          ""

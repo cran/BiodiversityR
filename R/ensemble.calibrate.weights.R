@@ -1,8 +1,9 @@
 `ensemble.calibrate.weights` <- function(
     x=NULL, p=NULL,
     a=NULL, an=1000, 
-    get.block=FALSE, SSB.reduce=FALSE, CIRCLES.d=100000,
-    excludep=FALSE, k=4, 
+    get.block=FALSE, block.default=TRUE, get.subblocks=FALSE, 
+    SSB.reduce=FALSE, CIRCLES.d=100000,
+    excludep=FALSE, target.groups=FALSE, k=4, 
     VIF=FALSE, COR=FALSE,
     SINK=FALSE, PLOTS=FALSE, CATCH.OFF=FALSE,
     data.keep=FALSE,
@@ -11,8 +12,8 @@
     ENSEMBLE.tune=FALSE, 
     ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1, ENSEMBLE.weight.min=0.05,
     input.weights=NULL,
-    MAXENT=1, MAXLIKE=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, 
-    GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0,
+    MAXENT=1, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=1, RF=1, CF=1,
+    GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0,
     EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, GLMNET=1,
     BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=1, MAHAL01=1,
     PROBIT=FALSE,
@@ -21,11 +22,13 @@
     formulae.defaults=TRUE, maxit=100,
     MAXENT.a=NULL, MAXENT.an=10000, 
     MAXENT.path=paste(getwd(), "/models/maxent_", species.name,  sep=""), 
+    MAXNET.classes="default", MAXNET.clamp=FALSE, MAXNET.type="cloglog",
     MAXLIKE.formula=NULL, MAXLIKE.method="BFGS",
     GBM.formula=NULL, GBM.n.trees=2001, 
     GBMSTEP.gbm.x=2:(length(var.names)+1), GBMSTEP.tree.complexity=5, GBMSTEP.learning.rate=0.005, 
     GBMSTEP.bag.fraction=0.5, GBMSTEP.step.size=100, 
     RF.formula=NULL, RF.ntree=751, RF.mtry=floor(sqrt(length(var.names))), 
+    CF.formula=NULL, CF.ntree=751, CF.mtry=floor(sqrt(length(var.names))), 
     GLM.formula=NULL, GLM.family=binomial(link="logit"), 
     GLMSTEP.steps=1000, STEP.formula=NULL, GLMSTEP.scope=NULL, GLMSTEP.k=2, 
     GAM.formula=NULL, GAM.family=binomial(link="logit"), 
@@ -81,7 +84,8 @@
         if(length(layer.drops) == 0) {layer.drops <- NULL}
     }
 #
-    output.rownames <- c("MAXENT", "MAXLIKE", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
+    output.rownames <- c("MAXENT", "MAXNET", "MAXLIKE", "GBM", "GBMSTEP", "RF", "CF", 
+        "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
         "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET", 
         "BIOCLIM.O", "BIOCLIM", "DOMAIN", "MAHAL", "MAHAL01", "ENSEMBLE")
 #
@@ -118,14 +122,15 @@
 
 # 
 # run ensemble.calibrate.models first to obtain MAXENT.a and var.names
+# also obtain p and a, possibly via target group sampling
     tests <- ensemble.calibrate.models(x=x, 
-        p=p, a=a, an=an, pt=NULL, at=NULL, excludep=excludep, k=0, 
-        TrainData=NULL, 
+        p=p, a=a, an=an, pt=NULL, at=NULL, excludep=excludep, target.groups=target.groups,
+        k=0, TrainData=NULL, 
         VIF=F, COR=F,
         PLOTS=PLOTS, evaluations.keep=T, models.keep=F,
         ENSEMBLE.tune=F,
         ENSEMBLE.exponent=1, ENSEMBLE.best=1, ENSEMBLE.min=0.7,
-        MAXENT=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=0, GLM=0, GLMSTEP=0, 
+        MAXENT=0, MAXNET=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=0, CF=0, GLM=0, GLMSTEP=0, 
         GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, 
         NNET=0, FDA=0, SVM=0, SVME=0, GLMNET=0,
         BIOCLIM.O=0, BIOCLIM=0, DOMAIN=0, MAHAL=0, MAHAL01=0,
@@ -149,14 +154,42 @@
     p.all <- tests$evaluations$p
     a.all <- tests$evaluations$a
 
+    if (get.subblocks == T) {get.block <- T}
+
     if (get.block == F) {
         groupp <- dismo::kfold(p.all, k=k)
         groupa <- dismo::kfold(a.all, k=k)
     }else{
-        blocks <- ENMeval::get.block(occ=p.all, bg.coords=a.all)
+        p2.all <- p.all
+        a2.all <- a.all
+        if (block.default == F) {
+            p2.all[, 1] <- p.all[, 2]
+            p2.all[, 2] <- p.all[, 1]
+            a2.all[, 1] <- a.all[, 2]
+            a2.all[, 2] <- a.all[, 1]
+            cat(paste("\n", "non-default ENMeval::get.block with first split along longitude", "\n\n", sep = ""))
+        }else{
+            cat(paste("\n", "default ENMeval::get.block with first split along latitude", "\n\n", sep = ""))
+        }
+        blocks <- ENMeval::get.block(occ=p2.all, bg.coords=a2.all)
         groupp <- blocks$occ.grp
         groupa <- blocks$bg.grp
         k <- 4
+
+# 'subblocking' whereby get.block is applied to each previously determined block
+        if (get.subblocks == T) {
+            occ.old <- groupp
+            backg.old <- groupa
+            for (i in 1:4) {
+                occ.i <- p2.all[occ.old == i, ]
+                backg.i <- a2.all[backg.old == i, ]
+                block2 <- ENMeval::get.block(occ=occ.i, bg.coords=backg.i)
+                occ.new <- block2$occ.grp
+                backg.new <- block2$bg.grp
+                groupp[occ.old == i] <- occ.new
+                groupa[backg.old == i] <- backg.new
+            }
+        }
     }
 
 # Start cross-validations
@@ -178,21 +211,23 @@
                 evaluations.keep=T, models.keep=F,
                 ENSEMBLE.tune=ENSEMBLE.tune,
                 ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, ENSEMBLE.exponent=ENSEMBLE.exponent, ENSEMBLE.weight.min=ENSEMBLE.weight.min,
-                MAXENT=MAXENT, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, GLM=GLM, GLMSTEP=GLMSTEP, 
-                GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, EARTH=EARTH, RPART=RPART, 
-                NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, GLMNET=GLMNET,
+                MAXENT=MAXENT, MAXNET=MAXNET, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, CF=CF, 
+                GLM=GLM, GLMSTEP=GLMSTEP, GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, 
+                EARTH=EARTH, RPART=RPART, NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, GLMNET=GLMNET,
                 BIOCLIM.O=BIOCLIM.O, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, MAHAL=MAHAL, MAHAL01=MAHAL01,
                 PROBIT=PROBIT,  
                 Yweights=Yweights, 
                 factors=factors2, dummy.vars=dummy.vars2,
                 maxit=maxit,
                 MAXENT.a=MAXENT.a, MAXENT.path=MAXENT.path,
+                MAXNET.clamp=MAXNET.clamp, MAXNET.type=MAXNET.type,
                 MAXLIKE.formula=MAXLIKE.formula, MAXLIKE.method=MAXLIKE.method,
                 GBM.formula=GBM.formula, GBM.n.trees=GBM.n.trees, 
                 GBMSTEP.gbm.x=GBMSTEP.gbm.x, GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
                 GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction,
                 GBMSTEP.step.size=GBMSTEP.step.size, 
                 RF.formula=RF.formula, RF.ntree=RF.ntree, RF.mtry=RF.mtry, 
+                CF.formula=CF.formula, CF.ntree=CF.ntree, CF.mtry=CF.mtry, 
                 GLM.formula=GLM.formula, GLM.family=GLM.family, 
                 GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=STEP.formula, 
                 GLMSTEP.scope=GLMSTEP.scope, 
@@ -213,10 +248,12 @@
         dummy.vars.noDOMAIN <- tests$evaluations$dummy.vars.noDOMAIN
 
         if(is.null(tests$evaluations$MAXENT.T)==F) {output["MAXENT",i] <- tests$evaluations$MAXENT.T@auc}
+        if(is.null(tests$evaluations$MAXNET.T)==F) {output["MAXNET",i] <- tests$evaluations$MAXNET.T@auc}
         if(is.null(tests$evaluations$MAXLIKE.T)==F) {output["MAXLIKE",i] <- tests$evaluations$MAXLIKE.T@auc}
         if(is.null(tests$evaluations$GBM.T)==F) {output["GBM",i] <- tests$evaluations$GBM.T@auc} 
         if(is.null(tests$evaluations$GBMSTEP.T)==F) {output["GBMSTEP",i] <- tests$evaluations$GBMSTEP.T@auc} 
         if(is.null(tests$evaluations$RF.T)==F) {output["RF",i] <- tests$evaluations$RF.T@auc}
+        if(is.null(tests$evaluations$CF.T)==F) {output["CF",i] <- tests$evaluations$CF.T@auc}
         if(is.null(tests$evaluations$GLM.T)==F) {output["GLM",i] <- tests$evaluations$GLM.T@auc} 
         if(is.null(tests$evaluations$GLMS.T)==F) {output["GLMSTEP",i] <- tests$evaluations$GLMS.T@auc}
         if(is.null(tests$evaluations$GAM.T)==F) {output["GAM",i] <- tests$evaluations$GAM.T@auc} 
@@ -239,10 +276,12 @@
 
         if(ENSEMBLE.tune == T) {
             output["MAXENT",k+1+i] <- tests$evaluations$STRATEGY.weights["MAXENT"]
+            output["MAXNET",k+1+i] <- tests$evaluations$STRATEGY.weights["MAXNET"]
             output["MAXLIKE",k+1+i] <- tests$evaluations$STRATEGY.weights["MAXLIKE"]
             output["GBM",k+1+i] <- tests$evaluations$STRATEGY.weights["GBM"]
             output["GBMSTEP",k+1+i] <- tests$evaluations$STRATEGY.weights["GBMSTEP"]
             output["RF",k+1+i] <- tests$evaluations$STRATEGY.weights["RF"]
+            output["CF",k+1+i] <- tests$evaluations$STRATEGY.weights["CF"]
             output["GLM",k+1+i] <- tests$evaluations$STRATEGY.weights["GLM"]
             output["GLMSTEP",k+1+i] <- tests$evaluations$STRATEGY.weights["GLMSTEP"]
             output["GAM",k+1+i] <- tests$evaluations$STRATEGY.weights["GAM"]
@@ -333,8 +372,9 @@
     names(output2)[k+1] <- c("MEAN.T")
     for (i in 1:k) {
         TestData <- TestData.all[[i]]
-        TestData[,"ENSEMBLE"] <- output.weights["MAXENT"]*TestData[,"MAXENT"] + output.weights["MAXLIKE"]*TestData[,"MAXLIKE"] + output.weights["GBM"]*TestData[,"GBM"] +
-            output.weights["GBMSTEP"]*TestData[,"GBMSTEP"] + output.weights["RF"]*TestData[,"RF"] + output.weights["GLM"]*TestData[,"GLM"] +
+        TestData[,"ENSEMBLE"] <- output.weights["MAXENT"]*TestData[,"MAXENT"] + output.weights["MAXNET"]*TestData[,"MAXNET"] +
+            output.weights["MAXLIKE"]*TestData[,"MAXLIKE"] + output.weights["GBM"]*TestData[,"GBM"] +
+            output.weights["GBMSTEP"]*TestData[,"GBMSTEP"] + output.weights["RF"]*TestData[,"RF"] + output.weights["CF"]*TestData[,"CF"] + output.weights["GLM"]*TestData[,"GLM"] +
             output.weights["GLMSTEP"]*TestData[,"GLMSTEP"] + output.weights["GAM"]*TestData[,"GAM"] + output.weights["GAMSTEP"]*TestData[,"GAMSTEP"] +
             output.weights["MGCV"]*TestData[,"MGCV"] + output.weights["MGCVFIX"]*TestData[,"MGCVFIX"] + output.weights["EARTH"]*TestData[,"EARTH"] +
             output.weights["RPART"]*TestData[,"RPART"] + output.weights["NNET"]*TestData[,"NNET"] + output.weights["FDA"]*TestData[,"FDA"] +
@@ -356,7 +396,7 @@
         cat(paste("\n\n"))
         return(list(AUC.table=output, table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, 
             data=TestData.all, 
-            x=x, p=p.all, a=a.all, MAXENT.a=MAXENT.a,
+            x=x, p=p.all, a=a.all, MAXENT.a=MAXENT.a, groupp=groupp, groupa=groupa,
             var.names=var.names, factors=factors2, dummy.vars=dummy.vars2, dummy.vars.noDOMAIN=dummy.vars.noDOMAIN,
             species.name=species.name, 
             call=match.call()))
@@ -365,7 +405,7 @@
         return(list(data=TestData.all, 
             AUC.table=output, table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, 
             data=TestData.all, 
-            x=x, p=p.all, a=a.all, MAXENT.a=MAXENT.a,
+            x=x, p=p.all, a=a.all, MAXENT.a=MAXENT.a, groupp=groupp, groupa=groupa,
             var.names=var.names, factors=factors2, dummy.vars=dummy.vars2, dummy.vars.noDOMAIN=dummy.vars.noDOMAIN,
             species.name=species.name, 
             call=match.call()))

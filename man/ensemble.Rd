@@ -21,7 +21,8 @@ The basic function \code{ensemble.calibrate.models} allows to evaluate different
 
 
 \usage{
-ensemble.calibrate.models(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, 
+ensemble.calibrate.models(x = NULL, p = NULL, 
+    a = NULL, an = 1000, excludep = FALSE, target.groups = FALSE,
     k = 0, pt = NULL, at = NULL, SSB.reduce = FALSE, CIRCLES.d = 250000, 
     TrainData = NULL, TestData = NULL, 
     VIF = FALSE, COR = FALSE,
@@ -35,9 +36,9 @@ ensemble.calibrate.models(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FA
     ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1, 
     ENSEMBLE.weight.min = 0.05,
     input.weights = NULL, 
-    MAXENT = 1, MAXLIKE = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, 
-    GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, 
-    RPART = 1, NNET = 1, FDA = 1, SVM = 1 , SVME = 1, GLMNET = 1,
+    MAXENT = 1, MAXNET = 1, MAXLIKE = 1, GBM = 1, GBMSTEP = 1, RF = 1, CF = 1,
+    GLM = 1, GLMSTEP = 1, GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, 
+    EARTH = 1, RPART = 1, NNET = 1, FDA = 1, SVM = 1 , SVME = 1, GLMNET = 1,
     BIOCLIM.O = 0, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, MAHAL01 = 1,
     PROBIT = FALSE,
     Yweights = "BIOMOD", 
@@ -45,13 +46,14 @@ ensemble.calibrate.models(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FA
     formulae.defaults = TRUE, maxit = 100,
     MAXENT.a = NULL, MAXENT.an = 10000, 
     MAXENT.path = paste(getwd(), "/models/maxent_", species.name,  sep=""), 
+    MAXNET.classes = "default", MAXNET.clamp = FALSE, MAXNET.type = "cloglog",
     MAXLIKE.formula = NULL, MAXLIKE.method = "BFGS",
     GBM.formula = NULL, GBM.n.trees = 2001, 
-    GBMSTEP.gbm.x = 2:(ncol(TrainData.vars)+1), GBMSTEP.tree.complexity = 5, 
+    GBMSTEP.gbm.x = 2:(ncol(TrainData.orig)), GBMSTEP.tree.complexity = 5, 
     GBMSTEP.learning.rate = 0.005, GBMSTEP.bag.fraction = 0.5, 
     GBMSTEP.step.size = 100, 
-    RF.formula = NULL, RF.ntree = 751, 
-    RF.mtry = floor(sqrt(ncol(TrainData.vars))), 
+    RF.formula = NULL, RF.ntree = 751, RF.mtry = floor(sqrt(ncol(TrainData.vars))), 
+    CF.formula = NULL, CF.ntree = 751, CF.mtry = floor(sqrt(ncol(TrainData.vars))),
     GLM.formula = NULL, GLM.family = binomial(link = "logit"), 
     GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, 
     GLMSTEP.k = 2, 
@@ -72,9 +74,9 @@ ensemble.calibrate.models(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FA
 
 ensemble.calibrate.weights(x = NULL, p = NULL, 
     a = NULL, an = 1000, 
-    get.block = FALSE,
+    get.block = FALSE, block.default = TRUE, get.subblocks = FALSE,
     SSB.reduce = FALSE, CIRCLES.d = 100000, 
-    excludep = FALSE, 
+    excludep = FALSE, target.groups = FALSE,
     k = 4, 
     VIF = FALSE, COR = FALSE,
     SINK = FALSE, PLOTS = FALSE, CATCH.OFF = FALSE, 
@@ -86,9 +88,9 @@ ensemble.calibrate.weights(x = NULL, p = NULL,
     ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1,
     ENSEMBLE.weight.min = 0.05,
     input.weights = NULL,
-    MAXENT = 1, MAXLIKE = 1, GBM = 1, GBMSTEP = 1, RF = 1, GLM = 1, GLMSTEP = 1, 
-    GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, 
-    RPART = 1, NNET = 1, FDA = 1, SVM = 1 , SVME = 1, GLMNET = 1,
+    MAXENT = 1, MAXNET = 1, MAXLIKE = 1, GBM = 1, GBMSTEP = 1, RF = 1, CF = 1, 
+    GLM = 1, GLMSTEP = 1, GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, 
+    EARTH = 1, RPART = 1, NNET = 1, FDA = 1, SVM = 1 , SVME = 1, GLMNET = 1,
     BIOCLIM.O = 0, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, MAHAL01 = 1,
     PROBIT = FALSE,
     Yweights = "BIOMOD", 
@@ -96,12 +98,14 @@ ensemble.calibrate.weights(x = NULL, p = NULL,
     formulae.defaults = TRUE, maxit = 100,
     MAXENT.a = NULL, MAXENT.an = 10000, 
     MAXENT.path = paste(getwd(), "/models/maxent_", species.name,  sep=""), 
+    MAXNET.classes = "default", MAXNET.clamp = FALSE, MAXNET.type = "cloglog",
     MAXLIKE.formula = NULL, MAXLIKE.method = "BFGS",
     GBM.formula = NULL, GBM.n.trees = 2001, 
     GBMSTEP.gbm.x = 2:(length(var.names)+1), GBMSTEP.tree.complexity = 5, 
     GBMSTEP.learning.rate = 0.005, 
     GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100, 
     RF.formula = NULL, RF.ntree = 751, RF.mtry = floor(sqrt(length(var.names))), 
+    CF.formula = NULL, CF.ntree = 751, CF.mtry = floor(sqrt(length(var.names))),
     GLM.formula = NULL, GLM.family = binomial(link = "logit"), 
     GLMSTEP.steps = 1000, STEP.formula = NULL, GLMSTEP.scope = NULL, GLMSTEP.k = 2, 
     GAM.formula = NULL, GAM.family = binomial(link = "logit"), 
@@ -143,7 +147,8 @@ ensemble.calibrate.models.nnet(x = NULL, p = NULL, a = NULL, an = 1000, excludep
     NNET.formula = NULL, 
     sizes = c(2, 4, 6, 8), decays = c(0.1, 0.05, 0.01, 0.001) )
 
-ensemble.drop1(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE, 
+ensemble.drop1(x = NULL, p = NULL, 
+    a = NULL, an = 1000, excludep = FALSE, target.groups = FALSE,
     k = 0, pt = NULL, at = NULL, SSB.reduce = FALSE, CIRCLES.d = 100000, 
     TrainData = NULL, TestData = NULL,
     VIF = FALSE, COR = FALSE,
@@ -153,9 +158,9 @@ ensemble.drop1(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE,
     ENSEMBLE.tune = FALSE,
     ENSEMBLE.best = 0, ENSEMBLE.min = 0.7, ENSEMBLE.exponent = 1,
     input.weights = NULL, 
-    MAXENT = 1, MAXLIKE = 1, GBM = 1, GBMSTEP = 0, RF = 1, GLM = 1, GLMSTEP = 1, 
-    GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, EARTH = 1, 
-    RPART = 1, NNET = 1, FDA = 1, SVM = 1, SVME = 1, GLMNET = 1,
+    MAXENT = 1, MAXNET = 1, MAXLIKE = 1, GBM = 1, GBMSTEP = 0, RF = 1, CF = 1, 
+    GLM = 1, GLMSTEP = 1, GAM = 1, GAMSTEP = 1, MGCV = 1, MGCVFIX = 0, 
+    EARTH = 1, RPART = 1, NNET = 1, FDA = 1, SVM = 1, SVME = 1, GLMNET = 1,
     BIOCLIM.O = 0, BIOCLIM = 1, DOMAIN = 1, MAHAL = 1, MAHAL01 = 1,
     PROBIT = FALSE,
     Yweights = "BIOMOD", 
@@ -163,11 +168,13 @@ ensemble.drop1(x = NULL, p = NULL, a = NULL, an = 1000, excludep = FALSE,
     maxit = 100,
     MAXENT.a = NULL, MAXENT.an = 10000, 
     MAXENT.path = paste(getwd(), "/models/maxent_", species.name,  sep=""), 
+    MAXNET.classes = "default", MAXNET.clamp = FALSE, MAXNET.type = "cloglog",
     MAXLIKE.method = "BFGS",
     GBM.n.trees = 2001, 
     GBMSTEP.tree.complexity = 5, GBMSTEP.learning.rate = 0.005, 
     GBMSTEP.bag.fraction = 0.5, GBMSTEP.step.size = 100, 
     RF.ntree = 751, 
+    CF.ntree = 751,
     GLM.family = binomial(link = "logit"), 
     GLMSTEP.steps = 1000, GLMSTEP.scope = NULL, GLMSTEP.k = 2, 
     GAM.family = binomial(link = "logit"), 
@@ -208,6 +215,7 @@ ensemble.pairs(x = NULL, a = NULL, an = 10000)
   \item{a}{ background points used for calibrating the suitability models (except for \code{\link[dismo]{maxent}}), typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{an}{ number of background points for calibration to be selected with \code{\link[dismo]{randomPoints}} in case argument \code{a} is missing}
   \item{excludep}{ parameter that indicates (if \code{TRUE}) that presence points will be excluded from the background points; see also \code{\link[dismo]{randomPoints}} }
+  \item{target.groups}{ Parameter that indicates (if \code{TRUE}) that the provided background points (argument \code{a}) represent presence points from a target group sensu Phillips et al. 2009 (these are species that are all collected or observed using the same methods or equipment). Setting the parameter to \code{TRUE} results in selecting the centres of cells of the target groups as background points, while avoiding to select the same cells twice. Via argument \code{excludep}, it is possible to filter out cells that are in the same cell are presence observations (argument \code{p}).  }
   \item{k}{ If larger than 1, the number of groups to split between calibration (k-1) and evaluation (1) data sets (for example, \code{k = 4} results in 3/4 of presence and background points to be used for calibrating the models, and 1/4 of presence and background points to be used for evaluating the models). For \code{ensemble.calibrate.weights}, \code{ensemble.calibrate.models.gbm} and \code{ensemble.calibrate.models.nnet}, this procedure is repeated \code{k} times (k-fold cross-validation). See also \code{\link[dismo]{kfold}}.  }
   \item{pt}{ presence points used for evaluating the suitability models, available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{at}{ background points used for evaluating the suitability models, available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
@@ -236,10 +244,12 @@ ensemble.pairs(x = NULL, a = NULL, an = 10000)
   \item{ENSEMBLE.weight.min}{ The minimum output weight for models included in the ensemble, applying to weights that sum to one. Note that \code{ENSEMBLE.min} typically refers to input AUC values.   }
   \item{input.weights}{ array with numeric values for the different modelling algorithms; if \code{NULL} then values provided by parameters such as \code{MAXENT} and \code{GBM} will be used. As an alternative, the output from \code{ensemble.calibrate.weights} can be used. }
   \item{MAXENT}{ number: if larger than 0, then a maximum entropy model (\code{\link[dismo]{maxent}}) will be fitted among ensemble }
+  \item{MAXNET}{ number: if larger than 0, then a maximum entropy model (\code{\link[maxnet]{maxnet}}) will be fitted among ensemble }
   \item{MAXLIKE}{ number: if larger than 0, then a maxlike model (\code{\link[maxlike]{maxlike}}) will be fitted among ensemble }
   \item{GBM}{ number: if larger than 0, then a boosted regression trees model (\code{\link[gbm]{gbm}}) will be fitted among ensemble }
   \item{GBMSTEP}{ number: if larger than 0, then a stepwise boosted regression trees model (\code{\link[dismo]{gbm.step}}) will be fitted among ensemble }
   \item{RF}{ number: if larger than 0, then a random forest model (\code{\link[randomForest]{randomForest}}) will be fitted among ensemble }
+  \item{CF}{ number: if larger than 0, then a random forest model (\code{\link[party]{cforest}}) will be fitted among ensemble }
   \item{GLM}{ number: if larger than 0, then a generalized linear model (\code{\link[stats]{glm}}) will be fitted among ensemble }
   \item{GLMSTEP}{ number: if larger than 0, then a stepwise generalized linear model (\code{\link[MASS]{stepAIC}}) will be fitted among ensemble }
   \item{GAM}{ number: if larger than 0, then a generalized additive model (\code{\link[gam]{gam}}) will be fitted among ensemble }
@@ -268,6 +278,9 @@ ensemble.pairs(x = NULL, a = NULL, an = 10000)
   \item{MAXENT.a}{ background points used for calibrating the maximum entropy model (\code{\link[dismo]{maxent}}), typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}.  }
   \item{MAXENT.an}{ number of background points for calibration to be selected with \code{\link[dismo]{randomPoints}} in case argument \code{MAXENT.a} is missing}
   \item{MAXENT.path}{ path to the directory where output files of the maximum entropy model are stored; see also \code{\link[dismo]{maxent}}   }
+  \item{MAXNET.classes}{ continuous feature classes, either "default" or any subset of "lqpht" (linear, quadratic, product, hinge, threshold). Note that the "default" option chooses feature classes based on the number of presence locations as "l" (< 10 locations), "lq" (10 - 14 locations), "lqh" (15 - 79 locations) or "lqph" (> 79 locations). See also \code{\link[maxnet]{maxnet}}.   }
+  \item{MAXNET.clamp}{ restrict predictors and features to the range seen during model training; see also \code{\link[maxnet]{predict.maxnet}}   }
+  \item{MAXNET.type}{ type of response required; see also \code{\link[maxnet]{predict.maxnet}}   }
   \item{MAXLIKE.formula}{ formula for the maxlike algorithm; see also \code{\link[maxlike]{maxlike}}  }
   \item{MAXLIKE.method}{ method for the maxlike algorithm; see also \code{\link[stats]{optim}}  }
   \item{GBM.formula}{ formula for the boosted regression trees algorithm; see also \code{\link[gbm]{gbm}}  }
@@ -280,6 +293,9 @@ ensemble.pairs(x = NULL, a = NULL, an = 10000)
   \item{RF.formula}{ formula for random forest algorithm; see also \code{\link[randomForest]{randomForest}}  }
   \item{RF.ntree}{ number of trees to grow for random forest algorithm; see also \code{\link[randomForest]{randomForest}}  }
   \item{RF.mtry}{ number of variables randomly sampled as candidates at each split for random forest algorithm; see also \code{\link[randomForest]{randomForest}}  }
+  \item{CF.formula}{ formula for random forest algorithm; see also \code{\link[party]{cforest}}  }
+  \item{CF.ntree}{ number of trees to grow in a forest; see also \code{\link[party]{cforest_control}}  }
+  \item{CF.mtry}{ number of input variables randomly sampled as candidates at each node for random forest like algorithms; see also \code{\link[party]{cforest_control}}   }
   \item{GLM.formula}{ formula for the generalized linear model; see also \code{\link[stats]{glm}}  }
   \item{GLM.family}{ description of the error distribution and link function for the generalized linear model; see also \code{\link[stats]{glm}}  }
   \item{GLMSTEP.steps}{ maximum number of steps to be considered for stepwise generalized linear model; see also \code{\link[MASS]{stepAIC}}  }
@@ -310,6 +326,8 @@ ensemble.pairs(x = NULL, a = NULL, an = 10000)
   \item{MAHAL.shape}{ parameter that influences the transformation of output values of \code{\link[dismo]{mahal}}. See details section.  }
 
   \item{get.block}{ if \code{TRUE}, instead of creating k-fold cross-validation subsets randomly (\code{\link[dismo]{kfold}}), create 4 subsets of presence and background locations with \code{\link[ENMeval]{get.block}}.  }
+  \item{block.default}{ if \code{FALSE}, instead of making the first division of presence point locations along the y-coordinates (latitude) as in \code{\link[ENMeval]{get.block}}, make the first division along the x-coordinates (longitude).  }
+  \item{get.subblocks}{ if \code{TRUE}, then 4 subsets of presence and background locations are generated in a checkerboard configuration by applying \code{\link[ENMeval]{get.block}} to each of the 4 blocks generated by \code{\link[ENMeval]{get.block}} in a first step. }
 
   \item{complexity}{ vector with values of complexity of individual trees (\code{tree.complexity}) for boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
   \item{learning}{ vector with values of weights applied to individual trees (\code{learning.rate}) for boosted regression trees; see also \code{\link[dismo]{gbm.step}}  }
@@ -391,6 +409,8 @@ Buisson L, Thuiller W, Casajus N, Lek S and Grenouillet G. 2010. Uncertainty in 
 Liu C, Berry PM, Dawson TP and Pearson RC. 2005. Selecting thresholds of occurrence in the prediction of species distributions. Ecography 28: 385-393
 
 Liu C, White M and Newell G. 2013. Selecting thresholds for the prediction of species occurrence with presence-only data. Journal of Biogeography 40: 778-789
+
+Phillips SJ, Dudik M, Elith J et al. 2009. Sample selection bias and presence-only distribution models: implications for background and pseudo-absence data. Ecological Applications 19: 181-197.
 }
 
 
@@ -443,16 +463,18 @@ glmformula <- as.formula(pb ~ bio5 + I(bio5^2) + I(bio5^3) +
     bio17 + I(bio17^2) + I(bio17^3) )
 
 # fit four ensemble models (RF, GLM, BIOCLIM, DOMAIN)
+# factors removed for BIOCLIM, DOMAIN, MAHAL
 ensemble.nofactors <- ensemble.calibrate.models(x=predictors, p=pres_train, a=backg_train, 
     pt=pres_test, at=backg_test,
     species.name="Bradypus",
     ENSEMBLE.tune=TRUE,
     ENSEMBLE.min = 0.65,
-    MAXENT=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=0, 
-    GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, NNET=0, FDA=0, 
-    SVM=0, SVME=0, GLMNET=0,
+    MAXENT=0, MAXNET=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=1, CF=0, 
+    GLM=1, GLMSTEP=0, GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0, 
+    EARTH=0, RPART=0, NNET=0, FDA=0, SVM=0, SVME=0, GLMNET=0,
     BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=0,
     Yweights="BIOMOD",
+    factors="biome",
     evaluations.keep=TRUE, models.keep=TRUE,
     RF.formula=rfformula,
     GLM.formula=glmformula)
@@ -481,7 +503,8 @@ ensemble.nofactors <- ensemble.calibrate.models(x=predictors,
     ENSEMBLE.tune=TRUE,
     ENSEMBLE.min=0.65,
     SINK=TRUE,
-    MAXENT=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=0, 
+    MAXENT=0, MAXNET=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=1, CF=0, 
+    GLM=1, GLMSTEP=0, GAM=0, 
     GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, NNET=0, FDA=0, 
     SVM=0, SVME=0, GLMNET=0,
     BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=0,
@@ -499,9 +522,9 @@ ensemble.nofactors <- ensemble.calibrate.models(x=predictors,
     SINK=TRUE,
     ENSEMBLE.tune=TRUE,
     ENSEMBLE.min=0.65,
-    MAXENT=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=0, GAM=0, 
-    GAMSTEP=0, MGCV=0, MGCVFIX=0, EARTH=0, RPART=0, NNET=0, FDA=0, 
-    SVM=0, SVME=0, GLMNET=0,
+    MAXENT=0, MAXNET=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=1, CF=0,
+    GLM=1, GLMSTEP=0, GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0, 
+    EARTH=0, RPART=0, NNET=0, FDA=0, SVM=0, SVME=0, GLMNET=0,
     BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=0,
     PROBIT=TRUE,
     Yweights="BIOMOD", factors="biome",
@@ -523,9 +546,9 @@ ensemble.factors1 <- ensemble.calibrate.models(x=predictors,
     SINK=TRUE,
     ENSEMBLE.tune=TRUE,
     ENSEMBLE.min=0.65,
-    MAXENT=0, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
-    GAMSTEP=1, MGCV=1, MGCVFIX=0, EARTH=1, RPART=1, NNET=1, FDA=1, 
-    SVM=1, SVME=1, GLMNET=1,
+    MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, CF=1,
+    GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0, 
+    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, GLMNET=1,
     BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
     Yweights="BIOMOD", factors="biome",
     evaluations.keep=TRUE)
@@ -538,9 +561,10 @@ ensemble.factors2 <- ensemble.calibrate.models(x=predictors,
     species.name="Bradypus",
     SINK=TRUE,
     ENSEMBLE.tune=TRUE,
-    MAXENT=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
-    GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
-    SVM=1, SVME=1, BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
+    MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, CF=1,
+    GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=1, 
+    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, 
+    BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
     ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(1, 2, 3),
     Yweights="BIOMOD", factors="biome",
     evaluations.keep=TRUE)
@@ -551,9 +575,10 @@ ensemble.nofactors2 <- ensemble.calibrate.weights(x=predictors,
     p=pres, a=background, k=4, 
     species.name="Bradypus",
     SINK=TRUE, PROBIT=TRUE,
-    MAXENT=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
-    GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
-    SVM=1, SVME=1, BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
+    MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, CF=1,
+    GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=1, 
+    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, 
+    BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
     ENSEMBLE.tune=TRUE,
     ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3),
     ENSEMBLE.min=0.7,
@@ -570,10 +595,10 @@ ensemble.variables <- ensemble.drop1(x=predictors,
     SINK=TRUE,
     difference=TRUE,
     VIF=TRUE, PROBIT=TRUE,
-    MAXENT=0, MAXLIKE=0, GBM=1, GBMSTEP=0, RF=1, GLM=1, GLMSTEP=1, GAM=1, 
-    GAMSTEP=1, MGCV=1, MGCVFIX=1, EARTH=1, RPART=1, NNET=1, FDA=1, 
-    SVM=1, SVME=1, GLMNET=1,
-    BIOCLIM.O=0, BIOCLIM=0, DOMAIN=1, MAHAL=0, MAHAL01=1,
+    MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, CF=1,
+    GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=1, 
+    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, 
+    BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
     ENSEMBLE.tune=TRUE,
     ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3),
     ENSEMBLE.min=0.7,

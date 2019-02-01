@@ -1,5 +1,5 @@
 # Capabilities for standard Rcmdr model classes
-# last modified 2017-02-03 by J. Fox
+# last modified 2018-07-24 by J. Fox
 
 # column  menu-item                           function [package]
 #-------  ---------                           ------------------
@@ -35,13 +35,15 @@
 # rst     studentized residuals               rstudent()
 # hat     hat-values                          hatvalues()
 # cook    Cook's distances                    cooks.distance()
+#
+# tranr   Response transformation             powerTransform() [car]
 
-              sum   compc aic   bic   stp   sub   con   boot  del   aov   Aov   compm lin   vif   bpt   dwt   rse   bon   plt   qqp   crp   avp   infp  effp  fit   res   rst   hat   cook
+              sum   compc aic   bic   stp   sub   con   boot  del   aov   Aov   compm lin   vif   bpt   dwt   rse   bon   plt   qqp   crp   avp   infp  effp  fit   res   rst   hat   cook  tranr
 
-lm            TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
-aov           TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
-glm           TRUE  TRUE  TRUE  TRUE  TRUE  FALSE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  FALSE FALSE FALSE TRUE  TRUE  FALSE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
-multinom      TRUE  TRUE  TRUE  TRUE  TRUE  FALSE TRUE  FALSE TRUE  FALSE TRUE  TRUE  TRUE  FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
-polr          TRUE  TRUE  TRUE  TRUE  TRUE  FALSE TRUE  FALSE TRUE  FALSE TRUE  TRUE  TRUE  FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE TRUE  TRUE  FALSE FALSE FALSE FALSE
+lm            TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+aov           TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+glm           TRUE  TRUE  TRUE  TRUE  TRUE  FALSE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  FALSE FALSE FALSE TRUE  TRUE  FALSE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  FALSE
+multinom      TRUE  TRUE  TRUE  TRUE  TRUE  FALSE TRUE  FALSE TRUE  FALSE TRUE  TRUE  TRUE  FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  FALSE
+polr          TRUE  TRUE  TRUE  TRUE  TRUE  FALSE TRUE  FALSE TRUE  FALSE TRUE  TRUE  TRUE  FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE TRUE  TRUE  FALSE FALSE FALSE FALSE FALSE
 
-default       TRUE  FALSE FALSE FALSE FALSE FALSE TRUE  FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+default       TRUE  FALSE FALSE FALSE FALSE FALSE TRUE  FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE

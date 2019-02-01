@@ -203,7 +203,7 @@ dune <- dune3
 dune.env <- dune.env2
 rownames(dune) <- rownames(dune.env) <- c("X01", "X02", "X03", "X04", "X05", "X06", "X07", "X08", "X09", "X10",
     "X11", "X12", "X13", "X14", "X15", "X16", "X17", "X18", "X19", "X20")
-remove(dune2,dune3,dune.env2)
+remove(dune2, dune3, dune.env2)
 
 
 makecommunityGUI <- function(){
@@ -311,6 +311,93 @@ makecommunityGUI <- function(){
     tkgrab.set(top)
     tkfocus(siteBox)
     tkwait.window(top)
+}
+
+
+importfromExcelGUI2 <- function() {
+    initializeDialog(title="Read Community and Environmental data From Excel")
+    optionsFrame <- tkframe(top, relief="groove", borderwidth=2)
+    comdsname <- tclVar("CommunityData")
+    entrycomDsname <- tkentry(optionsFrame, width="20", textvariable=comdsname)
+    envdsname <- tclVar("EnvironmentalData")
+    entryenvDsname <- tkentry(optionsFrame, width="20", textvariable=envdsname)
+    dsites <- tclVar("sites")
+    entrysites <- tkentry(optionsFrame, width="20", textvariable=dsites)
+    stackedFrame <- tkframe(top, relief="groove", borderwidth=2)
+    stackedVariable <- tclVar("0")
+    stackedCheckBox <- tkcheckbutton(stackedFrame, variable=stackedVariable)
+    scolumn <- tclVar("species")
+    entrycol <- tkentry(stackedFrame, width="20", textvariable=scolumn)
+    sval <- tclVar("abundance")
+    entryval <- tkentry(stackedFrame, width="20", textvariable=sval)
+    sfactor <- tclVar("all")
+    entryfactor <- tkentry(stackedFrame, width="20", textvariable=sfactor)
+    slevel <- tclVar("all")
+    entrylevel <- tkentry(stackedFrame, width="20", textvariable=slevel)
+    onOK <- function(){
+        closeDialog()
+        comdsnameValue <- tclvalue(comdsname)
+        envdsnameValue <- tclvalue(envdsname)
+        sitesValue <- tclvalue(dsites)
+        colValue <- tclvalue(scolumn)
+        valValue <- tclvalue(sval)
+        factorValue <- tclvalue(sfactor)
+        levelValue <- tclvalue(slevel)
+        file <- tclvalue(tkgetOpenFile(filetypes='{"Excel Files" {".xls" ".xlsx" ".XLS" ".XLSX"}} {"All Files" {"*"}}'))
+        if (file == "") {
+            if (Rcmdr::getRcmdr("grab.focus")) tkgrab.release(top)
+            tkdestroy(top)
+            return()
+            }
+        justDoIt(paste("library(RODBC)", sep=""))
+        logger(paste("library(RODBC)", sep=""))
+        stacked <- tclvalue(stackedVariable) == "1"
+        if (stacked==F) {
+            command <- paste("import.with.readxl('", file, "', data.type='community', sheet='community', sitenames='", sitesValue, "', cepnames=F, write.csv=F, csv.file='community.csv')", sep="")
+        }else{
+            if (factorValue=="all") { 
+                command <- paste("import.with.readxl('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', cepnames=F, write.csv=F, csv.file='community.csv')", sep="")
+            }else{
+                command <- paste("import.with.readxl('", file, "', data.type='stacked', sheet='stacked', sitenames='", sitesValue, "', column='", colValue, "', value='", valValue, "', factor='", factorValue, "', level='", levelValue, "', cepnames=F, write.csv=F, csv.file='community.csv')", sep="")
+            }
+        }
+        logger(paste(comdsnameValue, " <- ", command, sep=""))
+        assign(comdsnameValue, justDoIt(command), envir=.GlobalEnv)
+        communityDataSet(comdsnameValue)
+        command <- paste("import.with.readxl('", file, "', data.type='environmental', sheet='environmental', sitenames='", sitesValue, "', write.csv=F, csv.file='environmental.csv')", sep="")
+        logger(paste(envdsnameValue, " <- ", command, sep=""))
+        assign(envdsnameValue, justDoIt(command), envir=.GlobalEnv)
+        activeDataSet(envdsnameValue)
+        tkfocus(CommanderWindow())
+        }
+    onCancel <- function() {
+        tkgrab.release(top)
+        tkfocus(CommanderWindow())
+        tkdestroy(top)  
+        }
+    buttonsFrame <- tkframe(top)
+    onHelp <- function() {
+        if (.Platform$OS.type != "windows") tkgrab.release(top)
+        doItAndPrint(paste("help('import.from.Excel', help_type='html')", sep=""))
+        }
+    helpButton <- tkbutton(buttonsFrame, text="Help", width="12", command=onHelp)
+    OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
+    cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
+    tkgrid(tklabel(optionsFrame, text="Names for new datasets"), sticky="w")
+    tkgrid(tklabel(optionsFrame, text="Enter name for community data set:"), entrycomDsname, sticky="w")
+    tkgrid(tklabel(optionsFrame, text="Enter name for environmental data set:"), entryenvDsname, sticky="w")
+    tkgrid(tklabel(optionsFrame, text="Enter name for variable with sites:"), entrysites, sticky="w")
+    tkgrid(optionsFrame, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Options for stacked data entry"), sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Import community dataset from stacked format:"), stackedCheckBox, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Enter variable for species:"), entrycol, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Enter variable for abundance:"), entryval, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Enter factor for subset:"), entryfactor, sticky="w")
+    tkgrid(tklabel(stackedFrame, text="Enter level for subset:"), entrylevel, sticky="w")
+    tkgrid(stackedFrame, sticky="w")
+    tkgrid(OKbutton, cancelButton, helpButton)
+    tkgrid(buttonsFrame, sticky="w")
+    dialogSuffix(rows=4, columns=1)
 }
 
 
@@ -760,27 +847,176 @@ nested.checks <- function(){
 }
 
 
-viewcommunity <- function(){
-    command <- justDoIt(paste("invisible(edit(", communityDataSet(), "))", sep=""))
-}
+#viewcommunity <- function(){
+#    command <- justDoIt(paste("invisible(edit(", communityDataSet(), "))", sep=""))
+#}
 
-editcommunity <- function(){
-    .communityDataSet <- CommunityDataSet()
-    justDoIt(paste("fix(", .communityDataSet, ")", sep=""))
-    communityDataSet(.communityDataSet)
-    invisible()
-}
+#editcommunity <- function(){
+#    .communityDataSet <- CommunityDataSet()
+#    justDoIt(paste("fix(", .communityDataSet, ")", sep=""))
+#    communityDataSet(.communityDataSet)
+#    invisible()
+#}
 
-viewenvironmental <- function(){
-    justDoIt(paste("invisible(edit(", ActiveDataSet(), "))", sep=""))
-}
+    # view based on R-Commander View button
+    viewcommunity <- function(){
+        #        if (packageAvailable("relimp")) Library("relimp", rmd=FALSE)
+        if (communityDataSet() == FALSE) {
+            tkfocus(CommanderWindow())
+            return()
+        }
+        suppress <- if(getRcmdr("suppress.X11.warnings")) ", suppress.X11.warnings=FALSE" else ""
+        view.height <- max(getRcmdr("output.height") + getRcmdr("log.height"), 10)
+        dim <- dim(get(CommunityDataSet()))
+        nrows <- dim[1]
+        ncols <- dim[2]
+        threshold <- getRcmdr("showData.threshold")
+        command <- if (nrows <= threshold[1] && ncols <= threshold[2]){
+            paste("showData(", CommunityDataSet(), ", placement='-20+200', font=getRcmdr('logFont'), maxwidth=",
+                  getRcmdr("log.width"), ", maxheight=", view.height, suppress, ")", sep="")
+        }
+        else paste("View(", CommunityDataSet(), ")", sep="")
+        window <- justDoIt(command)
+        if (!is.null(window)){
+            open.showData.windows <- getRcmdr("open.showData.windows")
+            open.window <- open.showData.windows[[CommunityDataSet()]]
+            if (!is.null(open.window)) tkdestroy(open.window)
+            open.showData.windows[[CommunityDataSet()]] <- window
+            putRcmdr("open.showData.windows", open.showData.windows)
+        }
+    }
 
-editenvironmental <- function(){
-    .activeDataSet <- ActiveDataSet()
-    justDoIt(paste("fix(", .activeDataSet, ")", sep=""))
-    activeDataSet(.activeDataSet)
-    invisible()
-}
+
+    # edit based on R-Commander Edit button
+    editcommunity <- function(){
+        if (communityDataSet() == FALSE) {
+            tkfocus(CommanderWindow())
+            return()
+        }
+        dsnameValue <- CommunityDataSet()
+        size <- eval(parse(text=paste("prod(dim(", dsnameValue, "))", sep=""))) #  prod(dim(save.dataset))
+        if (size < 1 || size > getRcmdr("editDataset.threshold")){
+            save.dataset <- get(dsnameValue, envir=.GlobalEnv)
+            command <- paste("fix(", dsnameValue, ")", sep="")
+            result <- justDoIt(command)
+            if (class(result)[1] !=  "try-error"){ 			
+                if (nrow(get(dsnameValue)) == 0){
+                    errorCondition(window=NULL, message=gettextRcmdr("empty data set."))
+                    justDoIt(paste(dsnameValue, "<- save.dataset"))
+                    return()
+                }
+                else{
+                    logger(command, rmd=FALSE)
+                    communityDataSet(dsnameValue)
+                }
+            }
+            else{
+                errorCondition(window=NULL, message=gettextRcmdr("data set edit error."))
+                return()
+            }
+        }
+        else {
+            command <- paste("editDataset(", dsnameValue, ")", sep="")
+            result <- justDoIt(command)
+            if (class(result)[1] !=  "try-error"){
+                logger(command, rmd=FALSE)
+            }
+            else{
+                errorCondition(window=NULL, message=gettextRcmdr("data set edit error."))
+                return()
+            }
+        }
+        tkwm.deiconify(CommanderWindow())
+        tkfocus(CommanderWindow())
+    }
+
+
+
+
+#viewenvironmental <- function(){
+#    justDoIt(paste("invisible(edit(", ActiveDataSet(), "))", sep=""))
+#}
+
+#editenvironmental <- function(){
+#    .activeDataSet <- ActiveDataSet()
+#    justDoIt(paste("fix(", .activeDataSet, ")", sep=""))
+#    activeDataSet(.activeDataSet)
+#    invisible()
+#}
+
+    # environmental view same as for R-Commander View button
+    viewenvironmental <- function(){
+        #        if (packageAvailable("relimp")) Library("relimp", rmd=FALSE)
+        if (activeDataSet() == FALSE) {
+            tkfocus(CommanderWindow())
+            return()
+        }
+        suppress <- if(getRcmdr("suppress.X11.warnings")) ", suppress.X11.warnings=FALSE" else ""
+        view.height <- max(getRcmdr("output.height") + getRcmdr("log.height"), 10)
+        dim <- dim(get(ActiveDataSet()))
+        nrows <- dim[1]
+        ncols <- dim[2]
+        threshold <- getRcmdr("showData.threshold")
+        command <- if (nrows <= threshold[1] && ncols <= threshold[2]){
+            paste("showData(", ActiveDataSet(), ", placement='-20+200', font=getRcmdr('logFont'), maxwidth=",
+                  getRcmdr("log.width"), ", maxheight=", view.height, suppress, ")", sep="")
+        }
+        else paste("View(", ActiveDataSet(), ")", sep="")
+        window <- justDoIt(command)
+        if (!is.null(window)){
+            open.showData.windows <- getRcmdr("open.showData.windows")
+            open.window <- open.showData.windows[[ActiveDataSet()]]
+            if (!is.null(open.window)) tkdestroy(open.window)
+            open.showData.windows[[ActiveDataSet()]] <- window
+            putRcmdr("open.showData.windows", open.showData.windows)
+        }
+    }
+
+
+    # environmental edit same for as for R-Commander Edit button
+    editenvironmental <- function(){
+        if (activeDataSet() == FALSE) {
+            tkfocus(CommanderWindow())
+            return()
+        }
+        dsnameValue <- ActiveDataSet()
+        size <- eval(parse(text=paste("prod(dim(", dsnameValue, "))", sep=""))) #  prod(dim(save.dataset))
+        if (size < 1 || size > getRcmdr("editDataset.threshold")){
+            save.dataset <- get(dsnameValue, envir=.GlobalEnv)
+            command <- paste("fix(", dsnameValue, ")", sep="")
+            result <- justDoIt(command)
+            if (class(result)[1] !=  "try-error"){ 			
+                if (nrow(get(dsnameValue)) == 0){
+                    errorCondition(window=NULL, message=gettextRcmdr("empty data set."))
+                    justDoIt(paste(dsnameValue, "<- save.dataset"))
+                    return()
+                }
+                else{
+                    logger(command, rmd=FALSE)
+                    activeDataSet(dsnameValue)
+                }
+            }
+            else{
+                errorCondition(window=NULL, message=gettextRcmdr("data set edit error."))
+                return()
+            }
+        }
+        else {
+            command <- paste("editDataset(", dsnameValue, ")", sep="")
+            result <- justDoIt(command)
+            if (class(result)[1] !=  "try-error"){
+                logger(command, rmd=FALSE)
+            }
+            else{
+                errorCondition(window=NULL, message=gettextRcmdr("data set edit error."))
+                return()
+            }
+        }
+        tkwm.deiconify(CommanderWindow())
+        tkfocus(CommanderWindow())
+    }
+
+
 
 checkdatasets <- function(){
     .activeDataSet <- ActiveDataSet()
@@ -919,6 +1155,7 @@ envirosummaryGUI <- function(){
         var <- variables[as.numeric(tkcurselection(subsetBox))+1]
         if (var == "all") {
             doItAndPrint(paste("summary(", .activeDataSet, ")", sep=""))
+            doItAndPrint(paste("str(", .activeDataSet, ")", sep=""))
         }else{
             var <- .variables[as.numeric(tkcurselection(subsetBox))]
             doItAndPrint(paste("summary(", .activeDataSet, "$", var, ")", sep=""))
@@ -4949,7 +5186,7 @@ cepNamesCommunity <- function() {
 }
 
 helpBiodiversityR <- function() {
-    print(help("BiodiversityRGUI",help_type="html"))
+    print(help(package="BiodiversityR", help_type="html"))
 }
 
 allcitations <- function() {
@@ -5594,6 +5831,175 @@ viewpresence <- function(){
     command <- justDoIt(paste("invisible(edit(", presence.focal, "))", sep=""))
 }
 
+add.spec.name <- function(x, spec.name="species") {
+    x2 <- data.frame(cbind(rep(spec.name, nrow(x)), x))
+    names(x2) <- c("species", "x", "y")
+    return(x2)
+}
+
+spatial.thin.GUI <- function(){
+    top <- tktoplevel()
+    tkwm.title(top, "Spatial thinning")
+    modelName.suggest <- paste(presence.focal, ".thin1", sep="")
+    modelName <- tclVar(modelName.suggest)
+    modelFrame <- tkframe(top, relief="groove", borderwidth=2)
+    model <- tkentry(modelFrame, width=40, textvariable=modelName)
+    thinFrame <- tkframe(top, relief="groove", borderwidth=2)
+    thinkm <- tclVar("10")
+    thinkmEntry <- tkentry(thinFrame, width=8, textvariable=thinkm)
+    runs <- tclVar("100")
+    runsEntry <- tkentry(thinFrame, width=8, textvariable=runs)
+    onOK <- function(){
+        specs <- eval(parse(text=paste("levels(", presence.focal,"$spec)")), envir=.GlobalEnv)
+        if (length(specs) > 1) {
+            logger(paste("Spatial thinning available only for presence data sets with one species only", sep=""))
+        }else{
+            modelValue <- tclvalue(modelName)
+            thinkmValue <- tclvalue(thinkm)
+            runsValue <- tclvalue(runs)
+            command <- paste("geosphere::distm(x=", presence.focal, "[, 2:3])", sep="")
+            logger(paste("distm1 <- ", command, sep=""))
+            assign("distm1", justDoIt(command), envir=.GlobalEnv)
+            doItAndPrint(paste("diag(distm1) <- NA", sep="")) 
+            doItAndPrint(paste("min(distm1, na.rm=T)/1000 # distance in km", sep="")) 
+            command <- paste("ensemble.spatialThin(", presence.focal, "[, 2:3], thin.km=", thinkmValue, ", runs=", runsValue, ", verbose=F, return.notRetained=F)", sep="")
+            logger(paste(modelValue, " <- ", command, sep=""))
+            assign(modelValue, justDoIt(command), envir=.GlobalEnv)
+            assign("specname", as.character(specs), envir=.GlobalEnv)
+            command <- paste("add.spec.name(", modelValue, ", spec.name='", specname, "')", sep="")
+            logger(paste(modelValue, " <- ", command, sep=""))
+            assign(modelValue, justDoIt(command), envir=.GlobalEnv) 
+            assign("presence.focal", modelValue, envir=.GlobalEnv)
+            command <- paste("geosphere::distm(x=", presence.focal, "[, 2:3])", sep="")
+            logger(paste("distm2 <- ", command, sep=""))
+            assign("distm2", justDoIt(command), envir=.GlobalEnv)
+            doItAndPrint(paste("diag(distm2) <- NA", sep="")) 
+            doItAndPrint(paste("min(distm2, na.rm=T)/1000 # distance in km", sep="")) 
+            rm(specname, envir=.GlobalEnv)
+            rm(distm1, envir=.GlobalEnv)
+            rm(distm2, envir=.GlobalEnv)
+            doItAndPrint(paste("summary(", presence.focal, ")", sep="")) 
+        }
+        Rcmdr::putRcmdr("dialog.values", list())
+        activateMenus()
+	closeDialog()
+	tkfocus(CommanderWindow())
+        }
+    onCancel <- function() {
+        tkgrab.release(top)
+        tkfocus(CommanderWindow())
+        tkdestroy(top)  
+        }
+    buttonsFrame <- tkframe(top)
+    onHelp <- function() {
+        if (.Platform$OS.type != "windows") tkgrab.release(top)
+        doItAndPrint(paste("help('ensemble.spatialThin', help_type='html')", sep=""))
+        }
+    helpButton <- tkbutton(buttonsFrame, text="Help", width="12", command=onHelp)
+    OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
+    cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
+    tkgrid(tklabel(modelFrame, text="Save result as:    ", width=15), model, sticky="w")
+    tkgrid(modelFrame, sticky="w")
+    tkgrid(tklabel(thinFrame, text="thin.km", width=10), thinkmEntry, sticky="w")
+    tkgrid(tklabel(thinFrame, text="runs", width=10), runsEntry, sticky="w")
+    tkgrid(thinFrame, sticky="w")
+    tkgrid(OKbutton, cancelButton, helpButton)
+    tkgrid(buttonsFrame, sticky="w")
+    for (row in 0:6) tkgrid.rowconfigure(top, row, weight=0)
+    for (col in 0:0) tkgrid.columnconfigure(top, col, weight=0)
+    .Tcl("update idletasks")
+    tkwm.resizable(top, 0, 0)
+    tkwm.deiconify(top)
+    tkgrab.set(top)
+#    tkfocus(modelName)
+    tkwait.window(top)
+}
+
+environmental.thin.GUI <- function(){
+    top <- tktoplevel()
+    tkwm.title(top, "Environmental thinning")
+    modelName.suggest <- paste(presence.focal, ".thin1", sep="")
+    modelName <- tclVar(modelName.suggest)
+    modelFrame <- tkframe(top, relief="groove", borderwidth=2)
+    model <- tkentry(modelFrame, width=40, textvariable=modelName)
+    thinFrame <- tkframe(top, relief="groove", borderwidth=2)
+    thinn <- tclVar("50")
+    thinnEntry <- tkentry(thinFrame, width=8, textvariable=thinn)
+    runs <- tclVar("100")
+    runsEntry <- tkentry(thinFrame, width=8, textvariable=runs)
+    onOK <- function(){
+        specs <- eval(parse(text=paste("levels(", presence.focal,"$spec)")), envir=.GlobalEnv)
+        if (length(specs) > 1) {
+            logger(paste("Environmental thinning available only for presence data sets with one species only", sep=""))
+        }else{
+            modelValue <- tclvalue(modelName)
+            thinnValue <- tclvalue(thinn)
+            runsValue <- tclvalue(runs)
+            command <- paste("raster::extract(", stack.focal, ", y=", presence.focal, "[, 2:3])", sep="")
+            logger(paste("extract1 <- ", command, sep=""))
+            assign("extract1", justDoIt(command), envir=.GlobalEnv)
+            command <- paste("vegdist(extract1, method='mahalanobis', diag=F, upper=F)", sep="")
+            logger(paste("distm1 <- ", command, sep=""))
+            assign("distm1", justDoIt(command), envir=.GlobalEnv)
+            doItAndPrint(paste("min(distm1, na.rm=T) # note environmental thinning done via PCA coordinates", sep="")) 
+            command <- paste("ensemble.environmentalThin(", presence.focal, "[, 2:3], predictors.stack=", stack.focal, ", thin.n=", thinnValue, ", runs=", runsValue, ", pca.var=0.95, verbose=F, return.notRetained=F)", sep="")
+            logger(paste(modelValue, " <- ", command, sep=""))
+            assign(modelValue, justDoIt(command), envir=.GlobalEnv)
+            assign("specname", as.character(specs), envir=.GlobalEnv)
+            command <- paste("add.spec.name(", modelValue, ", spec.name='", specname, "')", sep="")
+            logger(paste(modelValue, " <- ", command, sep=""))
+            assign(modelValue, justDoIt(command), envir=.GlobalEnv) 
+            assign("presence.focal", modelValue, envir=.GlobalEnv)
+            command <- paste("raster::extract(", stack.focal, ", y=", presence.focal, "[, 2:3])", sep="")
+            logger(paste("extract2 <- ", command, sep=""))
+            assign("extract2", justDoIt(command), envir=.GlobalEnv)
+            command <- paste("vegdist(extract2, method='mahalanobis', diag=F, upper=F)", sep="")
+            logger(paste("distm2 <- ", command, sep=""))
+            assign("distm2", justDoIt(command), envir=.GlobalEnv)
+            doItAndPrint(paste("min(distm2, na.rm=T) # note environmental thinning done via PCA coordinates", sep="")) 
+            rm(specname, envir=.GlobalEnv)
+            rm(distm1, envir=.GlobalEnv)
+            rm(distm2, envir=.GlobalEnv)
+            rm(extract1, envir=.GlobalEnv)
+            rm(extract2, envir=.GlobalEnv)
+            doItAndPrint(paste("summary(", presence.focal, ")", sep="")) 
+        }
+        Rcmdr::putRcmdr("dialog.values", list())
+        activateMenus()
+	closeDialog()
+	tkfocus(CommanderWindow())
+        }
+    onCancel <- function() {
+        tkgrab.release(top)
+        tkfocus(CommanderWindow())
+        tkdestroy(top)  
+        }
+    buttonsFrame <- tkframe(top)
+    onHelp <- function() {
+        if (.Platform$OS.type != "windows") tkgrab.release(top)
+        doItAndPrint(paste("help('ensemble.environmentalThin', help_type='html')", sep=""))
+        }
+    helpButton <- tkbutton(buttonsFrame, text="Help", width="12", command=onHelp)
+    OKbutton <- tkbutton(buttonsFrame, text="OK", width="12", command=onOK, default="active")
+    cancelButton <- tkbutton(buttonsFrame, text="Cancel", width="12", command=onCancel)
+    tkgrid(tklabel(modelFrame, text="Save result as:    ", width=15), model, sticky="w")
+    tkgrid(modelFrame, sticky="w")
+    tkgrid(tklabel(thinFrame, text="thin.n", width=10), thinnEntry, sticky="w")
+    tkgrid(tklabel(thinFrame, text="runs", width=10), runsEntry, sticky="w")
+    tkgrid(thinFrame, sticky="w")
+    tkgrid(OKbutton, cancelButton, helpButton)
+    tkgrid(buttonsFrame, sticky="w")
+    for (row in 0:6) tkgrid.rowconfigure(top, row, weight=0)
+    for (col in 0:0) tkgrid.columnconfigure(top, col, weight=0)
+    .Tcl("update idletasks")
+    tkwm.resizable(top, 0, 0)
+    tkwm.deiconify(top)
+    tkgrab.set(top)
+#    tkfocus(modelName)
+    tkwait.window(top)
+}
+
+
 make.absences <- function(an=1000, x, excludep=F, presence.data=NULL) {
     if (excludep == F) {
         as <- data.frame(dismo::randomPoints(x[[1]], n=an, p=NULL, excludep=F))
@@ -5621,6 +6027,7 @@ predictor.files <- list.files(path=paste(system.file(package="dismo"), '/ex', se
     pattern='grd', full.names=TRUE)
 calibration00000 <- raster::stack(predictor.files)
 BradypusAbsence <- make.absences(x=calibration00000, excludep=T, presence.data=BradypusPresence)
+rm(calibration00000)
 
 if (exists("absence.focal") == F) {assign("absence.focal", NULL, envir=.GlobalEnv)}
 absence.focalP <- function() {return(!is.null(absence.focal))}
@@ -5635,7 +6042,7 @@ make.absence.GUI <- function(){
     exclude1Frame <- tkframe(excludeFrame)
     exclude2Frame <- tkframe(excludeFrame)
     n.abs <- tclVar("1000")
-    n.absEntry <- tkentry(exclude1Frame, width=8, textvariable=n.abs)
+    n.absEntry <- tkentry(exclude1Frame, width=12, textvariable=n.abs)
     excludeVariable <- tclVar("0")
     excludeCheckBox <- tkcheckbutton(exclude2Frame, variable=excludeVariable)
     onOK <- function(){
@@ -5824,55 +6231,60 @@ batch.GUI <- function(){
     algo2Frame <- tkframe(algoFrame)
     algo3Frame <- tkframe(algoFrame)
     algo4Frame <- tkframe(algoFrame)
+#
     MAXENTVariable <- tclVar("0")
     MAXENTCheckBox <- tkcheckbutton(algo1Frame, variable=MAXENTVariable)
+    GBMSTEPVariable <- tclVar("0")
+    GBMSTEPCheckBox <- tkcheckbutton(algo1Frame, variable=GBMSTEPVariable)
+    GLMSTEPVariable <- tclVar("0")
+    GLMSTEPCheckBox <- tkcheckbutton(algo1Frame, variable=GLMSTEPVariable)
+    MGCVFIXVariable <- tclVar("0")
+    MGCVFIXCheckBox <- tkcheckbutton(algo1Frame, variable=MGCVFIXVariable)
+    FDAVariable <- tclVar("0")
+    FDACheckBox <- tkcheckbutton(algo1Frame, variable=FDAVariable)
+    BIOCLIMOVariable <- tclVar("0")
+    BIOCLIMOCheckBox <- tkcheckbutton(algo1Frame, variable=BIOCLIMOVariable)
+    MAHAL01Variable <- tclVar("0")
+    MAHAL01CheckBox <- tkcheckbutton(algo1Frame, variable=MAHAL01Variable)
+#
+    MAXNETVariable <- tclVar("0")
+    MAXNETCheckBox <- tkcheckbutton(algo2Frame, variable=MAXNETVariable)
     RFVariable <- tclVar("0")
-    RFCheckBox <- tkcheckbutton(algo1Frame, variable=RFVariable)
-    GAMSTEPVariable <- tclVar("0")
-    GAMSTEPCheckBox <- tkcheckbutton(algo1Frame, variable=GAMSTEPVariable)
-    RPARTVariable <- tclVar("0")
-    RPARTCheckBox <- tkcheckbutton(algo1Frame, variable=RPARTVariable)
-    SVMEVariable <- tclVar("0")
-    SVMECheckBox <- tkcheckbutton(algo1Frame, variable=SVMEVariable)
-    DOMAINVariable <- tclVar("0")
-    DOMAINCheckBox <- tkcheckbutton(algo1Frame, variable=DOMAINVariable)
+    RFCheckBox <- tkcheckbutton(algo2Frame, variable=RFVariable)
+    GAMVariable <- tclVar("0")
+    GAMCheckBox <- tkcheckbutton(algo2Frame, variable=GAMVariable)
+    EARTHVariable <- tclVar("0")
+    EARTHCheckBox <- tkcheckbutton(algo2Frame, variable=EARTHVariable)
+    SVMVariable <- tclVar("0")
+    SVMCheckBox <- tkcheckbutton(algo2Frame, variable=SVMVariable)
+    BIOCLIMVariable <- tclVar("0")
+    BIOCLIMCheckBox <- tkcheckbutton(algo2Frame, variable=BIOCLIMVariable)
 #
     MAXLIKEVariable <- tclVar("0")
-    MAXLIKECheckBox <- tkcheckbutton(algo2Frame, variable=MAXLIKEVariable)
-    GLMVariable <- tclVar("0")
-    GLMCheckBox <- tkcheckbutton(algo2Frame, variable=GLMVariable)
-    MGCVVariable <- tclVar("0")
-    MGCVCheckBox <- tkcheckbutton(algo2Frame, variable=MGCVVariable)
-    NNETVariable <- tclVar("0")
-    NNETCheckBox <- tkcheckbutton(algo2Frame, variable=NNETVariable)
-    GLMNETVariable <- tclVar("0")
-    GLMNETCheckBox <- tkcheckbutton(algo2Frame, variable=GLMNETVariable)
-    MAHALVariable <- tclVar("0")
-    MAHALCheckBox <- tkcheckbutton(algo2Frame, variable=MAHALVariable)
+    MAXLIKECheckBox <- tkcheckbutton(algo3Frame, variable=MAXLIKEVariable)
+    CFVariable <- tclVar("0")
+    CFCheckBox <- tkcheckbutton(algo3Frame, variable=CFVariable)
+    GAMSTEPVariable <- tclVar("0")
+    GAMSTEPCheckBox <- tkcheckbutton(algo3Frame, variable=GAMSTEPVariable)
+    RPARTVariable <- tclVar("0")
+    RPARTCheckBox <- tkcheckbutton(algo3Frame, variable=RPARTVariable)
+    SVMEVariable <- tclVar("0")
+    SVMECheckBox <- tkcheckbutton(algo3Frame, variable=SVMEVariable)
+    DOMAINVariable <- tclVar("0")
+    DOMAINCheckBox <- tkcheckbutton(algo3Frame, variable=DOMAINVariable)
 #
     GBMVariable <- tclVar("0")
-    GBMCheckBox <- tkcheckbutton(algo3Frame, variable=GBMVariable)
-    GLMSTEPVariable <- tclVar("0")
-    GLMSTEPCheckBox <- tkcheckbutton(algo3Frame, variable=GLMSTEPVariable)
-    MGCVFIXVariable <- tclVar("0")
-    MGCVFIXCheckBox <- tkcheckbutton(algo3Frame, variable=MGCVFIXVariable)
-    FDAVariable <- tclVar("0")
-    FDACheckBox <- tkcheckbutton(algo3Frame, variable=FDAVariable)
-    BIOCLIMOVariable <- tclVar("0")
-    BIOCLIMOCheckBox <- tkcheckbutton(algo3Frame, variable=BIOCLIMOVariable)
-    MAHAL01Variable <- tclVar("0")
-    MAHAL01CheckBox <- tkcheckbutton(algo3Frame, variable=MAHAL01Variable)
-#
-    GBMSTEPVariable <- tclVar("0")
-    GBMSTEPCheckBox <- tkcheckbutton(algo4Frame, variable=GBMSTEPVariable)
-    GAMVariable <- tclVar("0")
-    GAMCheckBox <- tkcheckbutton(algo4Frame, variable=GAMVariable)
-    EARTHVariable <- tclVar("0")
-    EARTHCheckBox <- tkcheckbutton(algo4Frame, variable=EARTHVariable)
-    SVMVariable <- tclVar("0")
-    SVMCheckBox <- tkcheckbutton(algo4Frame, variable=SVMVariable)
-    BIOCLIMVariable <- tclVar("0")
-    BIOCLIMCheckBox <- tkcheckbutton(algo4Frame, variable=BIOCLIMVariable)
+    GBMCheckBox <- tkcheckbutton(algo4Frame, variable=GBMVariable)
+    GLMVariable <- tclVar("0")
+    GLMCheckBox <- tkcheckbutton(algo4Frame, variable=GLMVariable)
+    MGCVVariable <- tclVar("0")
+    MGCVCheckBox <- tkcheckbutton(algo4Frame, variable=MGCVVariable)
+    NNETVariable <- tclVar("0")
+    NNETCheckBox <- tkcheckbutton(algo4Frame, variable=NNETVariable)
+    GLMNETVariable <- tclVar("0")
+    GLMNETCheckBox <- tkcheckbutton(algo4Frame, variable=GLMNETVariable)
+    MAHALVariable <- tclVar("0")
+    MAHALCheckBox <- tkcheckbutton(algo4Frame, variable=MAHALVariable)
 #
     if (is.null(presence.focal) == F) {species.names <- eval(parse(text=paste("levels(droplevels(factor(", presence.focal, "[, 1])))", sep="")), envir=.GlobalEnv)}
     if (is.null(presence.focal) == F) {species.last <- species.names[length(species.names)]}
@@ -5905,10 +6317,12 @@ batch.GUI <- function(){
         if (var == "MinROCdist"){PRESABS <- TRUE}
         if (var == "ReqSens"){PRESABS <- TRUE}
         MAXENT <- tclvalue(MAXENTVariable)
+        MAXNET <- tclvalue(MAXNETVariable)
         MAXLIKE <- tclvalue(MAXLIKEVariable)
         GBM <- tclvalue(GBMVariable)
         GBMSTEP <- tclvalue(GBMSTEPVariable)
         RF <- tclvalue(RFVariable)
+        CF <- tclvalue(CFVariable)
         GLM <- tclvalue(GLMVariable)
         GLMSTEP <- tclvalue(GLMSTEPVariable)
         GAM <- tclvalue(GAMVariable)
@@ -5980,8 +6394,8 @@ batch.GUI <- function(){
             ", threshold.PresenceAbsence=", PRESABS,
             ", factors=", factor.string, ", dummy.vars=", dummy.string,
             ", ENSEMBLE.best=", ENSEMBLE.best, ", ENSEMBLE.min=", ENSEMBLE.min, ", ENSEMBLE.exponent=", ENSEMBLE.exponent, ", ENSEMBLE.weight.min=0.05", 
-            ", MAXENT=", MAXENT, ", MAXLIKE=", MAXLIKE, ", GBM=", GBM, ", GBMSTEP=", GBMSTEP, 
-            ", RF=", RF, ", GLM=", GLM, ", GLMSTEP=", GLMSTEP, ", GAM=", GAM,
+            ", MAXENT=", MAXENT, ", MAXNET=", MAXNET, ", MAXLIKE=", MAXLIKE, ", GBM=", GBM, ", GBMSTEP=", GBMSTEP, 
+            ", RF=", RF, ", CF=", CF, ", GLM=", GLM, ", GLMSTEP=", GLMSTEP, ", GAM=", GAM,
             ", GAMSTEP=", GAMSTEP, ", MGCV=", MGCV, ", MGCVFIX=", MGCVFIX, ", EARTH=", EARTH, 
             ", RPART=", RPART, ", NNET=", NNET, ", FDA=", FDA, ", SVM=", SVM, 
             ", SVME=", SVME, ", GLMNET=", GLMNET, ", BIOCLIM.O=", BIOCLIMO, ", BIOCLIM=", BIOCLIM, 
@@ -6042,10 +6456,12 @@ batch.GUI <- function(){
         if (var == "MinROCdist"){PRESABS <- TRUE}
         if (var == "ReqSens"){PRESABS <- TRUE}
         MAXENT <- tclvalue(MAXENTVariable)
+        MAXNET <- tclvalue(MAXNETVariable)
         MAXLIKE <- tclvalue(MAXLIKEVariable)
         GBM <- tclvalue(GBMVariable)
         GBMSTEP <- tclvalue(GBMSTEPVariable)
         RF <- tclvalue(RFVariable)
+        CF <- tclvalue(CFVariable)
         GLM <- tclvalue(GLMVariable)
         GLMSTEP <- tclvalue(GLMSTEPVariable)
         GAM <- tclvalue(GAMVariable)
@@ -6120,8 +6536,8 @@ batch.GUI <- function(){
             ", threshold.PresenceAbsence=", PRESABS,
             ", factors=", factor.string, ", dummy.vars=", dummy.string,
             ", ENSEMBLE.best=", ENSEMBLE.best, ", ENSEMBLE.min=", ENSEMBLE.min, ", ENSEMBLE.exponent=", ENSEMBLE.exponent,  ", ENSEMBLE.weight.min=0.05", 
-            ", MAXENT=", MAXENT, ", MAXLIKE=", MAXLIKE, ", GBM=", GBM, ", GBMSTEP=", GBMSTEP, 
-            ", RF=", RF, ", GLM=", GLM, ", GLMSTEP=", GLMSTEP, ", GAM=", GAM,
+            ", MAXENT=", MAXENT, ", MAXNET=", MAXNET, ", MAXLIKE=", MAXLIKE, ", GBM=", GBM, ", GBMSTEP=", GBMSTEP, 
+            ", RF=", RF, ", CF=", CF, ", GLM=", GLM, ", GLMSTEP=", GLMSTEP, ", GAM=", GAM,
             ", GAMSTEP=", GAMSTEP, ", MGCV=", MGCV, ", MGCVFIX=", MGCVFIX, ", EARTH=", EARTH, 
             ", RPART=", RPART, ", NNET=", NNET, ", FDA=", FDA, ", SVM=", SVM, 
             ", SVME=", SVME, ", GLMNET=", GLMNET, ", BIOCLIM.O=", BIOCLIMO, ", BIOCLIM=", BIOCLIM, 
@@ -6206,38 +6622,42 @@ batch.GUI <- function(){
     tkgrid(right3Frame, sticky="w")
     tkgrid(stackFrame, rightFrame, sticky="w")
     tkgrid(secondFrame, sticky="w")
-    tkgrid(tklabel(algoFrame, text="Select algorithms", width=15), sticky="w")
+#    tkgrid(tklabel(algoFrame, text="Select algorithms", width=15), sticky="w")
 #
-    tkgrid(MAXENTCheckBox, tklabel(algo1Frame, text="MAXENT"), sticky="w")
-    tkgrid(RFCheckBox, tklabel(algo1Frame, text="RF"), sticky="w")
-    tkgrid(GAMSTEPCheckBox, tklabel(algo1Frame, text="GAMSTEP"), sticky="w")
-    tkgrid(RPARTCheckBox, tklabel(algo1Frame, text="RPART"), sticky="w")
-    tkgrid(SVMECheckBox, tklabel(algo1Frame, text="SVME"), sticky="w")
-    tkgrid(DOMAINCheckBox, tklabel(algo1Frame, text="DOMAIN"), sticky="w")
     tkgrid(tklabel(algo1Frame, text="    ", width=5), tklabel(algo1Frame, text="    ", width=12), sticky="w")
+    tkgrid(MAXENTCheckBox, tklabel(algo1Frame, text="MAXENT"), sticky="w")
+    tkgrid(GBMSTEPCheckBox, tklabel(algo1Frame, text="GBMSTEP"), sticky="w")
+    tkgrid(GLMSTEPCheckBox, tklabel(algo1Frame, text="GLMSTEP"), sticky="w")
+    tkgrid(MGCVFIXCheckBox, tklabel(algo1Frame, text="MGCVFIX"), sticky="w")
+    tkgrid(FDACheckBox, tklabel(algo1Frame, text="FDA"), sticky="w") 
+    tkgrid(BIOCLIMOCheckBox, tklabel(algo1Frame, text="BIOCLIM.O"), sticky="w")
+    tkgrid(MAHAL01CheckBox, tklabel(algo1Frame, text="MAHAL01"), sticky="w")
 #
-    tkgrid(MAXLIKECheckBox, tklabel(algo2Frame, text="MAXLIKE"), sticky="w")
-    tkgrid(GLMCheckBox, tklabel(algo2Frame, text="GLM"), sticky="w")
-    tkgrid(MGCVCheckBox, tklabel(algo2Frame, text="MGCV"), sticky="w")
-    tkgrid(NNETCheckBox, tklabel(algo2Frame, text="NNET"), sticky="w")
-    tkgrid(GLMNETCheckBox, tklabel(algo2Frame, text="GLMNET"), sticky="w")
-    tkgrid(MAHALCheckBox, tklabel(algo2Frame, text="MAHAL"), sticky="w")
+    tkgrid(tklabel(algo2Frame, text="    ", width=5), tklabel(algo2Frame, text="    ", width=12), sticky="w")
+    tkgrid(MAXNETCheckBox, tklabel(algo2Frame, text="MAXNET"), sticky="w")
+    tkgrid(RFCheckBox, tklabel(algo2Frame, text="RF"), sticky="w")
+    tkgrid(GAMCheckBox, tklabel(algo2Frame, text="GAM"), sticky="w")
+    tkgrid(EARTHCheckBox, tklabel(algo2Frame, text="EARTH"), sticky="w")
+    tkgrid(SVMCheckBox, tklabel(algo2Frame, text="SVM"), sticky="w")
+    tkgrid(BIOCLIMCheckBox, tklabel(algo2Frame, text="BIOCLIM"), sticky="w")
     tkgrid(tklabel(algo2Frame, text="    ", width=5), tklabel(algo2Frame, text="    ", width=12), sticky="w")
 #
-    tkgrid(GBMCheckBox, tklabel(algo3Frame, text="GBM"), sticky="w")
-    tkgrid(GLMSTEPCheckBox, tklabel(algo3Frame, text="GLMSTEP"), sticky="w")
-    tkgrid(MGCVFIXCheckBox, tklabel(algo3Frame, text="MGCVFIX"), sticky="w")
-    tkgrid(FDACheckBox, tklabel(algo3Frame, text="FDA"), sticky="w") 
-    tkgrid(BIOCLIMOCheckBox, tklabel(algo3Frame, text="BIOCLIM.O"), sticky="w")
-    tkgrid(MAHAL01CheckBox, tklabel(algo3Frame, text="MAHAL01"), sticky="w")
+    tkgrid(tklabel(algo3Frame, text="    ", width=5), tklabel(algo3Frame, text="    ", width=12), sticky="w")
+    tkgrid(MAXLIKECheckBox, tklabel(algo3Frame, text="MAXLIKE"), sticky="w")
+    tkgrid(CFCheckBox, tklabel(algo3Frame, text="CF"), sticky="w")
+    tkgrid(GAMSTEPCheckBox, tklabel(algo3Frame, text="GAMSTEP"), sticky="w")
+    tkgrid(RPARTCheckBox, tklabel(algo3Frame, text="RPART"), sticky="w")
+    tkgrid(SVMECheckBox, tklabel(algo3Frame, text="SVME"), sticky="w")
+    tkgrid(DOMAINCheckBox, tklabel(algo3Frame, text="DOMAIN"), sticky="w")
     tkgrid(tklabel(algo3Frame, text="    ", width=5), tklabel(algo3Frame, text="    ", width=12), sticky="w")
 #
-    tkgrid(GBMSTEPCheckBox, tklabel(algo4Frame, text="GBMSTEP"), sticky="w")
-    tkgrid(GAMCheckBox, tklabel(algo4Frame, text="GAM"), sticky="w")
-    tkgrid(EARTHCheckBox, tklabel(algo4Frame, text="EARTH"), sticky="w")
-    tkgrid(SVMCheckBox, tklabel(algo4Frame, text="SVM"), sticky="w")
-    tkgrid(BIOCLIMCheckBox, tklabel(algo4Frame, text="BIOCLIM"), sticky="w")
-    tkgrid(tklabel(algo4Frame, text="     "), sticky="w")
+    tkgrid(tklabel(algo4Frame, text="    ", width=5), tklabel(algo4Frame, text="    ", width=12), sticky="w")
+    tkgrid(GBMCheckBox, tklabel(algo4Frame, text="GBM"), sticky="w")
+    tkgrid(GLMCheckBox, tklabel(algo4Frame, text="GLM"), sticky="w")
+    tkgrid(MGCVCheckBox, tklabel(algo4Frame, text="MGCV"), sticky="w")
+    tkgrid(NNETCheckBox, tklabel(algo4Frame, text="NNET"), sticky="w")
+    tkgrid(GLMNETCheckBox, tklabel(algo4Frame, text="GLMNET"), sticky="w")
+    tkgrid(MAHALCheckBox, tklabel(algo4Frame, text="MAHAL"), sticky="w")
     tkgrid(tklabel(algo4Frame, text="    ", width=5), tklabel(algo4Frame, text="    ", width=12), sticky="w")
 #
     tkgrid(algo1Frame, algo2Frame, algo3Frame, algo4Frame, sticky="w")

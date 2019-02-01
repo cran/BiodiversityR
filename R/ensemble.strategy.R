@@ -7,7 +7,8 @@
 {
 #    if (! require(dismo)) {stop("Please install the dismo package")}
 #   input AUC
-    modelnames <- c("MAXENT", "MAXLIKE", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
+    modelnames <- c("MAXENT", "MAXNET", "MAXLIKE", "GBM", "GBMSTEP", "RF", "CF", 
+        "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX",
         "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET",
         "BIOCLIM.O", "BIOCLIM", "DOMAIN", "MAHAL", "MAHAL01")
     weights <- numeric(length=length(modelnames))
@@ -56,8 +57,8 @@
         ws <- ensemble.weights(input.weights.e, exponent=output[r, "ENSEMBLE.exponent"], best=output[r, "ENSEMBLE.best"], 
             min.weight=output[r, "ENSEMBLE.min"])
         if (verbose == T) {print(ws)}
-        TrainData[,"ENSEMBLE"] <- ws["MAXENT"]*TrainData[,"MAXENT"] + ws["MAXLIKE"]*TrainData[,"MAXLIKE"] + ws["GBM"]*TrainData[,"GBM"] +
-            ws["GBMSTEP"]*TrainData[,"GBMSTEP"] + ws["RF"]*TrainData[,"RF"] + ws["GLM"]*TrainData[,"GLM"] +
+        TrainData[,"ENSEMBLE"] <- ws["MAXENT"]*TrainData[,"MAXENT"] + ws["MAXNET"]*TrainData[,"MAXNET"] + ws["MAXLIKE"]*TrainData[,"MAXLIKE"] + ws["GBM"]*TrainData[,"GBM"] +
+            ws["GBMSTEP"]*TrainData[,"GBMSTEP"] + ws["RF"]*TrainData[,"RF"] + ws["CF"]*TrainData[,"CF"] + ws["GLM"]*TrainData[,"GLM"] +
             ws["GLMSTEP"]*TrainData[,"GLMSTEP"] + ws["GAM"]*TrainData[,"GAM"] + ws["GAMSTEP"]*TrainData[,"GAMSTEP"] +
             ws["MGCV"]*TrainData[,"MGCV"] + ws["MGCVFIX"]*TrainData[,"MGCVFIX"] + ws["EARTH"]*TrainData[,"EARTH"] +
             ws["RPART"]*TrainData[,"RPART"] + ws["NNET"]*TrainData[,"NNET"] + ws["FDA"]*TrainData[,"FDA"] +
@@ -79,8 +80,8 @@
             output[r, "model.C"] <- names(weights.cal)[1]
             output[r, "AUC.C"] <- weights.cal[1]
         }
-        TestData[,"ENSEMBLE"] <- ws["MAXENT"]*TestData[,"MAXENT"] + ws["MAXLIKE"]*TestData[,"MAXLIKE"] + ws["GBM"]*TestData[,"GBM"] +
-            ws["GBMSTEP"]*TestData[,"GBMSTEP"] + ws["RF"]*TestData[,"RF"] + ws["GLM"]*TestData[,"GLM"] +
+        TestData[,"ENSEMBLE"] <- ws["MAXENT"]*TestData[,"MAXENT"] + ws["MAXNET"]*TestData[,"MAXNET"] + ws["MAXLIKE"]*TestData[,"MAXLIKE"] + ws["GBM"]*TestData[,"GBM"] +
+            ws["GBMSTEP"]*TestData[,"GBMSTEP"] + ws["RF"]*TestData[,"RF"] + ws["CF"]*TestData[,"CF"] + ws["GLM"]*TestData[,"GLM"] +
             ws["GLMSTEP"]*TestData[,"GLMSTEP"] + ws["GAM"]*TestData[,"GAM"] + ws["GAMSTEP"]*TestData[,"GAMSTEP"] +
             ws["MGCV"]*TestData[,"MGCV"] + ws["MGCVFIX"]*TestData[,"MGCVFIX"] + ws["EARTH"]*TestData[,"EARTH"] +
             ws["RPART"]*TestData[,"RPART"] + ws["NNET"]*TestData[,"NNET"] + ws["FDA"]*TestData[,"FDA"] +

@@ -9,7 +9,7 @@
         TrainData[, "pb"] <- as.factor(TrainData[, "pb"])
     }
 
-    modelnames <- c("MAXENT", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
+    modelnames <- c("MAXENT", "MAXNET", "MAXLIKE", "GBM", "GBMSTEP", "RF", "CF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
         "MGCVFIX", "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET", 
         "BIOCLIM.O", "BIOCLIM", "DOMAIN", "MAHAL", "MAHAL01", "ENSEMBLE")
 

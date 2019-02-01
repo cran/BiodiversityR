@@ -1,6 +1,6 @@
 `ensemble.calibrate.models` <- function(
     x=NULL, p=NULL,
-    a=NULL, an=1000, excludep=FALSE, 
+    a=NULL, an=1000, excludep=FALSE, target.groups=FALSE,
     k=0, pt=NULL, at=NULL, SSB.reduce=FALSE, CIRCLES.d=250000,
     TrainData=NULL, TestData=NULL,
     VIF=FALSE, COR=FALSE,
@@ -12,8 +12,8 @@
     ENSEMBLE.tune=FALSE, 
     ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1.0, ENSEMBLE.weight.min=0.05,
     input.weights=NULL, 
-    MAXENT=1, MAXLIKE=1, GBM=1, GBMSTEP=1, RF=1, GLM=1, GLMSTEP=1, 
-    GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0,
+    MAXENT=1, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=1, RF=1, CF=1, 
+    GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=0,
     EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, GLMNET=1,
     BIOCLIM.O=0, BIOCLIM=1, DOMAIN=1, MAHAL=1, MAHAL01=1,
     PROBIT=FALSE,
@@ -22,11 +22,13 @@
     formulae.defaults=TRUE, maxit=100,
     MAXENT.a=NULL, MAXENT.an=10000, 
     MAXENT.path=paste(getwd(), "/models/maxent_", species.name,  sep=""),
+    MAXNET.classes="default", MAXNET.clamp=FALSE, MAXNET.type="cloglog",
     MAXLIKE.formula=NULL, MAXLIKE.method="BFGS",
     GBM.formula=NULL, GBM.n.trees=2001, 
-    GBMSTEP.gbm.x=2:(ncol(TrainData.vars)+1), GBMSTEP.tree.complexity=5, GBMSTEP.learning.rate=0.005, 
+    GBMSTEP.gbm.x=2:(ncol(TrainData.orig)), GBMSTEP.tree.complexity=5, GBMSTEP.learning.rate=0.005, 
     GBMSTEP.bag.fraction=0.5, GBMSTEP.step.size=100, 
     RF.formula=NULL, RF.ntree=751, RF.mtry=floor(sqrt(ncol(TrainData.vars))),
+    CF.formula=NULL, CF.ntree=751, CF.mtry=floor(sqrt(ncol(TrainData.vars))),
     GLM.formula=NULL, GLM.family=binomial(link="logit"),
     GLMSTEP.steps=1000, STEP.formula=NULL, GLMSTEP.scope=NULL, GLMSTEP.k=2,
     GAM.formula=NULL, GAM.family=binomial(link="logit"),
@@ -232,10 +234,12 @@
 #
     if (is.null(input.weights) == F) {
         MAXENT <- max(c(input.weights["MAXENT"], -1), na.rm=T)
+        MAXNET <- max(c(input.weights["MAXNET"], -1), na.rm=T)
         MAXLIKE <- max(c(input.weights["MAXLIKE"], -1), na.rm=T)
         GBM <- max(c(input.weights["GBM"], -1), na.rm=T)
         GBMSTEP <- max(c(input.weights["GBMSTEP"], -1), na.rm=T)
         RF <- max(c(input.weights["RF"], -1), na.rm=T)
+        CF <- max(c(input.weights["CF"], -1), na.rm=T)
         GLM <- max(c(input.weights["GLM"], -1), na.rm=T)
         GLMSTEP <- max(c(input.weights["GLMSTEP"], -1), na.rm=T)
         GAM <- max(c(input.weights["GAM"], -1), na.rm=T)
@@ -255,10 +259,10 @@
         MAHAL <- max(c(input.weights["MAHAL"], -1), na.rm=T)
         MAHAL01 <- max(c(input.weights["MAHAL01"], -1), na.rm=T)
     }
-    ws <- as.numeric(c(MAXENT, MAXLIKE, GBM, GBMSTEP, RF, GLM, GLMSTEP, GAM, GAMSTEP, MGCV, 
+    ws <- as.numeric(c(MAXENT, MAXNET, MAXLIKE, GBM, GBMSTEP, RF, CF, GLM, GLMSTEP, GAM, GAMSTEP, MGCV, 
         MGCVFIX, EARTH, RPART, NNET, FDA, SVM, SVME, GLMNET, 
         BIOCLIM.O, BIOCLIM, DOMAIN, MAHAL, MAHAL01))
-    names(ws) <- c("MAXENT", "MAXLIKE", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
+    names(ws) <- c("MAXENT", "MAXNET", "MAXLIKE", "GBM", "GBMSTEP", "RF", "CF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
         "MGCVFIX", "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET", 
         "BIOCLIM.O", "BIOCLIM", "DOMAIN", "MAHAL", "MAHAL01")
     ws <- ensemble.weights(weights=ws, exponent=1, best=0, min.weight=0)
@@ -270,17 +274,19 @@
     AUC.testing <- AUC.calibration
 #
 #
-    MAXENT.OLD <- MAXLIKE.OLD <- GBM.OLD <- GBMSTEP.OLD <- RF.OLD <- GLM.OLD <- GLMSTEP.OLD <- GAM.OLD <- GAMSTEP.OLD <- MGCV.OLD <- NULL
+    MAXENT.OLD <- MAXNET.OLD <- MAXLIKE.OLD <- GBM.OLD <- GBMSTEP.OLD <- RF.OLD <- CF.OLD <- GLM.OLD <- GLMSTEP.OLD <- GAM.OLD <- GAMSTEP.OLD <- MGCV.OLD <- NULL
     MGCVFIX.OLD <- EARTH.OLD <- RPART.OLD <- NNET.OLD <- FDA.OLD <- SVM.OLD <- SVME.OLD <- GLMNET.OLD <- BIOCLIM.O.OLD <- BIOCLIM.OLD <- DOMAIN.OLD <- MAHAL.OLD <- MAHAL01.OLD <- NULL
 # probit models, NULL if no probit model fitted
-    MAXENT.PROBIT.OLD <- MAXLIKE.PROBIT.OLD <- GBM.PROBIT.OLD <- GBMSTEP.PROBIT.OLD <- RF.PROBIT.OLD <- GLM.PROBIT.OLD <- GLMSTEP.PROBIT.OLD <- GAM.PROBIT.OLD <- GAMSTEP.PROBIT.OLD <- MGCV.PROBIT.OLD <- NULL
+    MAXENT.PROBIT.OLD <- MAXNET.PROBIT.OLD <- MAXLIKE.PROBIT.OLD <- GBM.PROBIT.OLD <- GBMSTEP.PROBIT.OLD <- RF.PROBIT.OLD <- CF.PROBIT.OLD <- GLM.PROBIT.OLD <- GLMSTEP.PROBIT.OLD <- GAM.PROBIT.OLD <- GAMSTEP.PROBIT.OLD <- MGCV.PROBIT.OLD <- NULL
     MGCVFIX.PROBIT.OLD <- EARTH.PROBIT.OLD <- RPART.PROBIT.OLD <- NNET.PROBIT.OLD <- FDA.PROBIT.OLD <- SVM.PROBIT.OLD <- SVME.PROBIT.OLD <- GLMNET.PROBIT.OLD <- BIOCLIM.O.PROBIT.OLD <- BIOCLIM.PROBIT.OLD <- DOMAIN.PROBIT.OLD <- MAHAL.PROBIT.OLD <- MAHAL01.PROBIT.OLD <- NULL
     if (is.null(models.list) == F) {
         if (is.null(models.list$MAXENT) == F) {MAXENT.OLD <- models.list$MAXENT}
+        if (is.null(models.list$MAXNET) == F) {MAXNET.OLD <- models.list$MAXNET}
         if (is.null(models.list$MAXLIKE) == F) {MAXLIKE.OLD <- models.list$MAXLIKE}
         if (is.null(models.list$GBM) == F) {GBM.OLD <- models.list$GBM}
         if (is.null(models.list$GBMSTEP) == F) {GBMSTEP.OLD <- models.list$GBMSTEP}
         if (is.null(models.list$RF) == F) {RF.OLD <- models.list$RF}
+        if (is.null(models.list$CF) == F) {RF.OLD <- models.list$CF}
         if (is.null(models.list$GLM) == F) {GLM.OLD <- models.list$GLM}
         if (is.null(models.list$GLMSTEP) == F) {GLMSTEP.OLD <- models.list$GLMSTEP}
         if (is.null(models.list$GAM) == F) {GAM.OLD <- models.list$GAM}
@@ -301,10 +307,12 @@
         if (is.null(models.list$MAHAL01) == F) {MAHAL01.OLD <- models.list$MAHAL01}
 # probit models
         if (is.null(models.list$MAXENT.PROBIT) == F) {MAXENT.PROBIT.OLD <- models.list$MAXENT.PROBIT}
+        if (is.null(models.list$MAXNET.PROBIT) == F) {MAXNET.PROBIT.OLD <- models.list$MAXNET.PROBIT}
         if (is.null(models.list$MAXLIKE.PROBIT) == F) {MAXLIKE.PROBIT.OLD <- models.list$MAXLIKE.PROBIT}
         if (is.null(models.list$GBM.PROBIT) == F) {GBM.PROBIT.OLD <- models.list$GBM.PROBIT}
         if (is.null(models.list$GBMSTEP.PROBIT) == F) {GBMSTEP.PROBIT.OLD <- models.list$GBMSTEP.PROBIT}
         if (is.null(models.list$RF.PROBIT) == F) {RF.PROBIT.OLD <- models.list$RF.PROBIT}
+        if (is.null(models.list$CF.PROBIT) == F) {CF.PROBIT.OLD <- models.list$CF.PROBIT}
         if (is.null(models.list$GLM.PROBIT) == F) {GLM.PROBIT.OLD <- models.list$GLM.PROBIT}
         if (is.null(models.list$GLMSTEP.PROBIT) == F) {GLMSTEP.PROBIT.OLD <- models.list$GLMSTEP.PROBIT}
         if (is.null(models.list$GAM.PROBIT) == F) {GAM.PROBIT.OLD <- models.list$GAM.PROBIT}
@@ -326,16 +334,24 @@
     }
 
 # check formulae and packages
-    if (ws["MAXENT"] > 0) {
-        jar <- paste(system.file(package="dismo"), "/java/maxent.jar", sep='')
-        if (!file.exists(jar)) {stop('maxent program is missing: ', jar, '\n', 'Please download it here: http://www.cs.princeton.edu/~schapire/maxent/')}
-    }
     if (formulae.defaults == T) {
         if (is.null(TrainData) == T) {
             formulae <- ensemble.formulae(x, layer.drops=layer.drops, factors=factors, dummy.vars=dummy.vars, weights=ws)
         }else{
             formulae <- ensemble.formulae(TrainData, layer.drops=layer.drops, factors=factors, dummy.vars=dummy.vars, weights=ws)
         }
+    }
+
+    if (ws["MAXENT"] > 0) {
+        jar <- paste(system.file(package="dismo"), "/java/maxent.jar", sep='')
+        if (!file.exists(jar)) {stop('maxent program is missing: ', jar, '\n', 'Please download it here: http://www.cs.princeton.edu/~schapire/maxent/')}
+    }
+    if (ws["MAXNET"] > 0) {
+        if (! requireNamespace("maxnet")) {stop("Please install the maxnet package")}
+            predict.maxnet2 <- function(object, newdata, clamp=F, type=c("cloglog")) {
+                p <- predict(object=object, newdata=newdata, clamp=clamp, type=type)
+                return(as.numeric(p))
+            }
     }
     if (ws["MAXLIKE"] > 0) {
         if (! requireNamespace("maxlike")) {stop("Please install the maxlike package")}
@@ -373,6 +389,29 @@
 #  get the probabilities from RF
             predict.RF <- function(object, newdata) {
                 p <- predict(object=object, newdata=newdata, type="response")
+                return(as.numeric(p))
+            }
+        }
+    }
+    if (ws["CF"] > 0) {
+        if (! requireNamespace("party")) {stop("Please install the party package")}
+        if (is.null(CF.formula) == T && formulae.defaults == T) {CF.formula <- formulae$CF.formula}
+        if (is.null(CF.formula) == T) {
+            cat(paste("\n", "NOTE: not possible to calibrate CF as no explanatory variables available" ,"\n", sep = ""))
+            ws["CF"] <- 0
+        }else{
+            environment(CF.formula) <- .BiodiversityR
+            if (identical(CF.ntree, trunc(CF.ntree/2)) == F) {CF.ntree <- CF.ntree + 1}
+#  get the probabilities from CF
+#  note that randomForest used predict.randomForest
+            predict.CF <- function(object, newdata) {
+# avoid problems with single variables, especially with raster::predict
+                for (i in 1:ncol(newdata)) {
+                    if (is.integer(newdata[, i])) {newdata[, i] <- as.numeric(newdata[, i])}
+                }
+                p1 <- predict(object=object, newdata=newdata, type="prob")
+                p <- numeric(length(p1))
+                for (i in 1:length(p1)) {p[i] <- p1[[i]][2]}
                 return(as.numeric(p))
             }
         }
@@ -655,11 +694,23 @@
         } 
     }else{
         if (is.null(a)==T) {
+            if (target.groups == T) {
+                cat(paste("\n", "WARNING: not possible for target group pseudo-absence data as 'a' (locations of all species) not specified", sep = ""))
+                cat(paste("\n", "Instead background locations selected randomly", "\n\n", sep = ""))
+            }
             if (excludep == T) {
                 a <- dismo::randomPoints(x[[1]], n=an, p=p, excludep=T)
             }else{
                 a <- dismo::randomPoints(x[[1]], n=an, p=NULL, excludep=F)
             }        
+        }else{
+            if (target.groups == T) {
+                cat(paste("\n", "target group (biased pseudo-absence locations) in centres of cells with locations of all target group species ('a')", "\n\n", sep = ""))
+                p.cell <- unique(raster::cellFromXY(x[[1]], p))
+                a.cell <- unique(raster::cellFromXY(x[[1]], a))
+                if (excludep == T) {a.cell <- a.cell[!(a.cell %in% p.cell)]}
+                a <- raster::xyFromCell(x[[1]], cell=a.cell, spatial=F)
+            }
         }
         if (is.null(pt)==T && is.null(TestData)) {pt <- p}
         if (k > 1 && identical(pt, p) == T) {
@@ -688,7 +739,7 @@
                 SSB.reduce <- FALSE
             }else{
                 d.km <- CIRCLES.d/1000
-                cat(paste("\n", "Random selection of testing absences in circular neighbourhoods of ", d.km, " km", sep = ""))
+                cat(paste("\n", "Random selection of testing absences in circular neighbourhoods of ", d.km, " km", "\n", sep = ""))
                 pres_all <- rbind(pt, p)
                 circles.calibrate <- dismo::circles(p=pres_all, lonlat=raster::isLonLat(x[[1]]), d=CIRCLES.d)
                 circles.predicted <- dismo::predict(circles.calibrate, x[[1]])
@@ -900,12 +951,25 @@
         }
     }
 #
+    factlevels <- NULL
+    if (is.null(factors) == F) {
+        factlevels <- list()
+        for (i in 1:length(factors)) {
+            factlevels[[i]] <- levels(TrainData[, factors[i]])
+            names(factlevels)[i] <- factors[i]
+        }
+    } 
+#
     if (sum(ws, na.rm=T) > 0) {
         cat(paste("\n", "Summary of Training data set used for calibrations (rows: ", nrow(TrainData),  ")\n", sep = ""))
         print(summary(TrainData))
+        cat(paste("\n"))
+        utils::str(TrainData)
         if (no.tests == F) {
             cat(paste("\n", "Summary of Testing data set used for evaluations (rows: ", nrow(TestData),  ")\n", sep = ""))
             print(summary(TestData))
+            cat(paste("\n"))
+            utils::str(TestData)
         }else{
             cat(paste("\n", "(no tests with separate data set)", "\n", sep = ""))
         }
@@ -914,7 +978,7 @@
     dummy.vars.noDOMAIN <- NULL
 #
     if(models.keep == T) {
-        models <- list(MAXENT=NULL, MAXLIKE=NULL, GBM=NULL, GBMSTEP=NULL, RF=NULL, GLM=NULL, 
+        models <- list(MAXENT=NULL, MAXNET=NULL, MAXLIKE=NULL, GBM=NULL, GBMSTEP=NULL, RF=NULL, CF=NULL, GLM=NULL, 
             GLMSTEP=NULL, GAM=NULL, GAMSTEP=NULL, MGCV=NULL, MGCVFIX=NULL, EARTH=NULL, RPART=NULL, 
             NNET=NULL, FDA=NULL, SVM=NULL, SVME=NULL, GLMNET=NULL, BIOCLIM.O=NULL, BIOCLIM=NULL, DOMAIN=NULL, MAHAL=NULL, MAHAL01=NULL,
             formulae=NULL, output.weights=NULL,
@@ -948,15 +1012,23 @@
         models <- NULL
     }
 #
-# Data frames for distance-based methods, SVME and GLMNET
-    TrainData.vars <- TrainData[,names(TrainData) != "pb", drop=F]
+    if(ws["GBMSTEP"] > 0) {
+        TrainData.orig <- TrainData
+        assign("TrainData.orig", TrainData.orig, envir=.BiodiversityR)
+    }
+#
+# Data frames for distance-based methods, maxnet, SVME and GLMNET
+    TrainData.vars <- TrainData[, names(TrainData) != "pb", drop=F]
     assign("TrainData.vars", TrainData.vars, envir=.BiodiversityR)
+    TrainData.pa <- as.vector(TrainData[ , "pb"])
+    assign("TrainData.pa", TrainData.pa, envir=.BiodiversityR)
     TrainData.numvars <- TrainData.vars
     if (is.null(factors) == F) {
         for (i in 1:length(factors)) {
             TrainData.numvars <- TrainData.numvars[, which(names(TrainData.numvars) != factors[i]), drop=F]
         }
     }
+    num.vars <- names(TrainData.numvars)
     assign("TrainData.numvars", TrainData.numvars, envir=.BiodiversityR)
     TrainData.pres <- TrainData[TrainData[,"pb"]==1,,drop=F]
     TrainData.pres <- TrainData.pres[,names(TrainData.pres) != "pb", drop=F]
@@ -975,7 +1047,7 @@
     }
 #
 # make MAXENT.TrainData
-    if (ws["MAXENT"] > 0  || ws["MAXLIKE"] > 0) {
+    if (ws["MAXENT"] > 0 || ws["MAXLIKE"] > 0) {
         if (is.null(MAXENT.a)==T) {
             MAXENT.a <- dismo::randomPoints(x[[1]], n=MAXENT.an, p=p, excludep=T)       
         }
@@ -1061,27 +1133,27 @@
     }
 #
     modelresults <- data.frame(array(dim=c(nrow(TrainData), length(ws)+1), 0))
-    names(modelresults) <- c("MAXENT", "MAXLIKE", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
+    names(modelresults) <- c("MAXENT", "MAXNET", "MAXLIKE", "GBM", "GBMSTEP", "RF", "CF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
         "MGCVFIX", "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET", 
         "BIOCLIM.O", "BIOCLIM", "DOMAIN", "MAHAL", "MAHAL01", "ENSEMBLE")
     TrainData <- cbind(TrainData, modelresults)
     assign("TrainData", TrainData, envir=.BiodiversityR)
     if (no.tests == F) {
         modelresults <- data.frame(array(dim=c(nrow(TestData), length(ws)+1), 0))
-        names(modelresults) <- c("MAXENT", "MAXLIKE", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
+        names(modelresults) <- c("MAXENT", "MAXNET", "MAXLIKE", "GBM", "GBMSTEP", "RF", "CF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
             "MGCVFIX", "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET", 
             "BIOCLIM.O", "BIOCLIM", "DOMAIN", "MAHAL", "MAHAL01", "ENSEMBLE")
         TestData <- cbind(TestData, modelresults)
         assign("TestData", TestData, envir=.BiodiversityR)
     }
     weights <- as.numeric(array(dim=length(ws), 0))
-    names(weights) <- c("MAXENT", "MAXLIKE", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX", 
+    names(weights) <- c("MAXENT", "MAXNET", "MAXLIKE", "GBM", "GBMSTEP", "RF", "CF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX", 
         "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET", "BIOCLIM.O", "BIOCLIM", "DOMAIN", "MAHAL", "MAHAL01")
 #
     if(evaluations.keep==T) {
-        evaluations <- list(MAXENT.C=NULL, MAXENT.T=NULL, MAXLIKE.C=NULL, MAXLIKE.T=NULL,
+        evaluations <- list(MAXENT.C=NULL, MAXENT.T=NULL, MAXNET.C=NULL, MAXNET.T=NULL, MAXLIKE.C=NULL, MAXLIKE.T=NULL,
             GBM.trees=NULL, GBM.C=NULL, GBM.T=NULL, GBMSTEP.trees=NULL, GBMSTEP.C=NULL, GBMSTEP.T=NULL, 
-            RF.C=NULL, RF.T=NULL, GLM.C=NULL, GLM.T=NULL, GLMS.C=NULL, GLMS.T=NULL, 
+            RF.C=NULL, RF.T=NULL, CF.C=NULL, CF.T=NULL, GLM.C=NULL, GLM.T=NULL, GLMS.C=NULL, GLMS.T=NULL, 
             GAM.C=NULL, GAM.T=NULL, GAMS.C=NULL, GAMS.T=NULL, MGCV.C=NULL, MGCV.T=NULL, MGCVF.C=NULL, MGCVF.T=NULL,
             EARTH.C=NULL, EARTH.T=NULL, RPART.C=NULL, RPART.T=NULL,
             NNET.C=NULL, NNET.T=NULL, FDA.C=NULL, FDA.T=NULL, SVM.C=NULL, SVM.T=NULL, SVME.C=NULL, SVME.T=NULL, GLMNET.C=NULL, GLMNET.T=NULL,
@@ -1212,10 +1284,102 @@
             if (no.tests == F) {TestData[,"MAXENT"] <- 0}
         }
     }
+    if(ws["MAXNET"] > 0 && length(names(x)) == 0) {
+        cat(paste("\n", "WARNING: no explanatory variables available", sep = ""))
+        cat(paste("\n", "MAXNET model can therefore not be calibrated", "\n", sep = ""))
+        ws["MAXNET"] <- weights["MAXNET"] <- 0
+    }
+    if (ws["MAXNET"] > 0) {
+        mc <- mc+1
+        cat(paste("\n", mc, ". Maximum entropy algorithm (package: maxnet)\n", sep=""))
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        if(is.null(MAXNET.OLD) == T) {
+            if (CATCH.OFF == F) {
+                tryCatch(results <- maxnet::maxnet(p=TrainData.pa, data=TrainData.vars, f=maxnet::maxnet.formula(p=TrainData.pa, data=TrainData.vars, classes=MAXNET.classes)),
+                    error= function(err) {print(paste("MAXNET calibration failed"))},
+                    silent=F)
+            }else{
+                results <- maxnet::maxnet(p=TrainData.pa, data=TrainData.vars, f=maxnet::maxnet.formula(p=TrainData.pa, data=TrainData.vars, classes=MAXNET.classes))
+            }
+        }else{ 
+            results <- MAXNET.OLD
+        }
+        if (is.null(results) == F) {
+            TrainData[,"MAXNET"] <- predict.maxnet2(object=results, newdata=TrainData.vars, clamp=MAXNET.clamp, type=MAXNET.type)
+            if (PROBIT == T) {
+                if(is.null(MAXNET.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ MAXNET"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights1, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- MAXNET.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n", sep = ""))
+                TrainData[,"MAXNET.step1"] <- TrainData[,"MAXNET"]
+                TrainData[,"MAXNET"] <- predict.glm(object=results2, newdata=TrainData, type="response")
+            }else{
+                TrainData[which(TrainData[, "MAXNET"] < 0), "MAXNET"] <- 0
+                TrainData[which(TrainData[, "MAXNET"] > 1), "MAXNET"] <- 1               
+            }
+            pred1 <- TrainData[, "MAXNET"]
+            pred1[pred1 < 0.0000000001] <- 0.0000000001
+            pred1[pred1 > 0.9999999999] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
+            TrainPres <- TrainData[TrainData[,"pb"]==1,"MAXNET"]
+            TrainAbs <- TrainData[TrainData[,"pb"]==0,"MAXNET"]
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
+            print(eval1)
+#            thresholds["MAXNET"] <- threshold(eval1, sensitivity=threshold.sensitivity)[[threshold.method]]
+            thresholds["MAXNET"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
+            cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
+            print(as.numeric(thresholds["MAXNET"]))
+            weights["MAXNET"] <- max(c(eval1@auc, 0), na.rm=T)
+            AUC.calibration["MAXNET"] <- max(c(eval1@auc, 0), na.rm=T)
+            if (no.tests == F) {
+                cat(paste("\n", "Evaluation with test data","\n\n", sep = ""))
+                TestData[,"MAXNET"] <- predict.maxnet2(object=results, newdata=TestData.vars, clamp=MAXNET.clamp, type=MAXNET.type)
+                if (PROBIT == T) {
+                    TestData[,"MAXNET.step1"] <- TestData[,"MAXNET"]
+                    TestData[,"MAXNET"] <- predict.glm(object=results2, newdata=TestData, type="response")
+                }else{
+                    TestData[which(TestData[, "MAXNET"] < 0), "MAXNET"] <- 0
+                    TestData[which(TestData[, "MAXNET"] > 1), "MAXNET"] <- 1   
+                }
+                TestPres <- TestData[TestData[,"pb"]==1,"MAXNET"]
+                TestAbs <- TestData[TestData[,"pb"]==0,"MAXNET"]
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
+                if (is.null(eval2) == F) {
+                    print(eval2)
+                    weights["MAXNET"] <- max(c(eval2@auc, 0), na.rm=T)
+                    AUC.testing["MAXNET"] <- max(c(eval2@auc, 0), na.rm=T)
+                }else{
+                    cat(paste("\n", "WARNING: MAXNET evaluation failed","\n\n",sep = ""))
+                    ws["MAXNET"] <- 0
+                    weights["MAXNET"] <- 0
+                    TrainData[,"MAXNET"] <- 0
+                    TestData[,"MAXNET"] <- 0
+                }
+            }
+            if(evaluations.keep ==T) {
+                evaluations$MAXNET.C <- eval1
+                evaluations$MAXNET.T <- eval2
+            }
+            if (models.keep==T) {
+                models$MAXNET <- results
+                models$MAXNET.PROBIT <- results2
+                models$formulae$MAXNET.clamp <- MAXNET.clamp
+                models$formulae$MAXNET.type <- MAXNET.type
+            }
+        }else{ 
+            cat(paste("\n", "WARNING: MAXNET calibration failed", "\n", "\n"))
+            ws["MAXNET"] <- weights["MAXNET"] <- 0
+            TrainData[,"MAXNET"] <- 0
+            if (no.tests == F) {TestData[,"MAXNET"] <- 0}
+        }
+    }
     if(ws["MAXLIKE"] > 0 && length(names(x)) == 0) {
         cat(paste("\n", "WARNING: no explanatory variables available", sep = ""))
         cat(paste("\n", "MAXLIKE model can therefore not be calibrated", "\n", sep = ""))
-        ws["MAXLIKE"] <- weights["MAXLIKE"]<- 0
+        ws["MAXLIKE"] <- weights["MAXLIKE"] <- 0
     }
     if (ws["MAXLIKE"] > 0) {
         mc <- mc+1
@@ -1404,7 +1568,7 @@
             if (no.tests == F) {TestData[,"GBM"] <- 0}
         }
     }
-    if(ws["GBMSTEP"] > 0 && length(names(TrainData.vars)) == 0) {
+    if(ws["GBMSTEP"] > 0 && length(names(TrainData.orig)) == 0) {
         cat(paste("\n", "WARNING: no explanatory variables available", sep = ""))
         cat(paste("\n", "GBMSTEP model can therefore not be calibrated", "\n", sep = ""))
         ws["GBMSTEP"] <- weights["GBMSTEP"]<- 0
@@ -1416,13 +1580,13 @@
         eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
         if(is.null(GBMSTEP.OLD) == T) {
             if (CATCH.OFF == F) {   
-                tryCatch(results <- dismo::gbm.step(data=TrainData, gbm.y=1, gbm.x=GBMSTEP.gbm.x, family="bernoulli",
+                tryCatch(results <- dismo::gbm.step(data=TrainData.orig, gbm.y=1, gbm.x=GBMSTEP.gbm.x, family="bernoulli",
                     site.weights=Yweights1, tree.complexity=GBMSTEP.tree.complexity, learning.rate = GBMSTEP.learning.rate, 
                     bag.fraction=GBMSTEP.bag.fraction, step.size=GBMSTEP.step.size, verbose=F, silent=F, plot.main=F),
                 error= function(err) {print(paste("stepwise GBM calibration failed"))},
                 silent=F)
             }else{
-                results <- dismo::gbm.step(data=TrainData, gbm.y=1, gbm.x=GBMSTEP.gbm.x, family="bernoulli",
+                results <- dismo::gbm.step(data=TrainData.orig, gbm.y=1, gbm.x=GBMSTEP.gbm.x, family="bernoulli",
                     site.weights=Yweights1, tree.complexity=GBMSTEP.tree.complexity, learning.rate = GBMSTEP.learning.rate, 
                     bag.fraction=GBMSTEP.bag.fraction, step.size=GBMSTEP.step.size, verbose=F, silent=F, plot.main=F)
             }
@@ -1591,6 +1755,97 @@
             ws["RF"] <- weights["RF"] <- 0
             TrainData[,"RF"] <- 0
             if (no.tests == F) {TestData[,"RF"] <- 0}
+        }
+    }
+    if(ws["CF"] > 0 && length(names(TrainData.vars)) == 0) {
+        cat(paste("\n", "WARNING: no explanatory variables available", sep = ""))
+        cat(paste("\n", "CF model can therefore not be calibrated", "\n", sep = ""))
+        ws["CF"] <- weights["CF"] <- 0
+    }
+    if (ws["CF"] > 0) {
+        mc <- mc+1
+        cat(paste("\n", mc, ". Random forest algorithm (package: party)\n", sep=""))
+        eval1 <- eval2 <- results <- results2 <- TrainPres <- TrainAbs <- TestPres <- TestAbs <- NULL
+        if(is.null(CF.OLD) == T) {
+            if (CATCH.OFF == F) {     
+                tryCatch(results <- party::cforest(formula=CF.formula, data=TrainData, weights=Yweights1, control=party::cforest_unbiased(ntree=CF.ntree, mtry=CF.mtry)),
+                    error= function(err) {print(paste("random forest calibration failed"))},
+                    silent=F)
+            }else{
+                results <- party::cforest(formula=CF.formula, data=TrainData, weights=Yweights1, control=party::cforest_unbiased(ntree=CF.ntree, mtry=CF.mtry))
+            }
+        }else{ 
+            results <- CF.OLD
+        }
+        if (is.null(results) == F) {
+            cat(paste("\n", "Evaluation with calibration data","\n",sep = ""))
+            TrainData[,"CF"] <- predict.CF(object=results, newdata=TrainData.vars)
+            if (PROBIT == T) {
+                if(is.null(CF.PROBIT.OLD) == T) { 
+                    probit.formula <- as.formula(paste("pb ~ CF"))
+                    results2 <- glm(probit.formula, family=binomial(link="probit"), data=TrainData, weights=Yweights1, control=glm.control(maxit=maxit))
+                }else{ 
+                    results2 <- CF.PROBIT.OLD
+                }
+                cat(paste("(Predictions transformed with probit link)","\n\n", sep = ""))
+                TrainData[,"CF.step1"] <- TrainData[,"CF"]
+                TrainData[,"CF"] <- predict.glm(object=results2, newdata=TrainData, type="response")
+            }else{
+                TrainData[which(TrainData[, "CF"] < 0), "CF"] <- 0
+                TrainData[which(TrainData[, "CF"] > 1), "CF"] <- 1               
+            }   
+            pred1 <- TrainData[, "CF"]
+            pred1[pred1 < 0.0000000001] <- 0.0000000001
+            pred1[pred1 > 0.9999999999] <- 0.9999999999
+            cat(paste("Residual deviance (dismo package): ", dismo::calc.deviance(obs=obs1, pred=pred1, calc.mean=F), "\n\n", sep = ""))
+            TrainPres <- TrainData[TrainData[,"pb"]==1,"CF"]
+            TrainAbs <- TrainData[TrainData[,"pb"]==0,"CF"]
+            eval1 <- dismo::evaluate(p=TrainPres, a=TrainAbs)
+            print(eval1)
+            thresholds["CF"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=TrainPres, Abs=TrainAbs)
+            cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
+            print(as.numeric(thresholds["CF"]))
+            weights["CF"] <- max(c(eval1@auc, 0), na.rm=T)
+            AUC.calibration["CF"] <- max(c(eval1@auc, 0), na.rm=T)
+            if (no.tests == F) {
+                cat(paste("\n", "Evaluation with test data","\n\n",sep = ""))
+                TestData[,"CF"] <- predict.CF(object=results, newdata=TestData.vars)
+                if (PROBIT == T) {
+                    TestData[,"CF.step1"] <- TestData[,"CF"]
+                    TestData[,"CF"] <- predict.glm(object=results2, newdata=TestData, type="response")
+                }else{
+                    TestData[which(TestData[, "CF"] < 0), "CF"] <- 0
+                    TestData[which(TestData[, "CF"] > 1), "CF"] <- 1   
+                }
+                TestPres <- TestData[TestData[,"pb"]==1,"CF"]
+                TestAbs <- TestData[TestData[,"pb"]==0,"CF"]
+                eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
+                if (is.null(eval2) == F) {
+                    print(eval2)
+                    weights["CF"] <- max(c(eval2@auc, 0), na.rm=T)
+                    AUC.testing["CF"] <- max(c(eval2@auc, 0), na.rm=T)
+                }else{
+                    cat(paste("\n", "WARNING: random forest evaluation failed","\n\n",sep = ""))
+                    ws["CF"] <- 0
+                    weights["CF"] <- 0
+                    TrainData[,"CF"] <- 0
+                    TestData[,"CF"] <- 0
+                }
+            }
+            if(evaluations.keep ==T) {
+                evaluations$CF.C <- eval1
+                evaluations$CF.T <- eval2
+            }
+            if (models.keep==T) {
+                models$CF <- results
+                models$CF.PROBIT <- results2
+                models$formulae$CF.formula <- CF.formula
+            }
+        }else{ 
+            cat(paste("\n", "WARNING: random forest calibration failed", "\n", "\n"))
+            ws["CF"] <- weights["CF"] <- 0
+            TrainData[,"CF"] <- 0
+            if (no.tests == F) {TestData[,"CF"] <- 0}
         }
     }
     if(ws["GLM"] > 0 && length(names(TrainData.vars)) == 0) {
@@ -1767,7 +2022,7 @@
                     ws["GLMSTEP"] <- 0
                     weights["GLMSTEP"] <- 0
                     TrainData[,"GLMSTEP"] <- 0
-                    TestData[,"MAXENT"] <- 0
+                    TestData[,"GLMSTEP"] <- 0
                 }
             }
             if(evaluations.keep ==T) {
@@ -2916,6 +3171,7 @@
                 TrainData.vars <- TrainData.vars[, which(names(TrainData.vars) != factors[i]), drop=F]
                 TrainData.pres <- TrainData.pres[, which(names(TrainData.pres) != factors[i]), drop=F]
                 if (no.tests == F) {TestData.vars <- TestData.vars[, which(names(TestData.vars) != factors[i]), drop=F]}
+                cat(paste("\n", "NOTE: categorical variables removed for BIOCLIM, DOMAIN, MAHAL and MAHAL01", "\n", sep=""))
             }
         }
     }
@@ -3363,8 +3619,8 @@
     }
 # do not return ensemble tests for no models when tuning is not implemented 
     if((sum(ws > 0, na.rm=T) > 0) || (ENSEMBLE.tune == T)) {
-        TrainData[,"ENSEMBLE"] <- ws["MAXENT"]*TrainData[,"MAXENT"] + ws["MAXLIKE"]*TrainData[,"MAXLIKE"] + ws["GBM"]*TrainData[,"GBM"] +
-            ws["GBMSTEP"]*TrainData[,"GBMSTEP"] + ws["RF"]*TrainData[,"RF"] + ws["GLM"]*TrainData[,"GLM"] +
+        TrainData[,"ENSEMBLE"] <- ws["MAXENT"]*TrainData[,"MAXENT"] + ws["MAXNET"]*TrainData[,"MAXNET"] + ws["MAXLIKE"]*TrainData[,"MAXLIKE"] + ws["GBM"]*TrainData[,"GBM"] +
+            ws["GBMSTEP"]*TrainData[,"GBMSTEP"] + ws["RF"]*TrainData[,"RF"] + ws["CF"]*TrainData[,"CF"] + ws["GLM"]*TrainData[,"GLM"] +
             ws["GLMSTEP"]*TrainData[,"GLMSTEP"] + ws["GAM"]*TrainData[,"GAM"] + ws["GAMSTEP"]*TrainData[,"GAMSTEP"] +
             ws["MGCV"]*TrainData[,"MGCV"] + ws["MGCVFIX"]*TrainData[,"MGCVFIX"] + ws["EARTH"]*TrainData[,"EARTH"] +
             ws["RPART"]*TrainData[,"RPART"] + ws["NNET"]*TrainData[,"NNET"] + ws["FDA"]*TrainData[,"FDA"] +
@@ -3376,8 +3632,8 @@
         pred1[pred1 > 0.9999999999] <- 0.9999999999
         pred2 <- rep(mean(obs1), times=length(pred1))
         if (no.tests == F) {
-            TestData[,"ENSEMBLE"] <- ws["MAXENT"]*TestData[,"MAXENT"] + ws["MAXLIKE"]*TestData[,"MAXLIKE"] + ws["GBM"]*TestData[,"GBM"] +
-                ws["GBMSTEP"]*TestData[,"GBMSTEP"] + ws["RF"]*TestData[,"RF"] + ws["GLM"]*TestData[,"GLM"] +
+            TestData[,"ENSEMBLE"] <- ws["MAXENT"]*TestData[,"MAXENT"] + ws["MAXNET"]*TestData[,"MAXNET"] + ws["MAXLIKE"]*TestData[,"MAXLIKE"] + ws["GBM"]*TestData[,"GBM"] +
+                ws["GBMSTEP"]*TestData[,"GBMSTEP"] + ws["RF"]*TestData[,"RF"] + ws["CF"]*TestData[,"CF"] + ws["GLM"]*TestData[,"GLM"] +
                 ws["GLMSTEP"]*TestData[,"GLMSTEP"] + ws["GAM"]*TestData[,"GAM"] + ws["GAMSTEP"]*TestData[,"GAMSTEP"] +
                 ws["MGCV"]*TestData[,"MGCV"] + ws["MGCVFIX"]*TestData[,"MGCVFIX"] + ws["EARTH"]*TestData[,"EARTH"] +
                 ws["RPART"]*TestData[,"RPART"] + ws["NNET"]*TestData[,"NNET"] + ws["FDA"]*TestData[,"FDA"] +
@@ -3433,14 +3689,15 @@
     if(models.keep==T) {
         models$TrainData <- TrainData
         if (no.tests == F) {models$TestData <- TestData}
-        models$var.names <- var.names
         models$p <- p
         models$pt <- pt
         models$a <- a
         models$at <- at
         models$MAXENT.a <- MAXENT.a
         models$var.names <- var.names
+        models$num.vars <- num.vars
         models$factors <- factors
+        models$factlevels <- factlevels
         models$dummy.vars <- dummy.vars
         models$dummy.vars.noDOMAIN <- dummy.vars.noDOMAIN
     }
@@ -3453,7 +3710,9 @@
         evaluations$at <- at
         evaluations$MAXENT.a <- MAXENT.a
         evaluations$var.names <- var.names
+        evaluations$num.vars <- num.vars
         evaluations$factors <- factors
+        evaluations$factlevels <- factlevels
         evaluations$dummy.vars <- dummy.vars
         evaluations$dummy.vars.noDOMAIN <- dummy.vars.noDOMAIN
     }
@@ -3462,6 +3721,7 @@
     remove(TrainData.vars, envir=.BiodiversityR)
     remove(TrainData.numvars, envir=.BiodiversityR)
     remove(TrainData.pres, envir=.BiodiversityR)
+    if (ws["GBMSTEP"] > 0) {remove(TrainData.orig, envir=.BiodiversityR)} 
     if (no.tests == F) {
         remove(TestData, envir=.BiodiversityR)
         remove(TestData.vars, envir=.BiodiversityR)

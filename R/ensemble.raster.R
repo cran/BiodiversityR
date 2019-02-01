@@ -94,6 +94,7 @@
         }
     }
     if(length(factors) == 0) {factors <- NULL}
+    factlevels <- models.list$factlevels
     dummy.vars <- models.list$dummy.vars
     dummy.vars.noDOMAIN <- models.list$dummy.vars.noDOMAIN 
 #
@@ -102,10 +103,12 @@
 #
     if (is.null(input.weights) == F) {
         MAXENT <- max(c(input.weights["MAXENT"], -1), na.rm=T)
+        MAXNET <- max(c(input.weights["MAXNET"], -1), na.rm=T)
         MAXLIKE <- max(c(input.weights["MAXLIKE"], -1), na.rm=T)
         GBM <- max(c(input.weights["GBM"], -1), na.rm=T)
         GBMSTEP <- max(c(input.weights["GBMSTEP"], -1), na.rm=T)
         RF <- max(c(input.weights["RF"], -1), na.rm=T)
+        CF <- max(c(input.weights["CF"], -1), na.rm=T)
         GLM <- max(c(input.weights["GLM"], -1), na.rm=T)
         GLMSTEP <- max(c(input.weights["GLMSTEP"], -1), na.rm=T)
         GAM <- max(c(input.weights["GAM"], -1), na.rm=T)
@@ -126,18 +129,26 @@
         MAHAL01 <- max(c(input.weights["MAHAL01"], -1), na.rm=T)
     }
 #
-    MAXENT.OLD <- MAXLIKE.OLD <- GBM.OLD <- GBMSTEP.OLD <- RF.OLD <- GLM.OLD <- GLMSTEP.OLD <- GAM.OLD <- GAMSTEP.OLD <- MGCV.OLD <- NULL
+    MAXENT.OLD <- MAXNET.OLD <- MAXLIKE.OLD <- GBM.OLD <- GBMSTEP.OLD <- RF.OLD <- CF.OLD <- GLM.OLD <- GLMSTEP.OLD <- GAM.OLD <- GAMSTEP.OLD <- MGCV.OLD <- NULL
     MGCVFIX.OLD <- EARTH.OLD <- RPART.OLD <- NNET.OLD <- FDA.OLD <- SVM.OLD <- SVME.OLD <- GLMNET.OLD <- BIOCLIM.O.OLD <- BIOCLIM.OLD <- DOMAIN.OLD <- MAHAL.OLD <- MAHAL01.OLD <- NULL
 # probit models, NULL if no probit model fitted
-    MAXENT.PROBIT.OLD <- MAXLIKE.PROBIT.OLD <- GBM.PROBIT.OLD <- GBMSTEP.PROBIT.OLD <- RF.PROBIT.OLD <- GLM.PROBIT.OLD <- GLMSTEP.PROBIT.OLD <- GAM.PROBIT.OLD <- GAMSTEP.PROBIT.OLD <- MGCV.PROBIT.OLD <- NULL
+    MAXENT.PROBIT.OLD <- MAXNET.PROBIT.OLD <- MAXLIKE.PROBIT.OLD <- GBM.PROBIT.OLD <- GBMSTEP.PROBIT.OLD <- RF.PROBIT.OLD <- CF.PROBIT.OLD <- GLM.PROBIT.OLD <- GLMSTEP.PROBIT.OLD <- GAM.PROBIT.OLD <- GAMSTEP.PROBIT.OLD <- MGCV.PROBIT.OLD <- NULL
     MGCVFIX.PROBIT.OLD <- EARTH.PROBIT.OLD <- RPART.PROBIT.OLD <- NNET.PROBIT.OLD <- FDA.PROBIT.OLD <- SVM.PROBIT.OLD <- SVME.PROBIT.OLD <- GLMNET.PROBIT.OLD <- BIOCLIM.O.PROBIT.OLD <- BIOCLIM.PROBIT.OLD <- DOMAIN.PROBIT.OLD <- MAHAL.PROBIT.OLD <- MAHAL01.PROBIT.OLD <- NULL
     if (is.null(models.list) == F) {
         if (is.null(models.list$MAXENT) == F) {MAXENT.OLD <- models.list$MAXENT}
-        if (is.null(models.list$MAXLIKE) == F) {MAXLIKE.OLD <- models.list$MAXLIKE}
-        MAXLIKE.formula <- models.list$formulae$MAXLIKE.formula
+        if (is.null(models.list$MAXNET) == F) {
+            MAXNET.OLD <- models.list$MAXNET
+            MAXNET.clamp <- models.list$formulae$MAXNET.clamp
+            MAXNET.type <- models.list$formulae$MAXNET.type
+        }
+        if (is.null(models.list$MAXLIKE) == F) {
+            MAXLIKE.OLD <- models.list$MAXLIKE
+            MAXLIKE.formula <- models.list$formulae$MAXLIKE.formula
+        }
         if (is.null(models.list$GBM) == F) {GBM.OLD <- models.list$GBM}
         if (is.null(models.list$GBMSTEP) == F) {GBMSTEP.OLD <- models.list$GBMSTEP}
         if (is.null(models.list$RF) == F) {RF.OLD <- models.list$RF}
+        if (is.null(models.list$CF) == F) {CF.OLD <- models.list$CF}
         if (is.null(models.list$GLM) == F) {GLM.OLD <- models.list$GLM}
         if (is.null(models.list$GLMSTEP) == F) {GLMSTEP.OLD <- models.list$GLMSTEP}
         if (is.null(models.list$GAM) == F) {GAM.OLD <- models.list$GAM}
@@ -150,20 +161,26 @@
         if (is.null(models.list$FDA) == F) {FDA.OLD <- models.list$FDA}
         if (is.null(models.list$SVM) == F) {SVM.OLD <- models.list$SVM}
         if (is.null(models.list$SVME) == F) {SVME.OLD <- models.list$SVME}
-        if (is.null(models.list$GLMNET) == F) {GLMNET.OLD <- models.list$GLMNET}
-        GLMNET.class <- models.list$formulae$GLMNET.class       
+        if (is.null(models.list$GLMNET) == F) {
+            GLMNET.OLD <- models.list$GLMNET
+            GLMNET.class <- models.list$formulae$GLMNET.class
+        }
         if (is.null(models.list$BIOCLIM.O) == F) {BIOCLIM.O.OLD <- models.list$BIOCLIM.O}
         if (is.null(models.list$BIOCLIM) == F) {BIOCLIM.OLD <- models.list$BIOCLIM}
         if (is.null(models.list$DOMAIN) == F) {DOMAIN.OLD <- models.list$DOMAIN}
         if (is.null(models.list$MAHAL) == F) {MAHAL.OLD <- models.list$MAHAL}
-        if (is.null(models.list$MAHAL01) == F) {MAHAL01.OLD <- models.list$MAHAL01}
-        MAHAL.shape <- models.list$formulae$MAHAL.shape
+        if (is.null(models.list$MAHAL01) == F) {
+            MAHAL01.OLD <- models.list$MAHAL01
+            MAHAL.shape <- models.list$formulae$MAHAL.shape
+        }
 # probit models
         if (is.null(models.list$MAXENT.PROBIT) == F) {MAXENT.PROBIT.OLD <- models.list$MAXENT.PROBIT}
+        if (is.null(models.list$MAXNET.PROBIT) == F) {MAXNET.PROBIT.OLD <- models.list$MAXNET.PROBIT}
         if (is.null(models.list$MAXLIKE.PROBIT) == F) {MAXLIKE.PROBIT.OLD <- models.list$MAXLIKE.PROBIT}
         if (is.null(models.list$GBM.PROBIT) == F) {GBM.PROBIT.OLD <- models.list$GBM.PROBIT}
         if (is.null(models.list$GBMSTEP.PROBIT) == F) {GBMSTEP.PROBIT.OLD <- models.list$GBMSTEP.PROBIT}
         if (is.null(models.list$RF.PROBIT) == F) {RF.PROBIT.OLD <- models.list$RF.PROBIT}
+        if (is.null(models.list$CF.PROBIT) == F) {CF.PROBIT.OLD <- models.list$CF.PROBIT}
         if (is.null(models.list$GLM.PROBIT) == F) {GLM.PROBIT.OLD <- models.list$GLM.PROBIT}
         if (is.null(models.list$GLMSTEP.PROBIT) == F) {GLMSTEP.PROBIT.OLD <- models.list$GLMSTEP.PROBIT}
         if (is.null(models.list$GAM.PROBIT) == F) {GAM.PROBIT.OLD <- models.list$GAM.PROBIT}
@@ -187,6 +204,13 @@
 	jar <- paste(system.file(package="dismo"), "/java/maxent.jar", sep='')
 	if (!file.exists(jar)) {stop('maxent program is missing: ', jar, '\nPlease download it here: http://www.cs.princeton.edu/~schapire/maxent/')}
     }
+    if (MAXNET > 0) {
+        if (! requireNamespace("maxnet")) {stop("Please install the maxnet package")}
+            predict.maxnet2 <- function(object, newdata, clamp=F, type=c("cloglog")) {
+                p <- predict(object=object, newdata=newdata, clamp=clamp, type=type)
+                return(as.numeric(p))
+            }
+    }
     if (MAXLIKE > 0) {
         if (! requireNamespace("maxlike")) {stop("Please install the maxlike package")}
 #        MAXLIKE.formula <- ensemble.formulae(xn, factors=factors)$MAXLIKE.formula
@@ -200,6 +224,21 @@
 #  get the probabilities from RF
         predict.RF <- function(object, newdata) {
             p <- predict(object=object, newdata=newdata, type="response")
+            return(as.numeric(p))
+        }
+    }
+    if (CF > 0) {
+#  get the probabilities from RF
+#  ensure that cases with missing values are removed
+        if (! requireNamespace("party")) {stop("Please install the party package")}
+        predict.CF <- function(object, newdata) {
+# avoid problems with single variables, especially with raster::predict
+            for (i in 1:ncol(newdata)) {
+                if (is.integer(newdata[, i])) {newdata[, i] <- as.numeric(newdata[, i])}
+            }
+            p1 <- predict(object=object, newdata=newdata, type="prob")
+            p <- numeric(length(p1))
+            for (i in 1:length(p1)) {p[i] <- p1[[i]][2]}
             return(as.numeric(p))
         }
     }
@@ -431,19 +470,74 @@
             output.weights["MAXENT"] <- -1
         }
     }
+    if (output.weights["MAXNET"] > 0) {
+        mc <- mc+1
+        cat(paste("\n", mc, ". Maximum entropy algorithm (package: maxnet)\n", sep=""))
+        results <- MAXNET.OLD
+        pmaxnet <- NULL
+        fullname <- paste("models/", RASTER.species.name, "_MAXNET", sep="")
+        if (CATCH.OFF == F) {
+            tryCatch(pmaxnet <- raster::predict(object=xn, model=results, fun=predict.maxnet2, na.rm=TRUE, clamp=MAXNET.clamp, type=MAXNET.type,
+                    filename=fullname, progress='text', overwrite=TRUE),
+                error= function(err) {print(paste("MAXNET prediction failed"))},
+                silent=F)
+            }else{
+                pmaxnet <- raster::predict(object=xn, model=results, fun=predict.maxnet2, na.rm=TRUE, clamp=MAXNET.clamp, type=MAXNET.type,
+                    filename=fullname, progress='text', overwrite=TRUE)
+            }
+        if (is.null(pmaxnet) == F) {
+            results2 <- MAXNET.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                raster::writeRaster(x=pmaxnet, filename=fullname2, progress='text', overwrite=TRUE)
+                explan.stack <- raster::stack(fullname2)
+                names(explan.stack) <- "MAXNET"
+                pmaxnet <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE)                
+            }
+            pmaxnet <- trunc(1000*pmaxnet)
+            raster::writeRaster(x=pmaxnet, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            if(evaluate == T) {
+                eval1 <- pres1 <- abs1 <- NULL
+                cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
+                pres1 <- raster::extract(pmaxnet, p)/1000
+                abs1 <- raster::extract(pmaxnet, a)/1000
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
+                print(eval1)
+                thresholds.raster["MAXNET"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
+                    threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
+                cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
+                print(as.numeric(thresholds.raster["MAXNET"]))
+            }
+            if(retest == T) {
+                eval1 <- pres1 <- abs1 <- NULL
+                cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
+                pres1 <- raster::extract(pmaxnet, pt)/1000
+                abs1 <- raster::extract(pmaxnet, at)/1000
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
+                print(eval1)
+            }
+        }else{
+            cat(paste("\n", "WARNING: MAXNET prediction failed","\n\n", sep = ""))
+            prediction.failures <- TRUE
+            output.weights["MAXNET"] <- -1
+        }
+    }
     if (output.weights["MAXLIKE"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Maxlike algorithm (package: maxlike)\n", sep=""))
         results <- MAXLIKE.OLD
         pmaxlike <- NULL
         fullname <- paste("models/", RASTER.species.name, "_MAXLIKE", sep="")
+        xn.num <- raster::subset(xn, subset=models.list$num.vars)
         if (CATCH.OFF == F) {
-            tryCatch(pmaxlike <- raster::predict(object=xn, model=results, na.rm=TRUE, 
+            tryCatch(pmaxlike <- raster::predict(object=xn.num, model=results, na.rm=TRUE, 
                     filename=fullname, progress='text', overwrite=TRUE),
                 error= function(err) {print(paste("MAXLIKE prediction failed"))},
                 silent=F)
         }else{
-            pmaxlike <- raster::predict(object=xn, model=results, na.rm=TRUE, 
+            pmaxlike <- raster::predict(object=xn.num, model=results, na.rm=TRUE, 
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pmaxlike) == F) {
@@ -489,18 +583,18 @@
         mc <- mc+1
         cat(paste("\n", mc, ". Generalized boosted regression modeling (package: gbm) \n", sep=""))
         if (!is.null(factors)) {
-            cat(paste("\n", "WARRNING: not certain whether the correct factor levels will be used", "\n", sep=""))
+            cat(paste("\n", "WARNING: not certain whether the correct factor levels will be used", "\n", sep=""))
         } 
         results <- GBM.OLD
         pgbm <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GBM", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pgbm <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factors,
+            tryCatch(pgbm <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factlevels,
                     n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE),
                 error= function(err) {print(paste("GBM prediction failed"))},
                 silent=F)
         }else{
-            raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factors,
+            raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factlevels,
                 n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pgbm) == F) {
@@ -552,12 +646,12 @@
         pgbms <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GBMSTEP", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pgbms <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factors,
+            tryCatch(pgbms <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factlevels,
                 n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("stepwise GBM prediction failed"))},
             silent=F)
         }else{
-            pgbms <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factors,
+            pgbms <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factlevels,
                 n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pgbms) == F) {
@@ -606,12 +700,12 @@
         prf <- NULL
         fullname <- paste("models/", RASTER.species.name, "_RF", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(prf <- raster::predict(object=xn, model=results, fun=predict.RF, na.rm=TRUE, factors=factors,
+            tryCatch(prf <- raster::predict(object=xn, model=results, fun=predict.RF, na.rm=TRUE, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("random forest prediction failed"))},
             silent=F)
         }else{
-            prf <- raster::predict(object=xn, model=results, fun=predict.RF, na.rm=TRUE, factors=factors,
+            prf <- raster::predict(object=xn, model=results, fun=predict.RF, na.rm=TRUE, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(prf) == F) {
@@ -653,6 +747,60 @@
             output.weights["RF"] <- -1 
         }
     } 
+    if (output.weights["CF"] > 0) {
+        mc <- mc+1
+        cat(paste("\n", mc, ". Random forest algorithm (package: party)\n", sep=""))
+        results <- CF.OLD
+        pcf <- NULL
+        fullname <- paste("models/", RASTER.species.name, "_CF", sep="")
+        if (CATCH.OFF == F) {
+            tryCatch(pcf <- raster::predict(object=xn, model=results, fun=predict.CF, na.rm=TRUE, factors=factlevels,
+                filename=fullname, progress='text', overwrite=TRUE),
+            error= function(err) {print(paste("random forest prediction failed"))},
+            silent=F)
+        }else{
+            pcf <- raster::predict(object=xn, model=results, fun=predict.CF, na.rm=TRUE, factors=factlevels,
+                filename=fullname, progress='text', overwrite=TRUE)
+        }
+        if (is.null(pcf) == F) {
+            results2 <- CF.PROBIT.OLD
+            if (is.null(results2) == F) {
+                cat(paste("Probit transformation", "\n", sep=""))
+                fullname2 <- paste(fullname, "_step1", sep="")
+                raster::writeRaster(x=pcf, filename=fullname2, progress='text', overwrite=TRUE)
+                explan.stack <- raster::stack(fullname2)
+                names(explan.stack) <- "CF"
+                pcf <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, progress='text', overwrite=TRUE)                
+            }
+            pcf <- trunc(1000*pcf)
+            raster::writeRaster(x=pcf, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            if(evaluate == T) {
+                eval1 <- pres1 <- abs1 <- NULL
+                cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
+                pres1 <- raster::extract(pcf, p)/1000
+                abs1 <- raster::extract(pcf, a)/1000
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
+                print(eval1)
+                thresholds.raster["CF"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
+                    threshold.PresenceAbsence=threshold.PresenceAbsence, Pres=pres1, Abs=abs1)
+                cat(paste("\n", "Threshold (method: ", threshold.method, ") \n", sep = ""))
+                print(as.numeric(thresholds.raster["CF"]))
+            }
+            if(retest == T) {
+                eval1 <- pres1 <- abs1 <- NULL
+                cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
+                pres1 <- raster::extract(pcf, pt)/1000
+                abs1 <- raster::extract(pcf, at)/1000
+                eval1 <- dismo::evaluate(p=pres1, a=abs1)
+                print(eval1)
+            }
+        }else{
+            cat(paste("\n", "WARNING: random forest prediction failed","\n\n", sep = ""))
+            prediction.failures <- TRUE
+            output.weights["CF"] <- -1 
+        }
+    } 
     if (output.weights["GLM"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". Generalized Linear Model \n", sep=""))
@@ -660,12 +808,12 @@
         pglm <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GLM", sep="")
         if (CATCH.OFF == T) {
-            tryCatch(pglm <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factors,
+            tryCatch(pglm <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("GLM prediction failed"))},
             silent=F)
         }else{
-            pglm <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factors,
+            pglm <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pglm) == F) {
@@ -714,12 +862,12 @@
         pglms <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GLMSTEP", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pglms <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factors,
+            tryCatch(pglms <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("stepwise GLM prediction failed"))},
             silent=F)
         }else{
-            pglms <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factors,
+            pglms <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pglms) == F) {
@@ -768,12 +916,12 @@
         pgam <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GAM", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pgam <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, na.rm=TRUE, type="response", factors=factors,
+            tryCatch(pgam <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, na.rm=TRUE, type="response", factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("GAM (package: gam) prediction failed"))},
             silent=F)
         }else{
-            pgam <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, na.rm=TRUE, type="response", factors=factors,
+            pgam <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, na.rm=TRUE, type="response", factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pgam) == F) {
@@ -822,12 +970,12 @@
         pgams <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GAMSTEP", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pgams <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, type="response", na.rm=TRUE, factors=factors,
+            tryCatch(pgams <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, type="response", na.rm=TRUE, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("stepwise GAM (package: gam) prediction failed"))},
             silent=F)
         }else{
-            pgams <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, type="response", na.rm=TRUE, factors=factors,
+            pgams <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, type="response", na.rm=TRUE, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pgams) == F) {
@@ -879,12 +1027,12 @@
         pmgcv <- NULL
         fullname <- paste("models/", RASTER.species.name, "_MGCV", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pmgcv <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factors,
+            tryCatch(pmgcv <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("GAM (package: mgcv) prediction failed"))},
             silent=F)
         }else{
-            pmgcv <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factors,
+            pmgcv <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pmgcv) == F) {
@@ -936,12 +1084,12 @@
         pmgcvf <- NULL
         fullname <- paste("models/", RASTER.species.name, "_MGCVFIX", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pmgcvf <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factors,
+            tryCatch(pmgcvf <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("GAM with fixed d.f. regression splines (package: mgcv) prediction failed"))},
             silent=F)
         }else{
-            pmgcvf <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factors,
+            pmgcvf <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pmgcvf) == F) {
@@ -993,12 +1141,12 @@
         pearth <- NULL
         fullname <- paste("models/", RASTER.species.name, "_EARTH", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pearth <- raster::predict(object=xn, model=results, fun=predict.EARTH, na.rm=TRUE, type="response", factors=factors,
+            tryCatch(pearth <- raster::predict(object=xn, model=results, fun=predict.EARTH, na.rm=TRUE, type="response", factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("MARS (package: earth) prediction failed"))},
             silent=F)
         }else{
-            pearth <- raster::predict(object=xn, model=results, fun=predict.EARTH, na.rm=TRUE, type="response", factors=factors,
+            pearth <- raster::predict(object=xn, model=results, fun=predict.EARTH, na.rm=TRUE, type="response", factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pearth) == F) {
@@ -1050,12 +1198,12 @@
         prpart <- NULL
         fullname <- paste("models/", RASTER.species.name, "_RPART", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(prpart <- raster::predict(object=xn, model=results, na.rm=TRUE, type="prob", index=2, factors=factors,
+            tryCatch(prpart <- raster::predict(object=xn, model=results, na.rm=TRUE, type="prob", index=2, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("RPART prediction failed"))},
             silent=F)
         }else{
-            prpart <- raster::predict(object=xn, model=results, na.rm=TRUE, type="prob", index=2, factors=factors,
+            prpart <- raster::predict(object=xn, model=results, na.rm=TRUE, type="prob", index=2, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(prpart) == F) {
@@ -1107,12 +1255,12 @@
         pnnet <- NULL
         fullname <- paste("models/", RASTER.species.name, "_NNET", sep="")
         if (CATCH.OFF == F){
-            tryCatch(pnnet <- raster::predict(object=xn, model=results, fun=predict.NNET, na.rm=TRUE, factors=factors,
+            tryCatch(pnnet <- raster::predict(object=xn, model=results, fun=predict.NNET, na.rm=TRUE, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("Artificial Neural Network (package: nnet) prediction failed"))},
             silent=F)
         }else{
-            pnnet <- raster::predict(object=xn, model=results, fun=predict.NNET, na.rm=TRUE, factors=factors,
+            pnnet <- raster::predict(object=xn, model=results, fun=predict.NNET, na.rm=TRUE, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pnnet) == F) {
@@ -1164,12 +1312,12 @@
         pfda <- NULL
         fullname <- paste("models/", RASTER.species.name, "_FDA", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pfda <- raster::predict(object=xn, model=results, na.rm=TRUE, type="posterior", index=2, factors=factors,
+            tryCatch(pfda <- raster::predict(object=xn, model=results, na.rm=TRUE, type="posterior", index=2, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("FDA prediction failed"))},
             silent=F)
         }else{
-            pfda <- raster::predict(object=xn, model=results, na.rm=TRUE, type="posterior", index=2, factors=factors,
+            pfda <- raster::predict(object=xn, model=results, na.rm=TRUE, type="posterior", index=2, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pfda) == F) {
@@ -1222,12 +1370,12 @@
         fullname <- paste("models/", RASTER.species.name, "_SVM", sep="")
         predict.svm2 <- as.function(kernlab::predict)
         if (CATCH.OFF == F) {
-            tryCatch(psvm <- raster::predict(object=xn, model=results, fun=predict.svm2, na.rm=TRUE, type="probabilities", index=2, factors=factors,
+            tryCatch(psvm <- raster::predict(object=xn, model=results, fun=predict.svm2, na.rm=TRUE, type="probabilities", index=2, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("Support Vector Machines (package: kernlab) prediction failed"))},
             silent=F)
         }else{
-            psvm <- raster::predict(object=xn, model=results, fun=predict.svm2, na.rm=TRUE, type="probabilities", index=2, factors=factors,
+            psvm <- raster::predict(object=xn, model=results, fun=predict.svm2, na.rm=TRUE, type="probabilities", index=2, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(psvm) == F) {
@@ -1276,13 +1424,13 @@
         psvme <- NULL
         fullname <- paste("models/", RASTER.species.name, "_SVME", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(psvme <- raster::predict(object=xn, model=results, fun=predict.SVME, na.rm=TRUE, factors=factors,
+            tryCatch(psvme <- raster::predict(object=xn, model=results, fun=predict.SVME, na.rm=TRUE, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("SVM prediction (e1071 package) failed"))},
             warning= function(war) {print(paste("SVM prediction (e1071 package) failed"))},
             silent=F)
         }else{
-            psvme <- raster::predict(object=xn, model=results, fun=predict.SVME, na.rm=TRUE, factors=factors,
+            psvme <- raster::predict(object=xn, model=results, fun=predict.SVME, na.rm=TRUE, factors=factlevels,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(psvme) == F) {
@@ -1333,14 +1481,15 @@
         results <- GLMNET.OLD
         pglmnet <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GLMNET", sep="")
+        xn.num <- raster::subset(xn, subset=models.list$num.vars)
         if (CATCH.OFF == F) {
-            tryCatch(pglmnet <- raster::predict(object=xn, model=results, fun=predict.GLMNET, na.rm=TRUE, GLMNET.class=GLMNET.class,
+            tryCatch(pglmnet <- raster::predict(object=xn.num, model=results, fun=predict.GLMNET, na.rm=TRUE, GLMNET.class=GLMNET.class,
                 filename=fullname, progress='text', overwrite=TRUE),
             error= function(err) {print(paste("GLMNET prediction (glmnet package) failed"))},
             warning= function(war) {print(paste("GLMNET prediction (glmnet package) failed"))},
             silent=F)
         }else{
-            pglmnet <- raster::predict(object=xn, model=results, fun=predict.GLMNET, na.rm=TRUE, GLMNET.class=GLMNET.class,
+            pglmnet <- raster::predict(object=xn.num, model=results, fun=predict.GLMNET, na.rm=TRUE, GLMNET.class=GLMNET.class,
                 filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pglmnet) == F) {
@@ -1742,6 +1891,13 @@
         enscount <- enscount + pmaxent
         raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
+    if (output.weights["MAXNET"] > 0) {
+        ensemble <- ensemble + output.weights["MAXNET"] * pmaxnet
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
+        pmaxnet <- pmaxnet >= 1000 * thresholds["MAXNET"]
+        enscount <- enscount + pmaxnet
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+    }
     if (output.weights["MAXLIKE"] > 0) {
         ensemble <- ensemble + output.weights["MAXLIKE"] * pmaxlike
         raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
@@ -1768,6 +1924,13 @@
         raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
         prf <- prf >= 1000 * thresholds["RF"]
         enscount <- enscount + prf
+        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+    }
+    if (output.weights["CF"] > 0) {
+        ensemble <- ensemble + output.weights["CF"] * pcf
+        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+        pcf <- pcf >= 1000 * thresholds["CF"]
+        enscount <- enscount + pcf
         raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GLM"] > 0) {

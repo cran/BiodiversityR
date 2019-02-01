@@ -15,6 +15,78 @@ BiodiversityR versions
 	is available from https://doi.org/10.1016/j.envsoft.2017.11.009
 
 
+Version 2.11-1 (January 2019; Ty Segall & White Fence's Joy version)
+
+	* new function ensemble.environmentalThin that provides a method similar to function
+	ensemble.spatialThin, but operates in environmental instead of geographical space. The
+	environmental space is represented by principal components obtained via vegan::rda.
+	The user needs to define the target number of environmentally thinned points instead
+	of the minimum distance.
+
+	* new function ensemble.outlierThin that filters out point observations that could be
+	outliers based on a Local Outlier Factor analysis.
+
+	* new function ensemble.spatialThin.bins that enables spatial thinning for large data
+	sets. With the function, points are first classified in different bins. In the next
+	step, spatial thinning is done for each bin. Bins are defined by quantile limits of
+	geographical coordinates.
+
+	* new argument of 'MAXNET' in ensemble.calibrate.models, ensemble.calibrate.weights, 
+	ensemble.raster, ensemble.batch, ensemble.drop1, evaluation.strip.data and 
+	evaluation.strip.plot functions, allowing for maximum entropy species distribution 
+	modeling using glmnet for model fitting as implemented in the maxnet package.
+
+	* new argument of 'CF' in ensemble.calibrate.models, ensemble.calibrate.weights, 
+	ensemble.raster, ensemble.batch, ensemble.drop1, evaluation.strip.data and 
+	evaluation.strip.plot functions, allowing for  random forest and bagging ensemble 
+	algorithms utilizing conditional inference trees as base learners as implemented in the 
+	party package. (Note that integration of cforest required modifications of 
+	raster::predict that were integrated in raster version 2.8-19.)
+
+	* new argument of 'target.groups' in ensemble.calibrate.models, 
+	ensemble.calibrate.weights, ensemble.batch and ensemble.drop1 that results in 'target
+	groups' of species that were all collected or observed using the same methods or
+	equipment as for the species for which species distribution models are calibrated.
+	See Phillips et al. 2009 https://doi.org/10.1890/07-2153.1 for details. When selecting 
+	the option, users should provide the presence locations of the other species as
+	background. For model calibrations and evaluations, pseudo-absence locations will 
+	correspond to centres of cells with presence locations of the other species, possibly
+	excluding cells where the focal species occurs (a similar option is available from
+	dismo::randomPoints). Feature requested by Tobias Fremout.
+
+	* new argument of 'block.default' in ensemble.calibrate.weights and ensemble.batch that
+	results in different options of blocking point data sets (first by latitude as only 
+	option available from ENMeval::get.block [i.e. the default], or first by longitude).
+	Feature suggested by Evert Thomas.
+
+	* new argument of 'get.subblocks' in ensemble.calibrate.weights and ensemble.batch that
+	results in a double implementation of ENMeval::get.block, whereby point data sets 
+	assigned to one block in the first step are again assigned to four blocks ('subblocks')
+	in a second step.
+
+	* corrected error in ensemble.spatialThin to allow retaining only 1 point in case that
+	the random elimination process retained two points above the minimum distance in the
+	previous elimination step.
+
+	* modified ensemble.spatialThin to round geographical distances to 2 decimals (10 m)	
+
+	* ensured that ensemble.raster function only retained numeric variables for maxlike and
+	glmnet algorithms in situations where categorical variables were used by other 
+	algorithms.
+
+	* corrected error for GBMSTEP and probit links where the gbm.x argument did not select
+	the correct explanatory variables
+
+	* compatible with Rcmdr 2.5-1 (September 2018)
+
+	* new option in the GUI to import Excel data sets via readxl::read_excel
+
+	* modified edit of community and environmental data sets in the GUI to be more
+	similar to edit options of the R-Commander
+
+	* new GUI for spatial and environmental thinning of point observation data
+
+
 Version 2.10-1 (July 2018)
 
 	* new function ensemble.red that calculates statistics of Area of Occupancy (AOO) and

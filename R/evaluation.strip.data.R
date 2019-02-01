@@ -53,10 +53,12 @@
 #
     if (is.null(input.weights) == F) {
         MAXENT <- max(c(input.weights["MAXENT"], -1), na.rm=T)
+        MAXNET <- max(c(input.weights["MAXNET"], -1), na.rm=T)
         MAXLIKE <- max(c(input.weights["MAXLIKE"], -1), na.rm=T)
         GBM <- max(c(input.weights["GBM"], -1), na.rm=T)
         GBMSTEP <- max(c(input.weights["GBMSTEP"], -1), na.rm=T)
         RF <- max(c(input.weights["RF"], -1), na.rm=T)
+        CF <- max(c(input.weights["CF"], -1), na.rm=T)
         GLM <- max(c(input.weights["GLM"], -1), na.rm=T)
         GLMSTEP <- max(c(input.weights["GLMSTEP"], -1), na.rm=T)
         GAM <- max(c(input.weights["GAM"], -1), na.rm=T)
@@ -78,17 +80,23 @@
     }
 
 #
-    MAXENT.OLD <- MAXLIKE.OLD <- GBM.OLD <- GBMSTEP.OLD <- RF.OLD <- GLM.OLD <- GLMSTEP.OLD <- GAM.OLD <- GAMSTEP.OLD <- MGCV.OLD <- NULL
+    MAXENT.OLD <- MAXNET.OLD <- MAXLIKE.OLD <- GBM.OLD <- GBMSTEP.OLD <- RF.OLD <- CF.OLD <- GLM.OLD <- GLMSTEP.OLD <- GAM.OLD <- GAMSTEP.OLD <- MGCV.OLD <- NULL
     MGCVFIX.OLD <- EARTH.OLD <- RPART.OLD <- NNET.OLD <- FDA.OLD <- SVM.OLD <- SVME.OLD <- GLMNET.OLD <- BIOCLIM.O.OLD <- BIOCLIM.OLD <- DOMAIN.OLD <- MAHAL.OLD <- MAHAL01.OLD <- NULL
 # probit models, NULL if no probit model fitted
-    MAXENT.PROBIT.OLD <- MAXLIKE.PROBIT.OLD <- GBM.PROBIT.OLD <- GBMSTEP.PROBIT.OLD <- RF.PROBIT.OLD <- GLM.PROBIT.OLD <- GLMSTEP.PROBIT.OLD <- GAM.PROBIT.OLD <- GAMSTEP.PROBIT.OLD <- MGCV.PROBIT.OLD <- NULL
+    MAXENT.PROBIT.OLD <- MAXNET.PROBIT.OLD <- MAXLIKE.PROBIT.OLD <- GBM.PROBIT.OLD <- GBMSTEP.PROBIT.OLD <- RF.PROBIT.OLD <- CF.PROBIT.OLD <- GLM.PROBIT.OLD <- GLMSTEP.PROBIT.OLD <- GAM.PROBIT.OLD <- GAMSTEP.PROBIT.OLD <- MGCV.PROBIT.OLD <- NULL
     MGCVFIX.PROBIT.OLD <- EARTH.PROBIT.OLD <- RPART.PROBIT.OLD <- NNET.PROBIT.OLD <- FDA.PROBIT.OLD <- SVM.PROBIT.OLD <- SVME.PROBIT.OLD <- GLMNET.PROBIT.OLD <- BIOCLIM.O.PROBIT.OLD <- BIOCLIM.PROBIT.OLD <- DOMAIN.PROBIT.OLD <- MAHAL.PROBIT.OLD <- MAHAL01.PROBIT.OLD <- NULL
     if (is.null(models.list) == F) {
         if (is.null(models.list$MAXENT) == F) {MAXENT.OLD <- models.list$MAXENT}
+        if (is.null(models.list$MAXNET) == F) {
+            MAXNET.OLD <- models.list$MAXNET
+            MAXNET.clamp <- models.list$formulae$MAXNET.clamp
+            MAXNET.type <- models.list$formulae$MAXNET.type
+        }
         if (is.null(models.list$MAXLIKE) == F) {MAXLIKE.OLD <- models.list$MAXLIKE}
         if (is.null(models.list$GBM) == F) {GBM.OLD <- models.list$GBM}
         if (is.null(models.list$GBMSTEP) == F) {GBMSTEP.OLD <- models.list$GBMSTEP}
         if (is.null(models.list$RF) == F) {RF.OLD <- models.list$RF}
+        if (is.null(models.list$CF) == F) {CF.OLD <- models.list$CF}
         if (is.null(models.list$GLM) == F) {GLM.OLD <- models.list$GLM}
         if (is.null(models.list$GLMSTEP) == F) {GLMSTEP.OLD <- models.list$GLMSTEP}
         if (is.null(models.list$GAM) == F) {GAM.OLD <- models.list$GAM}
@@ -101,20 +109,27 @@
         if (is.null(models.list$FDA) == F) {FDA.OLD <- models.list$FDA}
         if (is.null(models.list$SVM) == F) {SVM.OLD <- models.list$SVM}
         if (is.null(models.list$SVME) == F) {SVME.OLD <- models.list$SVME}
-        if (is.null(models.list$GLMNET) == F) {GLMNET.OLD <- models.list$GLMNET}
-        GLMNET.class <- models.list$formulae$GLMNET.class       
+        if (is.null(models.list$GLMNET) == F) {
+            GLMNET.OLD <- models.list$GLMNET
+            GLMNET.class <- models.list$formulae$GLMNET.class
+        }
         if (is.null(models.list$BIOCLIM.O) == F) {BIOCLIM.O.OLD <- models.list$BIOCLIM.O}
         if (is.null(models.list$BIOCLIM) == F) {BIOCLIM.OLD <- models.list$BIOCLIM}
         if (is.null(models.list$DOMAIN) == F) {DOMAIN.OLD <- models.list$DOMAIN}
         if (is.null(models.list$MAHAL) == F) {MAHAL.OLD <- models.list$MAHAL}
-        if (is.null(models.list$MAHAL01) == F) {MAHAL01.OLD <- models.list$MAHAL01}
-        MAHAL.shape <- models.list$formulae$MAHAL.shape
+        if (is.null(models.list$MAHAL01) == F) {
+            MAHAL01.OLD <- models.list$MAHAL01
+            MAHAL.shape <- models.list$formulae$MAHAL.shape
+        }
+#
 # probit models
         if (is.null(models.list$MAXENT.PROBIT) == F) {MAXENT.PROBIT.OLD <- models.list$MAXENT.PROBIT}
+        if (is.null(models.list$MAXNET.PROBIT) == F) {MAXNET.PROBIT.OLD <- models.list$MAXNET.PROBIT}
         if (is.null(models.list$MAXLIKE.PROBIT) == F) {MAXLIKE.PROBIT.OLD <- models.list$MAXLIKE.PROBIT}
         if (is.null(models.list$GBM.PROBIT) == F) {GBM.PROBIT.OLD <- models.list$GBM.PROBIT}
         if (is.null(models.list$GBMSTEP.PROBIT) == F) {GBMSTEP.PROBIT.OLD <- models.list$GBMSTEP.PROBIT}
         if (is.null(models.list$RF.PROBIT) == F) {RF.PROBIT.OLD <- models.list$RF.PROBIT}
+        if (is.null(models.list$CF.PROBIT) == F) {CF.PROBIT.OLD <- models.list$CF.PROBIT}
         if (is.null(models.list$GLM.PROBIT) == F) {GLM.PROBIT.OLD <- models.list$GLM.PROBIT}
         if (is.null(models.list$GLMSTEP.PROBIT) == F) {GLMSTEP.PROBIT.OLD <- models.list$GLMSTEP.PROBIT}
         if (is.null(models.list$GAM.PROBIT) == F) {GAM.PROBIT.OLD <- models.list$GAM.PROBIT}
@@ -138,6 +153,13 @@
 	jar <- paste(system.file(package="dismo"), "/java/maxent.jar", sep='')
 	if (!file.exists(jar)) {stop('maxent program is missing: ', jar, '\nPlease download it here: http://www.cs.princeton.edu/~schapire/maxent/')}
     }
+    if (MAXNET > 0) {
+        if (! requireNamespace("maxnet")) {stop("Please install the maxnet package")}
+            predict.maxnet2 <- function(object, newdata, clamp=F, type=c("cloglog")) {
+                p <- predict(object=object, newdata=newdata, clamp=clamp, type=type)
+                return(as.numeric(p))
+            }
+    }
     if (MAXLIKE > 0) {
         if (! requireNamespace("maxlike")) {stop("Please install the maxlike package")}
     }
@@ -149,6 +171,20 @@
 #  get the probabilities from RF
         predict.RF <- function(object, newdata) {
             p <- predict(object=object, newdata=newdata, type="response")
+            return(as.numeric(p))
+        }
+    }
+    if (CF > 0) {
+#  get the probabilities from cforest
+        if (! requireNamespace("party")) {stop("Please install the party package")}
+        predict.CF <- function(object, newdata) {
+# avoid problems with single variables, especially with raster::predict
+            for (i in 1:ncol(newdata)) {
+                if (is.integer(newdata[, i])) {newdata[, i] <- as.numeric(newdata[, i])}
+            }
+            p1 <- predict(object=object, newdata=newdata, type="prob")
+            p <- numeric(length(p1))
+            for (i in 1:length(p1)) {p[i] <- p1[[i]][2]}
             return(as.numeric(p))
         }
     }
@@ -359,8 +395,9 @@
     assign("plot.data.domain", plot.data.domain, envir=.BiodiversityR)
     assign("plot.data.mahal", plot.data.mahal, envir=.BiodiversityR)
 
-    modelnames <- c("MAXENT", "MAXLIKE", "GBM", "GBMSTEP", "RF", "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", 
-        "MGCVFIX", "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET", 
+    modelnames <- c("MAXENT", "MAXNET", "MAXLIKE", "GBM", "GBMSTEP", "RF", "CF",
+        "GLM", "GLMSTEP", "GAM", "GAMSTEP", "MGCV", "MGCVFIX", 
+        "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET", 
         "BIOCLIM.O", "BIOCLIM", "DOMAIN", "MAHAL", "MAHAL01", "ENSEMBLE")
     nmodels <- length(modelnames)
     modelout <- array(dim=c(nrows, nmodels), 0.0)
@@ -394,6 +431,21 @@
         if (is.null(results2) == F) {
             plot.data[,"MAXENT.step1"] <- plot.data[, "MAXENT"]
             plot.data[,"MAXENT"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
+    }
+    if (MAXNET > 0) {
+        results <- MAXNET.OLD
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"MAXNET"] <- predict.maxnet2(object=results, newdata=plot.data.vars, clamp=MAXNET.clamp, type=MAXNET.type),
+                error= function(err) {print(paste("MAXNET prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"MAXNET"] <- predict.maxnet2(object=results, newdata=plot.data.vars, clamp=MAXNET.clamp, type=MAXNET.type)
+        }
+        results2 <- MAXNET.PROBIT.OLD
+        if (is.null(results2) == F) {
+            plot.data[,"MAXNET.step1"] <- plot.data[, "MAXNET"]
+            plot.data[,"MAXNET"] <- predict.glm(object=results2, newdata=plot.data, type="response")
         }
     }
     if (MAXLIKE > 0) {
@@ -454,6 +506,21 @@
         if (is.null(results2) == F) {
             plot.data[,"RF.step1"] <- plot.data[,"RF"]
             plot.data[,"RF"] <- predict.glm(object=results2, newdata=plot.data, type="response")
+        }
+    }
+    if (CF > 0) {
+        results <- CF.OLD
+        if (CATCH.OFF == F) {
+            tryCatch(plot.data[,"CF"] <- predict.CF(object=results, newdata=plot.data.vars),
+                error= function(err) {print(paste("CF prediction failed"))},
+                silent=F)
+        }else{
+            plot.data[,"CF"] <- predict.CF(object=results, newdata=plot.data.vars)
+        }
+        results2 <- CF.PROBIT.OLD
+        if (is.null(results2) == F) {
+            plot.data[,"CF.step1"] <- plot.data[,"CF"]
+            plot.data[,"CF"] <- predict.glm(object=results2, newdata=plot.data, type="response")
         }
     }
     if (GLM > 0) {
@@ -740,8 +807,9 @@
         }
     }
 #
-    plot.data[,"ENSEMBLE"] <- ws["MAXENT"]*plot.data[,"MAXENT"] + ws["GBM"]*plot.data[,"GBM"] +
-        ws["GBMSTEP"]*plot.data[,"GBMSTEP"] + ws["RF"]*plot.data[,"RF"] + ws["GLM"]*plot.data[,"GLM"] +
+    plot.data[,"ENSEMBLE"] <- ws["MAXENT"]*plot.data[,"MAXENT"] + ws["MAXNET"]*plot.data[,"MAXNET"] + ws["GBM"]*plot.data[,"GBM"] +
+        ws["GBMSTEP"]*plot.data[,"GBMSTEP"] + ws["RF"]*plot.data[,"RF"] + ws["CF"]*plot.data[,"CF"] 
+        + ws["GLM"]*plot.data[,"GLM"] +
         ws["GLMSTEP"]*plot.data[,"GLMSTEP"] + ws["GAM"]*plot.data[,"GAM"] + ws["GAMSTEP"]*plot.data[,"GAMSTEP"] +
         ws["MGCV"]*plot.data[,"MGCV"] + ws["MGCVFIX"]*plot.data[,"MGCVFIX"] + ws["EARTH"]*plot.data[,"EARTH"] +
         ws["RPART"]*plot.data[,"RPART"] + ws["NNET"]*plot.data[,"NNET"] + ws["FDA"]*plot.data[,"FDA"] +

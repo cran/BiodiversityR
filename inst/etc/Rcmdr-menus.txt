@@ -1,6 +1,6 @@
 # R Commander Menu Definitions
 
-# last modified 2017-04-17 by J. Fox
+# last modified 2018-07-28 by J. Fox
 
 #   type    menu/item      operation/parent  label                                          command/menu                activation  install?
 
@@ -110,6 +110,8 @@
     item    summariesMenu   command         "Correlation test..."                           correlationTest             "numericP(2)"               "packageAvailable('RcmdrMisc')"
 #    item    summariesMenu   command         "Shapiro-Wilk test of normality..."             ShapiroTest                 "numericP()"                ""
     item    summariesMenu   command         "Test of normality..."                          NormalityTest               "numericP()"                "packageAvailable('nortest')"
+    item    summariesMenu   command         "Transform toward normality..."                          transformVariables               "numericP()"                "packageAvailable('car')"
+
     menu    tablesMenu      statisticsMenu  ""                                              ""                          ""          ""
     item    tablesMenu      command         "Two-way table..."                              twoWayTable                 "factorsP(2)" "packageAvailable('RcmdrMisc') && packageAvailable('abind')"
     item    tablesMenu      command         "Multi-way table..."                            multiWayTable               "factorsP(3)" "packageAvailable('RcmdrMisc') && packageAvailable('abind')"
@@ -170,6 +172,7 @@
     item    graphsMenu      command         "Stem-and-leaf display..."                      stemAndLeaf                 "numericP()"  "packageAvailable('aplpack')"
     item    graphsMenu      command         "Boxplot..."                                    boxPlot                     "numericP()" 		  ""
     item    graphsMenu      command         "Quantile-comparison plot..."                   QQPlot                      "numericP()" "packageAvailable('car')"
+    item    graphsMenu      command         "Symmetry boxplot..."                   Symbox                      "numericP()" "packageAvailable('car')"
     item    graphsMenu      separator       ""                                              ""                          ""          ""
     item    graphsMenu      command         "Scatterplot..."                                scatterPlot                 "numericP(2)" "packageAvailable('car')"
     item    graphsMenu      command         "Scatterplot matrix..."                         scatterPlotMatrix           "numericP(3)" "packageAvailable('car')"
@@ -219,6 +222,7 @@
     item    diagnosticsMenu command         "Durbin-Watson test for autocorrelation..."     DurbinWatsonTest            "modelCapability('dwt')" "packageAvailable('lmtest')"
     item    diagnosticsMenu command         "RESET test for nonlinearity..."                RESETtest                   "modelCapability('rse')" "packageAvailable('lmtest')"
     item    diagnosticsMenu command         "Bonferroni outlier test"                       OutlierTest                 "modelCapability('bon')" "packageAvailable('car')"
+    item    diagnosticsMenu command         "Response transformation..."                       transformResponse                 "modelCapability('tranr')" "packageAvailable('car')"
     menu    modelsGraphsMenu      modelsMenu      ""                                              ""                          ""          ""
     item    modelsMenu      cascade         "Graphs"                                        modelsGraphsMenu                  ""          ""
     item    modelsGraphsMenu      command         "Basic diagnostic plots"                        plotModel                   "modelCapability('plt')"          ""
@@ -226,7 +230,11 @@
     item    modelsGraphsMenu      command         "Component+residual plots..."                      CRPlots                     "modelCapability('crp')" "packageAvailable('car')"
     item    modelsGraphsMenu      command         "Added-variable plots..."                          AVPlots                     "modelCapability('avp')" "packageAvailable('car')"
     item    modelsGraphsMenu      command         "Influence plot..."                                InfluencePlot               "modelCapability('infp')" "packageAvailable('car')"
+    item    modelsGraphsMenu      command         "Influence index plot..."                                InfluenceIndexPlot               "modelCapability('infp')" "packageAvailable('car')"
+
     item    modelsGraphsMenu      command         "Effect plots..."                                  effectPlots                 "modelCapability('effp')" "packageAvailable('effects')"
+    item    modelsGraphsMenu      command         "Predictor effect plots..."                        predictorEffectPlots                 "modelCapability('effp')" "packageAvailable('effects')"
+
     item    topMenu         cascade         "Models"                                        modelsMenu                  ""          ""
 
     # Distributions
@@ -411,16 +419,18 @@
     item    helpMenu        command         "Using R Markdown"                              browseRMarkdown             ""          ""
     item    topMenu         cascade         "Help"                                          helpMenu                    ""          ""
 
-# Biodiversity analysis (R. Kindt, World Agroforestry Centre)
-# DEC 2016
+
+    # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
+    # DEC 2018
 
     menu    biodivMenu      topMenu         ""                                              ""                          ""          ""
     menu    communMenu      biodivMenu      ""                                              ""                          ""          ""
     item    communMenu      command         "Select community data set..."                  selectCommunityDataSet      "dataSetsP()"          ""
-    item    communMenu      command         "Import datasets from Excel..."                 importfromExcelGUI          ""          ""
-    item    communMenu      command         "Import datasets from Excel2007..."             importfromExcel2007GUI      ""          ""
-    item    communMenu      command         "Import datasets from Access..."                importfromAccessGUI         ""          ""
-    item    communMenu      command         "Import datasets from Access2007..."            importfromAccess2007GUI     ""          ""
+    item    communMenu      command         "Import datasets from Excel..."                 importfromExcelGUI2         ""          ""
+    item    communMenu      command         "Import datasets from Excel (RODBC)..."         importfromExcelGUI          ""          ""
+    item    communMenu      command         "Import datasets from Excel2007 (RODBC)..."     importfromExcel2007GUI      ""          ""
+    item    communMenu      command         "Import datasets from Access (RODBC)..."        importfromAccessGUI         ""          ""
+    item    communMenu      command         "Import datasets from Access2007 (RODBC)..."    importfromAccess2007GUI     ""          ""
     item    communMenu      command         "Make community data set..."                    makecommunityGUI            "activeDataSetP()"          ""
     item    communMenu      command         "View community data set"                       viewcommunity               "communityDataSetP()"          ""
     item    communMenu      command         "Edit community data set"                       editcommunity               "communityDataSetP()"          ""
@@ -477,6 +487,8 @@
     item    presMenu        command         "View selected presence data set"               viewpresence                "presence.focalP()"          ""
     item    presMenu        command         "Select data set to create presence data..."    selectActiveDataSet         "dataSetsP()"          ""
     item    presMenu        command         "Create species presence data set..."           make.presence.GUI           "activeDataSetP()"          ""
+    item    presMenu        command         "Spatial thinning..."                           spatial.thin.GUI            "presence.focalP()"          ""
+    item    presMenu        command         "Environmental thinning..."                     environmental.thin.GUI      "stack.focalP() && presence.focalP()"          ""
     menu    absMenu         ensMenu         ""                                              ""                          ""          ""
     item    absMenu         command         "Select absence data set..."                    absence.select.GUI          "dataSetsP()"          ""
     item    absMenu         command         "View selected absence data set"                viewabsence                 "absence.focalP()"          ""

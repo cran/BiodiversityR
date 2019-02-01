@@ -7,6 +7,7 @@
 \alias{replaceNAcomm}
 \alias{removezerospecies}
 \alias{subsetcomm}
+\alias{import.with.readxl}
 #ifdef windows
 \alias{import.from.Excel}
 \alias{import.from.Excel2007}
@@ -28,6 +29,11 @@ removeNAcomm(x, y, variable)
 removeNAenv(x, variable)
 removezerospecies(x)
 subsetcomm(x, y, factor, level, returncomm = TRUE)
+
+import.with.readxl(file = file.choose(), data.type = "community", sheet = NULL, 
+    sitenames = "sites", column = "species", value = "abundance", 
+    factor = "", level = "", cepnames = FALSE,
+    write.csv = FALSE, csv.file = paste(data.type, ".csv", sep=""))
 
 #ifdef windows
 import.from.Excel(file = file.choose(), data.type = "community", sheet = NULL, 
@@ -61,21 +67,20 @@ import.from.Access2007(file = file.choose(), data.type = "community", table = NU
   \item{level}{ Level of the variable to create the subsets for the data frame. }
   \item{returncomm}{ For the selected sites, return the community dataset (TRUE) or the environmental dataset. }
 
-#ifdef windows
+
   \item{file}{ Location of the Excel (or Access) file. }
   \item{data.type}{ Type of the data set to be imported: one of "community", "environmental" or "stacked". }
   \item{sheet}{ Name of the sheet of the Excel file to import from (if missing, then \code{data.type} is used) }
-  \item{table}{ Name of the table of the Access file to import from (if missing, then \code{data.type} is used) }
   \item{sitenames}{ Name of categorical variable that provides the names for the sites. }
   \item{column}{ Name of the categorical variable for the columns of the crosstabulation (typically indicating species); passed to \code{\link{makecommunitydataset}}. }
   \item{value}{ Name of numerical variable for the cells of the crosstabulation (typically indicating abundance). The cells provide the sum of all values in the data frame; passed to \code{\link{makecommunitydataset}}. }
   \item{cepnames}{ Should the names of columns be abbreviated via \code{\link[vegan]{make.cepnames}} (TRUE) or not (FALSE). }
   \item{write.csv}{ Create a comma-delimited text file in the working directory (if \code{TRUE}). }
   \item{csv.file}{ Name of the comma-delimited text file to be created. }
+
+#ifdef windows
+  \item{table}{ Name of the table of the Access file to import from (if missing, then \code{data.type} is used) }
 #endif
-
-
-
 }
 
 \details{
@@ -93,14 +98,16 @@ Function \code{removezerospecies} removes species from a community dataset that 
 
 Function \code{subsetcomm} makes a subset of sites that contain a specified level of a categorical variable from the environmental data set. The same functionality of selecting subsets of the community or environmental data sets are implemented in various functions of \pkg{BiodiversityR} (for example \code{\link{diversityresult}}, \code{\link{renyiresult}} and \code{\link{accumresult}}) and have the advantage that it is not necessary to create a new data set. If a community dataset is returned, species that did not contain any individuals were removed from the data set. If an environmental dataset is returned, factor levels that did not occur were removed from the data set.
 
-#ifdef windows
-The \code{import.from.XXXX} functions provide methods of importing community or environmental datasets through functions \code{\link[RODBC:odbcConnect]{odbcConnectExcel}} and \code{\link[RODBC]{sqlFetch}}.
+Function \code{import.with.readxl} provides methods of importing community or environmental datasets through \code{\link[readxl]{read_excel}}.
 
 For stacked datasets, a community data set is created with function \code{\link{makecommunitydataset}}. For community data with more species than the limited number of columns in Excel, this may be the only option of importing a community dataset.
 
 An additional advantage of the function is that the community and environmental data can be stored in the same file. 
 
 You may want to check compatibility of the community and environmental datasets with functions \code{\link{check.datasets}} and modify the community dataset through \code{\link{same.sites}}.
+
+#ifdef windows
+The \code{import.from.XXXX} functions provide methods of importing community or environmental datasets through functions \code{\link[RODBC:odbcConnect]{odbcConnectExcel}} and \code{\link[RODBC]{sqlFetch}}.
 
 Please note that you must have the 32-bit Microsoft drivers when using 32-bit R, the 64-bit Microsoft drivers when using 64-bit R... and that only one set of drivers can be installed (\code{\link[RODBC:odbcConnect]{odbcConnectExcel}}).
 
