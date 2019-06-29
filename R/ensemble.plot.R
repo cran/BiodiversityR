@@ -202,7 +202,7 @@
        }
 
         if (maptools.boundaries == T) {
-            data(wrld_simpl, package="maptools", envir=.BiodiversityR)
+            utils::data("wrld_simpl", package="maptools", envir=.BiodiversityR)
             maptools.wrld_simpl <- eval(as.name("wrld_simpl"), envir=.BiodiversityR)
             raster::plot(maptools.wrld_simpl, add=T, border=maptools.col)
         }

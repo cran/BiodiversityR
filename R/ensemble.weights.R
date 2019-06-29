@@ -6,7 +6,8 @@
 {
     names.weights <- names(weights)
     weights <- as.numeric(weights)
-    if(any(weights > 1.0)) {stop("Input weights are expected to be ranged between 0 and 1")}
+# also allow weights to be larger than 1, since they will be forced to sum to 1
+#    if(any(weights > 1.0)) {stop("Input weights are expected to be ranged between 0 and 1")}
     names(weights) <- names.weights
 #   weights should not be negative
     if (min.weight < 0) {min.weight <- 0}

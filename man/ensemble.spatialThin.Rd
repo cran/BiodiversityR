@@ -2,6 +2,7 @@
 \alias{ensemble.spatialThin}
 \alias{ensemble.spatialThin.quant}
 \alias{ensemble.environmentalThin}
+\alias{ensemble.environmentalThin.clara}
 \alias{ensemble.outlierThin}
 
 \title{
@@ -14,16 +15,20 @@ Function \code{ensemble.spatialThin} creates a randomly selected subset of point
 
 \usage{
 ensemble.spatialThin(x, thin.km = 0.1, 
-    runs = 100, verbose = FALSE, 
+    runs = 100, silent = FALSE, verbose = FALSE, 
     return.notRetained = FALSE)
 
 ensemble.spatialThin.quant(x, thin.km = 0.1, 
-    runs = 100, verbose = FALSE, 
+    runs = 100, silent = FALSE, verbose = FALSE, 
     LON.length = 21, LAT.length = 21)
 
 ensemble.environmentalThin(x, predictors.stack = NULL, thin.n = 50,
-    runs = 100, pca.var = 0.95, verbose = FALSE,
+    runs = 100, pca.var = 0.95, silent = FALSE, verbose = FALSE,
     return.notRetained = FALSE)
+
+ensemble.environmentalThin.clara(x, predictors.stack = NULL, thin.n = 20,
+    runs = 100, pca.var = 0.95, silent = FALSE, verbose = FALSE,
+    clara.k = 100)
 
 ensemble.outlierThin(x, predictors.stack = NULL, k = 10,
     quant = 0.95, pca.var = 0.95, 
@@ -34,6 +39,7 @@ ensemble.outlierThin(x, predictors.stack = NULL, k = 10,
   \item{x}{ Point locations provided in 2-column (lon, lat) format.  }
   \item{thin.km}{ Threshold for minimum distance (km) in final point location data set.  }
   \item{runs}{ Number of runs to maximize the retained number of point coordinates.  }
+  \item{silent}{ Do not provide any details on the process.  }
   \item{verbose}{ Provide some details on each run.  }
   \item{return.notRetained}{ Return in an additional data set the point coordinates that were thinned out.  }
 
@@ -43,6 +49,8 @@ ensemble.outlierThin(x, predictors.stack = NULL, k = 10,
   \item{predictors.stack}{ RasterStack object (\code{\link[raster]{stack}}) containing environmental layers that define the environmental space of point observations.  }
   \item{thin.n}{ Target number of environmentally thinned points.  }
   \item{pca.var}{ Minimum number of axes based on the fraction of variance explained (default value of 0.95 indicates that at least 95 percent of variance will be explained on the selected number of axes). Axes and coordinates are obtained from Principal Components Analysis (\code{\link[vegan]{scores}}).  }
+
+  \item{clara.k}{ The number of clusters in which the point coordinates will be divided by \code{\link[cluster]{clara}}. Clustering is done in environmental space with point coordinates determined from Principal Components Analysis.  }
 
   \item{k}{ The number of neighbours for the Local Outlier Factor analysis; see \code{\link[Rlof]{lof}}  }
   \item{quant}{ The quantile probability above with local outlier factors are classified as outliers; see also \code{\link[stats]{quantile}}  }
@@ -57,6 +65,8 @@ With several runs (default of 100 as in the \code{red} package or some \code{spT
 Function \code{ensemble.spatialThin.quant} was designed to be used with large data sets where the size of the object with pairwise geographical distances could create memory problems. With this function, spatial thinning is only done within geographical areas defined by quantile limits of geographical coordinates.
 
 Function \code{ensemble.environmentalThin} performs an analysis in environmental space similar to the analysis in geographical space by \code{ensemble.spatialThin}. However, the target number of retained point coordinates needs to be defined by the user. Coordinates are obtained in environmental space by a principal components analysis (function \code{\link[vegan]{rda}}). Internally, first points are randomly selected from the pair with the smallest environmental distance until the selected target number of retained point coordinates is reached. From the retained point coordinates, the minimum environmental distance is determined. In a second step (more similar to spatial thinning), locations are randomly removed from all pairs that have a distance larger than the minimum distance calculated in step 1.
+
+Function \code{ensemble.environmentalThin.clara} was designed to be used with large data sets where the size of the object with pairwise environmental distances could create memory problems. With this function, environmental thinning is done sequentially for each of the clusters defined by \code{\link[cluster]{clara}}. Environmental space is obtained by by a principal components analysis (function \code{\link[vegan]{rda}}). Environmental distances are calculated as the pairwise Euclidean distances between the point locations in the environmental space.
 
 Function \code{ensemble.outlierThin} selects point coordinates that are less likely to be local outliers based on a Local Outlier Factor analysis (\code{\link[Rlof]{lof}}). Since LOF does not result in strict classification of outliers, a user-defined quantile probability is used to identify outliers.
 

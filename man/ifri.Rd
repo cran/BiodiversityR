@@ -21,7 +21,7 @@ This data set contains information on the number of stems (individuals) and basa
 }
 
 \source{
-IFRI (2014) Data from the International Forestry Resources and Institutions (IFRI) research network. \url{http://www.ifriresearch.net}
+IFRI (2014) Data from the International Forestry Resources and Institutions (IFRI) research network. \url{http://ifri.forgov.org/}
 }
 
 \examples{

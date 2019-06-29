@@ -1350,9 +1350,9 @@ accumGUI <- function(){
                 var <- .variables[as.numeric(tkcurselection(subsetBox))]
                 if (sub == ".") {
                     if (method == "exact (unconditioned)") {
-                        command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='exact', conditioned =F, gamma = 'boot', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ")", sep="")
+                        command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='exact', conditioned =F, gamma = 'boot', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ", cex.lab=0.9, cex.axis=0.7)", sep="")
                     }else{
-                        command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='", method, "', conditioned =T, gamma = 'boot', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ")", sep="")
+                        command <- paste("accumcomp(", .communityDataSet, ", y=", .activeDataSet, ", factor='", var, "', method='", method, "', conditioned =T, gamma = 'boot', permutations=", perm, ", legend=F, rainbow=T, ci=", ci, ", ci.type='bar', cex=", cex, xlab, xlim, ylim, scale, ", cex.lab=0.9, cex.axis=0.7)", sep="")
                     }
                 }else{
                     if (method == "exact (unconditioned)") {
@@ -1438,7 +1438,7 @@ accumGUI <- function(){
             xlab <- paste(", xlab='", var2, "'", sep="")
         }
         if (method %in% c("exact", "exact (unconditioned)", "random", "rarefaction", "coleman", "collector")) {
-            doItAndPrint(paste("accumplot(", modelValue, ", addit=", addit, ", col='", col,  "', ci=", ci, ", , ci.col='black', ci.lty=3, ci.length=0.1, cex=", cex, xlab, ", ylab='species richness'", xlim, ylim, ", pch=", pch, ", labels='", sub ,"')", sep=""))
+            doItAndPrint(paste("accumplot(", modelValue, ", addit=", addit, ", col='", col,  "', ci=", ci, ", , ci.col='black', ci.lty=3, ci.length=0.1, cex=", cex, xlab, ", ylab='species richness'", xlim, ylim, ", pch=", pch, ", labels='", sub ,"', cex.lab=0.9, cex.axis=0.7)", sep=""))
         }
         if (method %in% c("poolaccum", "estaccumR")) {
             doItAndPrint(paste("plot(", modelValue, ")", sep=""))
@@ -1956,7 +1956,8 @@ renyiGUI <- function(){
         sub <- tclvalue(subset)
         if (method=="renyi accumulation" || method=="tsallis accumulation") {
             justDoIt(paste("persp(", modelValue, ")", sep=""))
-            logger(paste("persp(", modelValue, ")", sep=""))
+              logger(paste("persp(", modelValue, ")", sep=""))
+            logger(paste("for interactive 3d plot, use ", sep=""))
         }
         if (method=="renyi" || method=="renyi separate per site") {
             if (var == "all" || sub != ".") {
@@ -2104,7 +2105,7 @@ countGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     optionScroll <- tkscrollbar(option1Frame, repeatinterval=5, command=function(...) tkyview(optionBox, ...))
     tkconfigure(optionBox, yscrollcommand=function(...) tkset(optionScroll, ...))
-    options <- c("linear model", "Poisson model", "quasi-Poisson model", "negative binomial model", "gam model",
+    options <- c("summarySE", "linear model", "Poisson model", "quasi-Poisson model", "negative binomial model", "gam model",
         "gam negbinom model", "glmmPQL", "rpart")
     for (x in options) tkinsert(optionBox, "end", x)    
     standardVariable <- tclVar("0")
@@ -2263,6 +2264,9 @@ countGUI <- function(){
         if (option=="rpart") {
             justDoIt(paste("library(rpart)"))
             logger(paste("library(rpart)"))
+        }
+        if (option == "summarySE"){
+            doItAndPrint(paste("Rmisc::summarySE(data=", .activeDataSet, ", measurevar='", tclvalue(lhsVariable), "', groupvars='", tclvalue(rhsVariable), "', na.rm=F, conf.interval=0.95)", sep=""))
         }
         if (option == "linear model"){
             command <- paste("lm(", formula, ", data=",.activeDataSet, ", na.action=na.exclude)", sep="")
@@ -3305,14 +3309,14 @@ unconordiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
-    types <- c("plot", "ordiplot", "ordiplot empty", "origin axes", "identify sites", "identify species", "text sites", "text species", "points sites", "points species",
+    types <- c("plot", "ordiplot", "ordiplot3d", "ordirgl", "ordiplot empty", "origin axes", "identify sites", "identify species", "text sites", "text species", "points sites", "points species",
         "label sites", "label species", "orditorp sites", "orditorp species",
         "envfit", "ordihull (factor)", "ordihull (factor, rainbow)", "ordihull (factor, polygon)", "ordiarrows (factor)", "ordiarrows (factor, rainbow)", "ordisegments (factor)", "ordisegments (factor, rainbow)", "ordispider (factor)", "ordispider (factor, rainbow)", "ordibar (factor)", "ordibar (factor, rainbow)",
         "ordiellipse (factor)", "ordiellipse (factor, rainbow)", "ordiellipse (factor, ehull)", "ordiellipse (factor, polygon)", "ordisurf (continuous)",
         "ordibubble (continuous)", "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation",
         "ordicluster", "ordicluster2", "ordispantree", "ordinearest", "ordiequilibriumcircle", "screeplot",
         "distance displayed", "coenocline", "stressplot",
-        "orditkplot sites", "orditkplot species", "orditkplot pointlabel")
+        "orditkplot sites", "orditkplot species", "orditkplot pointlabel", "orglspider (factor)", "orglellipse (factor)")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
     choice <- tkentry(plot3Frame, width=10, textvariable=choicesVariable)
@@ -3541,6 +3545,32 @@ unconordiGUI <- function(){
                 logger(paste("plot1 <- ordiplot(", modelValue, ", choices=c(", choices, "))", sep="")) 
             }
         }
+        if (plottype == "ordiplot3d"){
+            justDoIt(paste("library(vegan3d)", sep=""))
+            logger(paste("library(vegan3d)", sep=""))
+            justDoIt(paste("par(cex=",cex,")", sep=""))
+            logger(paste("par(cex=",cex,")", sep=""))
+            if (method=="PCA" || method=="CA"  || method=="DCA") {
+                justDoIt(paste("plot1 <- ordiplot3d(", modelValue, ", choices=c(1, 2, 3), scaling='", scaling, "')", sep=""))
+                logger(paste("plot1 <- ordiplot3d(", modelValue, ", choices=c(1, 2, 3), scaling='", scaling, "')", sep=""))
+            }else{
+                justDoIt(paste("plot1 <- ordiplot3d(", modelValue, ", choices=c(1, 2, 3))", sep="")) 
+                logger(paste("plot1 <- ordiplot3d(", modelValue, ", choices=c(1, 2, 3))", sep="")) 
+            }
+        }
+        if (plottype == "ordirgl"){
+            justDoIt(paste("library(vegan3d)", sep=""))
+            logger(paste("library(vegan3d)", sep=""))
+            justDoIt(paste("par(cex=",cex,")", sep=""))
+            logger(paste("par(cex=",cex,")", sep=""))
+            if (method=="PCA" || method=="CA"  || method=="DCA") {
+                justDoIt(paste("plot1 <- ordirgl(", modelValue, ", choices=c(1, 2, 3), scaling='", scaling, "')", sep=""))
+                logger(paste("plot1 <- ordirgl(", modelValue, ", choices=c(1, 2, 3), scaling='", scaling, "')", sep=""))
+            }else{
+                justDoIt(paste("plot1 <- ordirgl(", modelValue, ", choices=c(1, 2, 3))", sep="")) 
+                logger(paste("plot1 <- ordirgl(", modelValue, ", choices=c(1, 2, 3))", sep="")) 
+            }
+        }
         if (plottype == "ordiplot empty"){
             justDoIt(paste("par(cex=",cex,")", sep=""))
             logger(paste("par(cex=",cex,")", sep=""))
@@ -3603,6 +3633,7 @@ unconordiGUI <- function(){
         }
         if (plottype == "envfit"){
             doItAndPrint(paste("fitted <- envfit(plot1, data.frame(", axisvar, "), permutations=", perm, ")", sep=""))
+            doItAndPrint(paste("fitted", sep=""))
             doItAndPrint(paste("plot(fitted, col='", col,"', cex=", cex, ")", sep=""))
         }
         if (plottype == "ordihull (factor)" && varfactor==T){
@@ -3789,7 +3820,30 @@ unconordiGUI <- function(){
                 logger(paste("plot1 <- orditkplot(ordipointlabel(", modelValue, ", choices=c(", choices, ")))", sep="")) 
             }
         }
-
+        if (plottype == "orglspider (factor)" && varfactor==T){
+            justDoIt(paste("library(vegan3d)", sep=""))
+            logger(paste("library(vegan3d)", sep=""))
+            justDoIt(paste("par(cex=",cex,")", sep=""))
+            logger(paste("par(cex=",cex,")", sep=""))
+            justDoIt(paste("plot1 <- ordirgl(", modelValue, ", ax.col='darkgrey', type='n', envfit=NA)", sep=""))
+              logger(paste("plot1 <- ordirgl(", modelValue, ", ax.col='darkgrey', type='n', envfit=NA)", sep=""))
+            justDoIt(paste("with(", .activeDataSet, ", orglpoints(", modelValue, ", col=as.numeric(", axisvar, ")))", sep=""))
+              logger(paste("with(", .activeDataSet, ", orglpoints(", modelValue, ", col=as.numeric(", axisvar, ")))", sep=""))
+            justDoIt(paste("with(", .activeDataSet, ", orglspider(", modelValue, ", groups=", axisvar, ", col=c(1:max(as.numeric(", axisvar, ")))))", sep=""))
+              logger(paste("with(", .activeDataSet, ", orglspider(", modelValue, ", groups=", axisvar, ", col=c(1:max(as.numeric(", axisvar, ")))))", sep=""))
+        }
+        if (plottype == "orglellipse (factor)" && varfactor==T){
+            justDoIt(paste("library(vegan3d)", sep=""))
+            logger(paste("library(vegan3d)", sep=""))
+            justDoIt(paste("par(cex=",cex,")", sep=""))
+            logger(paste("par(cex=",cex,")", sep=""))
+            justDoIt(paste("plot1 <- ordirgl(", modelValue, ", ax.col='darkgrey', type='n', envfit=NA)", sep=""))
+              logger(paste("plot1 <- ordirgl(", modelValue, ", ax.col='darkgrey', type='n', envfit=NA)", sep=""))
+            justDoIt(paste("with(", .activeDataSet, ", orglpoints(", modelValue, ", col=as.numeric(", axisvar, ")))", sep=""))
+              logger(paste("with(", .activeDataSet, ", orglpoints(", modelValue, ", col=as.numeric(", axisvar, ")))", sep=""))
+            justDoIt(paste("with(", .activeDataSet, ", orglellipse(", modelValue, ", groups=", axisvar, ", kind='ehull', col=c(1:max(as.numeric(", axisvar, ")))))", sep=""))
+              logger(paste("with(", .activeDataSet, ", orglellipse(", modelValue, ", groups=", axisvar, ", kind='ehull', col=c(1:max(as.numeric(", axisvar, ")))))", sep=""))
+        }
         data <- tclvalue(dataVariable) =="1"
         if (data==T) {
             justDoIt(paste(.activeDataSet, "$", modelValue, ".ax1 <- scores(plot1, display='sites')[,1]", sep=""))
@@ -3923,13 +3977,14 @@ conordiGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     typeScroll <- tkscrollbar(plot1Frame, repeatinterval=5, command=function(...) tkyview(typeBox, ...))
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
-    types <- c("plot", "ordiplot", "ordiplot empty", "origin axes", "identify sites", "identify species", "identify centroids", "text sites", "text species", "text centroids",
+    types <- c("plot", "ordiplot", "ordiplot3d", "ordirgl", "ordiplot empty", "origin axes", "identify sites", "identify species", "identify centroids", "text sites", "text species", "text centroids",
         "points sites", "points species", "points centroids",
         "label sites", "label species", "label centroids", "orditorp sites", "orditorp species", "orditorp centroids",
         "envfit", "ordihull (factor)", "ordihull (factor, rainbow)", "ordihull (factor, polygon)", "ordiarrows (factor)", "ordiarrows (factor, rainbow)", "ordisegments (factor)", "ordisegments (factor, rainbow)", "ordispider (factor)", "ordispider (factor, rainbow)", "ordibar (factor)", "ordibar (factor, rainbow)",
         "ordiellipse (factor)", "ordiellipse (factor, rainbow)", "ordiellipse (factor, ehull)", "ordiellipse (factor, polygon)", "ordisurf (continuous)",
-        "ordibubble (continuous)", "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation", "ordicluster", "ordicluster2",
-        "ordinearest", "ordispantree", "ordiresids", "distance displayed", "coenocline", "screeplot", "stressplot", "orditkplot sites", "orditkplot species", "orditkplot pointlabel")
+        "ordibubble (continuous)", "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", 
+        "ordivector (species)", "ordivector interpretation", "ordicluster", "ordicluster2",
+        "ordinearest", "ordispantree", "ordiresids", "distance displayed", "coenocline", "screeplot", "stressplot", "orditkplot sites", "orditkplot species", "orditkplot pointlabel", "orglspider (factor)", "orglellipse (factor)")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
     choice <- tkentry(plot3Frame, width=10, textvariable=choicesVariable)
@@ -4230,6 +4285,36 @@ conordiGUI <- function(){
                 }
             }
         }
+        if (plottype == "ordiplot3d"){
+            justDoIt(paste("library(vegan3d)", sep=""))
+            logger(paste("library(vegan3d)", sep=""))
+            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)" && method!="multiconstrained (dbrda)"){
+                justDoIt(paste("par(cex=",cex,")", sep=""))
+                logger(paste("par(cex=",cex,")", sep=""))
+                if (method == "CAPdiscrim") {
+                    justDoIt(paste("plot1 <- ordiplot3d(", modelValue, ", choices=c(1, 2, 3))", sep=""))              
+                    logger(paste("plot1 <- ordiplot3d(", modelValue, ", choices=c(1, 2, 3))", sep=""))              
+                }else{
+                    justDoIt(paste("plot1 <- ordiplot3d(", modelValue, ", choices=c(1, 2, 3), scaling='", scaling, "')", sep=""))              
+                    logger(paste("plot1 <- ordiplot3d(", modelValue, ", choices=c(1, 2, 3), scaling='", scaling, "')", sep=""))              
+                }
+            }
+        }
+        if (plottype == "ordirgl"){
+            justDoIt(paste("library(vegan3d)", sep=""))
+            logger(paste("library(vegan3d)", sep=""))
+            if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)" && method!="multiconstrained (dbrda)"){
+                justDoIt(paste("par(cex=",cex,")", sep=""))
+                logger(paste("par(cex=",cex,")", sep=""))
+                if (method == "CAPdiscrim") {
+                    justDoIt(paste("plot1 <- ordirgl(", modelValue, ", choices=c(1, 2, 3))", sep=""))              
+                    logger(paste("plot1 <- ordirgl(", modelValue, ", choices=c(1, 2, 3))", sep=""))              
+                }else{
+                    justDoIt(paste("plot1 <- ordirgl(", modelValue, ", choices=c(1, 2, 3), scaling='", scaling, "')", sep=""))              
+                    logger(paste("plot1 <- ordirgl(", modelValue, ", choices=c(1, 2, 3), scaling='", scaling, "')", sep=""))              
+                }
+            }
+        }
         if (plottype == "ordiplot empty"){
             if (method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)" && method!="multiconstrained (capscale)" && method!="multiconstrained (capscale add)" && method!="multiconstrained (dbrda)"){
                 justDoIt(paste("par(cex=",cex,")", sep=""))
@@ -4349,6 +4434,7 @@ conordiGUI <- function(){
         }
         if (plottype == "envfit"){
             doItAndPrint(paste("fitted <- envfit(plot1, data.frame(", axisvar, "), permutations=", perm, ")", sep=""))
+            doItAndPrint(paste("fitted", sep=""))
             doItAndPrint(paste("plot(fitted, col='", col,"', cex=", cex, ")", sep=""))
         }
         if (plottype == "ordihull (factor)" && varfactor==T){
@@ -4427,6 +4513,30 @@ conordiGUI <- function(){
         if (plottype == "ordisymbol (factor, large)" && varfactor==T){
             justDoIt(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', legend=T, legend.x='topleft', legend.ncol=1, rainbow=F, cex=4, lwd=2)", sep=""))
             logger(paste("ordisymbol(plot1, y=", .activeDataSet, ", factor='", axisvar, "', legend=T, legend.x='topleft', legend.ncol=1, rainbow=F, cex=4, lwd=2)", sep=""))
+        }
+        if (plottype == "orglspider (factor)" && varfactor==T){
+            justDoIt(paste("library(vegan3d)", sep=""))
+            logger(paste("library(vegan3d)", sep=""))
+            justDoIt(paste("par(cex=",cex,")", sep=""))
+            logger(paste("par(cex=",cex,")", sep=""))
+            justDoIt(paste("plot1 <- ordirgl(", modelValue, ", ax.col='darkgrey', type='n', envfit=NA)", sep=""))
+              logger(paste("plot1 <- ordirgl(", modelValue, ", ax.col='darkgrey', type='n', envfit=NA)", sep=""))
+            justDoIt(paste("with(", .activeDataSet, ", orglpoints(", modelValue, ", col=as.numeric(", axisvar, ")))", sep=""))
+              logger(paste("with(", .activeDataSet, ", orglpoints(", modelValue, ", col=as.numeric(", axisvar, ")))", sep=""))
+            justDoIt(paste("with(", .activeDataSet, ", orglspider(", modelValue, ", groups=", axisvar, ", col=c(1:max(as.numeric(", axisvar, ")))))", sep=""))
+              logger(paste("with(", .activeDataSet, ", orglspider(", modelValue, ", groups=", axisvar, ", col=c(1:max(as.numeric(", axisvar, ")))))", sep=""))
+        }
+        if (plottype == "orglellipse (factor)" && varfactor==T){
+            justDoIt(paste("library(vegan3d)", sep=""))
+            logger(paste("library(vegan3d)", sep=""))
+            justDoIt(paste("par(cex=",cex,")", sep=""))
+            logger(paste("par(cex=",cex,")", sep=""))
+            justDoIt(paste("plot1 <- ordirgl(", modelValue, ", ax.col='darkgrey', type='n', envfit=NA)", sep=""))
+              logger(paste("plot1 <- ordirgl(", modelValue, ", ax.col='darkgrey', type='n', envfit=NA)", sep=""))
+            justDoIt(paste("with(", .activeDataSet, ", orglpoints(", modelValue, ", col=as.numeric(", axisvar, ")))", sep=""))
+              logger(paste("with(", .activeDataSet, ", orglpoints(", modelValue, ", col=as.numeric(", axisvar, ")))", sep=""))
+            justDoIt(paste("with(", .activeDataSet, ", orglellipse(", modelValue, ", groups=", axisvar, ", kind='ehull', col=c(1:max(as.numeric(", axisvar, ")))))", sep=""))
+              logger(paste("with(", .activeDataSet, ", orglellipse(", modelValue, ", groups=", axisvar, ", kind='ehull', col=c(1:max(as.numeric(", axisvar, ")))))", sep=""))
         }
         if (plottype == "ordivector (species)"){
             realspecies <- eval(parse(text=paste("any(colnames(", .communityDataSet, ")=='", axisvar, "')", sep="")), envir=.GlobalEnv)
@@ -4641,7 +4751,7 @@ clusterGUI <- function(){
         selectmode="single", background="white", exportselection="FALSE") 
     algoScroll <- tkscrollbar(method4Frame, repeatinterval=5, command=function(...) tkyview(algoBox, ...))
     tkconfigure(algoBox, yscrollcommand=function(...) tkset(algoScroll, ...))
-    algos <- c("average", "single", "complete", "ward", "weighted", "median", "centroid")
+    algos <- c("average", "single", "complete", "ward", "ward.D", "ward.D2", "mcquitty", "weighted", "median", "centroid")
     for (x in algos) tkinsert(algoBox, "end", x)
     plotFrame <- tkframe(top, relief="groove", borderwidth=2)
     plot1Frame <- tkframe(plotFrame)
@@ -4654,7 +4764,8 @@ clusterGUI <- function(){
     tkconfigure(typeBox, yscrollcommand=function(...) tkset(typeScroll, ...))
     types <- c("dendrogram1 (hang = -1)", "dendrogram2 (hang = 0.1)", "dendrogram3 (horizontal)", 
         "phylogram (ape package)", "cladogram (ape package)", "fan (ape package)", "unrooted (ape package)",    
-        "rectangles", "pruned dendrogram", "silhouette", "kgs", "cophenetic", "cascadeKM", "reorder (variable)", "tiplabels (variable size)", "tiplabels (factor)")
+        "rectangles", "pruned dendrogram", "silhouette", "kgs", "cophenetic", "cascadeKM", "reorder (variable)", "labels (variable)", 
+        "tiplabels (variable size)", "tiplabels (factor)")
     for (x in types) tkinsert(typeBox, "end", x)
     cexVariable <- tclVar("1")
     cexa <- tkentry(plot3Frame, width=8, textvariable=cexVariable)
@@ -4808,6 +4919,9 @@ clusterGUI <- function(){
         }
         if (plottype == "cascadeKM"){
             doItAndPrint(paste("plot(", modelValue, ")", sep=""))             
+        }
+        if (plottype == "labels (variable)"){
+            doItAndPrint(paste("plot(", modelValue, ", labels=", .activeDataSet, "$", axisvar, ", main='', sub='', xlab='', ylab='')", sep=""))     
         }
         if (plottype == "reorder (variable)"){
             command <- paste("reorder(as.hclust(", modelValue, "), wts=as.numeric(", .activeDataSet, "$", axisvar, "))", sep="")

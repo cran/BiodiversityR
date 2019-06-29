@@ -1,5 +1,5 @@
 `ensemble.spatialThin` <- function(
-    x, thin.km=0.1, runs=100, verbose=FALSE, 
+    x, thin.km=0.1, runs=100, silent=FALSE, verbose=FALSE, 
     return.notRetained=FALSE
 )
 {
@@ -39,27 +39,31 @@
         return(list(x3=x3, retained=retained))
         }
 #
-
+    if (verbose == T) {silent <- FALSE}
     if (raster::couldBeLonLat(sp::SpatialPoints(x)) == F) {
         cat(paste("WARNING: locations not in longitude - latitude format", "\n"))
         cat(paste("therefore spatial thinning not executed", "\n\n"))
         return(x)
     }
     if(nrow(x) == 1) {
-        cat(paste("NOTE: only one location was provided", "\n"))
+        if (silent == F) {cat(paste("NOTE: only one location was provided", "\n"))}
         return(x)
     }
     x2 <- distGeo.stack(x)
     if(max(x2[, 3]) <= thin.km) {
-        cat(paste("WARNING: thinning parameter larger or equal to maximum distance among locations", "\n"))
-        cat(paste("therefore only one location randomly selected", "\n\n"))
+        if (silent == F) {
+            cat(paste("WARNING: thinning parameter larger or equal to maximum distance among locations", "\n"))
+            cat(paste("therefore only one location randomly selected", "\n\n"))
+        }
         p <- nrow(x)
         x3 <- x[sample(p, 1), ]
         return(x3)
     }
     if(min(x2[, 3]) >= thin.km) {
-        cat(paste("WARNING: thinning parameter smaller or equal to minimum distance among locations", "\n"))
-        cat(paste("therefore all locations selected", "\n\n"))
+        if (silent == F) {
+            cat(paste("WARNING: thinning parameter smaller or equal to minimum distance among locations", "\n"))
+            cat(paste("therefore all locations selected", "\n\n"))
+        }
         return(x)
     }
     runs <- max(runs, 1)
@@ -81,9 +85,11 @@
     if (verbose == T) {cat(paste("\n"))}
     loc.matrix <- geosphere::distm(loc.out)
     diag(loc.matrix) <- NA
-    cat(paste("Spatially thinned point location data set obtained for target minimum distance of ", thin.km, "\n", sep=""))
-    cat(paste("number of locations: ", nrow(loc.out), "\n"))
-    cat(paste("minimum distance: ", min(loc.matrix, na.rm=T), "\n"))
+    if (silent == F) {
+        cat(paste("Spatially thinned point location data set obtained for target minimum distance of ", thin.km, "\n", sep=""))
+        cat(paste("number of locations: ", nrow(loc.out), "\n"))
+        cat(paste("minimum distance: ", min(loc.matrix, na.rm=T), "\n"))
+    }
     if (return.notRetained == T) {
         x.not <- x[(c(1:nrow(x)) %in% retained.final) == F, ]
         return(list(loc.out=loc.out, not.retained=x.not))
@@ -93,7 +99,7 @@
 
 
 `ensemble.spatialThin.quant` <- function(
-    x, thin.km=0.1, runs=100, verbose=FALSE,
+    x, thin.km=0.1, runs=100, silent=FALSE, verbose=FALSE, 
     LON.length=21, LAT.length=21
 ) 
 {
@@ -109,7 +115,7 @@
         for (la in 1:(length(LAT.bins)-1)) {
             x.bin2 <- x.bin[(x.bin[, 2] >= LAT.bins[la] & x.bin[, 2] < LAT.bins[la+1]),  ]     
             if (nrow(as.data.frame(x.bin2)) > 0) {
-                x.spat <- ensemble.spatialThin(x=x.bin2, thin.km=thin.km, runs=runs, verbose=verbose)
+                x.spat <- ensemble.spatialThin(x=x.bin2, thin.km=thin.km, runs=runs, verbose=verbose, silent=silent)
                 if (loc.first == T) {
                     x.out <- x.spat
                     loc.first <- FALSE

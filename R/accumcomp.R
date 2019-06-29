@@ -1,5 +1,8 @@
 `accumcomp` <-
-function(x,y="",factor,scale="",method="exact",permutations=100,conditioned=T,gamma="boot",plotit=T,labelit=T,legend=T,rainbow=T,xlim=c(1,max),ylim=c(0,rich),type="p",xlab="sites",ylab="species richness",...) {
+function(x, y="", factor, scale="", method="exact", permutations=100, conditioned=T, gamma="boot",
+    plotit=T, labelit=T, legend=T, rainbow=T, xlim=c(1,max), ylim=c(0,rich), type="p",
+    xlab="sites", ylab="species richness", cex.lab=1, cex.axis=1, ...) 
+{
     groups <- table(y[,factor])
     min <- min(groups)
     max <- max(groups)
@@ -30,14 +33,15 @@ function(x,y="",factor,scale="",method="exact",permutations=100,conditioned=T,ga
                 }
                 if (rainbow==T) {
                     grDevices::palette(rainbow(m))
-                    accumplot(result1,addit=addit,xlab=xlab,ylab=ylab,xlim=xlim,ylim=ylim,labels=labels,col=i,pch=i,type=type,...)
+                    accumplot(result1, addit=addit, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, labels=labels,
+                        col=i, pch=i, type=type, cex.lab=cex.lab, cex.axis=cex.axis,...)
                 }else{
-                    accumplot(result1,addit=addit,xlab=xlab,ylab=ylab,xlim=xlim,ylim=ylim,labels=labels,pch=i,type=type,...)
+                    accumplot(result1, addit=addit, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, labels=labels, pch=i, type=type,...)
                 }
             }
         }
-        if (rainbow==T && legend==T) {legend(graphics::locator(1),legend=levels,pch=c(1:m),col=c(1:m))}
-        if (rainbow==F && legend==T) {legend(graphics::locator(1),legend=levels,pch=c(1:m))}
+        if (rainbow==T && legend==T) {legend(graphics::locator(1), legend=levels, pch=c(1:m), col=c(1:m))}
+        if (rainbow==F && legend==T) {legend(graphics::locator(1), legend=levels, pch=c(1:m))}
     }
     grDevices::palette("default")
     return(result)

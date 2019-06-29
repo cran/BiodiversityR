@@ -15,6 +15,60 @@ BiodiversityR versions
 	is available from https://doi.org/10.1016/j.envsoft.2017.11.009
 
 
+Version 2.11-2 (June 2019)
+
+	* new function ensemble.environmentalThin.clara that enables environmental thinning for
+	large data sets. Prior to using function ensemble.environmentalThin internally in the 
+	function, the points are first divided in clusters via the cluster.clara function. 
+	Subsequently points in each cluster are environmentally thinned.
+		
+	* new option for ensemble.calibrate.weights to import k-fold groupings for presence and
+	background points as a list with elements groupp (k-fold groupings for presence points)
+	and groupa (k-fold groupings for background points). The option was inspired on using
+	outputs from the blockCV package. The option is invoked by using the list as input for
+	argument k of ensemble.calibrate.weights. 
+
+	* modification in ensemble.environmentalThin to provide a final data set that matches
+	the requested number of environmentally thinned points (previously the function stopped
+	the second algorithm when the identified minimum distance was reached, in analogy to 
+	the ensemble.spatialThin function).
+
+	* modification in ensemble.environmentalThin to possibly retain only 1 axis if the 
+	variance on 1 axis exceeds the selected threshold (the previous behaviour was to 
+	select a minimum of 2 PCA axes).
+
+	* new argument 'silent' for the ensemble.spatialThin, ensemble.environmentalThin and
+	ensemble.spatialThin.quant functions, with option to have no reports on the processing
+	of points.
+
+	* new arguments 'cex.lab' and 'cex.axis' for the accumplot and accumcomp functions to 
+	modify sizes of axis labels (requested by Julio Cesar Canales).
+
+	* new options for the unconstrained and constrained ordination GUI to create 
+	3-dimensional ordination graphics via the ordiplot3d, ordirgl, orglspider and 
+	orglellipse functions of the vegan3d package.
+
+	* additional options of 'ward.D', 'ward.D2' and 'mcquitty' for the cluster GUI.
+
+	* new option 'labels (variable)' of the cluster GUI to change labels in dendrograms
+	to data from the environmental data set.
+
+	* new option in the Analysis of species abundance menu to summarize differences in 
+	abundance with the Rmisc::summarySE function.
+
+	* corrected an error in the ensemble.raster function where projection ran into problems
+	with CATCH.OFF=FALSE for the GBM algorithm.
+
+	* corrected the error of having no visible global definitions for 'data' and 
+	'wrld_simpl' of the ensemble.plot function (error reported in the CRAN Package Check
+	results)
+	
+	* corrected an error for the envfit plotting option of the ordination GUI where results
+	of permutation tests were not shown
+
+	* compatible with Rcmdr 2.5-3 (May 2019)
+
+
 Version 2.11-1 (January 2019; Ty Segall & White Fence's Joy version)
 
 	* new function ensemble.environmentalThin that provides a method similar to function

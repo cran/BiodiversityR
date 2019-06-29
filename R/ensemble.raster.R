@@ -589,12 +589,12 @@
         pgbm <- NULL
         fullname <- paste("models/", RASTER.species.name, "_GBM", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pgbm <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factlevels,
+            tryCatch(pgbm <- raster::predict(object=xn, model=results, na.rm=TRUE, factors=factlevels,
                     n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE),
                 error= function(err) {print(paste("GBM prediction failed"))},
                 silent=F)
         }else{
-            raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factlevels,
+            pgbm <- raster::predict(object=xn, model=results, na.rm=TRUE, factors=factlevels,
                 n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE)
         }
         if (is.null(pgbm) == F) {

@@ -10,14 +10,17 @@ Provides alternative methods of obtaining species accumulation results than prov
 }
 
 \usage{
-accumresult(x,y="",factor="",level,scale="",method="exact",permutations=100,
+accumresult(x, y="", factor="", level, scale="", method="exact", permutations=100,
     conditioned=T, gamma="boot", ...)
-accumplot(xr,addit=F,labels="",col=1,ci=2,pch=1,type="p",cex=1,xlim=c(1,xmax),
-    ylim=c(1,rich),xlab="sites",ylab="species richness",...)
-accumcomp(x,y="",factor,scale="",method="exact",permutations=100,
-    conditioned=T, gamma="boot",plotit=T,labelit=T,legend=T,rainbow=T,
-    xlim=c(1,max),ylim=c(0,rich),type="p",xlab="sites",
-    ylab="species richness",...)
+
+accumplot(xr, addit=F, labels="", col=1, ci=2, pch=1, type="p", cex=1, 
+    xlim=c(1, xmax), ylim=c(1, rich),
+    xlab="sites", ylab="species richness", cex.lab=1, cex.axis=1, ...)
+
+accumcomp(x, y="", factor, scale="", method="exact", permutations=100,
+    conditioned=T, gamma="boot", plotit=T, labelit=T, legend=T, rainbow=T,
+    xlim=c(1, max), ylim=c(0, rich),type="p", xlab="sites",
+    ylab="species richness", cex.lab=1, cex.axis=1, ...)
 }
 
 \arguments{
@@ -30,6 +33,7 @@ accumcomp(x,y="",factor,scale="",method="exact",permutations=100,
   \item{permutations}{ Number of permutations to calculate the species accumulation curve (as in function \code{\link[vegan]{specaccum}}). }
   \item{conditioned}{ Estimation of standard deviation is conditional on the empirical dataset for the exact SAC (as in function \code{\link[vegan]{specaccum}}). }
   \item{gamma}{ Method for estimating the total extrapolated number of species in the survey area (as in \code{\link[vegan]{specaccum}}). }
+
   \item{addit}{ Add species accumulation curve to an existing graph. }
   \item{xr}{ Result from \code{\link[vegan]{specaccum}} or \code{accumresult}. }
   \item{col}{ Colour for drawing lines of the species accumulation curve (as in function \code{\link[vegan:specaccum]{plot.specaccum}}). }
@@ -38,10 +42,13 @@ accumcomp(x,y="",factor,scale="",method="exact",permutations=100,
   \item{pch}{ Symbol used for drawing the species accumulation curve (as in function \code{\link[graphics]{points}}). }
   \item{type}{ Type of plot (as in function \code{\link[graphics]{plot}}). }
   \item{cex}{ Character expansion factor (as in function \code{\link[graphics]{plot}}). }
-  \item{xlim}{ Limits for the horizontal axis. }
-  \item{ylim}{ Limits for the vertical axis. }
-  \item{xlab}{ Label for the horizontal axis. }
-  \item{ylab}{ Label for the vertical axis. }
+  \item{xlim}{ Limits for the X = horizontal axis. }
+  \item{ylim}{ Limits for the Y = vertical axis. }
+  \item{xlab}{ Label for the X = horizontal axis (as in function \code{\link[graphics]{title}}). }
+  \item{ylab}{ Label for the Y = vertical axis (as in function \code{\link[graphics]{title}}). }
+  \item{cex.lab}{ The magnification to be used for X and Y labels relative to the current setting of \code{cex}. (as in function \code{\link[graphics]{par}}). }
+  \item{cex.axis}{ The magnification to be used for axis annotation relative to the current setting of \code{cex} (as in function \code{\link[graphics]{par}}). }
+
   \item{plotit}{ Plot the results. }
   \item{labelit}{ Label the species accumulation curves with the levels of the categorical variable. }
   \item{legend}{ Add the legend (you need to click in the graph where the legend needs to be plotted). }

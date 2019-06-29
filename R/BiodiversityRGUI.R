@@ -18,6 +18,8 @@ function(changeLog=FALSE, backward.compatibility.messages=FALSE)
     if (changeLog == T) {BiodiversityR.changeLog()}
 
     if (! requireNamespace("vegan")) {stop("Please install the vegan package")}
+    if (! requireNamespace("rgl")) {stop("Please install the rgl package")}    
+    if (! requireNamespace("vegan3d")) {stop("Please install the vegan3d package")}
     if (! requireNamespace("dismo")) {stop("Please install the dismo package")}
 
     options(Rcmdr=list(etc=file.path(path.package(package="BiodiversityR"),

@@ -48,7 +48,16 @@
 {
     .BiodiversityR <- new.env()
 #    if (! require(dismo)) {stop("Please install the dismo package")}
-    k <- as.integer(k)
+#
+    if (is.list(k) == F) {
+        k <- as.integer(k)
+        k.listed <- FALSE
+     }else{
+        k.listed <- TRUE
+        k.list <- k
+        k <- max(k.list$groupp)
+    }
+
 # check data
     if (is.null(TrainData) == T) {
         if(is.null(x) == T) {stop("value for parameter x is missing (RasterStack object)")}
@@ -658,7 +667,8 @@
     }
 
 # create TrainData and TestData
-
+#
+# tuning takes precedense over different exponents 
 #    if(length(ENSEMBLE.exponent) > 1 || length(ENSEMBLE.best) > 1 || length(ENSEMBLE.min) > 1) {ENSEMBLE.tune <- TRUE}
     no.tests <- FALSE
     if (is.null(pt)==T && is.null(at)==T && is.null(TestData)==T && k < 2) {
@@ -686,10 +696,21 @@
         if(is.null(TestData) == T) {
             TestData <- TrainData
             if (k > 1) {
-                groupp <- dismo::kfold(TrainData, k=k, by=TrainData[,"pb"])
-                TrainData.c <- TrainData[groupp != 1,]
-                TestData <- TrainData[groupp == 1,]
-                TrainData <- TrainData.c
+                TrainData.p <- TrainData[TrainData$pb == 1, ]
+                TrainData.a <- TrainData[TrainData$pb == 0, ]
+                if (k.listed == F) {
+                    groupp <- dismo::kfold(TrainData.p, k=k)
+                    groupa <- dismo::kfold(TrainData.a, k=k)
+                }else{
+                    groupp <- k.list$groupp
+                    groupa <- k.list$groupa
+                }
+                TrainData.pc <- TrainData.p[groupp != 1,]
+                TrainData.ac <- TrainData.a[groupa != 1,]
+                TestData.pc <- TrainData.p[groupp == 1,]
+                TestData.ac <- TrainData.a[groupa == 1,]
+                TrainData <- rbind(TrainData.pc, TrainData.ac)
+                TestData <- rbind(TestData.pc, TestData.ac)
             }
         } 
     }else{
@@ -714,14 +735,22 @@
         }
         if (is.null(pt)==T && is.null(TestData)) {pt <- p}
         if (k > 1 && identical(pt, p) == T) {
-            groupp <- dismo::kfold(p, k=k)
+            if (k.listed == F) {
+                groupp <- dismo::kfold(p, k=k)
+            }else{
+                groupp <- k.list$groupp
+            }
             pc <- p[groupp != 1,]
             pt <- p[groupp == 1,]
             p <- pc
         }
         if (is.null(at)==T && is.null(TestData)) {at <- a}
         if (k > 1 && identical(at, a) == T) {
-            groupa <- dismo::kfold(a, k=k)
+            if (k.listed == F) {
+                groupa <- dismo::kfold(a, k=k)
+            }else{
+                groupa <- k.list$groupa
+            }
             ac <- a[groupa != 1,]
             at <- a[groupa == 1,]
             a <- ac
@@ -3588,7 +3617,8 @@
             cat(paste("\n", "Ensemble weights based directly on input weights scaled to sum up to 1", "\n", sep = ""))
             print(ws)
         }else{
-            cat(paste("\n", "NOTE: no positive input weights", "\n", sep = ""))
+# modified as function often used only to create data sets
+#            cat(paste("\n", "NOTE: no positive input weights", "\n", sep = ""))
         }
         if(evaluations.keep == T) {evaluations$ensemble.weights <- ws}
         if(models.keep==T) {models$output.weights <- ws}
@@ -3617,8 +3647,8 @@
         if(evaluations.keep == T) {evaluations$STRATEGY.weights <- ws}
         if(models.keep==T) {models$output.weights <- ws}
     }
-# do not return ensemble tests for no models when tuning is not implemented 
-    if((sum(ws > 0, na.rm=T) > 0) || (ENSEMBLE.tune == T)) {
+# modified to also calculate ensemble with pre-defined weights
+    if(sum(ws > 0, na.rm=T) > 0) {
         TrainData[,"ENSEMBLE"] <- ws["MAXENT"]*TrainData[,"MAXENT"] + ws["MAXNET"]*TrainData[,"MAXNET"] + ws["MAXLIKE"]*TrainData[,"MAXLIKE"] + ws["GBM"]*TrainData[,"GBM"] +
             ws["GBMSTEP"]*TrainData[,"GBMSTEP"] + ws["RF"]*TrainData[,"RF"] + ws["CF"]*TrainData[,"CF"] + ws["GLM"]*TrainData[,"GLM"] +
             ws["GLMSTEP"]*TrainData[,"GLMSTEP"] + ws["GAM"]*TrainData[,"GAM"] + ws["GAMSTEP"]*TrainData[,"GAMSTEP"] +
@@ -3735,7 +3765,7 @@
     result <- list(evaluations=evaluations, AUC.calibration=AUC.calibration, AUC.testing=AUC.testing, models=models, VIF=newVIF, call=match.call() )
     cat(paste("\n\n"))
     if (SINK==T && OLD.SINK==F) {sink(file=NULL, append=T)}
-    cat(paste("\n", "finished model calibrations (function ensemble.calibrate.models)", "\n\n", sep = ""))
+    if(sum(ws > 0, na.rm=T) > 0){cat(paste("\n", "finished model calibrations (function ensemble.calibrate.models)", "\n\n", sep = ""))}
     return(result)
 }
 

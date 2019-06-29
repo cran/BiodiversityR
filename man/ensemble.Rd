@@ -215,7 +215,7 @@ ensemble.pairs(x = NULL, a = NULL, an = 10000)
   \item{a}{ background points used for calibrating the suitability models (except for \code{\link[dismo]{maxent}}), typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{an}{ number of background points for calibration to be selected with \code{\link[dismo]{randomPoints}} in case argument \code{a} is missing}
   \item{excludep}{ parameter that indicates (if \code{TRUE}) that presence points will be excluded from the background points; see also \code{\link[dismo]{randomPoints}} }
-  \item{target.groups}{ Parameter that indicates (if \code{TRUE}) that the provided background points (argument \code{a}) represent presence points from a target group sensu Phillips et al. 2009 (these are species that are all collected or observed using the same methods or equipment). Setting the parameter to \code{TRUE} results in selecting the centres of cells of the target groups as background points, while avoiding to select the same cells twice. Via argument \code{excludep}, it is possible to filter out cells that are in the same cell are presence observations (argument \code{p}).  }
+  \item{target.groups}{ Parameter that indicates (if \code{TRUE}) that the provided background points (argument \code{a}) represent presence points from a target group sensu Phillips et al. 2009 (these are species that are all collected or observed using the same methods or equipment). Setting the parameter to \code{TRUE} results in selecting the centres of cells of the target groups as background points, while avoiding to select the same cells twice. Via argument \code{excludep}, it is possible to filter out cells with presence observations (argument \code{p}).  }
   \item{k}{ If larger than 1, the number of groups to split between calibration (k-1) and evaluation (1) data sets (for example, \code{k = 4} results in 3/4 of presence and background points to be used for calibrating the models, and 1/4 of presence and background points to be used for evaluating the models). For \code{ensemble.calibrate.weights}, \code{ensemble.calibrate.models.gbm} and \code{ensemble.calibrate.models.nnet}, this procedure is repeated \code{k} times (k-fold cross-validation). See also \code{\link[dismo]{kfold}}.  }
   \item{pt}{ presence points used for evaluating the suitability models, available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
   \item{at}{ background points used for evaluating the suitability models, available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
@@ -563,7 +563,7 @@ ensemble.factors2 <- ensemble.calibrate.models(x=predictors,
     ENSEMBLE.tune=TRUE,
     MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, CF=1,
     GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=1, 
-    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, 
+    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, GLMNET=1,
     BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
     ENSEMBLE.best=c(4:10), ENSEMBLE.exponent=c(1, 2, 3),
     Yweights="BIOMOD", factors="biome",
@@ -577,7 +577,7 @@ ensemble.nofactors2 <- ensemble.calibrate.weights(x=predictors,
     SINK=TRUE, PROBIT=TRUE,
     MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, CF=1,
     GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=1, 
-    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, 
+    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, GLMNET=1,
     BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
     ENSEMBLE.tune=TRUE,
     ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3),
@@ -597,7 +597,7 @@ ensemble.variables <- ensemble.drop1(x=predictors,
     VIF=TRUE, PROBIT=TRUE,
     MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, CF=1,
     GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=1, 
-    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, 
+    EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, GLMNET=1,
     BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
     ENSEMBLE.tune=TRUE,
     ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3),

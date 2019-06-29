@@ -1,4 +1,4 @@
-import(stats, Rcmdr, vegan)
+import(stats, Rcmdr, vegan, rgl, vegan3d)
 
 importFrom(tcltk, tkfont.create, tkbutton)
 
@@ -18,7 +18,7 @@ export(BiodiversityRGUI, check.datasets, check.ordiscores, spatialsample, makeco
     ensemble.analogue, ensemble.analogue.object, ensemble.ecocrop, ensemble.ecocrop.object, ensemble.threshold,
     ensemble.bioclim.object, ensemble.bioclim, ensemble.bioclim.graph, ensemble.bioclim.graph.data, ensemble.VIF,
     ensemble.spatialThin, BiodiversityR.changeLog, ensemble.pairs, ensemble.chull.create, ensemble.chull.apply, ensemble.red,
-    ensemble.spatialThin.quant, ensemble.environmentalThin, ensemble.outlierThin,
+    ensemble.spatialThin.quant, ensemble.environmentalThin, ensemble.outlierThin, ensemble.environmentalThin.clara,
     import.with.readxl,
     .onAttach)
 

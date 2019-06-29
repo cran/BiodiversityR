@@ -57,11 +57,18 @@
     if(is.null(a) == F) {names(a) <- c("x", "y")}
     if(is.null(MAXENT.a) == F) {names(MAXENT.a) <- c("x", "y")}
 #
-    k <- as.integer(k)
-    if (k < 2) {
-        cat(paste("\n", "NOTE: parameter k was set to be smaller than 2", sep = ""))
-        cat(paste("\n", "default value of 4 therefore set for parameter k", "\n", sep = ""))
-        k <- 4
+    if (is.list(k) == F) {
+        k <- as.integer(k)
+        k.listed <- FALSE
+        if (k < 2) {
+            cat(paste("\n", "NOTE: parameter k was set to be smaller than 2", sep = ""))
+            cat(paste("\n", "default value of 4 therefore set for parameter k", "\n", sep = ""))
+            k <- 4
+        }
+    }else{
+        k.listed <- TRUE
+        k.list <- k
+        k <- max(k.list$groupa)
     }
 #
     if (is.null(layer.drops) == F) {
@@ -89,7 +96,7 @@
         "EARTH", "RPART", "NNET", "FDA", "SVM", "SVME", "GLMNET", 
         "BIOCLIM.O", "BIOCLIM", "DOMAIN", "MAHAL", "MAHAL01", "ENSEMBLE")
 #
-    if(length(ENSEMBLE.exponent) > 1 || length(ENSEMBLE.best) > 1 || length(ENSEMBLE.min) > 1) {ENSEMBLE.tune <- TRUE}
+#    if(length(ENSEMBLE.exponent) > 1 || length(ENSEMBLE.best) > 1 || length(ENSEMBLE.min) > 1) {ENSEMBLE.tune <- TRUE}
     if(ENSEMBLE.tune == F) {
         output <- array(0, dim=c(length(output.rownames), k+1))
         rownames(output) <- output.rownames
@@ -154,42 +161,52 @@
     p.all <- tests$evaluations$p
     a.all <- tests$evaluations$a
 
-    if (get.subblocks == T) {get.block <- T}
+# new option of k.list surpasses other options of assigning observations to k-folds
 
-    if (get.block == F) {
-        groupp <- dismo::kfold(p.all, k=k)
-        groupa <- dismo::kfold(a.all, k=k)
-    }else{
-        p2.all <- p.all
-        a2.all <- a.all
-        if (block.default == F) {
-            p2.all[, 1] <- p.all[, 2]
-            p2.all[, 2] <- p.all[, 1]
-            a2.all[, 1] <- a.all[, 2]
-            a2.all[, 2] <- a.all[, 1]
-            cat(paste("\n", "non-default ENMeval::get.block with first split along longitude", "\n\n", sep = ""))
+    if (k.listed == F) {
+        if (get.subblocks == T) {get.block <- T}
+
+        if (get.block == F) {
+            groupp <- dismo::kfold(p.all, k=k)
+            groupa <- dismo::kfold(a.all, k=k)
         }else{
-            cat(paste("\n", "default ENMeval::get.block with first split along latitude", "\n\n", sep = ""))
-        }
-        blocks <- ENMeval::get.block(occ=p2.all, bg.coords=a2.all)
-        groupp <- blocks$occ.grp
-        groupa <- blocks$bg.grp
-        k <- 4
+            p2.all <- p.all
+            a2.all <- a.all
+            if (block.default == F) {
+                p2.all[, 1] <- p.all[, 2]
+                p2.all[, 2] <- p.all[, 1]
+                a2.all[, 1] <- a.all[, 2]
+                a2.all[, 2] <- a.all[, 1]
+                cat(paste("\n", "non-default ENMeval::get.block with first split along longitude", "\n\n", sep = ""))
+            }else{
+                cat(paste("\n", "default ENMeval::get.block with first split along latitude", "\n\n", sep = ""))
+            }
+            blocks <- ENMeval::get.block(occ=p2.all, bg.coords=a2.all)
+            groupp <- blocks$occ.grp
+            groupa <- blocks$bg.grp
+            k <- 4
 
-# 'subblocking' whereby get.block is applied to each previously determined block
-        if (get.subblocks == T) {
-            occ.old <- groupp
-            backg.old <- groupa
-            for (i in 1:4) {
-                occ.i <- p2.all[occ.old == i, ]
-                backg.i <- a2.all[backg.old == i, ]
-                block2 <- ENMeval::get.block(occ=occ.i, bg.coords=backg.i)
-                occ.new <- block2$occ.grp
-                backg.new <- block2$bg.grp
-                groupp[occ.old == i] <- occ.new
-                groupa[backg.old == i] <- backg.new
+    # 'subblocking' whereby get.block is applied to each previously determined block
+            if (get.subblocks == T) {
+                occ.old <- groupp
+                backg.old <- groupa
+                for (i in 1:4) {
+                    occ.i <- p2.all[occ.old == i, ]
+                    backg.i <- a2.all[backg.old == i, ]
+                    block2 <- ENMeval::get.block(occ=occ.i, bg.coords=backg.i)
+                    occ.new <- block2$occ.grp
+                    backg.new <- block2$bg.grp
+                    groupp[occ.old == i] <- occ.new
+                    groupa[backg.old == i] <- backg.new
+                }
             }
         }
+
+    }else{
+        groupp <- k.list$groupp
+        groupa <- k.list$groupa
+        if (length(groupp) != nrow(p.all)) {cat(paste("WARNING: groupp length (", length(groupp), ") different from number of presence observations (", nrow(p.all), ")", "\n", sep = ""))}
+        if (length(groupa) != nrow(a.all)) {cat(paste("WARNING: groupa length (", length(groupa), ") different from number of background observations (", nrow(a.all), ")", "\n", sep = ""))}
     }
 
 # Start cross-validations
@@ -324,7 +341,9 @@
     }
 #
     output.weights <- output[, "MEAN"]
+    output.weightsT <- output[, "MEAN.T"]
     output.weights <- output.weights[names(output.weights) != "ENSEMBLE"]
+    output.weightsT <- output.weightsT[names(output.weightsT) != "ENSEMBLE"]
     output <- output[order(output[,k+1], decreasing=T),]
     cat(paste("Results of ensemble.calibrate.weights sorted by average AUC for tests T_1 to T_", k, "\n", sep = ""))
     cat(paste("\n", "columns T_1 to T_", k, " show the AUC for each ", k, "-fold cross-validation run", "\n", sep = ""))
@@ -337,36 +356,46 @@
     }
     print(output)
 
-    cat(paste("\n", "input weights for ensemble modelling based on MEAN column", "\n",  sep = ""))
-    print(output.weights)
-
-    if(ENSEMBLE.tune == F) {
-# also downweight the average AUC with the same parameters
-        cat(paste("\n\n", "parameters for next weighting: ENSEMBLE.min=", ENSEMBLE.min1, ", ENSEMBLE.best=", ENSEMBLE.best1, " and ENSEMBLE.exponent=", ENSEMBLE.exponent1, "\n\n", sep = ""))
-        output.weights <- ensemble.weights(weights=output.weights, exponent=ENSEMBLE.exponent1, best=ENSEMBLE.best1, min.weight=ENSEMBLE.min1)
+    if (ENSEMBLE.tune == F) {
+# do not modify if ENSEMBLE.tune is not required, simply use same
+#        cat(paste("\n\n", "parameters for next weighting: ENSEMBLE.min=", ENSEMBLE.min1, ", ENSEMBLE.best=", ENSEMBLE.best1, " and ENSEMBLE.exponent=", ENSEMBLE.exponent1, "\n\n", sep = ""))
+#        output.weights <- ensemble.weights(weights=output.weights, exponent=ENSEMBLE.exponent1, best=ENSEMBLE.best1, min.weight=ENSEMBLE.min1)
+#        print(output.weights)
+         output.weights <- tests$evaluations$ensemble.weights
+        cat(paste("\n", "final = original weights for ensemble forecasting", "\n", sep = ""))
         print(output.weights)
     }else{
+        cat(paste("\n", "input weights for ensemble modelling based on MEAN column", "\n",  sep = ""))
+        print(output.weights)
 # if possible, select best models (models with highest weights)
         if (ENSEMBLE.best1 > 0) {
             cat(paste("\n\n", "parameters for next weighting: ENSEMBLE.min=0, ENSEMBLE.best=", ENSEMBLE.best1, " and ENSEMBLE.exponent=1", "\n\n", sep = ""))
             output.weights <- ensemble.weights(weights=output.weights, exponent=1, best=ENSEMBLE.best1, min.weight=0)
             print(output.weights)
         }
-    }
-
+        output.weightsT <- ensemble.weights(weights=output.weightsT, exponent=ENSEMBLE.exponent1, best=ENSEMBLE.best1, min.weight=ENSEMBLE.min1)
 # remove models with low input weights (mainly to reduce the number of models for final calibrations and mapping)
-    cat(paste("\n", "Minimum input weight is ", ENSEMBLE.weight.min, "\n", sep=""))
-    output.weights2 <- output.weights
-    while(min(output.weights2) < ENSEMBLE.weight.min) {
-        output.weights2 <- output.weights2[-which.min(output.weights2)]
-        output.weights2 <- ensemble.weights(weights=output.weights2, exponent=1, best=0, min.weight=0)
+        cat(paste("\n", "Minimum input weight is ", ENSEMBLE.weight.min, "\n", sep=""))
+        output.weights2 <- output.weights
+        output.weights2T <- output.weightsT
+        while(min(output.weights2) < ENSEMBLE.weight.min) {
+            output.weights2 <- output.weights2[-which.min(output.weights2)]
+            output.weights2 <- ensemble.weights(weights=output.weights2, exponent=1, best=0, min.weight=0)
+        }
+        while(min(output.weights2T) < ENSEMBLE.weight.min) {
+            output.weights2T <- output.weights2T[-which.min(output.weights2T)]
+            output.weights2T <- ensemble.weights(weights=output.weights2T, exponent=1, best=0, min.weight=0)
+        }
+        output.weights[] <- 0
+        output.weightsT[] <- 0
+        for (i in 1:length(output.weights2)) {output.weights[which(names(output.weights) == names(output.weights2)[i])] <- output.weights2[i]}
+        for (i in 1:length(output.weights2T)) {output.weightsT[which(names(output.weightsT) == names(output.weights2T)[i])] <- output.weights2T[i]}
+        cat(paste("\n", "final suggested weights for ensemble forecasting", "\n", sep = ""))
+        print(output.weights)
     }
-    output.weights[] <- 0
-    for (i in 1:length(output.weights2)) {output.weights[which(names(output.weights) == names(output.weights2)[i])] <- output.weights2[i]}
-    cat(paste("\n", "final suggested weights for ensemble forecasting", "\n", sep = ""))
-    print(output.weights)
 
 # test with suggested final weights
+# was no need to repeat for no-tuning since here we already have those results, but possibly good to recheck
     output2 <- numeric(length=k+1)
     names(output2)[1:k] <- paste("T_", c(1:k), sep="")
     names(output2)[k+1] <- c("MEAN.T")
@@ -381,15 +410,45 @@
             output.weights["SVM"]*TestData[,"SVM"] + output.weights["SVME"]*TestData[,"SVME"] + output.weights["GLMNET"]*TestData[,"GLMNET"] + 
             output.weights["BIOCLIM.O"]*TestData[,"BIOCLIM.O"] + output.weights["BIOCLIM"]*TestData[,"BIOCLIM"] +
             output.weights["DOMAIN"]*TestData[,"DOMAIN"] + output.weights["MAHAL"]*TestData[,"MAHAL"]+ output.weights["MAHAL01"]*TestData[,"MAHAL01"]
-        eval1 <- eval2 <- NULL
-        TestPres <- as.numeric(TestData[TestData[,"pb"]==1, "ENSEMBLE"])
-        TestAbs <- as.numeric(TestData[TestData[,"pb"]==0, "ENSEMBLE"])
-        eval1 <- dismo::evaluate(p=TestPres, a=TestAbs)
-        output2[i] <- eval1@auc
+            eval1 <- eval2 <- NULL
+            TestPres <- as.numeric(TestData[TestData[,"pb"]==1, "ENSEMBLE"])
+            TestAbs <- as.numeric(TestData[TestData[,"pb"]==0, "ENSEMBLE"])
+            eval1 <- dismo::evaluate(p=TestPres, a=TestAbs)
+            output2[i] <- eval1@auc
     }
     output2[k+1] <- mean(output2[1:k])
     cat(paste("\n", "AUC for ensemble models based on suggested input weights (using presence and background data sets generated for ", k, "-fold cross-validations)",  "\n", sep = ""))
     print(output2)
+
+    cat(paste("\n", "(Results with input weights inferred from MEAN.T column with similar procedures",  "\n", sep = ""))
+    cat(paste("parameters for weighting of MEAN.T: ENSEMBLE.min=", ENSEMBLE.min1, ", ENSEMBLE.best=", ENSEMBLE.best1, " and ENSEMBLE.exponent=", ENSEMBLE.exponent1, "\n\n", sep = ""))
+    cat(paste("Final suggested weights with this alternative procedure", "\n", sep = ""))
+    print(output.weightsT)
+
+    output3 <- numeric(length=k+1)
+    names(output3)[1:k] <- paste("T_", c(1:k), sep="")
+    names(output3)[k+1] <- c("MEAN.T")
+    for (i in 1:k) {
+        TestData <- TestData.all[[i]]
+        TestData[,"ENSEMBLE"] <- output.weightsT["MAXENT"]*TestData[,"MAXENT"] + output.weightsT["MAXNET"]*TestData[,"MAXNET"] +
+            output.weightsT["MAXLIKE"]*TestData[,"MAXLIKE"] + output.weightsT["GBM"]*TestData[,"GBM"] +
+            output.weightsT["GBMSTEP"]*TestData[,"GBMSTEP"] + output.weightsT["RF"]*TestData[,"RF"] + output.weightsT["CF"]*TestData[,"CF"] + output.weightsT["GLM"]*TestData[,"GLM"] +
+            output.weightsT["GLMSTEP"]*TestData[,"GLMSTEP"] + output.weightsT["GAM"]*TestData[,"GAM"] + output.weightsT["GAMSTEP"]*TestData[,"GAMSTEP"] +
+            output.weightsT["MGCV"]*TestData[,"MGCV"] + output.weightsT["MGCVFIX"]*TestData[,"MGCVFIX"] + output.weightsT["EARTH"]*TestData[,"EARTH"] +
+            output.weightsT["RPART"]*TestData[,"RPART"] + output.weightsT["NNET"]*TestData[,"NNET"] + output.weightsT["FDA"]*TestData[,"FDA"] +
+            output.weightsT["SVM"]*TestData[,"SVM"] + output.weightsT["SVME"]*TestData[,"SVME"] + output.weightsT["GLMNET"]*TestData[,"GLMNET"] + 
+            output.weightsT["BIOCLIM.O"]*TestData[,"BIOCLIM.O"] + output.weightsT["BIOCLIM"]*TestData[,"BIOCLIM"] +
+            output.weightsT["DOMAIN"]*TestData[,"DOMAIN"] + output.weightsT["MAHAL"]*TestData[,"MAHAL"]+ output.weightsT["MAHAL01"]*TestData[,"MAHAL01"]
+            eval1 <- eval2 <- NULL
+            TestPres <- as.numeric(TestData[TestData[,"pb"]==1, "ENSEMBLE"])
+            TestAbs <- as.numeric(TestData[TestData[,"pb"]==0, "ENSEMBLE"])
+            eval1 <- dismo::evaluate(p=TestPres, a=TestAbs)
+            output3[i] <- eval1@auc
+    }
+    output3[k+1] <- mean(output3[1:k])
+    cat(paste("\n", "AUC for ensemble models based on suggested input weights", "\n", sep = ""))
+    print(output3)
+    cat(paste(")", "\n", sep=""))
 
     if (SINK==T && OLD.SINK==F) {sink(file=NULL, append=T)}
     if (data.keep == F) {

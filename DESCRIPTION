@@ -1,15 +1,15 @@
 Package: BiodiversityR
 Type: Package
 Title: Package for Community Ecology and Suitability Analysis
-Version: 2.11-1
-Date: 2019-1-31
+Version: 2.11-2
+Date: 2019-6-30
 Author: Roeland Kindt
 Maintainer: Roeland Kindt <R.KINDT@CGIAR.ORG>
 Description: Graphical User Interface (via the R-Commander) and utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website. In 2012, methods for (ensemble) suitability modelling and mapping were expanded in the package.
 License: GPL-2
 URL: http://www.worldagroforestry.org/output/tree-diversity-analysis
-Depends: R (>= 3.2.2), tcltk, vegan (>= 2.5-1)
-Imports: Rcmdr (>= 2.4-4)
+Depends: R (>= 3.2.2), tcltk, vegan (>= 2.5-1), vegan3d, rgl
+Imports: Rcmdr (>= 2.5-3)
 Suggests: permute, lattice, MASS, mgcv, cluster, car, RODBC, rpart,
         effects, multcomp, ellipse, maptree, sp, splancs, spatial,
         akima, nnet, dismo, raster (>= 2.8-19), rgdal, maxlike, gbm,
@@ -17,7 +17,7 @@ Suggests: permute, lattice, MASS, mgcv, cluster, car, RODBC, rpart,
         glmnet, tools, methods, bootstrap, PresenceAbsence, geosphere,
         maptools, ENMeval, red, rgeos, igraph, Rlof, maxnet, party,
         readxl
-Packaged: 2019-02-01 10:10:07 UTC; RKINDT
+Packaged: 2019-06-29 12:27:50 UTC; RKINDT
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2019-02-01 11:13:28 UTC
+Date/Publication: 2019-06-29 13:00:02 UTC
