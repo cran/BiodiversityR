@@ -55,6 +55,8 @@
             cat(paste("\n", "NOTE: not meaningful to provide means as there are no raster files for this stack:", RASTER.stack.name, "\n", sep = ""))
             return(NULL)
         }
+    }else{
+        filename0 <- species_focus
     }
     for (i in 1:length(positive.filters)) {
         ensemble.files <- ensemble.files[grepl(pattern=positive.filters[i], x=ensemble.files)]

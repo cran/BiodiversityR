@@ -23,7 +23,7 @@
             threshold.method <- "ReqSens"
             req.sens <- 1.0
         }
-        result <- PresenceAbsence::optimal.thresholds(data2, threshold=seq(from=0, to=1, by=0.005), req.sens=req.sens)
+        result <- PresenceAbsence::optimal.thresholds(data2, threshold=seq(from=0, to=1, by=0.0001), req.sens=req.sens)
         result2 <- as.numeric(result[, 2])
         names(result2) <- result[, 1]
 

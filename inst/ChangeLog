@@ -15,6 +15,45 @@ BiodiversityR versions
 	is available from https://doi.org/10.1016/j.envsoft.2017.11.009
 
 
+
+Version 2.11-3 (October 2019)
+
+	* New function ensemble.SEDI that calculates the Symmetric Extremal Dependence Index 
+	(SEDI), as formulated by Ferro et al. 2011. Wea. Forecasting 26: 699-713 and
+	recommended as evaluation metric by Wunderlich et al. 2019. Nature Conservation 35: 
+	97-116.
+
+	* New function ensemble.evaluate that calculates the following evaluation statistics:
+	AUC: Area Under The Curve for the testing ModelEvaluation; TSS: maximum value of the 
+	True Skill Statistic over range of threshold values; SEDI: maximum value of the 
+	Symmetric Extremal Dependence Index over range of threshold values; TSS.fixed: True 
+	Skill Statistic at the fixed threshold value; SEDI.fixed: SEDI at the fixed threshold 
+	value; FNR.fixed: False Negative Rate (= omission rate) at the fixed threshold value; 
+	MCR.fixed: Missclassification Rate at the fixed threshold value; and AUCdiff: Difference
+ 	between AUC for calibration and the testing data 
+
+	* Internally call ensemble.evaluate in function ensemble.calibrate.models
+
+	* New function ensemble.VIF.dataframe that provides similar types of Variance Inflation
+	Factor analysis for a data.frame as function ensemble.VIF
+
+	* Decreased the step size for PresenceAbsence threshold calculations in function
+	ensemble.threshold from 0.005 to 0.0001 (as in dismo::evaluate)
+
+	* Corrected an error in function ensemble.mean when RASTER.stack.name=""
+
+	* Methods and examples of generating and using spatial folds for presence and absence
+	points via the blockCV package are available from the BiodiversityRblockCV package 
+	(URL https://github.com/RoelandKindt/BiodiversityRblockCV) through functions 
+	ensemble.spatialBlock and ensemble.envBlock (These functions are in a
+	separate package as blockCV is not available from CRAN). Use the commands
+	devtools::install_github("rvalavi/blockCV") and
+	devtools::install_github("RoelandKindt/BiodiversityRblockCV") to install these packages.
+
+	* example of calculating diversity profiles from importance values calculated with
+	importancevalue.comp (email exchange with Uday Pimple)
+
+
 Version 2.11-2 (June 2019)
 
 	* new function ensemble.environmentalThin.clara that enables environmental thinning for

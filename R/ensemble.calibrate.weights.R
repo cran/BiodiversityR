@@ -108,6 +108,7 @@
     }
 
 # keep data for final output.weights checks with suggested weights
+    TrainData.all <- vector("list", k)
     TestData.all <- vector("list", k)
 
 # create output file
@@ -319,7 +320,17 @@
             output["MAHAL01",k+1+i] <- tests$evaluations$STRATEGY.weights["MAHAL01"]
         }
 
+        TrainData.all[[i]] <- tests$evaluations$TrainData
         TestData.all[[i]] <- tests$evaluations$TestData
+
+        eval.tablei <- tests$eval.table
+        eval.tablei$ALGO <- rownames(eval.tablei)
+        eval.tablei$k <- rep(i, nrow(eval.tablei))
+        if (i==1) {
+            eval.table.all <- eval.tablei
+        }else{
+            eval.table.all <- rbind(eval.table.all, eval.tablei)
+        }
     }
 
     output[,k+1] <- rowMeans(output[,c(1:k)], na.rm=T)
@@ -400,6 +411,16 @@
     names(output2)[1:k] <- paste("T_", c(1:k), sep="")
     names(output2)[k+1] <- c("MEAN.T")
     for (i in 1:k) {
+        TrainData <- TrainData.all[[i]]
+        TrainData[,"ENSEMBLE"] <- output.weights["MAXENT"]*TrainData[,"MAXENT"] + output.weights["MAXNET"]*TrainData[,"MAXNET"] +
+            output.weights["MAXLIKE"]*TrainData[,"MAXLIKE"] + output.weights["GBM"]*TrainData[,"GBM"] +
+            output.weights["GBMSTEP"]*TrainData[,"GBMSTEP"] + output.weights["RF"]*TrainData[,"RF"] + output.weights["CF"]*TrainData[,"CF"] + output.weights["GLM"]*TrainData[,"GLM"] +
+            output.weights["GLMSTEP"]*TrainData[,"GLMSTEP"] + output.weights["GAM"]*TrainData[,"GAM"] + output.weights["GAMSTEP"]*TrainData[,"GAMSTEP"] +
+            output.weights["MGCV"]*TrainData[,"MGCV"] + output.weights["MGCVFIX"]*TrainData[,"MGCVFIX"] + output.weights["EARTH"]*TrainData[,"EARTH"] +
+            output.weights["RPART"]*TrainData[,"RPART"] + output.weights["NNET"]*TrainData[,"NNET"] + output.weights["FDA"]*TrainData[,"FDA"] +
+            output.weights["SVM"]*TrainData[,"SVM"] + output.weights["SVME"]*TrainData[,"SVME"] + output.weights["GLMNET"]*TrainData[,"GLMNET"] + 
+            output.weights["BIOCLIM.O"]*TrainData[,"BIOCLIM.O"] + output.weights["BIOCLIM"]*TrainData[,"BIOCLIM"] +
+            output.weights["DOMAIN"]*TrainData[,"DOMAIN"] + output.weights["MAHAL"]*TrainData[,"MAHAL"]+ output.weights["MAHAL01"]*TrainData[,"MAHAL01"]
         TestData <- TestData.all[[i]]
         TestData[,"ENSEMBLE"] <- output.weights["MAXENT"]*TestData[,"MAXENT"] + output.weights["MAXNET"]*TestData[,"MAXNET"] +
             output.weights["MAXLIKE"]*TestData[,"MAXLIKE"] + output.weights["GBM"]*TestData[,"GBM"] +
@@ -410,11 +431,22 @@
             output.weights["SVM"]*TestData[,"SVM"] + output.weights["SVME"]*TestData[,"SVME"] + output.weights["GLMNET"]*TestData[,"GLMNET"] + 
             output.weights["BIOCLIM.O"]*TestData[,"BIOCLIM.O"] + output.weights["BIOCLIM"]*TestData[,"BIOCLIM"] +
             output.weights["DOMAIN"]*TestData[,"DOMAIN"] + output.weights["MAHAL"]*TestData[,"MAHAL"]+ output.weights["MAHAL01"]*TestData[,"MAHAL01"]
-            eval1 <- eval2 <- NULL
-            TestPres <- as.numeric(TestData[TestData[,"pb"]==1, "ENSEMBLE"])
-            TestAbs <- as.numeric(TestData[TestData[,"pb"]==0, "ENSEMBLE"])
-            eval1 <- dismo::evaluate(p=TestPres, a=TestAbs)
-            output2[i] <- eval1@auc
+            eval1 <- evalT <- NULL
+        TrainPres <- as.numeric(TrainData[TrainData[,"pb"]==1, "ENSEMBLE"])
+        TrainAbs <- as.numeric(TrainData[TrainData[,"pb"]==0, "ENSEMBLE"])
+        evalT <- dismo::evaluate(p=TrainPres, a=TrainAbs)
+        TestPres <- as.numeric(TestData[TestData[,"pb"]==1, "ENSEMBLE"])
+        TestAbs <- as.numeric(TestData[TestData[,"pb"]==0, "ENSEMBLE"])
+        eval1 <- dismo::evaluate(p=TestPres, a=TestAbs)
+        output2[i] <- eval1@auc
+        cat(paste("\n", "Results with final weights for ensemble.evaluate for k = ", i, "\n\n", sep = ""))
+        eval3 <- ensemble.evaluate(eval=eval1, eval.train=evalT)
+        print(eval3)
+        if (i==1) {
+            eval.table.final <- data.frame(t(eval3))
+        }else{
+            eval.table.final <- data.frame(rbind(eval.table.final, t(eval3)))
+        }
     }
     output2[k+1] <- mean(output2[1:k])
     cat(paste("\n", "AUC for ensemble models based on suggested input weights (using presence and background data sets generated for ", k, "-fold cross-validations)",  "\n", sep = ""))
@@ -429,6 +461,16 @@
     names(output3)[1:k] <- paste("T_", c(1:k), sep="")
     names(output3)[k+1] <- c("MEAN.T")
     for (i in 1:k) {
+        TrainData <- TrainData.all[[i]]
+        TrainData[,"ENSEMBLE"] <- output.weightsT["MAXENT"]*TrainData[,"MAXENT"] + output.weightsT["MAXNET"]*TrainData[,"MAXNET"] +
+            output.weightsT["MAXLIKE"]*TrainData[,"MAXLIKE"] + output.weightsT["GBM"]*TrainData[,"GBM"] +
+            output.weightsT["GBMSTEP"]*TrainData[,"GBMSTEP"] + output.weightsT["RF"]*TrainData[,"RF"] + output.weightsT["CF"]*TrainData[,"CF"] + output.weightsT["GLM"]*TrainData[,"GLM"] +
+            output.weightsT["GLMSTEP"]*TrainData[,"GLMSTEP"] + output.weightsT["GAM"]*TrainData[,"GAM"] + output.weightsT["GAMSTEP"]*TrainData[,"GAMSTEP"] +
+            output.weightsT["MGCV"]*TrainData[,"MGCV"] + output.weightsT["MGCVFIX"]*TrainData[,"MGCVFIX"] + output.weightsT["EARTH"]*TrainData[,"EARTH"] +
+            output.weightsT["RPART"]*TrainData[,"RPART"] + output.weightsT["NNET"]*TrainData[,"NNET"] + output.weightsT["FDA"]*TrainData[,"FDA"] +
+            output.weightsT["SVM"]*TrainData[,"SVM"] + output.weightsT["SVME"]*TrainData[,"SVME"] + output.weightsT["GLMNET"]*TrainData[,"GLMNET"] + 
+            output.weightsT["BIOCLIM.O"]*TrainData[,"BIOCLIM.O"] + output.weightsT["BIOCLIM"]*TrainData[,"BIOCLIM"] +
+            output.weightsT["DOMAIN"]*TrainData[,"DOMAIN"] + output.weightsT["MAHAL"]*TrainData[,"MAHAL"]+ output.weightsT["MAHAL01"]*TrainData[,"MAHAL01"]
         TestData <- TestData.all[[i]]
         TestData[,"ENSEMBLE"] <- output.weightsT["MAXENT"]*TestData[,"MAXENT"] + output.weightsT["MAXNET"]*TestData[,"MAXNET"] +
             output.weightsT["MAXLIKE"]*TestData[,"MAXLIKE"] + output.weightsT["GBM"]*TestData[,"GBM"] +
@@ -443,10 +485,19 @@
             TestPres <- as.numeric(TestData[TestData[,"pb"]==1, "ENSEMBLE"])
             TestAbs <- as.numeric(TestData[TestData[,"pb"]==0, "ENSEMBLE"])
             eval1 <- dismo::evaluate(p=TestPres, a=TestAbs)
-            output3[i] <- eval1@auc
+        TrainPres <- as.numeric(TrainData[TrainData[,"pb"]==1, "ENSEMBLE"])
+        TrainAbs <- as.numeric(TrainData[TrainData[,"pb"]==0, "ENSEMBLE"])
+        evalT <- dismo::evaluate(p=TrainPres, a=TrainAbs)
+        TestPres <- as.numeric(TestData[TestData[,"pb"]==1, "ENSEMBLE"])
+        TestAbs <- as.numeric(TestData[TestData[,"pb"]==0, "ENSEMBLE"])
+        eval1 <- dismo::evaluate(p=TestPres, a=TestAbs)
+        output3[i] <- eval1@auc
+        cat(paste("\n", "Results with alternative final weights for ensemble.evaluate for k = ", i, "\n\n", sep = ""))
+        eval3 <- ensemble.evaluate(eval=eval1, eval.train=evalT)
+        print(eval3)
     }
     output3[k+1] <- mean(output3[1:k])
-    cat(paste("\n", "AUC for ensemble models based on suggested input weights", "\n", sep = ""))
+    cat(paste("\n", "AUC for ensemble models based on alternative input weights", "\n", sep = ""))
     print(output3)
     cat(paste(")", "\n", sep=""))
 
@@ -454,7 +505,7 @@
     if (data.keep == F) {
         cat(paste("\n\n"))
         return(list(AUC.table=output, table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, 
-            data=TestData.all, 
+            eval.table.all=eval.table.all, eval.table.final=eval.table.final,
             x=x, p=p.all, a=a.all, MAXENT.a=MAXENT.a, groupp=groupp, groupa=groupa,
             var.names=var.names, factors=factors2, dummy.vars=dummy.vars2, dummy.vars.noDOMAIN=dummy.vars.noDOMAIN,
             species.name=species.name, 
@@ -463,7 +514,7 @@
         cat(paste("\n\n"))
         return(list(data=TestData.all, 
             AUC.table=output, table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, 
-            data=TestData.all, 
+            data=TestData.all, eval.table.all=eval.table.all, eval.table.final=eval.table.final,
             x=x, p=p.all, a=a.all, MAXENT.a=MAXENT.a, groupp=groupp, groupa=groupa,
             var.names=var.names, factors=factors2, dummy.vars=dummy.vars2, dummy.vars.noDOMAIN=dummy.vars.noDOMAIN,
             species.name=species.name, 

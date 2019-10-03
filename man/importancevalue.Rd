@@ -76,6 +76,24 @@ importancevalue(ifri, site='plotID', species='species', count='count',
 importancevalue.comp(ifri, site='plotID', species='species', count='count', 
     basal='basal', factor='forest')
 
+# Calculate diversity profiles from importance values
+imp <- importancevalue.comp(ifri, site='plotID', species='species', 
+    count='count', basal='basal', factor='forest')
+vals <- imp[["values"]]
+for (i in 1:length(vals)) {
+    imp.i <- data.frame(imp[[vals[i]]])
+    name.i <- paste(vals[[i]], ".Renyi", sep="")
+    imp[[name.i]] <- renyi(imp.i$importance.value)
+}
+
+# LOT more diverse
+imp$LOT.Renyi - imp$MCF.Renyi
+imp$LOT.Renyi - imp$YSF.Renyi
+
+# YSF and MCF different richness and evenness
+imp$YSF.Renyi - imp$MCF.Renyi
+
+
 }
 
 \keyword{multivariate} 

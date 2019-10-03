@@ -1110,6 +1110,10 @@
         assign("MAXENT.pa", MAXENT.pa, envir=.BiodiversityR)
     }  
 #
+    eval.table <- as.numeric(rep(NA, 8))
+    names(eval.table) <- c("AUC", "TSS", "SEDI", "TSS.fixed", "SEDI.fixed", "FNR.fixed", "MCR.fixed", "AUCdiff")
+    eval.table <- as.data.frame(t(eval.table))[FALSE, ]
+#
     newVIF <- NULL
     if (VIF == T  && length(names(TrainData.vars)) > 1 ) {
 #        if (! require(car)) {stop("Please install the car package")}
@@ -1290,6 +1294,11 @@
                     print(eval2)
                     weights["MAXENT"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MAXENT"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "MAXENT"
                 }else{
                     cat(paste("\n", "WARNING: MAXENT evaluation failed","\n\n",sep = ""))
                     ws["MAXENT"] <- 0
@@ -1380,6 +1389,11 @@
                     print(eval2)
                     weights["MAXNET"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MAXNET"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "MAXNET"
                 }else{
                     cat(paste("\n", "WARNING: MAXNET evaluation failed","\n\n",sep = ""))
                     ws["MAXNET"] <- 0
@@ -1477,6 +1491,11 @@
                     print(eval2)
                     weights["MAXLIKE"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MAXLIKE"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "MAXLIKE"
                 }else{
                     cat(paste("\n", "WARNING: MAXLIKE evaluation failed","\n\n",sep = ""))
                     ws["MAXLIKE"] <- 0
@@ -1572,6 +1591,11 @@
                     print(eval2)
                     weights["GBM"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GBM"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "GBM"
                 }else{
                     cat(paste("\n", "WARNING: GBM evaluation failed","\n\n",sep = ""))
                     ws["GBM"] <- 0
@@ -1671,6 +1695,11 @@
                     print(eval2)
                     weights["GBMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GBMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "GBMSTEP"
                 }else{
                     cat(paste("\n", "WARNING: stepwise GBM evaluation failed","\n\n",sep = ""))
                     ws["GBMSTEP"] <- 0
@@ -1762,6 +1791,11 @@
                     print(eval2)
                     weights["RF"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["RF"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "RF"
                 }else{
                     cat(paste("\n", "WARNING: random forest evaluation failed","\n\n",sep = ""))
                     ws["RF"] <- 0
@@ -1853,6 +1887,11 @@
                     print(eval2)
                     weights["CF"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["CF"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "CF"
                 }else{
                     cat(paste("\n", "WARNING: random forest evaluation failed","\n\n",sep = ""))
                     ws["CF"] <- 0
@@ -1944,6 +1983,11 @@
                     print(eval2)
                     weights["GLM"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GLM"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "GLM"
                 }else{
                     cat(paste("\n", "WARNING: GLM evaluation failed","\n\n",sep = ""))
                     ws["GLM"] <- 0
@@ -2046,6 +2090,11 @@
                     print(eval2)
                     weights["GLMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GLMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "GLMSTEP"
                 }else{
                     cat(paste("\n", "WARNING: stepwise GLM evaluation failed","\n\n",sep = ""))
                     ws["GLMSTEP"] <- 0
@@ -2138,6 +2187,11 @@
                     print(eval2)
                     weights["GAM"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GAM"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "GAM"
                 }else{
                     cat(paste("\n", "WARNING: GAM (package: gam) evaluation failed","\n\n",sep = ""))
                     ws["GAM"] <- 0
@@ -2246,6 +2300,11 @@
                     print(eval2)
                     weights["GAMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GAMSTEP"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "GAMSTEP"
                 }else{
                     cat(paste("\n", "WARNING: stepwise GAM (package: gam) evaluation failed","\n\n",sep = ""))
                     ws["GAMSTEP"] <- 0
@@ -2340,6 +2399,11 @@
                     print(eval2)
                     weights["MGCV"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MGCV"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "MGCV"
                 }else{
                     cat(paste("\n", "WARNING: GAM (package: mgcv) evaluation failed","\n\n",sep = ""))
                     ws["MGCV"] <- 0
@@ -2431,6 +2495,11 @@
                     print(eval2)
                     weights["MGCVFIX"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MGCVFIX"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "MGCVFIX"
                 }else{
                     cat(paste("\n", "WARNING: GAM with fixed d.f. regression splines (package: mgcv) evaluation failed","\n\n",sep = ""))
                     ws["MGCVFIX"] <- 0
@@ -2525,6 +2594,11 @@
                     print(eval2)
                     weights["EARTH"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["EARTH"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "EARTH"
                 }else{
                     cat(paste("\n", "WARNING: MARS (package: earth) evaluation failed","\n\n",sep = ""))
                     ws["EARTH"] <- 0
@@ -2619,6 +2693,11 @@
                     print(eval2)
                     weights["RPART"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["RPART"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "RPART"
                 }else{
                     cat(paste("\n", "WARNING: RPART evaluation failed","\n\n",sep = ""))
                     ws["RPART"] <- 0
@@ -2712,6 +2791,11 @@
                     print(eval2)
                     weights["NNET"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["NNET"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "NNET"
                 }else{
                     cat(paste("\n", "WARNING: Artificial Neural Network (package: nnet) evaluation failed","\n\n",sep = ""))
                     ws["NNET"] <- 0
@@ -2803,6 +2887,11 @@
                     print(eval2)
                     weights["FDA"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["FDA"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "FDA"
                 }else{
                     cat(paste("\n", "WARNING: Flexible Discriminant Analysis evaluation failed","\n\n",sep = ""))
                     ws["FDA"] <- 0
@@ -2894,6 +2983,11 @@
                     print(eval2)
                     weights["SVM"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["SVM"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "SVM"
                 }else{
                     cat(paste("\n", "WARNING: Support Vector Machines (package: kernlab)  evaluation failed","\n\n",sep = ""))
                     ws["SVM"] <- 0
@@ -2985,6 +3079,11 @@
                     print(eval2)
                     weights["SVME"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["SVME"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "SVME"
                 }else{
                     cat(paste("\n", "WARNING: Support Vector Machines (package: e1071) evaluation failed","\n\n",sep = ""))
                     ws["SVME"] <- 0
@@ -3079,6 +3178,11 @@
                     print(eval2)
                     weights["GLMNET"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["GLMNET"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "GLMNET"
                 }else{
                     cat(paste("\n", "WARNING: GLMNET evaluation failed","\n\n",sep = ""))
                     ws["GLMNET"] <- 0
@@ -3171,6 +3275,11 @@
                     print(eval2)
                     weights["BIOCLIM.O"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["BIOCLIM.O"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "BIOCLIM.O"
                 }else{
                     cat(paste("\n", "WARNING: original BIOCLIM evaluation failed","\n\n",sep = ""))
                     ws["BIOCLIM.O"] <- 0
@@ -3271,6 +3380,11 @@
                     print(eval2)
                     weights["BIOCLIM"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["BIOCLIM"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "BIOCLIM"
                 }else{
                     cat(paste("\n", "WARNING: BIOCLIM evaluation failed","\n\n",sep = ""))
                     ws["BIOCLIM"] <- 0
@@ -3380,6 +3494,11 @@
                     print(eval2)
                     weights["DOMAIN"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["DOMAIN"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "DOMAIN"
                 }else{
                     cat(paste("\n", "WARNING: DOMAIN evaluation failed","\n\n",sep = ""))
                     ws["DOMAIN"] <- 0
@@ -3485,6 +3604,11 @@
                     print(eval2)
                     weights["MAHAL"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MAHAL"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "MAHAL"
                 }else{
                     cat(paste("\n", "WARNING: Mahalanobis evaluation failed","\n\n",sep = ""))
                     ws["MAHAL"] <- 0
@@ -3585,6 +3709,11 @@
                     print(eval2)
                     weights["MAHAL01"] <- max(c(eval2@auc, 0), na.rm=T)
                     AUC.testing["MAHAL01"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "MAHAL01"
                 }else{
                     cat(paste("\n", "WARNING: transformed Mahalanobis evaluation failed","\n\n",sep = ""))
                     ws["MAHAL01"] <- 0
@@ -3708,6 +3837,11 @@
                     eval2 <- dismo::evaluate(p=TestPres, a=TestAbs)
                     print(eval2)
                     AUC.testing["ENSEMBLE"] <- max(c(eval2@auc, 0), na.rm=T)
+                    cat(paste("\n", "Results with ensemble.evaluate", "\n\n", sep = ""))
+                    eval3 <- ensemble.evaluate(eval=eval2, eval.train=eval1)
+                    print(eval3)
+                    eval.table <- data.frame(rbind(eval.table, t(eval3)))
+                    rownames(eval.table)[nrow(eval.table)] <- "ENSEMBLE"
                 }
             }
             if(evaluations.keep==T) {
@@ -3761,8 +3895,8 @@
         ensemble.models <- models
         save(ensemble.models, file=paste(getwd(), "/models/", models$species.name, "_models", sep=""), compress="xz")
     }
-    if (models.keep == F) {models <- NULL}     
-    result <- list(evaluations=evaluations, AUC.calibration=AUC.calibration, AUC.testing=AUC.testing, models=models, VIF=newVIF, call=match.call() )
+    if (models.keep == F) {models <- NULL}
+    result <- list(evaluations=evaluations, eval.table=eval.table, AUC.calibration=AUC.calibration, AUC.testing=AUC.testing, models=models, VIF=newVIF, call=match.call() )
     cat(paste("\n\n"))
     if (SINK==T && OLD.SINK==F) {sink(file=NULL, append=T)}
     if(sum(ws > 0, na.rm=T) > 0){cat(paste("\n", "finished model calibrations (function ensemble.calibrate.models)", "\n\n", sep = ""))}

@@ -133,4 +133,96 @@
         factors=factors, dummy.vars.included=dummy.vars, VIF.final=VIF.result))
 }
 
+`ensemble.VIF.dataframe` <- function(
+    x=NULL, VIF.max=10, keep=NULL,
+    car=TRUE, silent=F
+)
+{
+    if(is.null(x) == T) {stop("value for parameter x is missing (data.frame)")}
+    if(inherits(x, "data.frame") == F) {stop("x is not a data.frame")}
+#
+    VIFcalc <- function(x, var.drops=NULL, car=T, silent=F) {
+        x1 <- x[, (names(x) %in% var.drops) == F]
+        varnames <- names(x1)
+        x1$RandomizedResponse <- x1[sample(nrow(x1)), 1]
+        LM.formula <- as.formula(paste("RandomizedResponse ~ ", paste(varnames, sep="", collapse="+"), sep="", collapse="+"))
 
+        if (car==T && silent==F) {
+            vifresult <- car::vif(lm(formula=LM.formula, data=x1))
+            if (is.null(vifresult) == F) {
+                cat(paste("\n", "Variance inflation (package: car)", "\n", sep = ""))        
+                print(vifresult)
+                cat(paste("\n"))
+            }else{
+               cat(paste("\n", "NOTE: no result from car::vif", "\n", sep = ""))    
+            }
+        }
+
+        if (silent == F) {
+            cat(paste("VIF directly calculated from linear model with focal numeric variable as response", "\n", sep = ""))
+        }
+        newVIF <- numeric(length=length(varnames))
+        newVIF[] <- NA
+        names(newVIF) <- varnames
+        for (i in 1:length(varnames)) {
+            response.name <- varnames[i]
+            explan.names <- varnames[-i]
+            if (is.factor(x[, varnames[i]]) == F) {
+                LM.formula <- as.formula(paste(response.name, "~", paste(explan.names, collapse="+"), sep=""))
+                newVIF[i] <- summary(lm(formula=LM.formula, data=x1))$r.squared
+            }
+        }
+        newVIF <- 1/(1-newVIF)
+        newVIF <- sort(newVIF, decreasing=T, na.last=T)
+        if (silent == F) {print(newVIF)}
+        return(newVIF)
+    }
+#
+    vars <- names(x)
+    nv <- length(vars)
+#
+    result <- data.frame(array(dim=c(nv, nv)))
+    names(result) <- vars
+    row.names(result) <- paste("step_", c(1:nv), sep="")
+#
+    i <- 0
+    VIF.result.max <- Inf
+    var.drops <- NULL
+
+    while(VIF.result.max >= VIF.max) { 
+        VIF.result <- VIFcalc(x, car=car, silent=silent, var.drops=var.drops)
+        i <- i+1
+        for (v in 1:length(VIF.result)) {result[i, which(names(result) == names(VIF.result)[v])] <- VIF.result[which(names(VIF.result) == names(VIF.result)[v])]}
+
+	j <- 1
+	while(names(VIF.result[j]) %in% keep && j <= length(VIF.result)) {j <- j+1}
+	if (j <= length(VIF.result)){
+	    VIF.result.max <- VIF.result[j]
+            var.drops <- c(var.drops, names(VIF.result)[j])
+	}else{
+            VIF.result.max <- VIF.max-1
+        }
+    }
+
+# remove last variable included
+    if (length(var.drops) == 1) {
+        var.drops <- as.character(NULL)
+    }else{
+        nvd <- length(var.drops)-1
+        var.drops <- var.drops[1:nvd]
+    }
+
+    result <- result[rowSums(result, na.rm=T) > 0, , drop=F]
+    vars.included <- names(VIF.result)
+
+    if (silent == F) {
+        cat(paste("\n", "Summary of VIF selection process:", "\n", sep = ""))
+        print(result)
+        cat(paste("\n", "Final selection of variables:", "\n", sep = ""))
+        print(vars.included)
+        cat(paste("\n", sep = ""))
+    }
+
+    return(list(stepwise.results=result, var.drops=var.drops, vars.included=vars.included,
+        VIF.final=VIF.result))
+}

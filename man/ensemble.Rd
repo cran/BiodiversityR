@@ -9,6 +9,7 @@
 \alias{ensemble.strategy}
 \alias{ensemble.threshold}
 \alias{ensemble.VIF}
+\alias{ensemble.VIF.dataframe}
 \alias{ensemble.pairs}
 
 \title{
@@ -206,6 +207,10 @@ ensemble.VIF(x = NULL, a = NULL, an = 10000,
     VIF.max = 10, keep = NULL,
     layer.drops = NULL, factors = NULL, dummy.vars = NULL)
 
+ensemble.VIF.dataframe(x=NULL, 
+    VIF.max=10, keep=NULL,
+    car=TRUE, silent=F)
+
 ensemble.pairs(x = NULL, a = NULL, an = 10000)
 }
 
@@ -353,6 +358,8 @@ ensemble.pairs(x = NULL, a = NULL, an = 10000)
   \item{VIF.max}{ Maximum Variance Inflation Factor of the selected subset of variables. In case that at least one of the variables has VIF larger than VIF.max, then the variable with the highest VIF will be removed in the next step.  }
   \item{keep}{ character vector with names of the variables to be kept.  }
 
+  \item{car}{ Also provide results from \code{\link[car]{vif}}.  }
+  \item{silent}{ Limit textual output.  }
 }
 
 \details{
