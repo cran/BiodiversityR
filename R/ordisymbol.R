@@ -1,5 +1,6 @@
 `ordisymbol` <-
 function(ordiplot, y, factor, col=1, colors=TRUE, pchs=TRUE,
+    rainbow_hcl=TRUE, rainbow_hcl.c=90, rainbow_hcl.l=50, 
     rainbow=TRUE, heat.colors=FALSE, terrain.colors=FALSE, 
     topo.colors=FALSE, cm.colors=FALSE, 
     legend=TRUE, legend.x="topleft", legend.ncol=1, ...) 
@@ -31,6 +32,10 @@ function(ordiplot, y, factor, col=1, colors=TRUE, pchs=TRUE,
     }
     if (cm.colors == T) {
         grDevices::palette(topo.colors(m))
+        colors <- TRUE
+    }
+    if (rainbow_hcl == T) {
+        grDevices::palette(colorspace::rainbow_hcl(m, c=rainbow_hcl.c, l=rainbow_hcl.l))
         colors <- TRUE
     }
     for (i in 1:m) {

@@ -106,13 +106,14 @@
         species.absence[,3] <- as.numeric(species.absence[,3])
         names(species.absence) <- c("species", "x", "y")
     }
+    as.loc <- NULL
     if (is.null(species.absence)==F && ncol(species.absence) == 2) {
         cat(paste("\n", "species.absence was expected to be 3-column data.frame with species, x (e.g., lon) and y (e.g., lat) columns", sep = ""))        
         cat(paste("\n", "only two columns were provided, it is therefore assumed that these reflect x and y coordinates for absence locations to be used for each species run", "\n\n", sep = ""))
         species.absence[,1] <- as.numeric(species.absence[,1])
         species.absence[,2] <- as.numeric(species.absence[,2])
         names(species.absence) <- c("x", "y")
-        as <- species.absence
+        as.loc <- species.absence
     }
 
 #
@@ -195,36 +196,36 @@
     }
 
     if (is.null(species.absence)==F && ncol(species.absence) == 3) {
-        as <- species.absence[species.absence[,1]==focal.species, c(2:3)]
+        as.loc <- species.absence[species.absence[,1]==focal.species, c(2:3)]
     }
 
 # target group sampling
-    if (is.null(as)==F && target.groups==T) {
+    if (is.null(as.loc)==F && target.groups==T) {
         cat(paste("\n", "target group (biased pseudo-absence locations) in centres of cells with locations of all target group species ('species.absence')", "\n\n", sep = ""))
         p.cell <- unique(raster::cellFromXY(x[[1]], ps))
-        a.cell <- unique(raster::cellFromXY(x[[1]], as))
+        a.cell <- unique(raster::cellFromXY(x[[1]], as.loc))
         if (excludep == T) {a.cell <- a.cell[!(a.cell %in% p.cell)]}
-        as <- raster::xyFromCell(x[[1]], cell=a.cell, spatial=F)
+        as.loc <- raster::xyFromCell(x[[1]], cell=a.cell, spatial=F)
    }
 
 # random selection of background locations for each run
-    if (is.null(as)==T) {
+    if (is.null(as.loc)==T) {
         if (target.groups == T) {
             cat(paste("\n", "WARNING: not possible for target group pseudo-absence data as 'species.absence' (locations of all species) not specified", sep = ""))
             cat(paste("\n", "Instead background locations selected randomly", "\n\n", sep = ""))
         }
         if (excludep == T) {
-            as <- dismo::randomPoints(x[[1]], n=an, p=ps, excludep=T)
+            as.loc <- dismo::randomPoints(x[[1]], n=an, p=ps, excludep=T)
         }else{
-            as <- dismo::randomPoints(x[[1]], n=an, p=NULL, excludep=F)
+            as.loc <- dismo::randomPoints(x[[1]], n=an, p=NULL, excludep=F)
         }
     }
 
     assign("ps", ps, envir=.BiodiversityR)
-    assign("as", as, envir=.BiodiversityR)
+    assign("as.loc", as.loc, envir=.BiodiversityR)
 
 #1. first ensemble tests
-    calibration1 <- ensemble.calibrate.weights(x=x, p=ps, a=as, k=k.splits, 
+    calibration1 <- ensemble.calibrate.weights(x=x, p=ps, a=as.loc, k=k.splits, 
         get.block=get.block, block.default=block.default, get.subblocks=get.subblocks,
         SSB.reduce=SSB.reduce, CIRCLES.d=CIRCLES.d,
         CATCH.OFF=CATCH.OFF,

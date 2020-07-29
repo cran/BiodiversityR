@@ -13,6 +13,7 @@ Functions to add some other graphical itmes to ordination diagrams than provided
 
 \usage{
 ordisymbol(ordiplot, y, factor, col = 1, colors = TRUE, pchs = TRUE,
+    rainbow_hcl = TRUE, rainbow_hcl.c = 90, rainbow_hcl.l = 50, 
     rainbow = TRUE, heat.colors = FALSE, terrain.colors = FALSE,
     topo.colors = FALSE, cm.colors = FALSE,
     legend = TRUE, legend.x = "topleft", legend.ncol = 1, ...)
@@ -30,6 +31,9 @@ ordivector(ordiplot, spec, lty=2,...)
   \item{col}{ Colour (as \code{\link[graphics]{points}}). }
   \item{colors}{ Apply different colours to different factor levels }
   \item{pchs}{ Apply different symbols (plotting characters) to different factor levels (as in \code{\link[graphics]{points}})) }
+  \item{rainbow_hcl}{ Use rainbow_hcl colours (\code{\link[colorspace]{rainbow_hcl}})  }
+  \item{rainbow_hcl.c}{ Set the chroma value  }
+  \item{rainbow_hcl.l}{ Set the luminance value  }
   \item{rainbow}{ Use rainbow colours  }
   \item{heat.colors}{ Use heat colours  }
   \item{terrain.colors}{ Use terrain colours  }

@@ -30,7 +30,7 @@
         rainbow <- T
     }
     if (rainbow==T && n > 1) {
-        grDevices::palette(rainbow(n))
+        grDevices::palette(colorspace::rainbow_hcl(m, c=90, l=50))
         for (i in 1:n) {
             if (n<26) {graphics::points(c(1:p), x[i,], pch=i, col=i, cex=cex, type="o")}
             if (n>25) {graphics::points(c(1:p), x[i,], pch=19, col=i, cex=cex, type="o")}

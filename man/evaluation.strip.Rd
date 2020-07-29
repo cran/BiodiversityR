@@ -16,7 +16,8 @@ evaluation.strip.data(xn = NULL, ext = NULL,
 )
 
 evaluation.strip.plot(data, TrainData=NULL,
-    variable.focal = NULL, model.focal = NULL, 
+    variable.focal = NULL, model.focal = NULL,
+    ylim=c(0, 1.25),  
     dev.new.width = 7, dev.new.height = 7, ...
 )
 
@@ -34,6 +35,7 @@ evaluation.strip.plot(data, TrainData=NULL,
   \item{TrainData}{ Data set representing the calibration data set. If provided, then a boxplot will be added for presence locations via \code{\link[graphics]{boxplot}} }
   \item{variable.focal}{ focal explanatory variable for plots with evaluation strips }
   \item{model.focal}{ focal model for plots with evaluation strips }
+  \item{ylim}{ range of Y-axis }
   \item{dev.new.width}{ Width for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
   \item{dev.new.height}{ Heigth for new graphics device (\code{\link[grDevices]{dev.new}}). If < 0, then no new graphics device is opened.  }
   \item{...}{ Other arguments passed to \code{\link[graphics]{plot}} }

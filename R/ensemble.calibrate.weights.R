@@ -1,5 +1,5 @@
 `ensemble.calibrate.weights` <- function(
-    x=NULL, p=NULL,
+    x=NULL, p=NULL, TrainTestData=NULL,
     a=NULL, an=1000, 
     get.block=FALSE, block.default=TRUE, get.subblocks=FALSE, 
     SSB.reduce=FALSE, CIRCLES.d=100000,
@@ -50,13 +50,6 @@
 
 #    if (! require(dismo)) {stop("Please install the dismo package")}
 
-    if(is.null(x) == T) {stop("value for parameter x is missing (RasterStack object)")}
-    if(inherits(x,"RasterStack") == F) {stop("x is not a RasterStack object")}
-    if(is.null(p) == T) {stop("presence locations are missing (parameter p)")}
-    if(is.null(p) == F) {names(p) <- c("x", "y")}
-    if(is.null(a) == F) {names(a) <- c("x", "y")}
-    if(is.null(MAXENT.a) == F) {names(MAXENT.a) <- c("x", "y")}
-#
     if (is.list(k) == F) {
         k <- as.integer(k)
         k.listed <- FALSE
@@ -70,7 +63,16 @@
         k.list <- k
         k <- max(k.list$groupa)
     }
-#
+
+# new option using data.frame
+    if (is.null(TrainTestData == TRUE)) {
+    if(is.null(x) == T) {stop("value for parameter x is missing (RasterStack object)")}
+    if(inherits(x, "RasterStack") == F) {stop("x is not a RasterStack object")}
+    if(is.null(p) == T) {stop("presence locations are missing (parameter p)")}
+    if(is.null(p) == F) {names(p) <- c("x", "y")}
+    if(is.null(a) == F) {names(a) <- c("x", "y")}
+    if(is.null(MAXENT.a) == F) {names(MAXENT.a) <- c("x", "y")}
+
     if (is.null(layer.drops) == F) {
         layer.drops <- as.character(layer.drops)
         if (is.null(x)==F) {x <- raster::dropLayer(x, which(names(x) %in% layer.drops))}
@@ -89,6 +91,17 @@
             }
         }
         if(length(layer.drops) == 0) {layer.drops <- NULL}
+    }
+    } # no data.frame
+
+    if (is.null(TrainTestData) == F) {
+        TrainTestData <- data.frame(TrainTestData)
+        if (names(TrainTestData)[1] !="pb") {stop("first column for TrainTestData should be 'pb' containing presence (1) and absence (0) data")}
+        if (is.null(x) == F) { 
+            if (raster::nlayers(x) != (ncol(TrainTestData)-1)) {
+                cat(paste("\n", "WARNING: different number of explanatory variables in rasterStack and TrainTestData", sep = ""))
+            }
+        }
     }
 #
     output.rownames <- c("MAXENT", "MAXNET", "MAXLIKE", "GBM", "GBMSTEP", "RF", "CF", 
@@ -131,6 +144,10 @@
 # 
 # run ensemble.calibrate.models first to obtain MAXENT.a and var.names
 # also obtain p and a, possibly via target group sampling
+# only do this when no data.frame
+
+    if (is.null(TrainTestData) == TRUE) {
+
     tests <- ensemble.calibrate.models(x=x, 
         p=p, a=a, an=an, pt=NULL, at=NULL, excludep=excludep, target.groups=target.groups,
         k=0, TrainData=NULL, 
@@ -210,10 +227,45 @@
         if (length(groupa) != nrow(a.all)) {cat(paste("WARNING: groupa length (", length(groupa), ") different from number of background observations (", nrow(a.all), ")", "\n", sep = ""))}
     }
 
+    } # no data.frame
+
+    if (is.null(TrainTestData) == FALSE) {
+
+    TrainTest.p <- TrainTestData[TrainTestData[, "pb"] == 1, ]
+    TrainTest.a <- TrainTestData[TrainTestData[, "pb"] == 0, ]
+    var.names <- names(TrainTestData)
+    var.names <- var.names[which(var.names != "pb")]
+    p.all <- NULL
+    a.all <- NULL
+
+    factors2 <- NULL
+    if (is.null(factors) == F) {
+        factors2 <- factors[which(factors %in% var.names)]
+        if (length(factors2) == 0) {factors2 <- NULL}
+    }
+    dummy.vars2 <- NULL
+    if (is.null(dummy.vars) == F) {
+        dummy.vars2 <- dummy.vars[which(dummy.vars %in% var.names)]
+        if (length(dummy.vars2) == 0) {dummy.vars2 <- NULL}
+    }
+
+    if (k.listed == F) {
+        groupp <- dismo::kfold(TrainTest.p, k=k)
+        groupa <- dismo::kfold(TrainTest.a, k=k)
+    }else{
+        groupp <- k.list$groupp
+        groupa <- k.list$groupa
+        if (length(groupp) != nrow(TrainTest.p)) {cat(paste("WARNING: groupp length (", length(groupp), ") different from number of presence observations (", nrow(TrainTest.p), ")", "\n", sep = ""))}
+        if (length(groupa) != nrow(TrainTest.a)) {cat(paste("WARNING: groupa length (", length(groupa), ") different from number of background observations (", nrow(TrainTest.a), ")", "\n", sep = ""))}
+    }
+    } # data.frame
+
 # Start cross-validations
     
     for (i in 1:k){
         cat(paste(species.name, " ", k, "-FOLD CROSS-VALIDATION RUN: ", i, "\n", sep = ""))
+
+    if (is.null(TrainTestData) == TRUE) {
 
             p1 <- p.all[groupp != i,]
             p2 <- p.all[groupp == i,]
@@ -262,6 +314,64 @@
                 GLMNET.nlambda=GLMNET.nlambda, GLMNET.class=GLMNET.class,
                 BIOCLIM.O.fraction=BIOCLIM.O.fraction,
                 MAHAL.shape=MAHAL.shape)
+        
+        } # no data.frame
+        
+    if (is.null(TrainTestData) == FALSE) {
+
+            TrainTest.p1 <- TrainTest.p[groupp != i,]
+            TrainTest.p2 <- TrainTest.p[groupp == i,]
+
+            TrainTest.a1 <- TrainTest.a[groupa != i,]
+            TrainTest.a2 <- TrainTest.a[groupa == i,]
+                        
+            TrainTest.train <- rbind(TrainTest.p1, TrainTest.a1)
+            TrainTest.test <- rbind(TrainTest.p2, TrainTest.a2)            
+
+            tests <- ensemble.calibrate.models(x=NULL, 
+                TrainData=TrainTest.train, TestData=TrainTest.test,
+                p=NULL, a=NULL, pt=NULL, at=NULL, SSB.reduce=SSB.reduce, CIRCLES.d=CIRCLES.d,
+                VIF=VIF, COR=COR,
+                threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, threshold.PresenceAbsence=threshold.PresenceAbsence,
+                PLOTS=PLOTS, CATCH.OFF=CATCH.OFF,
+                evaluations.keep=T, models.keep=F,
+                ENSEMBLE.tune=ENSEMBLE.tune,
+                ENSEMBLE.best=ENSEMBLE.best, ENSEMBLE.min=ENSEMBLE.min, ENSEMBLE.exponent=ENSEMBLE.exponent, ENSEMBLE.weight.min=ENSEMBLE.weight.min,
+                MAXENT=MAXENT, MAXNET=MAXNET, MAXLIKE=MAXLIKE, GBM=GBM, GBMSTEP=GBMSTEP, RF=RF, CF=CF, 
+                GLM=GLM, GLMSTEP=GLMSTEP, GAM=GAM, GAMSTEP=GAMSTEP, MGCV=MGCV, MGCVFIX=MGCVFIX, 
+                EARTH=EARTH, RPART=RPART, NNET=NNET, FDA=FDA, SVM=SVM, SVME=SVME, GLMNET=GLMNET,
+                BIOCLIM.O=BIOCLIM.O, BIOCLIM=BIOCLIM, DOMAIN=DOMAIN, MAHAL=MAHAL, MAHAL01=MAHAL01,
+                PROBIT=PROBIT,  
+                Yweights=Yweights, 
+                factors=factors2, dummy.vars=dummy.vars2,
+                maxit=maxit,
+                MAXENT.a=MAXENT.a, MAXENT.path=MAXENT.path,
+                MAXNET.clamp=MAXNET.clamp, MAXNET.type=MAXNET.type,
+                MAXLIKE.formula=MAXLIKE.formula, MAXLIKE.method=MAXLIKE.method,
+                GBM.formula=GBM.formula, GBM.n.trees=GBM.n.trees, 
+                GBMSTEP.gbm.x=GBMSTEP.gbm.x, GBMSTEP.tree.complexity=GBMSTEP.tree.complexity, 
+                GBMSTEP.learning.rate=GBMSTEP.learning.rate, GBMSTEP.bag.fraction=GBMSTEP.bag.fraction,
+                GBMSTEP.step.size=GBMSTEP.step.size, 
+                RF.formula=RF.formula, RF.ntree=RF.ntree, RF.mtry=RF.mtry, 
+                CF.formula=CF.formula, CF.ntree=CF.ntree, CF.mtry=CF.mtry, 
+                GLM.formula=GLM.formula, GLM.family=GLM.family, 
+                GLMSTEP.k=GLMSTEP.k, GLMSTEP.steps=GLMSTEP.steps, STEP.formula=STEP.formula, 
+                GLMSTEP.scope=GLMSTEP.scope, 
+                GAM.formula=GAM.formula, GAM.family=GAM.family, 
+                GAMSTEP.steps=GAMSTEP.steps, GAMSTEP.scope=GAMSTEP.scope, GAMSTEP.pos=GAMSTEP.pos, 
+                MGCV.formula=MGCV.formula, MGCV.select=MGCV.select, 
+                MGCVFIX.formula=MGCVFIX.formula, 
+                EARTH.formula=EARTH.formula, EARTH.glm=EARTH.glm, 
+                RPART.formula=RPART.formula, RPART.xval=RPART.xval, 
+                NNET.formula=NNET.formula, NNET.size=NNET.size, NNET.decay=NNET.decay,
+                FDA.formula=FDA.formula, 
+                SVM.formula=SVM.formula, 
+                SVME.formula=SVME.formula,
+                GLMNET.nlambda=GLMNET.nlambda, GLMNET.class=GLMNET.class,
+                BIOCLIM.O.fraction=BIOCLIM.O.fraction,
+                MAHAL.shape=MAHAL.shape)        
+                
+        } # data.frame        
 
         dummy.vars.noDOMAIN <- tests$evaluations$dummy.vars.noDOMAIN
 

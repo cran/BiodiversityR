@@ -544,7 +544,8 @@
             results2 <- MAXLIKE.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste("models//", "MAXLIKE_step1", sep="")
+#                fullname2 <- paste("models//", "MAXLIKE_step1", sep="")
+                fullname2 <- paste(fullname, "_step1", sep="")
                 raster::writeRaster(x=pmaxlike, filename=fullname2, progress='text', overwrite=TRUE)
                 explan.stack <- raster::stack(fullname2)
                 names(explan.stack) <- "MAXLIKE"

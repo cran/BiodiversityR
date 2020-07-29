@@ -1,6 +1,6 @@
 `evaluation.strip.plot` <- function(
     data, TrainData=NULL,
-    variable.focal=NULL, model.focal=NULL, 
+    variable.focal=NULL, model.focal=NULL, ylim=c(0, 1.25),
     dev.new.width=7, dev.new.height=7, ...
 ) 
 {
@@ -31,9 +31,9 @@
             graphics::par(mfrow=c(dim1,dim2))
             for (j in 1:n.models) {
                  if (is.null(TrainData)==T  || is.factor(TrainData[, which(names(TrainData) == variable.focal)])==T) {
-                    graphics::plot(data[f,v+2], data[f, 2+vars+j], main=variable.focal, xlab="", ylab=names(data)[2+vars+j], ylim=c(0, 1.25), ...)
+                    graphics::plot(data[f,v+2], data[f, 2+vars+j], main=variable.focal, xlab="", ylab=names(data)[2+vars+j], ylim=ylim, ...)
                 }else{
-                    graphics::plot(data[f,v+2], data[f, 2+vars+j], main=variable.focal, xlab="", ylab=names(data)[2+vars+j], ylim=c(0, 1.25), ...)
+                    graphics::plot(data[f,v+2], data[f, 2+vars+j], main=variable.focal, xlab="", ylab=names(data)[2+vars+j], ylim=ylim, ...)
                     graphics::boxplot(TrainData[, which(names(TrainData) == variable.focal)] ~ TrainData[,"pb"], add=T, horizontal=T)
                 }
             }
@@ -42,9 +42,9 @@
             m <- which(names(data) == model.focal)
             if (dev.new.width > 0 && dev.new.height > 0) {grDevices::dev.new(width=dev.new.width, height=dev.new.height)}
             if (is.null(TrainData)==T  || is.factor(TrainData[, which(names(TrainData) == variable.focal)])==T) {
-                graphics::plot(data[f,v+2], data[f, m], main=variable.focal, xlab="", ylab=names(data)[2+vars+j], ylim=c(0, 1.25), ...)
+                graphics::plot(data[f,v+2], data[f, m], main=variable.focal, xlab="", ylab=model.focal, ylim=ylim, ...)
             }else{
-                graphics::plot(data[f,v+2], data[f, m], main=variable.focal, xlab="", ylab=names(data)[2+vars+j], ylim=c(0, 1.25), ...)
+                graphics::plot(data[f,v+2], data[f, m], main=variable.focal, xlab="", ylab=model.focal, ylim=ylim, ...)
                 graphics::boxplot(TrainData[, which(names(TrainData) == variable.focal)] ~ TrainData[,"pb"], add=T, horizontal=T)
             }
         }
@@ -61,9 +61,9 @@
         for (i in 1:vars) {
             f <- which(data[,1]==i)
             if (is.null(TrainData)==T  || is.factor(TrainData[, which(names(TrainData) == names(data)[i+2])])==T) {
-                graphics::plot(data[f,i+2], data[f, m], main=names(data)[i+2], xlab="", ylab=model.focal, ylim=c(0, 1.25), ...)
+                graphics::plot(data[f,i+2], data[f, m], main=names(data)[i+2], xlab="", ylab=model.focal, ylim=ylim, ...)
             }else{
-                graphics::plot(data[f,i+2], data[f, m], main=names(data)[i+2], xlab="", ylab=model.focal, ylim=c(0, 1.25), ...)
+                graphics::plot(data[f,i+2], data[f, m], main=names(data)[i+2], xlab="", ylab=model.focal, ylim=ylim, ...)
                 varfocal <- names(data)[i+2]
                 graphics::boxplot(TrainData[, which(names(TrainData) == varfocal)] ~ TrainData[,"pb"], add=T, horizontal=T)
             }

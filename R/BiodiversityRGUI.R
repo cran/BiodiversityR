@@ -21,6 +21,7 @@ function(changeLog=FALSE, backward.compatibility.messages=FALSE)
     if (! requireNamespace("rgl")) {stop("Please install the rgl package")}    
     if (! requireNamespace("vegan3d")) {stop("Please install the vegan3d package")}
     if (! requireNamespace("dismo")) {stop("Please install the dismo package")}
+    if (! requireNamespace("colorspace")) {stop("Please install the colorspace package")}
 
     options(Rcmdr=list(etc=file.path(path.package(package="BiodiversityR"),
         "etc"), sort.names=FALSE))

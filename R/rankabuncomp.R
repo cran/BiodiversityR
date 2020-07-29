@@ -29,7 +29,7 @@ function(x, y=NULL, factor=NULL,
         }
         if (legend==T) {legend(graphics::locator(1), legend=levels, pch=c(1:m))}
     }else{
-        grDevices::palette(rainbow(m))
+        grDevices::palette(colorspace::rainbow_hcl(m, c=90, l=50))
         if (scale == "logabun" && all.equal(ylim, c(0, max2)) == T) {ylim <- c(1, max2)}
         rankabunplot(rankabundance(x, y, factor, levels[1]), scale=scale, scaledx=scaledx, type=type, labels=levels[1], xlim=xlim, ylim=ylim, col=1, pch=1, specnames=NULL,...)
         for (i in 2:m) {

@@ -371,7 +371,9 @@
 
     for (i in 1:nvars) {
         if(any(vars[i] == factors) == T) {
-            plot.data.vars[,i+2] <- factor(plot.data.vars[,i+2], levels=models.list$categories[[vars[i]]])
+# corrected NOV 2019, error reported by Viviana Ceccarelli
+            column.i <- which(names(plot.data.vars)==vars[i])
+            plot.data.vars[, column.i] <- factor(plot.data.vars[, column.i], levels=models.list$categories[[vars[i]]])
             plot.data.numvars <- plot.data.numvars[, which(names(plot.data.numvars) != vars[i]), drop=F]
         }
     }
@@ -450,12 +452,13 @@
     }
     if (MAXLIKE > 0) {
         results <- MAXLIKE.OLD
+# corrected NOV 2019, error reported by Viviana Ceccarelli - error caused by MAXLIKE excluding categorical variables
         if (CATCH.OFF == F) {
-            tryCatch(plot.data[,"MAXLIKE"] <- predict(object=results, newdata=plot.data.vars),
+            tryCatch(plot.data[,"MAXLIKE"] <- predict(object=results, newdata=plot.data.numvars),
                 error= function(err) {print(paste("MAXLIKE prediction failed"))},
                 silent=F)
         }else{
-            plot.data[,"MAXLIKE"] <- predict(object=results, newdata=plot.data.vars)
+            plot.data[,"MAXLIKE"] <- predict(object=results, newdata=plot.data.numvars)
         }
         results2 <- MAXLIKE.PROBIT.OLD
         if (is.null(results2) == F) {

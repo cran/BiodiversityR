@@ -100,8 +100,10 @@
     if (is.null(TrainData) == F) {
         TrainData <- data.frame(TrainData)
         if (names(TrainData)[1] !="pb") {stop("first column for TrainData should be 'pb' containing presence (1) and absence (0) data")}
-        if ((is.null(x) == F) && (raster::nlayers(x) != (ncol(TrainData)-1))) {
-            cat(paste("\n", "WARNING: different number of explanatory variables in rasterStack and TrainData", sep = ""))
+        if (is.null(x) == F) { 
+            if (raster::nlayers(x) != (ncol(TrainData)-1)) {
+                cat(paste("\n", "WARNING: different number of explanatory variables in rasterStack and TrainData", sep = ""))
+            }
         }
     }
 
@@ -1076,7 +1078,12 @@
     }
 #
 # make MAXENT.TrainData
+
     if (ws["MAXENT"] > 0 || ws["MAXLIKE"] > 0) {
+    
+# make these work when x is not provided (14-JUNE-2020)    
+    if (is.null(x) == FALSE) {
+    
         if (is.null(MAXENT.a)==T) {
             MAXENT.a <- dismo::randomPoints(x[[1]], n=MAXENT.an, p=p, excludep=T)       
         }
@@ -1104,11 +1111,18 @@
         }
         MAXENT.pa <- as.vector(MAXENT.TrainData[ , "pb"])
         MAXENT.TrainData <- MAXENT.TrainData[, which(names(MAXENT.TrainData) != "pb"), drop=F]
+    }else{
+        MAXENT.pa <- as.vector(TrainData[ , "pb"])
+        MAXENT.TrainData <- TrainData[, which(names(TrainData) != "pb"), drop=F]    
+    }
+
         cat(paste("\n", "Summary of Training data set used for calibration of MAXENT or MAXLIKE model (rows: ", nrow(MAXENT.TrainData),  ", presence locations: ", sum(MAXENT.pa), ")\n", sep = ""))
         print(summary(MAXENT.TrainData))
         assign("MAXENT.TrainData", MAXENT.TrainData, envir=.BiodiversityR)
         assign("MAXENT.pa", MAXENT.pa, envir=.BiodiversityR)
-    }  
+
+    }
+      
 #
     eval.table <- as.numeric(rep(NA, 8))
     names(eval.table) <- c("AUC", "TSS", "SEDI", "TSS.fixed", "SEDI.fixed", "FNR.fixed", "MCR.fixed", "AUCdiff")
@@ -1135,7 +1149,7 @@
             print(vifresult)
         }
         cat(paste("\n", "VIF directly calculated from linear model with focal numeric variable as response", "\n", sep = ""))
-        TrainDataNum <- TrainDataNum[,names(TrainDataNum)!="pb"]
+        TrainDataNum <- TrainDataNum[, names(TrainDataNum)!="pb"]
         varnames <- names(TrainDataNum)
         newVIF <- numeric(length=length(varnames))
         newVIF[] <- NA
@@ -1322,7 +1336,7 @@
             if (no.tests == F) {TestData[,"MAXENT"] <- 0}
         }
     }
-    if(ws["MAXNET"] > 0 && length(names(x)) == 0) {
+    if(ws["MAXNET"] > 0 && length(names(TrainData.vars)) == 0) {
         cat(paste("\n", "WARNING: no explanatory variables available", sep = ""))
         cat(paste("\n", "MAXNET model can therefore not be calibrated", "\n", sep = ""))
         ws["MAXNET"] <- weights["MAXNET"] <- 0
@@ -1419,7 +1433,7 @@
             if (no.tests == F) {TestData[,"MAXNET"] <- 0}
         }
     }
-    if(ws["MAXLIKE"] > 0 && length(names(x)) == 0) {
+    if(ws["MAXLIKE"] > 0 && length(names(MAXENT.TrainData)) == 0) {
         cat(paste("\n", "WARNING: no explanatory variables available", sep = ""))
         cat(paste("\n", "MAXLIKE model can therefore not be calibrated", "\n", sep = ""))
         ws["MAXLIKE"] <- weights["MAXLIKE"] <- 0

@@ -9,10 +9,10 @@ function(x, y="", factor, scale="", method="exact", permutations=100, conditione
     m <- length(groups)
     levels <- names(groups)
     result <- array(NA,dim=c(m,max,3))
-    dimnames(result) <- list(level=levels,obs=c(1:max),c("Sites","Richness","sd"))
+    dimnames(result) <- list(level=levels, obs=c(1:max), c("Sites","Richness","sd"))
     names(dimnames(result)) <- c(factor,"obs","")
     for (i in 1:m) {
-        result1 <- accumresult(x,y,factor,level=levels[i],scale=scale,method=method,permutations=permutations,conditioned=conditioned,gamma=gamma)
+        result1 <- accumresult(x, y, factor, level=levels[i], scale=scale, method=method, permutations=permutations, conditioned=conditioned, gamma=gamma)
         l <- length(result1$sites)
         result[i,c(1:l),1] <- result1$sites
         result[i,c(1:l),2] <- result1$richness
@@ -22,7 +22,7 @@ function(x, y="", factor, scale="", method="exact", permutations=100, conditione
         max <- max(result[,,1],na.rm=T)
         rich <- max(result[,,2],na.rm=T)
         for (i in 1:m) {
-            result1 <- accumresult(x,y,factor,level=levels[i],scale=scale,method=method,permutations=permutations,conditioned=conditioned,gamma=gamma)
+            result1 <- accumresult(x, y, factor, level=levels[i], scale=scale, method=method, permutations=permutations, conditioned=conditioned, gamma=gamma)
             if (plotit == T) {
                 if (i == 1) {addit <- F}
                 if (i > 1) {addit <- T}
@@ -32,7 +32,7 @@ function(x, y="", factor, scale="", method="exact", permutations=100, conditione
                     labels <- ""
                 }
                 if (rainbow==T) {
-                    grDevices::palette(rainbow(m))
+                    grDevices::palette(colorspace::rainbow_hcl(m, c=90, l=50))
                     accumplot(result1, addit=addit, xlab=xlab, ylab=ylab, xlim=xlim, ylim=ylim, labels=labels,
                         col=i, pch=i, type=type, cex.lab=cex.lab, cex.axis=cex.axis,...)
                 }else{
