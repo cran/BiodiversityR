@@ -25,7 +25,7 @@ Although the original survey documented tree species composition of all 1-ha sub
 This dataset is the main dataset used for the examples provided in chapters 6 and 7 of the Tree Diversity Analysis manual (Kindt & Coe, 2005). 
 }
 \source{
-\url{http://www.sciencemag.org/cgi/content/full/295/5555/666/DC1}
+\url{https://science.sciencemag.org/content/suppl/2002/01/24/295.5555.666.DC1}
 }
 
 \references{

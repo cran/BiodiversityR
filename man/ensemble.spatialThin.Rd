@@ -22,7 +22,8 @@ ensemble.spatialThin.quant(x, thin.km = 0.1,
     runs = 100, silent = FALSE, verbose = FALSE, 
     LON.length = 21, LAT.length = 21)
 
-ensemble.environmentalThin(x, predictors.stack = NULL, thin.n = 50,
+ensemble.environmentalThin(x, predictors.stack = NULL, 
+    extracted.data=NULL, thin.n = 50,
     runs = 100, pca.var = 0.95, silent = FALSE, verbose = FALSE,
     return.notRetained = FALSE)
 
@@ -47,6 +48,7 @@ ensemble.outlierThin(x, predictors.stack = NULL, k = 10,
   \item{LAT.length}{ Number of quantile limits to be calculated from latitudes; see also \code{\link[stats]{quantile}}  }
 
   \item{predictors.stack}{ RasterStack object (\code{\link[raster]{stack}}) containing environmental layers that define the environmental space of point observations.  }
+  \item{extracted.data}{ Data set with the environmental data at the point locations. If this data is provided, then this data will be used in the analysis and data will not be extracted from the predictors.stack.  }
   \item{thin.n}{ Target number of environmentally thinned points.  }
   \item{pca.var}{ Minimum number of axes based on the fraction of variance explained (default value of 0.95 indicates that at least 95 percent of variance will be explained on the selected number of axes). Axes and coordinates are obtained from Principal Components Analysis (\code{\link[vegan]{scores}}).  }
 

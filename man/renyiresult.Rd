@@ -88,6 +88,10 @@ Tree diversity analysis: A manual and
 
 \author{Roeland Kindt (World Agroforestry Centre)}
 
+\seealso{
+\code{\link{renyi.long}}, \code{\link{renyicomp.long}}
+}
+
 \examples{
 library(vegan)
 data(dune.env)
@@ -99,6 +103,79 @@ renyiplot(Renyi.1, evenness=FALSE, addit=FALSE, pch=1,col='1', cex=1,
     legend=FALSE)
 ## CLICK IN THE GRAPH TO INDICATE WHERE THE LEGEND NEEDS TO BE PLACED
 ## IN CASE THAT YOU OPT FOR LEGEND=TRUE
+
+\dontrun{
+# ggplot2 plotting method
+
+Renyi.2 <- renyicomp(dune, y=dune.env, factor='Management', 
+  scales=c(0, 0.25, 0.5, 1, 2, 4, 8, Inf), permutations=100, plotit=F)
+Renyi.2
+
+library(ggplot2)
+
+# change the theme
+# possibly need for extrafont::loadfonts(device="win") to have Arial
+# as alternative, use library(ggThemeAssist)
+BioR.theme <- theme(
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid = element_blank(),
+        axis.line = element_line("gray25"),
+        text = element_text(size = 12, family="Arial"),
+        axis.text = element_text(size = 10, colour = "gray25"),
+        axis.title = element_text(size = 14, colour = "gray25"),
+        legend.title = element_text(size = 14),
+        legend.text = element_text(size = 14),
+        legend.key = element_blank())
+
+renyi.long2 <- renyicomp.long(Renyi.2, label.freq=1)
+
+plotgg1 <- ggplot(data=renyi.long2, aes(x=Scales, y=Diversity, ymax=UPR, ymin=LWR)) + 
+    scale_x_discrete() +
+    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +
+    geom_line(data=renyi.long2, aes(x=Obs, colour=Grouping), size=2) +
+    geom_point(data=subset(renyi.long2, labelit==TRUE), 
+        aes(colour=Grouping, shape=Grouping), size=5) +
+    geom_ribbon(data=renyi.long2, aes(x=Obs, colour=Grouping), alpha=0.2, show.legend=FALSE) + 
+    BioR.theme +
+    scale_color_brewer(palette = "Set1") +
+    labs(x=expression(alpha), y = "Diversity", colour = "Management", shape = "Management")
+
+plotgg1
+
+# calculate a separate diversity profile for each site
+Renyi.3 <- renyiresult(dune, evenness=FALSE, method="s", 
+  scales=c(0, 0.25, 0.5, 1, 2, 4, 8, Inf))
+Renyi.3
+
+renyi.long3 <- renyi.long(Renyi.3, env.data=dune.env, label.freq=2)
+
+plotgg2 <- ggplot(data=renyi.long3, aes(x=Scales, y=Diversity, group=Grouping)) + 
+    scale_x_discrete() +
+    scale_y_continuous(sec.axis = dup_axis(name=NULL)) +
+    geom_line(aes(colour=Management), size=2) +
+    geom_point(data=subset(renyi.long3, labelit==TRUE), 
+        aes(colour=Management, shape=Management), size=5) +
+    BioR.theme +
+    scale_color_brewer(palette = "Set1") +
+    labs(x=expression(alpha), y="Diversity", colour="Management")
+
+plotgg2
+
+plotgg3 <- ggplot(data=renyi.long3, aes(x=Scales, y=Diversity, group=Grouping)) + 
+    scale_x_discrete() +
+    scale_y_continuous(sec.axis = dup_axis(name=NULL)) +
+    geom_line(aes(colour=Management), size=1) +
+    geom_point(data=subset(renyi.long3, labelit==TRUE), 
+        aes(colour=Management, shape=Management), size=2) +
+    BioR.theme +
+    scale_color_brewer(palette = "Set1") +
+    facet_wrap(~ Management) +
+    labs(x=expression(alpha), y="Diversity", colour="Management")
+
+plotgg3
+
+} # dontrun
 }
 
 \keyword{multivariate} 

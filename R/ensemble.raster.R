@@ -667,7 +667,8 @@
                     filename=fullname, progress='text', overwrite=TRUE)                
             }
             pgbms <- trunc(1000*pgbms)
-            raster::writeRaster(x=pgbms, filename=fullname, progress='text', overwrite=TRUE)
+# corrected writing in new format (August 2020)
+            raster::writeRaster(x=pgbms, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))

@@ -19,6 +19,7 @@ ensemble.red(x)
 
 ensemble.chull.create(x.pres = NULL, p = NULL, buffer.width = 0.2,
     buffer.maxmins = FALSE, lonlat.dist = FALSE,
+    poly.only = FALSE,
     RASTER.format = "raster", RASTER.datatype = "INT1U", RASTER.NAflag = 255,
     overwrite = TRUE, ...)
 
@@ -44,6 +45,7 @@ ensemble.chull.MSDM(p = NULL, a = NULL, species.name = NULL,
   \item{buffer.width}{ multiplier to create buffer (via \code{\link[rgeos]{gBuffer}}) by multiplying the maximum distance among the presence locations (calculated via \code{\link[raster]{pointDistance}})  }
   \item{buffer.maxmins}{ Calculate the buffer width based on the two neighbouring locations that are furthest apart (maximum of minimum distances from each location).  }
   \item{lonlat.dist}{ Estimate the distance in km for longitude latitude data.  }
+  \item{poly.only}{ Only return the polygon with the convex hull, but do not create the mask layer.  }
   \item{RASTER.format}{ Format of the raster files that will be generated. See \code{\link[raster]{writeFormats}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.datatype}{ Format of the raster files that will be generated. See \code{\link[raster]{dataType}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.NAflag}{ Value that is used to store missing data. See \code{\link[raster]{writeRaster}}.  }

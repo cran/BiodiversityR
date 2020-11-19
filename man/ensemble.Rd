@@ -593,6 +593,7 @@ ensemble.nofactors2 <- ensemble.calibrate.weights(x=predictors,
     Yweights="BIOMOD", 
     formulae.defaults=TRUE)
 ensemble.nofactors2$AUC.table
+ensemble.nofactors2$eval.table.all
 
 # test the result of leaving out one of the variables from the model
 # note that positive differences indicate that the model without the variable 

@@ -21,7 +21,8 @@ export(BiodiversityRGUI, check.datasets, check.ordiscores, spatialsample, makeco
     ensemble.spatialThin.quant, ensemble.environmentalThin, ensemble.outlierThin, ensemble.environmentalThin.clara,
     ensemble.evaluate, ensemble.SEDI, ensemble.VIF.dataframe,
     import.with.readxl,
-    ensemble.PET.season, ensemble.chull.buffer.distances, ensemble.chull.MSDM, 
+    ensemble.PET.season, ensemble.chull.buffer.distances, ensemble.chull.MSDM,
+    sites.long, species.long, centroids.long, axis.long, accumcomp.long, renyicomp.long, renyi.long, ordisurfgrid.long, vectorfit.long,
     .onAttach)
 
 if(tools:::.OStype() == "windows") {

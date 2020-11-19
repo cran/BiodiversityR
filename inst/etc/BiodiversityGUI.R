@@ -1280,11 +1280,13 @@ accumGUI <- function(){
     tkconfigure(methodBox, yscrollcommand=function(...) tkset(methodScroll, ...))
     methods <- c("exact", "exact (unconditioned)", "random", "rarefaction", "coleman", "collector",
         "arrhenius", "gleason", "gitay", "lomolino", "asymp", "gompertz", "michaelis-menten", "logis", "weibull",
-        "specslope", "poolaccum", "estaccumR", "rarefy", "drarefy", "rareslope")
-    permVariable <- tclVar("100")
+        "specslope", "poolaccum", "estaccumR", "rarefy", "drarefy", "rareslope", "rarecurve")
+    permVariable <- tclVar("999")
     permutation <- tkentry(method2Frame, width=10, textvariable=permVariable)
     for (x in methods) tkinsert(methodBox, "end", x)
     optionFrame <- tkframe(choicesFrame)
+    ggplotVariable <- tclVar("0")
+    ggplotCheckBox <- tkcheckbutton(optionFrame, variable=ggplotVariable)
     addVariable <- tclVar("0")
     addCheckBox <- tkcheckbutton(optionFrame, variable=addVariable)
     xlist <- tclVar("")
@@ -1331,6 +1333,7 @@ accumGUI <- function(){
         ci <- tclvalue(cia)
         cex <- tclvalue(cexa)
         var2 <- svariables[as.numeric(tkcurselection(scaleBox))+1]
+        col <- tclvalue(colour)
         if (var2 == "sites") {
             scale <- paste(", scale=''", sep="")
             xlab <- paste(", xlab='sites'", sep="")
@@ -1409,6 +1412,9 @@ accumGUI <- function(){
         if (method == "rareslope") {
             command <- paste("rareslope(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")))", sep="")
         }
+        if (method == "rarecurve") {
+            command <- paste("rarecurve(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), col='", col, "')", sep="")
+        }
         logger(paste(modelValue, " <- ", command, sep=""))
         assign(modelValue, justDoIt(command), envir=.GlobalEnv)
         doItAndPrint(paste(modelValue))
@@ -1416,10 +1422,29 @@ accumGUI <- function(){
             doItAndPrint(paste("coef(", modelValue, ")", sep=""))
             doItAndPrint(paste("fitted(", modelValue, ")", sep=""))
         }
-  }
+    }
     onPlot <- function(){
         modelValue <- tclvalue(modelName)
         method <- methods[as.numeric(tkcurselection(methodBox))+1]
+        ggplotit <- tclvalue(ggplotVariable) == "1"
+        
+        if (ggplotit==T) {
+
+        logger(paste("    "))
+        logger(paste("Please note that plotting requires a result from function 'accumcomp'."))
+        logger(paste("Such results are obtained when selecting a factor from the Subset options."))
+        logger(paste("    "))        
+        justDoIt(paste("library(ggplot2)", sep=""))
+        logger(paste("library(ggplot2)", sep=""))
+
+        doItAndPrint("BioR.theme <- theme(panel.background = element_blank(),    panel.border = element_blank(),    panel.grid = element_blank(),    axis.line = element_line('gray25'),    text = element_text(size = 12),    axis.text = element_text(size = 10, colour = 'gray25'),    axis.title = element_text(size = 14, colour = 'gray25'),    legend.title = element_text(size = 14),    legend.text = element_text(size = 14),    legend.key = element_blank()   )")
+
+        doItAndPrint(paste("plotgg1 <- ggplot(data=accumcomp.long(", modelValue, "), aes(x = Sites, y = Richness, ymax =  UPR, ymin= LWR)) +    scale_x_continuous(expand=c(0, 1), sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_line(aes(colour=Grouping), size=2) +    geom_point(aes(colour=Grouping, shape=Grouping), size=5) +     geom_ribbon(aes(colour=Grouping), alpha=0.2, show.legend=FALSE) +    BioR.theme +    scale_color_brewer(palette = 'Set1') +    labs(x = 'Sites', y = 'Species', colour = 'Factor', shape= 'Factor')", sep=""))
+
+        doItAndPrint("plotgg1")
+        
+        }else{
+        
         addit <- tclvalue(addVariable) == "1" 
         xlim <- tclvalue(xlist)
         if (xlim != "") {xlim <- paste(", xlim=c(", xlim, ")", sep="")}
@@ -1451,9 +1476,10 @@ accumGUI <- function(){
                 doItAndPrint(paste("points(fitted(", modelValue, ") ~ Accum.1$sites, col='", col, "', pch=", pch, ")", sep=""))
             }
         }
-        if (method %in% c("rarefy", "drarefy", "rareslope")) {
-            doItAndPrint(paste("rarecurve(", .communityDataSet, ", col=colorspace::rainbow_hcl(nrow(", .communityDataSet, "), c=90, l=50))", sep=""))
+        if (method %in% c("rarefy", "drarefy", "rareslope", "rarecurve")) {
+            doItAndPrint(paste("rarecurve(", .communityDataSet, ", sample=min(rowSums(", .communityDataSet, ")), col='", col, "')", sep=""))
         }
+        } # ggplotit
         activateMenus()
         tkfocus(CommanderWindow())
     }
@@ -1486,13 +1512,14 @@ accumGUI <- function(){
     tkgrid(subset1Frame, sticky="w")
     tkgrid(subset2Frame, sticky="w")
     tkgrid(tklabel(optionFrame, text="Plot options"), sticky="w")
-    tkgrid(addCheckBox, tklabel(optionFrame, text="add plot"), sticky="w")
-    tkgrid(tklabel(optionFrame, text="x limits:               ", width=15), xEntry, sticky="w")
-    tkgrid(tklabel(optionFrame, text="y limits:               ", width=15), yEntry, sticky="w")
-    tkgrid(tklabel(optionFrame, text="ci:                    ", width=15), ciEntry, sticky="w")
-    tkgrid(tklabel(optionFrame, text="symbol:                 ", width=15), symbolEntry, sticky="w")
-    tkgrid(tklabel(optionFrame, text="cex:                    ", width=15), cexEntry, sticky="w")
-    tkgrid(tklabel(optionFrame, text="colour:                 ", width=15), colourEntry, sticky="w")
+    tkgrid(ggplotCheckBox, tklabel(optionFrame, text="ggplot (accumcomp)  "), sticky="e")
+    tkgrid(addCheckBox, tklabel(optionFrame,    text="add plot            "), sticky="e")
+    tkgrid(tklabel(optionFrame, text="x limits: ", width=10), xEntry, sticky="w")
+    tkgrid(tklabel(optionFrame, text="y limits: ", width=10), yEntry, sticky="w")
+    tkgrid(tklabel(optionFrame, text="ci:       ", width=10), ciEntry, sticky="w")
+    tkgrid(tklabel(optionFrame, text="symbol:   ", width=10), symbolEntry, sticky="w")
+    tkgrid(tklabel(optionFrame, text="cex:      ", width=10), cexEntry, sticky="w")
+    tkgrid(tklabel(optionFrame, text="colour:   ", width=10), colourEntry, sticky="w")
     tkgrid(methodFrame, tklabel(choicesFrame, text="", width=1), option2Frame, sticky="w")
     tkgrid(subsetFrame, tklabel(choicesFrame, text="", width=1), optionFrame, sticky="w")
     tkgrid(choicesFrame, sticky="w")
@@ -1733,6 +1760,8 @@ rankabunGUI <- function(){
     tkconfigure(scaleBox, yscrollcommand=function(...) tkset(scaleScroll, ...))
     scales <- c("abundance", "proportion", "logabun", "accumfreq")
     for (x in scales) tkinsert(scaleBox, "end", x)
+    ggplotVariable <- tclVar("0")
+    ggplotCheckBox <- tkcheckbutton(option2Frame, variable=ggplotVariable)
     radVariable <- tclVar("0")
     radCheckBox <- tkcheckbutton(option2Frame, variable=radVariable)
     addVariable <- tclVar("0")
@@ -1779,6 +1808,25 @@ rankabunGUI <- function(){
     onPlot <- function(){
         modelValue <- tclvalue(modelName)
         var <- variables[as.numeric(tkcurselection(subsetBox))+1]
+        ggplotit <- tclvalue(ggplotVariable) == "1"
+        
+        if (ggplotit==T) {
+        logger(paste("    "))
+        logger(paste("Please note that plotting requires a result from function 'rankabuncomp'."))
+        logger(paste("Such results are obtained when selecting a factor from the Subset options."))
+        logger(paste("    "))        
+        justDoIt(paste("library(ggplot2)", sep=""))
+        logger(paste("library(ggplot2)", sep=""))
+
+        doItAndPrint("BioR.theme <- theme(panel.background = element_blank(),    panel.border = element_blank(),    panel.grid = element_blank(),    axis.line = element_line('gray25'),    text = element_text(size = 12),    axis.text = element_text(size = 10, colour = 'gray25'),    axis.title = element_text(size = 14, colour = 'gray25'),    legend.title = element_text(size = 14),    legend.text = element_text(size = 14),    legend.key = element_blank()   )")
+
+        doItAndPrint(paste("plotgg1 <- ggplot(data=", modelValue, ", aes(x = rank, y = abundance)) +    scale_x_continuous(expand=c(0, 1), sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(expand=c(0, 1), sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_line(aes(colour=Grouping), size=1) +    geom_point(aes(colour=Grouping, shape=Grouping), size=5, alpha=0.5) +    BioR.theme +    scale_color_brewer(palette = 'Set1') +    labs(x = 'rank', y = 'abundance', colour = 'Factor', shape= 'Factor')", sep=""))
+
+        doItAndPrint("plotgg1")
+        
+        }else{
+
+
         radfit <- tclvalue(radVariable) == "1"
         addit <- tclvalue(addVariable) == "1"
         scale <- scales[as.numeric(tkcurselection(scaleBox))+1]
@@ -1801,6 +1849,7 @@ rankabunGUI <- function(){
                 doItAndPrint(paste("rankabunplot(", modelValue, ",scale='", scale, "', addit=", addit, ", labels='", sub, "'", xlim, ylim, ", specnames=c(1,2,3))", sep=""))
             }
         }
+        } # ggplotit
     }
     onCancel <- function() {
         tkgrab.release(top)
@@ -1825,10 +1874,11 @@ rankabunGUI <- function(){
     tkgrid(subset2Frame, sticky="w")
     tkgrid(tklabel(option1Frame, text="Plot options"), sticky="w")
     tkgrid(scaleBox, scaleScroll,sticky="w")
-    tkgrid(radCheckBox, tklabel(option2Frame, text="fit RAD"), sticky="w")
-    tkgrid(addCheckBox, tklabel(option2Frame, text="add plot"), sticky="w")
-    tkgrid(tklabel(option2Frame, text="x limits:               ", width=20), xEntry, sticky="w")
-    tkgrid(tklabel(option2Frame, text="y limits:               ", width=20), yEntry, sticky="w")
+    tkgrid(ggplotCheckBox, tklabel(option2Frame, text="ggplot (rankabuncomp)  "), sticky="e")
+    tkgrid(radCheckBox, tklabel(option2Frame, text="fit RAD"), sticky="e")
+    tkgrid(addCheckBox, tklabel(option2Frame, text="add plot"), sticky="e")
+    tkgrid(tklabel(option2Frame, text="x limits: ", width=10), xEntry, sticky="w")
+    tkgrid(tklabel(option2Frame, text="y limits: ", width=10), yEntry, sticky="w")
     tkgrid(option1Frame, sticky="w")
     tkgrid(option2Frame, sticky="w")
     tkgrid(subsetFrame, tklabel(choicesFrame, text="", width=1), optionFrame, sticky="w")
@@ -1872,11 +1922,13 @@ renyiGUI <- function(){
     scalelist <- tclVar("0, 0.25, 0.5, 1, 2, 4, 8, Inf")
     scaleFrame <- tkframe(choicesFrame)
     scaleEntry <- tkentry(scaleFrame, width=40, textvariable=scalelist)
-    permVariable <- tclVar("100")
+    permVariable <- tclVar("999")
     permutation <- tkentry(scaleFrame, width=10, textvariable=permVariable)
     optionFrame <- tkframe(choicesFrame)
     evenVariable <- tclVar("0")
     evenCheckBox <- tkcheckbutton(optionFrame, variable=evenVariable)
+    ggplotVariable <- tclVar("0")
+    ggplotCheckBox <- tkcheckbutton(optionFrame, variable=ggplotVariable)
     addVariable <- tclVar("0")
     addCheckBox <- tkcheckbutton(optionFrame, variable=addVariable)
     ylist <- tclVar("")
@@ -1946,6 +1998,7 @@ renyiGUI <- function(){
         modelValue <- tclvalue(modelName)
         method <- methods[as.numeric(tkcurselection(methodBox))+1]
         evenness <- tclvalue(evenVariable) == "1"
+        ggplotit <- tclvalue(ggplotVariable) == "1"
         addit <- tclvalue(addVariable) == "1"
         ylim <- tclvalue(ylist)
         if (ylim != "") {ylim <- paste(", ylim=c(", ylim, ")", sep="")}
@@ -1954,6 +2007,24 @@ renyiGUI <- function(){
         cex <- tclvalue(cexa)
         var <- variables[as.numeric(tkcurselection(subsetBox))+1]
         sub <- tclvalue(subset)
+
+        if (ggplotit==T) {
+
+        logger(paste("    "))
+        logger(paste("Please note that plotting requires a result from function 'renyicomp'."))
+        logger(paste("Such results are obtained when selecting a factor from the Subset options and the 'renyi accumulation' method from the Methods options."))
+        logger(paste("    "))        
+        justDoIt(paste("library(ggplot2)", sep=""))
+        logger(paste("library(ggplot2)", sep=""))
+
+        doItAndPrint("BioR.theme <- theme(panel.background = element_blank(),    panel.border = element_blank(),    panel.grid = element_blank(),    axis.line = element_line('gray25'),    text = element_text(size = 12),    axis.text = element_text(size = 10, colour = 'gray25'),    axis.title = element_text(size = 14, colour = 'gray25'),    legend.title = element_text(size = 14),    legend.text = element_text(size = 14),    legend.key = element_blank()   )")
+
+        doItAndPrint(paste("plotgg1 <- ggplot(data=renyicomp.long(", modelValue, "), aes(x = Scales, y = Diversity, ymax =  UPR, ymin= LWR)) +    scale_x_discrete() +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_line(data=renyicomp.long(", modelValue, "), aes(x=Obs, colour=Grouping), size=2) +    geom_point(aes(colour=Grouping, shape=Grouping), size=5) +     geom_ribbon(data=renyicomp.long(", modelValue, "), aes(x=Obs, colour=Grouping), alpha=0.2, show.legend=FALSE) +    BioR.theme +    scale_color_brewer(palette = 'Set1') +    labs(x = expression(alpha), y = 'Diversity', colour = 'Factor', shape= 'Factor')", sep=""))
+
+        doItAndPrint("plotgg1")
+
+        }else{
+
         if (method=="renyi accumulation" || method=="tsallis accumulation") {
             justDoIt(paste("persp(", modelValue, ")", sep=""))
             logger(paste("persp(", modelValue, ")", sep=""))
@@ -1975,6 +2046,9 @@ renyiGUI <- function(){
             justDoIt(paste("plot(", modelValue, ")", sep=""))
             logger(paste("plot(", modelValue, ")", sep=""))
         }
+        
+        } # ggplotit
+        
     }
     onCancel <- function() {
         tkgrab.release(top)
@@ -2003,12 +2077,13 @@ renyiGUI <- function(){
     tkgrid(subset1Frame, sticky="w")
     tkgrid(subset2Frame, sticky="w")
     tkgrid(tklabel(optionFrame, text="Plot options"), sticky="w")
+    tkgrid(ggplotCheckBox, tklabel(optionFrame, text="ggplot (renyicomp)"), sticky="w")
     tkgrid(evenCheckBox, tklabel(optionFrame, text="evenness profile"), sticky="w")
     tkgrid(addCheckBox, tklabel(optionFrame, text="add plot"), sticky="w")
-    tkgrid(tklabel(optionFrame, text="y limits:               ", width=20), yEntry, sticky="w")
-    tkgrid(tklabel(optionFrame, text="symbol:                 ", width=20), symbolEntry, sticky="w")
-    tkgrid(tklabel(optionFrame, text="colour:                 ", width=20), colourEntry, sticky="w")
-    tkgrid(tklabel(optionFrame, text="cex:                    ", width=20), cexEntry, sticky="w")
+    tkgrid(tklabel(optionFrame, text="y limits: ", width=10), yEntry, sticky="w")
+    tkgrid(tklabel(optionFrame, text="symbol:   ", width=10), symbolEntry, sticky="w")
+    tkgrid(tklabel(optionFrame, text="colour:   ", width=10), colourEntry, sticky="w")
+    tkgrid(tklabel(optionFrame, text="cex:      ", width=10), cexEntry, sticky="w")
     tkgrid(methodFrame, tklabel(choicesFrame, text="", width=1), scaleFrame, sticky="w")
     tkgrid(subsetFrame, tklabel(choicesFrame, text="", width=1), optionFrame, sticky="w")
     tkgrid(choicesFrame, sticky="w")
@@ -3440,7 +3515,8 @@ unconordiGUI <- function(){
         "ordibubble (continuous)", "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation",
         "ordicluster", "ordicluster2", "ordispantree", "ordinearest", "ordiequilibriumcircle", "screeplot",
         "distance displayed", "coenocline", "stressplot",
-        "orditkplot sites", "orditkplot species", "orditkplot pointlabel", "orglspider (factor)", "orglellipse (factor)")
+        "orditkplot sites", "orditkplot species", "orditkplot pointlabel", "orglspider (factor)", "orglellipse (factor)",
+        "ordiplot", "ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (add species)", "ggplot (add vector)")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
     choice <- tkentry(plot3Frame, width=10, textvariable=choicesVariable)
@@ -3751,7 +3827,8 @@ unconordiGUI <- function(){
         varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", axisvar, ")", sep="")), envir=.GlobalEnv)
         if (plottype %in% c("envfit", "ordihull (factor)", "ordihull (factor, rainbow)", "ordihull (factor, polygon)", "ordiarrows (factor)", "ordiarrows (factor, rainbow)", "ordisegments (factor)", "ordisegments (factor, rainbow)", "ordispider (factor)", "ordispider (factor, rainbow)", "ordibar (factor)", "ordibar (factor, rainbow)",
                 "ordiellipse (factor)", "ordiellipse (factor, rainbow)", "ordiellipse (factor, ehull)", "ordiellipse (factor, polygon)", "ordisurf (continuous)", "ordibubble (continuous)", 
-                "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation")){
+                "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation", 
+                "ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (add species)", "ggplot (add vector)")){
             justDoIt(paste("attach(", .activeDataSet, ", warn.conflicts=F)", sep=""))
             logger(paste("attach(", .activeDataSet, ", warn.conflicts=F)",sep=""))
         }
@@ -3968,6 +4045,85 @@ unconordiGUI <- function(){
             justDoIt(paste("with(", .activeDataSet, ", orglellipse(", modelValue, ", groups=", axisvar, ", kind='ehull', col=c(1:max(as.numeric(", axisvar, ")))))", sep=""))
               logger(paste("with(", .activeDataSet, ", orglellipse(", modelValue, ", groups=", axisvar, ", kind='ehull', col=c(1:max(as.numeric(", axisvar, ")))))", sep=""))
         }
+        if (plottype %in% c("ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)")){
+            logger(paste("    ")) 
+            logger(paste("Note that ggplot options use the 'ordiplot' plot named 'plot1'")) 
+            logger(paste("More examples are available from the documentation for 'sites.long'")) 
+            logger(paste("    "))        
+            justDoIt(paste("library(ggplot2)", sep=""))
+            logger(paste("library(ggplot2)", sep=""))
+            doItAndPrint("BioR.theme <- theme(panel.background = element_blank(),    panel.border = element_blank(),    panel.grid = element_blank(),    axis.line = element_line('gray25'),    text = element_text(size = 12),    axis.text = element_text(size = 10, colour = 'gray25'),    axis.title = element_text(size = 14, colour = 'gray25'),    legend.title = element_text(size = 14),    legend.text = element_text(size = 14),    legend.key = element_blank()   )") 
+            logger(paste("    "))                    
+            logger(paste("sites1 <- sites.long(plot1, env.data=", .activeDataSet, ")", sep=""))
+            assign("sites1", justDoIt(paste("sites.long(plot1, env.data=", .activeDataSet, ")", sep="")), envir=.GlobalEnv)
+            if (method %in% c("PCoA", "PCoA (Cailliez)")) {
+                logger(paste("axislabs <- axis.long(", modelValue, ", choices=c(", choices, "), cmdscale.model=T)", sep=""))
+                assign("axislabs", justDoIt(paste("axis.long(", modelValue, ", choices=c(", choices, "), cmdscale.model=T)", sep="")), envir=.GlobalEnv)         
+            }else{
+                logger(paste("axislabs <- axis.long(", modelValue, ", choices=c(", choices, "))", sep=""))
+                assign("axislabs", justDoIt(paste("axis.long(", modelValue, ", choices=c(", choices, "))", sep="")), envir=.GlobalEnv)                      
+            }
+        }
+        if (plottype == "ggplot (ordisymbol1)"){
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, shape=", axisvar, ", colour=", axisvar, "), size=5) +    BioR.theme +    scale_color_brewer(palette = 'Set1') +    labs(colour='", axisvar, "') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }
+        if (plottype == "ggplot (ordisymbol2)"){
+            justDoIt(paste("library(ggrepel)", sep=""))
+            logger(paste("library(ggrepel)", sep=""))
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, shape=", axisvar, ", colour=", axisvar, "), size=5) +    geom_label_repel(data=sites1, aes(x=axis1, y=axis2, label=labels, colour=", axisvar, "), size=4, show.legend=FALSE) +    BioR.theme +    scale_color_brewer(palette = 'Set1') +    labs(colour='", axisvar, "') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }
+        if (plottype == "ggplot (ordispider1)"){
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, colour=", axisvar, ", shape=", axisvar, "), size=5) +    geom_point(data=centroids.long(sites1, grouping=", axisvar, ", centroids.only=TRUE), aes(x=axis1c, y=axis2c, colour=Centroid, shape=Centroid), size=10, show.legend=FALSE) +    geom_segment(data=centroids.long(sites1, grouping=", axisvar, "),    aes(x=axis1c, y=axis2c, xend=axis1, yend=axis2, colour=", axisvar, "), size=1, show.legend=FALSE) +    BioR.theme +    scale_color_brewer(palette = 'Set1') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }   
+        if (plottype == "ggplot (ordispider2)"){
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, colour=", axisvar, ", shape=", axisvar, "), size=5) +    geom_segment(data=centroids.long(sites1, grouping=", axisvar, "),    aes(x=axis1c, y=axis2c, xend=axis1, yend=axis2, colour=", axisvar, "), size=1, show.legend=FALSE) +    BioR.theme +    scale_color_brewer(palette = 'Set1') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }          
+        if (plottype == "ggplot (ordisurf1)"){
+            justDoIt(paste("library(ggrepel)", sep=""))
+            logger(paste("library(ggrepel)", sep=""))
+            logger(paste("axis.grid <- ordisurfgrid.long(ordisurf(plot1, y=", axisvar, "))", sep=""))
+            assign("axis.grid", justDoIt(paste("ordisurfgrid.long(ordisurf(plot1, y=", axisvar, "))", sep="")), envir=.GlobalEnv) 
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_contour_filled(data=axis.grid, aes(x=x, y=y, z=z)) +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, size=", axisvar, "), shape=21, colour='black', fill='red') +    geom_label_repel(data=sites1, aes(x=axis1, y=axis2, label=labels), colour='red', size=4) +    BioR.theme +    scale_fill_viridis_d() +    scale_size(range=c(1, 10)) +    labs(fill='", axisvar, "') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }  
+        if (plottype == "ggplot (ordisurf2)"){
+            justDoIt(paste("library(ggrepel)", sep=""))
+            logger(paste("library(ggrepel)", sep=""))
+            logger(paste("axis.grid <- ordisurfgrid.long(ordisurf(plot1, y=", axisvar, "))", sep=""))
+            assign("axis.grid", justDoIt(paste("ordisurfgrid.long(ordisurf(plot1, y=", axisvar, "))", sep="")), envir=.GlobalEnv) 
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_contour(data=axis.grid, aes(x=x, y=y, z=z, colour=factor(after_stat(level))), size=2) +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, size=", axisvar, "), shape=21, colour='black', fill='red') +    geom_label_repel(data=sites1, aes(x=axis1, y=axis2, label=labels), colour='black', size=4) +    BioR.theme +    scale_colour_viridis_d() +    scale_size(range=c(1, 10)) +    labs(colour='", axisvar, "') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }
+        if (plottype == "ggplot (add species)"){
+            justDoIt(paste("library(ggrepel)", sep=""))
+            logger(paste("library(ggrepel)", sep=""))
+
+            logger(paste("spec.envfit <- envfit(plot1, env=", .communityDataSet, ")", sep=""))
+            assign("spec.envfit", justDoIt(paste("envfit(plot1, env=", .communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            logger(paste("spec.data1 <- data.frame(r=spec.envfit$vectors$r, p=spec.envfit$vectors$pvals)", sep=""))
+            assign("spec.data1", justDoIt(paste("data.frame(r=spec.envfit$vectors$r, p=spec.envfit$vectors$pvals)", sep="")), envir=.GlobalEnv)
+            logger(paste("species1 <- species.long(plot1, spec.data=spec.data1)", sep=""))
+            assign("species1", justDoIt(paste("species.long(plot1, spec.data=spec.data1)", sep="")), envir=.GlobalEnv)
+
+            doItAndPrint(paste("plotgg2 <- plotgg1 +    geom_segment(data=subset(species1, r > 0.6), aes(x=0, y=0, xend=axis1*2, yend=axis2*2), colour='black', size=1.2, arrow=arrow()) +    geom_label_repel(data=subset(species1, r > 0.6), aes(x=axis1*2, y=axis2*2, label=labels), colour='black')", sep=""))
+            doItAndPrint(paste("plotgg2"))
+        }         
+        if (plottype == "ggplot (add vector)"){
+            justDoIt(paste("library(ggrepel)", sep=""))
+            logger(paste("library(ggrepel)", sep=""))
+
+            logger(paste("env.envfit <- envfit(plot1, env=", .activeDataSet, ")", sep=""))
+            assign("env.envfit", justDoIt(paste("envfit(plot1, env=", .activeDataSet, ")", sep="")), envir=.GlobalEnv)
+            logger(paste("vectors1 <- vectorfit.long(env.envfit)", sep=""))
+            assign("vectors1", justDoIt(paste("vectorfit.long(env.envfit)", sep="")), envir=.GlobalEnv)
+
+            doItAndPrint(paste("plotgg2 <- plotgg1 +    geom_segment(data=subset(vectors1, vector = ", axisvar, "), aes(x=0, y=0, xend=axis1*1.1, yend=axis2*1.1), colour='black', size=1.2, arrow=arrow()) +    geom_label_repel(data=subset(vectors1, vector = ", axisvar, "), aes(x=axis1*1.1, y=axis2*1.1, label=vector), colour='black')", sep=""))
+            doItAndPrint(paste("plotgg2"))
+        }                 
         data <- tclvalue(dataVariable) =="1"
         if (data==T) {
             justDoIt(paste(.activeDataSet, "$", modelValue, ".ax1 <- scores(plot1, display='sites')[,1]", sep=""))
@@ -4078,7 +4234,7 @@ conordiGUI <- function(){
     treatasdistCheckBox <- tkcheckbutton(method3Frame, variable=treatasdistVariable)
     scalingVariable <- tclVar("species")
     scale <- tkentry(method4Frame, width=10, textvariable=scalingVariable)
-    permVariable <- tclVar("100")
+    permVariable <- tclVar("999")
     permutation <- tkentry(method4Frame, width=10, textvariable=permVariable)
     xFrame <- tkframe(top, relief="groove", borderwidth=2)
     x1Frame <- tkframe(xFrame)
@@ -4108,7 +4264,8 @@ conordiGUI <- function(){
         "ordiellipse (factor)", "ordiellipse (factor, rainbow)", "ordiellipse (factor, ehull)", "ordiellipse (factor, polygon)", "ordisurf (continuous)",
         "ordibubble (continuous)", "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", 
         "ordivector (species)", "ordivector interpretation", "ordicluster", "ordicluster2",
-        "ordinearest", "ordispantree", "ordiresids", "distance displayed", "coenocline", "screeplot", "stressplot", "orditkplot sites", "orditkplot species", "orditkplot pointlabel", "orglspider (factor)", "orglellipse (factor)")
+        "ordinearest", "ordispantree", "ordiresids", "distance displayed", "coenocline", "screeplot", "stressplot", "orditkplot sites", "orditkplot species", "orditkplot pointlabel", "orglspider (factor)", "orglellipse (factor)",
+        "ordiplot", "ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (add species)", "ggplot (add vector)")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
     choice <- tkentry(plot3Frame, width=10, textvariable=choicesVariable)
@@ -4552,7 +4709,8 @@ conordiGUI <- function(){
         varfactor <- eval(parse(text=paste("is.factor(",.activeDataSet, "$", axisvar, ")", sep="")), envir=.GlobalEnv)
         if (plottype %in% c("envfit", "ordihull (factor)", "ordihull (factor, rainbow)", "ordihull (factor, polygon)", "ordiarrows (factor)", "ordiarrows (factor, rainbow)", "ordisegments (factor)", "ordisegments (factor, rainbow)", "ordispider (factor)", "ordispider (factor, rainbow)", "ordibar (factor)", "ordibar (factor, rainbow)",
                 "ordiellipse (factor)", "ordiellipse (factor, rainbow)", "ordiellipse (factor, ehull)", "ordiellipse (factor, polygon)", "ordisurf (continuous)", "ordibubble (continuous)", 
-                "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation")){
+                "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation", 
+                "ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (add species)", "ggplot (add vector)")){
             justDoIt(paste("attach(", .activeDataSet, ", warn.conflicts=F)", sep=""))
             logger(paste("attach(", .activeDataSet, ", warn.conflicts=F)",sep=""))
         }
@@ -4738,7 +4896,89 @@ conordiGUI <- function(){
         }
         if (plottype == "stressplot"){
             doItAndPrint(paste("stressplot(", modelValue ,")", sep=""))
-            }           
+        }
+        if (plottype %in% c("ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)")){
+            logger(paste("    ")) 
+            logger(paste("Note that ggplot options use the 'ordiplot' plot named 'plot1'")) 
+            logger(paste("More examples are available from the documentation for 'sites.long'")) 
+            logger(paste("    "))        
+            justDoIt(paste("library(ggplot2)", sep=""))
+            logger(paste("library(ggplot2)", sep=""))
+            doItAndPrint("BioR.theme <- theme(panel.background = element_blank(),    panel.border = element_blank(),    panel.grid = element_blank(),    axis.line = element_line('gray25'),    text = element_text(size = 12),    axis.text = element_text(size = 10, colour = 'gray25'),    axis.title = element_text(size = 14, colour = 'gray25'),    legend.title = element_text(size = 14),    legend.text = element_text(size = 14),    legend.key = element_blank()   )") 
+            logger(paste("    "))                    
+            logger(paste("sites1 <- sites.long(plot1, env.data=", .activeDataSet, ")", sep=""))
+            assign("sites1", justDoIt(paste("sites.long(plot1, env.data=", .activeDataSet, ")", sep="")), envir=.GlobalEnv)
+            if (method %in% c("CAPdiscrim")) {
+                logger(paste("axislabs <- axis.long(", modelValue, ", choices=c(", choices, "), CAPdiscrim.model=T)", sep=""))
+                assign("axislabs", justDoIt(paste("axis.long(", modelValue, ", choices=c(", choices, "), CAPdiscrim.model=T)", sep="")), envir=.GlobalEnv)         
+            }else{
+                logger(paste("axislabs <- axis.long(", modelValue, ", choices=c(", choices, "))", sep=""))
+                assign("axislabs", justDoIt(paste("axis.long(", modelValue, ", choices=c(", choices, "))", sep="")), envir=.GlobalEnv)                      
+            }
+        }
+        if (plottype == "ggplot (ordisymbol1)"){
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, shape=", axisvar, ", colour=", axisvar, "), size=5) +    BioR.theme +    scale_color_brewer(palette = 'Set1') +    labs(colour='", axisvar, "') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }
+        if (plottype == "ggplot (ordisymbol2)"){
+            justDoIt(paste("library(ggrepel)", sep=""))
+            logger(paste("library(ggrepel)", sep=""))
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, shape=", axisvar, ", colour=", axisvar, "), size=5) +    geom_label_repel(data=sites1, aes(x=axis1, y=axis2, label=labels, colour=", axisvar, "), size=4, show.legend=FALSE) +    BioR.theme +    scale_color_brewer(palette = 'Set1') +    labs(colour='", axisvar, "') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }
+        if (plottype == "ggplot (ordispider1)"){
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, colour=", axisvar, ", shape=", axisvar, "), size=5) +    geom_point(data=centroids.long(sites1, grouping=", axisvar, ", centroids.only=TRUE), aes(x=axis1c, y=axis2c, colour=Centroid, shape=Centroid), size=10, show.legend=FALSE) +    geom_segment(data=centroids.long(sites1, grouping=", axisvar, "),    aes(x=axis1c, y=axis2c, xend=axis1, yend=axis2, colour=", axisvar, "), size=1, show.legend=FALSE) +    BioR.theme +    scale_color_brewer(palette = 'Set1') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }   
+        if (plottype == "ggplot (ordispider2)"){
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, colour=", axisvar, ", shape=", axisvar, "), size=5) +    geom_segment(data=centroids.long(sites1, grouping=", axisvar, "),    aes(x=axis1c, y=axis2c, xend=axis1, yend=axis2, colour=", axisvar, "), size=1, show.legend=FALSE) +    BioR.theme +    scale_color_brewer(palette = 'Set1') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }          
+        if (plottype == "ggplot (ordisurf1)"){
+            justDoIt(paste("library(ggrepel)", sep=""))
+            logger(paste("library(ggrepel)", sep=""))
+            logger(paste("axis.grid <- ordisurfgrid.long(ordisurf(plot1, y=", axisvar, "))", sep=""))
+            assign("axis.grid", justDoIt(paste("ordisurfgrid.long(ordisurf(plot1, y=", axisvar, "))", sep="")), envir=.GlobalEnv) 
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_contour_filled(data=axis.grid, aes(x=x, y=y, z=z)) +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, size=", axisvar, "), shape=21, colour='black', fill='red') +    geom_label_repel(data=sites1, aes(x=axis1, y=axis2, label=labels), colour='red', size=4) +    BioR.theme +    scale_fill_viridis_d() +    scale_size(range=c(1, 10)) +    labs(fill='", axisvar, "') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }  
+        if (plottype == "ggplot (ordisurf2)"){
+            justDoIt(paste("library(ggrepel)", sep=""))
+            logger(paste("library(ggrepel)", sep=""))
+            logger(paste("axis.grid <- ordisurfgrid.long(ordisurf(plot1, y=", axisvar, "))", sep=""))
+            assign("axis.grid", justDoIt(paste("ordisurfgrid.long(ordisurf(plot1, y=", axisvar, "))", sep="")), envir=.GlobalEnv) 
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_contour(data=axis.grid, aes(x=x, y=y, z=z, colour=factor(after_stat(level))), size=2) +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, size=", axisvar, "), shape=21, colour='black', fill='red') +    geom_label_repel(data=sites1, aes(x=axis1, y=axis2, label=labels), colour='black', size=4) +    BioR.theme +    scale_colour_viridis_d() +    scale_size(range=c(1, 10)) +    labs(colour='", axisvar, "') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }
+        if (plottype == "ggplot (add species)"){
+            justDoIt(paste("library(ggrepel)", sep=""))
+            logger(paste("library(ggrepel)", sep=""))
+
+            logger(paste("spec.envfit <- envfit(plot1, env=", .communityDataSet, ")", sep=""))
+            assign("spec.envfit", justDoIt(paste("envfit(plot1, env=", .communityDataSet, ")", sep="")), envir=.GlobalEnv)
+            logger(paste("spec.data1 <- data.frame(r=spec.envfit$vectors$r, p=spec.envfit$vectors$pvals)", sep=""))
+            assign("spec.data1", justDoIt(paste("data.frame(r=spec.envfit$vectors$r, p=spec.envfit$vectors$pvals)", sep="")), envir=.GlobalEnv)
+            logger(paste("species1 <- species.long(plot1, spec.data=spec.data1)", sep=""))
+            assign("species1", justDoIt(paste("species.long(plot1, spec.data=spec.data1)", sep="")), envir=.GlobalEnv)
+
+            doItAndPrint(paste("plotgg2 <- plotgg1 +    geom_segment(data=subset(species1, r > 0.6), aes(x=0, y=0, xend=axis1*2, yend=axis2*2), colour='black', size=1.2, arrow=arrow()) +    geom_label_repel(data=subset(species1, r > 0.6), aes(x=axis1*2, y=axis2*2, label=labels), colour='black')", sep=""))
+            doItAndPrint(paste("plotgg2"))
+        }         
+        if (plottype == "ggplot (add vector)"){
+            justDoIt(paste("library(ggrepel)", sep=""))
+            logger(paste("library(ggrepel)", sep=""))
+
+            logger(paste("env.envfit <- envfit(plot1, env=", .activeDataSet, ")", sep=""))
+            assign("env.envfit", justDoIt(paste("envfit(plot1, env=", .activeDataSet, ")", sep="")), envir=.GlobalEnv)
+            logger(paste("vectors1 <- vectorfit.long(env.envfit)", sep=""))
+            assign("vectors1", justDoIt(paste("vectorfit.long(env.envfit)", sep="")), envir=.GlobalEnv)
+
+            doItAndPrint(paste("plotgg2 <- plotgg1 +    geom_segment(data=subset(vectors1, vector = ", axisvar, "), aes(x=0, y=0, xend=axis1*1.1, yend=axis2*1.1), colour='black', size=1.2, arrow=arrow()) +    geom_label_repel(data=subset(vectors1, vector = ", axisvar, "), aes(x=axis1*1.1, y=axis2*1.1, label=vector), colour='black')", sep=""))
+            doItAndPrint(paste("plotgg2"))
+        }           
+        
+        
+                   
         data <- tclvalue(dataVariable) =="1"
         if (data==T) {
             justDoIt(paste(.activeDataSet, "$", modelValue, ".ax1 <- scores(plot1,display='sites')[,1]", sep=""))
@@ -5245,7 +5485,7 @@ mantelGUI <- function(){
     treatasdistCheckBox <- tkcheckbutton(method5Frame, variable=treatasdistVariable)
     plotVariable <- tclVar("0")
     plotCheckBox <- tkcheckbutton(method5Frame, variable=plotVariable)
-    permVariable <- tclVar("100")
+    permVariable <- tclVar("999")
     perma <- tkentry(method5Frame, width=10, textvariable=permVariable)
     methodBox <- tklistbox(method6Frame, width=27, height=3,
         selectmode="single", background="white", exportselection="FALSE") 
@@ -5354,8 +5594,9 @@ mantelGUI <- function(){
                     logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))
                     assign("distmatrix1", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
                 }
-                doItAndPrint(paste("betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', bias.adjust=F, sqrt.dist=F, add=F)",sep=""))
-                doItAndPrint(paste("anova(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, add=F))",sep=""))
+                doItAndPrint(paste("betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', bias.adjust=F, sqrt.dist=F, add=F)", sep=""))
+                doItAndPrint(paste("anova(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, add=F))", sep=""))
+                doItAndPrint(paste("permutest(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, add=F), pairwise=T, permutations=", permutations, ")", sep=""))
             }
         }
         if (test == "betadisper (factor, lingoes)" && var2 != "all") {
@@ -5371,8 +5612,9 @@ mantelGUI <- function(){
                     logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))
                     assign("distmatrix1", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
                 }
-                doItAndPrint(paste("betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', bias.adjust=F, sqrt.dist=F, add='lingoes')",sep=""))
-                doItAndPrint(paste("anova(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, add='lingoes'))",sep=""))
+                doItAndPrint(paste("betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', bias.adjust=F, sqrt.dist=F, add='lingoes')", sep=""))
+                doItAndPrint(paste("anova(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, add='lingoes'))", sep=""))
+                doItAndPrint(paste("permutest(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, add='lingoes'), pairwise=T, permutations=", permutations, ")", sep=""))
             }
         }
         if (test == "betadisper (factor, cailliez)" && var2 != "all") {
@@ -5388,8 +5630,9 @@ mantelGUI <- function(){
                     logger(paste("distmatrix1 <- as.dist(", .communityDataSet, ")", sep=""))
                     assign("distmatrix1", justDoIt(paste("as.dist(",.communityDataSet, ")", sep="")), envir=.GlobalEnv)
                 }
-                doItAndPrint(paste("betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, bias.adjust=F, add='cailliez')",sep=""))
-                doItAndPrint(paste("anova(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, add='cailliez'))",sep=""))
+                doItAndPrint(paste("betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, bias.adjust=F, add='cailliez')", sep=""))
+                doItAndPrint(paste("anova(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, add='cailliez'))", sep=""))
+                doItAndPrint(paste("permutest(betadisper(distmatrix1, group=", .activeDataSet, "$", var2, ", type='centroid', sqrt.dist=F, add='cailliez'), pairwise=T, permutations=", permutations, ")", sep=""))
             }
         }
         if (test == "meandist (factor)" && var2 != "all") {
@@ -5511,7 +5754,7 @@ allcitations <- function() {
 }
 
 browseTDAwebsite <- function() {
-    browseURL("http://www.worldagroforestry.org/treesandmarkets/tree_diversity_analysis.asp")
+    browseURL("https://www.worldagroforestry.org/output/tree-diversity-analysis")
 }
 
 browseTDAmanual <- function() {

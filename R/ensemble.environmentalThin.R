@@ -1,5 +1,6 @@
 `ensemble.environmentalThin` <- function(
-    x, predictors.stack=NULL, thin.n=50, runs=100, pca.var=0.95, 
+    x, predictors.stack=NULL, extracted.data=NULL,
+    thin.n=50, runs=100, pca.var=0.95, 
     silent=FALSE, verbose=FALSE,
     return.notRetained=FALSE
 ) 
@@ -59,8 +60,14 @@
     }
 #
 # create background data
-    background.data <- raster::extract(predictors.stack, x)
-    background.data <- data.frame(background.data)
+    if (is.null(extracted.data) == TRUE) {
+        background.data <- raster::extract(predictors.stack, x)
+        background.data <- data.frame(background.data)
+    }else{
+        if (nrow(x) != nrow(extracted.data)) {stop("WARNING: different row numbers of coordinates and extracted.data")}
+        background.data <- extracted.data
+    }
+        
     TrainValid <- complete.cases(background.data)
     x <- x[TrainValid,]
     background.data <- background.data[TrainValid,]

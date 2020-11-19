@@ -1,16 +1,19 @@
 `ensemble.chull.create` <- function(
     x.pres=NULL, p=NULL, buffer.width=0.2, buffer.maxmins=FALSE, lonlat.dist=FALSE,
+    poly.only=FALSE,
     RASTER.format="raster", RASTER.datatype="INT1U", RASTER.NAflag=255,
     overwrite=TRUE,
     ...
 )
 {
 #   if (! require(dismo)) {stop("Please install the dismo package")}
-    if(is.null(x.pres) == T) {stop("value for argument x.pres is missing (RasterLayer object)")}
-    if(inherits(x.pres, "RasterLayer") == F) {stop("x.pres is not a RasterLayer object")}
-    x <- x.pres
-    if (raster::maxValue(x) > 1) {
-        cat(paste("Warning: base.raster has values larger than 1, hence does not provide presence-absence", sep=""))
+    if (poly.only == F) {
+        if(is.null(x.pres) == T) {stop("value for argument x.pres is missing (RasterLayer object)")}
+        if(inherits(x.pres, "RasterLayer") == F) {stop("x.pres is not a RasterLayer object")}
+        x <- x.pres
+        if (raster::maxValue(x) > 1) {
+            cat(paste("Warning: base.raster has values larger than 1, hence does not provide presence-absence", sep=""))
+        }
     }
     if(is.null(p) == T) {stop("presence locations are missing")}
     names(p) <- c("x", "y")
@@ -50,6 +53,17 @@
         maxdist <- maxdist1 * buffer.width
     }
     poly <- rgeos::gBuffer(poly, width=maxdist)
+#
+    if (buffer.maxmins == FALSE) {
+        cat(paste("\n", "Buffer around convex hull of ", maxdist, " (", buffer.width, " * ", maxdist1, ", where ", maxdist1 , " is the maximum distance among presence locations)", "\n", sep=""))
+        if (lonlat.dist == TRUE) {cat(paste("This maximum distance corresponds to a distance in km of: ", maxdist2/1000, "\n"))}
+    }else{
+        cat(paste("\n", "Buffer around convex hull of ", maxdist, " (", buffer.width, " * ", maxdist1, ", where ", maxdist1 , " is the maximum of the distances to the closest neighbour for each presence location)", "\n", sep=""))
+        if (lonlat.dist == TRUE) {cat(paste("This maximum distance corresponds to a distance in km of: ", maxdist2/1000, "\n"))}
+    }
+    
+    if (poly.only == TRUE) {return(list(convex.hull=poly))}    
+    
 # modification ended
     patches <- raster::clump(x, gaps=F)
     selPatches <- raster::unique(raster::extract(patches, poly, df=T, weights=T)$clumps)
@@ -60,14 +74,6 @@
     allPatches[selPatches, 2] <- 1
     patches <- raster::subs(patches, allPatches)
     raster::setMinMax(patches)
-#
-    if (buffer.maxmins == FALSE) {
-        cat(paste("\n", "Buffer around convex hull of ", maxdist, " (", buffer.width, " * ", maxdist1, ", where ", maxdist1 , " is the maximum distance among presence locations)", "\n", sep=""))
-        if (lonlat.dist == TRUE) {cat(paste("This maximum distance corresponds to a distance in km of: ", maxdist2/1000, "\n"))}
-    }else{
-        cat(paste("\n", "Buffer around convex hull of ", maxdist, " (", buffer.width, " * ", maxdist1, ", where ", maxdist1 , " is the maximum of the distances to the closest neighbour for each presence location)", "\n", sep=""))
-        if (lonlat.dist == TRUE) {cat(paste("This maximum distance corresponds to a distance in km of: ", maxdist2/1000, "\n"))}
-    }
 #
 # save
     raster.name <- names(x)
