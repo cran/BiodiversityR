@@ -4,6 +4,7 @@
 \alias{centroids.long}
 \alias{vectorfit.long}
 \alias{ordisurfgrid.long}
+\alias{ordiellipse.long}
 \alias{axis.long}
 \alias{accumcomp.long}
 \alias{renyicomp.long}
@@ -26,6 +27,8 @@ vectorfit.long(z)
 
 ordisurfgrid.long(z)
 
+ordiellipse.long(z, grouping.name = "Grouping")
+
 axis.long(w, choices = c(1, 2), cmdscale.model=FALSE, CAPdiscrim.model=FALSE)
 
 accumcomp.long(x, ci = 2, label.freq = 1)
@@ -43,7 +46,8 @@ renyi.long(x, env.data=NULL, label.freq = 1)
   \item{grouping}{ Variable defining the centroids }
   \item{FUN}{ A function to compute the summary statistics which can be applied to all data subsets, as in \code{\link[stats]{aggregate}} }
   \item{centroids.only}{ Return the coordinates for the centroids }
-  \item{z}{ Result of \code{\link[vegan]{envfit}} or \code{\link[vegan]{ordisurf}}  }
+  \item{z}{ Result of \code{\link[vegan]{envfit}}, \code{\link[vegan]{ordisurf}} or \code{\link[vegan]{ordiellipse}}  }
+  \item{grouping.name}{ Name for the categorical variable, expected as the factor used in the earlier ordiellipse call. }
   \item{w}{ Ordination object from which the \code{\link[vegan]{ordiplot}} was obtained, expected to be fitted in vegan.  }
   \item{choices}{ Ordination axes selected, as in \code{\link[vegan]{ordiplot}} }
   \item{cmdscale.model}{ Use \code{TRUE} is the model was fitted via \code{\link[stats]{cmdscale}} }
@@ -69,7 +73,13 @@ Tree diversity analysis: A manual and
   software for common statistical methods for ecological and
   biodiversity studies.
  
-  \url{http://www.worldagroforestry.org/output/tree-diversity-analysis} }   
+  \url{https://www.worldagroforestry.org/output/tree-diversity-analysis} 
+
+\url{https://rpubs.com/Roeland-KINDT}
+
+}   
+
+
 
 \author{Roeland Kindt}
 
@@ -256,6 +266,35 @@ plotgg5 <- ggplot(data=sites2, aes(x=axis1, y=axis2)) +
 
 plotgg5
 
+# adding ellipse via ordiellipse
+
+plot3 <- ordiplot(Ordination.model1, choices=c(1,2), scaling='species')
+axislabs <- axis.long(Ordination.model1, choices=c(1 , 2))
+
+Management.ellipses <- ordiellipse(plot3, groups=Management, display="sites", kind="sd")
+Management.ellipses.long2 <- ordiellipse.long(Management.ellipses, grouping.name="Management")
+
+plotgg6 <- ggplot() + 
+    geom_vline(xintercept = c(0), color = "grey70", linetype = 2) +
+    geom_hline(yintercept = c(0), color = "grey70", linetype = 2) +  
+    xlab(axislabs[1, "label"]) +
+    ylab(axislabs[2, "label"]) +  
+    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +
+    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +
+    geom_polygon(data=Management.ellipses.long2, 
+                   aes(x=axis1, y=axis2, colour=Management, 
+                       fill=after_scale(alpha(colour, 0.2))), 
+              size=0.2, show.legend=FALSE) +
+    geom_point(data=sites1, aes(x=axis1, y=axis2, colour=Management, shape=Management), 
+        size=5) +
+    geom_segment(data=centroids.long(sites1, grouping=Management), 
+        aes(x=axis1c, y=axis2c, xend=axis1, yend=axis2, colour=Management), 
+        size=1, show.legend=FALSE) +
+    BioR.theme +
+    ggsci::scale_colour_npg() +
+    coord_fixed(ratio=1)
+
+plotgg6
 
 } # dontrun
 }

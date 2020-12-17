@@ -19,13 +19,11 @@ This dataset describes the abundance (number of trees with diameter at breast he
     \item{\code{Faramea.occidentalis}}{a numeric vector}
   }
 }
+
 \details{
 Although the original survey documented tree species composition of all 1-ha subplots of larger (over 1 ha) sample plot, only the first (and sometimes the last) quadrats of the larger plots were included. This selection was made to avoid that larger sample plots dominated the analysis. This selection of sites is therefore different from the selection of the 50 1-ha quadrats of the largest sample plot of the same survey (\code{\link[vegan]{BCI}} and \code{\link{BCI.env}})
  
 This dataset is the main dataset used for the examples provided in chapters 6 and 7 of the Tree Diversity Analysis manual (Kindt & Coe, 2005). 
-}
-\source{
-\url{https://science.sciencemag.org/content/suppl/2002/01/24/295.5555.666.DC1}
 }
 
 \references{
@@ -38,7 +36,7 @@ Tree diversity analysis: A manual and
   software for common statistical methods for ecological and
   biodiversity studies.
  
-  \url{http://www.worldagroforestry.org/output/tree-diversity-analysis} 
+  \url{https://www.worldagroforestry.org/output/tree-diversity-analysis} 
 
 }
 \examples{

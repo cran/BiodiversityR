@@ -3516,7 +3516,7 @@ unconordiGUI <- function(){
         "ordicluster", "ordicluster2", "ordispantree", "ordinearest", "ordiequilibriumcircle", "screeplot",
         "distance displayed", "coenocline", "stressplot",
         "orditkplot sites", "orditkplot species", "orditkplot pointlabel", "orglspider (factor)", "orglellipse (factor)",
-        "ordiplot", "ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (add species)", "ggplot (add vector)")
+        "ordiplot", "ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (ordiellipse)", "ggplot (add species)", "ggplot (add vector)")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
     choice <- tkentry(plot3Frame, width=10, textvariable=choicesVariable)
@@ -3828,7 +3828,7 @@ unconordiGUI <- function(){
         if (plottype %in% c("envfit", "ordihull (factor)", "ordihull (factor, rainbow)", "ordihull (factor, polygon)", "ordiarrows (factor)", "ordiarrows (factor, rainbow)", "ordisegments (factor)", "ordisegments (factor, rainbow)", "ordispider (factor)", "ordispider (factor, rainbow)", "ordibar (factor)", "ordibar (factor, rainbow)",
                 "ordiellipse (factor)", "ordiellipse (factor, rainbow)", "ordiellipse (factor, ehull)", "ordiellipse (factor, polygon)", "ordisurf (continuous)", "ordibubble (continuous)", 
                 "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation", 
-                "ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (add species)", "ggplot (add vector)")){
+                "ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (add species)", "ggplot (ordiellipse)", "ggplot (add vector)")){
             justDoIt(paste("attach(", .activeDataSet, ", warn.conflicts=F)", sep=""))
             logger(paste("attach(", .activeDataSet, ", warn.conflicts=F)",sep=""))
         }
@@ -4045,7 +4045,7 @@ unconordiGUI <- function(){
             justDoIt(paste("with(", .activeDataSet, ", orglellipse(", modelValue, ", groups=", axisvar, ", kind='ehull', col=c(1:max(as.numeric(", axisvar, ")))))", sep=""))
               logger(paste("with(", .activeDataSet, ", orglellipse(", modelValue, ", groups=", axisvar, ", kind='ehull', col=c(1:max(as.numeric(", axisvar, ")))))", sep=""))
         }
-        if (plottype %in% c("ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)")){
+        if (plottype %in% c("ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (ordiellipse)")){
             logger(paste("    ")) 
             logger(paste("Note that ggplot options use the 'ordiplot' plot named 'plot1'")) 
             logger(paste("More examples are available from the documentation for 'sites.long'")) 
@@ -4096,6 +4096,14 @@ unconordiGUI <- function(){
             logger(paste("axis.grid <- ordisurfgrid.long(ordisurf(plot1, y=", axisvar, "))", sep=""))
             assign("axis.grid", justDoIt(paste("ordisurfgrid.long(ordisurf(plot1, y=", axisvar, "))", sep="")), envir=.GlobalEnv) 
             doItAndPrint(paste("plotgg1 <- ggplot() +    geom_contour(data=axis.grid, aes(x=x, y=y, z=z, colour=factor(after_stat(level))), size=2) +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, size=", axisvar, "), shape=21, colour='black', fill='red') +    geom_label_repel(data=sites1, aes(x=axis1, y=axis2, label=labels), colour='black', size=4) +    BioR.theme +    scale_colour_viridis_d() +    scale_size(range=c(1, 10)) +    labs(colour='", axisvar, "') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }
+        if (plottype == "ggplot (ordiellipse)"){
+            logger(paste("factor.ellipses <- ordiellipse(plot1, groups=", axisvar, ", display='sites', kind='sd')", sep=""))
+            assign("factor.ellipses", justDoIt(paste("ordiellipse(plot1, groups=", axisvar, ", display='sites', kind='sd')", sep="")), envir=.GlobalEnv) 
+            logger(paste("factor.ellipses.data <- ordiellipse.long(factor.ellipses, grouping.name='", axisvar, "')", sep=""))
+            assign("factor.ellipses.data", justDoIt(paste("ordiellipse.long(factor.ellipses, grouping.name='", axisvar, "')", sep="")), envir=.GlobalEnv) 
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +        geom_polygon(data=factor.ellipses.data, aes(x=axis1, y=axis2, colour=", axisvar, ", fill=after_scale(alpha(colour, 0.2))), size=0.2, show.legend=FALSE) + geom_point(data=sites1, aes(x=axis1, y=axis2, colour=", axisvar, ", shape=", axisvar, "), size=5) +    BioR.theme +    geom_segment(data=centroids.long(sites1, grouping=", axisvar, "), aes(x=axis1c, y=axis2c, xend=axis1, yend=axis2, colour=", axisvar, "), size=1, show.legend=FALSE) +    scale_color_brewer(palette = 'Set1') +    coord_fixed(ratio=1) +    labs(colour='", axisvar, "')", sep=""))       
             doItAndPrint(paste("plotgg1"))
         }
         if (plottype == "ggplot (add species)"){
@@ -4265,7 +4273,7 @@ conordiGUI <- function(){
         "ordibubble (continuous)", "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", 
         "ordivector (species)", "ordivector interpretation", "ordicluster", "ordicluster2",
         "ordinearest", "ordispantree", "ordiresids", "distance displayed", "coenocline", "screeplot", "stressplot", "orditkplot sites", "orditkplot species", "orditkplot pointlabel", "orglspider (factor)", "orglellipse (factor)",
-        "ordiplot", "ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (add species)", "ggplot (add vector)")
+        "ordiplot", "ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (ordiellipse)", "ggplot (add species)", "ggplot (add vector)")
     for (x in types) tkinsert(typeBox, "end", x)
     choicesVariable <- tclVar("1,2")
     choice <- tkentry(plot3Frame, width=10, textvariable=choicesVariable)
@@ -4710,7 +4718,7 @@ conordiGUI <- function(){
         if (plottype %in% c("envfit", "ordihull (factor)", "ordihull (factor, rainbow)", "ordihull (factor, polygon)", "ordiarrows (factor)", "ordiarrows (factor, rainbow)", "ordisegments (factor)", "ordisegments (factor, rainbow)", "ordispider (factor)", "ordispider (factor, rainbow)", "ordibar (factor)", "ordibar (factor, rainbow)",
                 "ordiellipse (factor)", "ordiellipse (factor, rainbow)", "ordiellipse (factor, ehull)", "ordiellipse (factor, polygon)", "ordisurf (continuous)", "ordibubble (continuous)", 
                 "ordisymbol (factor)", "ordisymbol (factor, legend)", "ordisymbol (factor, large)", "ordivector (species)", "ordivector interpretation", 
-                "ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (add species)", "ggplot (add vector)")){
+                "ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (ordiellipse)", "ggplot (add species)", "ggplot (add vector)")){
             justDoIt(paste("attach(", .activeDataSet, ", warn.conflicts=F)", sep=""))
             logger(paste("attach(", .activeDataSet, ", warn.conflicts=F)",sep=""))
         }
@@ -4897,7 +4905,7 @@ conordiGUI <- function(){
         if (plottype == "stressplot"){
             doItAndPrint(paste("stressplot(", modelValue ,")", sep=""))
         }
-        if (plottype %in% c("ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)")){
+        if (plottype %in% c("ggplot (ordisymbol1)", "ggplot (ordisymbol2)", "ggplot (ordispider1)", "ggplot (ordispider2)", "ggplot (ordisurf1)", "ggplot (ordisurf2)", "ggplot (ordiellipse)")){
             logger(paste("    ")) 
             logger(paste("Note that ggplot options use the 'ordiplot' plot named 'plot1'")) 
             logger(paste("More examples are available from the documentation for 'sites.long'")) 
@@ -4948,6 +4956,14 @@ conordiGUI <- function(){
             logger(paste("axis.grid <- ordisurfgrid.long(ordisurf(plot1, y=", axisvar, "))", sep=""))
             assign("axis.grid", justDoIt(paste("ordisurfgrid.long(ordisurf(plot1, y=", axisvar, "))", sep="")), envir=.GlobalEnv) 
             doItAndPrint(paste("plotgg1 <- ggplot() +    geom_contour(data=axis.grid, aes(x=x, y=y, z=z, colour=factor(after_stat(level))), size=2) +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    geom_point(data=sites1, aes(x=axis1, y=axis2, size=", axisvar, "), shape=21, colour='black', fill='red') +    geom_label_repel(data=sites1, aes(x=axis1, y=axis2, label=labels), colour='black', size=4) +    BioR.theme +    scale_colour_viridis_d() +    scale_size(range=c(1, 10)) +    labs(colour='", axisvar, "') +    coord_fixed(ratio=1)", sep=""))       
+            doItAndPrint(paste("plotgg1"))
+        }
+        if (plottype == "ggplot (ordiellipse)"){
+            logger(paste("factor.ellipses <- ordiellipse(plot1, groups=", axisvar, ", display='sites', kind='sd')", sep=""))
+            assign("factor.ellipses", justDoIt(paste("ordiellipse(plot1, groups=", axisvar, ", display='sites', kind='sd')", sep="")), envir=.GlobalEnv) 
+            logger(paste("factor.ellipses.data <- ordiellipse.long(factor.ellipses, grouping.name='", axisvar, "')", sep=""))
+            assign("factor.ellipses.data", justDoIt(paste("ordiellipse.long(factor.ellipses, grouping.name='", axisvar, "')", sep="")), envir=.GlobalEnv) 
+            doItAndPrint(paste("plotgg1 <- ggplot() +    geom_vline(xintercept = c(0), color = 'grey70', linetype = 2) +    geom_hline(yintercept = c(0), color = 'grey70', linetype = 2) +    xlab(axislabs[1, 'label']) +    ylab(axislabs[2, 'label']) +    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +        geom_polygon(data=factor.ellipses.data, aes(x=axis1, y=axis2, colour=", axisvar, ", fill=after_scale(alpha(colour, 0.2))), size=0.2, show.legend=FALSE) + geom_point(data=sites1, aes(x=axis1, y=axis2, colour=", axisvar, ", shape=", axisvar, "), size=5) +    BioR.theme +    geom_segment(data=centroids.long(sites1, grouping=", axisvar, "), aes(x=axis1c, y=axis2c, xend=axis1, yend=axis2, colour=", axisvar, "), size=1, show.legend=FALSE) +    scale_color_brewer(palette = 'Set1') +    coord_fixed(ratio=1) +    labs(colour='", axisvar, "')", sep=""))       
             doItAndPrint(paste("plotgg1"))
         }
         if (plottype == "ggplot (add species)"){

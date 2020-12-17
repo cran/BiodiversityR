@@ -14,6 +14,27 @@ BiodiversityR versions
 	An article that documents the ensemble suitability modelling options of BiodiversityR
 	is available from https://doi.org/10.1016/j.envsoft.2017.11.009
 
+	Various scripts for creating publication-ready graphs with ggplot2 are available from:
+	https://rpubs.com/Roeland-KINDT
+
+
+Version 2-12-3 (December 2020)
+
+	* Moved package rgl to Suggests as requested by prof. Brain D Ripley (13-DEC-2020)
+
+	* Moved package vegan3d to Suggests
+
+	* Removed calls to rgls and vegan3d in function BiodiversityRGUI
+
+	* New function ordiellipse.long that can be used to plot ordination diagrams via 
+	ggplot2.
+
+	* New plot options of 'ggplot (ordiellipse)' in the constrained and unconstrained 
+	ordination GUIs.
+
+	* Included references to https://rpubs.com/Roeland-KINDT in the documentation where
+	options for ggplot2 graphics were shown.
+
 
 Version 2.12-2 (November 2020; Fuzz III version )
 

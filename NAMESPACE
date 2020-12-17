@@ -1,4 +1,4 @@
-import(stats, Rcmdr, vegan, rgl, vegan3d)
+import(stats, Rcmdr, vegan)
 
 importFrom(tcltk, tkfont.create, tkbutton)
 
@@ -22,7 +22,8 @@ export(BiodiversityRGUI, check.datasets, check.ordiscores, spatialsample, makeco
     ensemble.evaluate, ensemble.SEDI, ensemble.VIF.dataframe,
     import.with.readxl,
     ensemble.PET.season, ensemble.chull.buffer.distances, ensemble.chull.MSDM,
-    sites.long, species.long, centroids.long, axis.long, accumcomp.long, renyicomp.long, renyi.long, ordisurfgrid.long, vectorfit.long,
+    sites.long, species.long, centroids.long, axis.long, accumcomp.long, renyicomp.long, renyi.long, ordisurfgrid.long, 
+    vectorfit.long, ordiellipse.long,
     .onAttach)
 
 if(tools:::.OStype() == "windows") {

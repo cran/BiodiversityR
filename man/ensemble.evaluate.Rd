@@ -51,7 +51,7 @@ AUCdiff: Difference between AUC for calibration and the testing data
 
 \references{
 
-Ferro CA, Stephenson DB. 2011. Extremal Dependence Indices: Improved Verification Measures for Deterministic Forecasts of Rare Binary Events. Wea. Forecasting 26: 699-713. \url{https://doi.org/10.1175/WAF-D-10-05030.1}
+Ferro CA, Stephenson DB. 2011. Extremal Dependence Indices: Improved Verification Measures for Deterministic Forecasts of Rare Binary Events. Wea. Forecasting 26: 699-713. 
 
 Wunderlich RF, Lin Y-P, Anthony J, Petway JR. 2019. Two alternative evaluation metrics to replace the true skill statistic in the assessment of species distribution models. Nature Conservation 35: 97-116. \url{https://doi.org/10.3897/natureconservation.35.33918}
 

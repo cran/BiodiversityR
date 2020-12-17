@@ -29,7 +29,7 @@ BiodiversityRGUI(changeLog = FALSE, backward.compatibility.messages = FALSE)
 }
 
 \details{
-The function launches the R-Commander GUI with an extra menu for common statistical methods for biodiversity and community ecology analysis as described in the Tree Diversity Analysis manual of Roeland Kindt and Richard Coe (available via \url{http://www.worldagroforestry.org/output/tree-diversity-analysis}]) and expanded systematically with new functions that became available from the vegan community ecology package.
+The function launches the R-Commander GUI with an extra menu for common statistical methods for biodiversity and community ecology analysis as described in the Tree Diversity Analysis manual of Roeland Kindt and Richard Coe (available via \url{https://www.worldagroforestry.org/output/tree-diversity-analysis}]) and expanded systematically with new functions that became available from the vegan community ecology package.
  
 Since 2012, functions for ensemble suitability modelling were included in BiodiversityR. In 2016, a GUI was created for ensemble suitabilty modelling.
 
@@ -50,7 +50,7 @@ Tree diversity analysis: A manual and
   software for common statistical methods for ecological and
   biodiversity studies.
  
-  \url{http://www.worldagroforestry.org/output/tree-diversity-analysis} 
+  \url{https://www.worldagroforestry.org/output/tree-diversity-analysis} 
 }   
 
 \author{Roeland Kindt (with some help from Jari Oksanen) }

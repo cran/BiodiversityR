@@ -58,6 +58,40 @@ function(z) {
     return(data.frame(result))
 }
 
+`ordiellipse.long` <-
+function(z, grouping.name="Grouping") {
+# copied from vegan 2.5-6 (a function that is not exported)
+	`veganCovEllipse2` <-
+	    function(cov, center = c(0,0), scale = 1, npoints = 100)
+	{
+	    ## Basically taken from the 'car' package: The Cirlce
+	    theta <- (0:npoints) * 2 * pi/npoints
+	    Circle <- cbind(cos(theta), sin(theta))
+	    ## scale, center and cov must be calculated separately
+	    Q <- chol(cov, pivot = TRUE)
+	    ## pivot takes care of cases when points are on a line
+	    o <- attr(Q, "pivot")
+	    t(center + scale * t(Circle %*% Q[,o]))
+	}
+    grouping <- names(z)
+    for (g in 1:length(grouping)) {
+        g.arg <- z[[grouping[g]]]
+        result.g <- data.frame(veganCovEllipse2(g.arg$cov, 
+                                                       center=g.arg$center, 
+                                                       scale=g.arg$scale, 
+                                                       npoints=100))
+        result.g <- data.frame(cbind(rep(grouping[g], nrow(result.g)), result.g))
+        names(result.g) <- c(grouping.name, "axis1", "axis2")
+        result.g[, 1] <- as.factor(result.g[, 1])
+        if (g == 1) {
+            result <- result.g
+        }else{
+            result <- rbind(result, result.g)
+        }
+    }
+    return(result)
+}    
+    
 `axis.long` <-
 function(w, choices=c(1, 2), cmdscale.model=FALSE, CAPdiscrim.model=FALSE){
     if (cmdscale.model==FALSE && CAPdiscrim.model==FALSE) {
