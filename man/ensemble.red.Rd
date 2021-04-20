@@ -82,11 +82,11 @@ Function \code{ensemble.chull.MSDM} prepares the input data and script for the M
 }
 
 \references{
-Cardoso P. 2017. red - an R package to facilitate species red list assessments according to the IUCN criteria. Biodiversity Data Journal 5:e20530. \url{https://doi.org/10.3897/BDJ.5.e20530}
+Cardoso P. 2017. red - an R package to facilitate species red list assessments according to the IUCN criteria. Biodiversity Data Journal 5:e20530. \doi{10.3897/BDJ.5.e20530}
 
-Mendes, P.; Velazco S.J.E.; Andrade, A.F.A.; De Marco, P. (2020) Dealing with overprediction in species distribution models: how adding distance constraints can improve model accuracy, Ecological Modelling, in press. \url{https://doi.org/10.1016/j.ecolmodel.2020.109180}
+Mendes, P.; Velazco S.J.E.; Andrade, A.F.A.; De Marco, P. (2020) Dealing with overprediction in species distribution models: how adding distance constraints can improve model accuracy, Ecological Modelling, in press. \doi{10.1016/j.ecolmodel.2020.109180}
 
-Kindt R. 2018. Ensemble species distribution modelling with transformed suitability values. Environmental Modelling & Software 100: 136-145. \url{https://doi.org/10.1016/j.envsoft.2017.11.009}
+Kindt R. 2018. Ensemble species distribution modelling with transformed suitability values. Environmental Modelling & Software 100: 136-145. \doi{10.1016/j.envsoft.2017.11.009}
 }
 
 \author{ Roeland Kindt (World Agroforestry Centre)}

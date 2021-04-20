@@ -91,6 +91,33 @@ function(z, grouping.name="Grouping") {
     }
     return(result)
 }    
+
+`pvclust.long` <-
+function(cl, cl.data) {
+    
+    if(inherits(cl, "pvclust") == FALSE) {stop("function requires a 'pvclust' object")}
+    
+    merge.data <- data.frame(cbind(cl$hclust$merge, cl$hclust$height))
+    names(merge.data) <- c("m1", "m2", "height")
+    merge.data$ID <- c(1:nrow(merge.data)) 
+    
+    nodes.scores <- data.frame(cl.data$scores)
+    nodes.scores$ID <- c(1:nrow(nodes.scores))
+    
+    nodes.scores2 <- dplyr::left_join(nodes.scores, merge.data, by="ID")
+    
+    edges.pv <- data.frame(cl$edges)
+    edges.pv$ID <- c(1:nrow(edges.pv))
+    edges.pv$prune <- -edges.pv$ID + nrow(edges.pv)
+    
+    nodes.scores3 <- dplyr::left_join(nodes.scores2, edges.pv, by="ID")
+    
+    segments.scores <- data.frame(cl.data$segments, 
+                                  height=nodes.scores3$height, prune=nodes.scores3$prune,
+                                  au=nodes.scores3$au, bp=nodes.scores3$bp)
+    
+    return(list(nodes=nodes.scores3, segments=segments.scores))
+}
     
 `axis.long` <-
 function(w, choices=c(1, 2), cmdscale.model=FALSE, CAPdiscrim.model=FALSE){

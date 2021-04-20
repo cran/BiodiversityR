@@ -68,9 +68,9 @@ Function \code{ensemble.ecocrop.object} returns a list with following objects:
 \examples{
 
 \dontrun{
-#test with Brazil nut (limits from FAO ecocrop)
-#temperature: (12) 20-36 (40)
-#annnual rainfall: (1400) 2400-2800 (3500)
+# test with Brazil nut (limits from FAO ecocrop)
+# temperature: (12) 20-36 (40)
+# annnual rainfall: (1400) 2400-2800 (3500)
 
 # get predictor variables
 library(dismo)

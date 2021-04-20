@@ -5,6 +5,7 @@
 \alias{vectorfit.long}
 \alias{ordisurfgrid.long}
 \alias{ordiellipse.long}
+\alias{pvclust.long}
 \alias{axis.long}
 \alias{accumcomp.long}
 \alias{renyicomp.long}
@@ -29,6 +30,8 @@ ordisurfgrid.long(z)
 
 ordiellipse.long(z, grouping.name = "Grouping")
 
+pvclust.long(cl, cl.data)
+
 axis.long(w, choices = c(1, 2), cmdscale.model=FALSE, CAPdiscrim.model=FALSE)
 
 accumcomp.long(x, ci = 2, label.freq = 1)
@@ -48,6 +51,8 @@ renyi.long(x, env.data=NULL, label.freq = 1)
   \item{centroids.only}{ Return the coordinates for the centroids }
   \item{z}{ Result of \code{\link[vegan]{envfit}}, \code{\link[vegan]{ordisurf}} or \code{\link[vegan]{ordiellipse}}  }
   \item{grouping.name}{ Name for the categorical variable, expected as the factor used in the earlier ordiellipse call. }
+  \item{cl}{ Result of \code{\link[pvclust]{pvclust}}  }
+  \item{cl.data}{ Result of \code{\link[vegan]{ordicluster}}  }  
   \item{w}{ Ordination object from which the \code{\link[vegan]{ordiplot}} was obtained, expected to be fitted in vegan.  }
   \item{choices}{ Ordination axes selected, as in \code{\link[vegan]{ordiplot}} }
   \item{cmdscale.model}{ Use \code{TRUE} is the model was fitted via \code{\link[stats]{cmdscale}} }
@@ -57,9 +62,11 @@ renyi.long(x, env.data=NULL, label.freq = 1)
 }
 
 \details{
-Examples for ordiplot results are shown here.
+Examples for ordiplot results are shown below.
    
-See also: for examples for species accumulation curves and Renyi diversity profiles
+Function \code{pvclust.long} combines data from \code{\link[pvclust]{pvclust}} with coordinates of nodes and branches from \code{\link[vegan]{ordicluster}}. The variable of \code{prune} allows to remove higher levels of nodes and branches in the clustering hierarchy in a similar way as argument \code{prune} for \code{\link[vegan]{ordicluster}} - see examples.
+   
+See also section: see examples for species accumulation curves and Renyi diversity profiles
 }
 
 
@@ -78,8 +85,6 @@ Tree diversity analysis: A manual and
 \url{https://rpubs.com/Roeland-KINDT}
 
 }   
-
-
 
 \author{Roeland Kindt}
 
@@ -295,6 +300,58 @@ plotgg6 <- ggplot() +
     coord_fixed(ratio=1)
 
 plotgg6
+
+# adding cluster results via pvclust.long
+
+library(pvclust)
+# transformation as pvclust works with Euclidean distance
+dune.Hellinger <- disttransform(dune, method='hellinger')
+dune.pv <- pvclust(t(dune.Hellinger), 
+                   method.hclust="mcquitty",
+                   method.dist="euclidean",
+                   nboot=1000)
+
+plot(dune.pv)
+pvrect(dune.pv, alpha=0.89, pv="au")
+
+# Model fitted earlier
+plot1 <- ordiplot(Ordination.model1, choices=c(1,2), scaling='species')
+cl.data1 <- ordicluster(plot1, cluster=as.hclust(dune.pv$hclust))
+
+sites1 <- sites.long(plot1, env.data=dune.env)
+axislabs <- axis.long(Ordination.model1, choices=c(1 , 2))
+
+cl.data1 <- ordicluster(plot2, cluster=as.hclust(dune.pv$hclust))
+pvlong <- pvclust.long(dune.pv, cl.data1)
+
+# as in example for ordicluster, prune higher level hierarchies
+plotgg7 <- ggplot() + 
+    geom_vline(xintercept = c(0), color = "grey70", linetype = 2) +
+    geom_hline(yintercept = c(0), color = "grey70", linetype = 2) +  
+    xlab(axislabs[1, "label"]) +
+    ylab(axislabs[2, "label"]) +  
+    scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +
+    scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +   
+    geom_segment(data=subset(pvlong$segments, pvlong$segments$prune > 3),
+               aes(x=x1, y=y1, xend=x2, yend=y2, colour=au>=0.89, 
+                   size=au),
+               show.legend=TRUE) +
+    geom_point(data=subset(pvlong$nodes, pvlong$nodes$prune > 3), 
+               aes(x=x, y=y, fill=au>=0.89), 
+               shape=21, size=2, colour="black") +
+    geom_point(data=sites1, 
+               aes(x=axis1, y=axis2, shape=Management), 
+               colour="darkolivegreen4", alpha=0.9, size=5) +
+    geom_text(data=sites1,
+              aes(x=axis1, y=axis2, label=labels)) +
+    BioR.theme +
+    ggsci::scale_colour_npg() +
+    scale_size(range=c(0.3, 2)) +
+    scale_shape_manual(values=c(15, 16, 17, 18)) +
+    guides(shape = guide_legend(override.aes = list(linetype = 0))) +
+    coord_fixed(ratio=1)
+
+plotgg7
 
 } # dontrun
 }

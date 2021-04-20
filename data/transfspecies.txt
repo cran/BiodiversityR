@@ -1,0 +1,20 @@
+species1	species2	species3	species4	species5	species6	species7	species8	species9
+site01	7	1	0	0	0	0	0	0	0
+site02	4	2	0	0	0	1	0	0	0
+site03	2	4	0	0	0	1	0	0	0
+site04	1	7	0	0	0	0	0	0	0
+site05	0	8	0	0	0	0	0	0	0
+site06	0	7	1	0	0	0	0	0	0
+site07	0	4	2	0	0	0	2	0	0
+site08	0	2	4	0	0	0	1	0	0
+site09	0	1	7	0	0	0	0	0	0
+site10	0	0	8	0	0	0	0	0	0
+site11	0	0	7	1	0	0	0	0	0
+site12	0	0	4	2	0	0	0	3	0
+site13	0	0	2	4	0	0	0	1	0
+site14	0	0	1	7	0	0	0	0	0
+site15	0	0	0	8	0	0	0	0	0
+site16	0	0	0	7	1	0	0	0	0
+site17	0	0	0	4	2	0	0	0	4
+site18	0	0	0	2	4	0	0	0	1
+site19	0	0	0	1	7	0	0	0	0

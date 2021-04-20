@@ -23,7 +23,9 @@ export(BiodiversityRGUI, check.datasets, check.ordiscores, spatialsample, makeco
     import.with.readxl,
     ensemble.PET.season, ensemble.chull.buffer.distances, ensemble.chull.MSDM,
     sites.long, species.long, centroids.long, axis.long, accumcomp.long, renyicomp.long, renyi.long, ordisurfgrid.long, 
-    vectorfit.long, ordiellipse.long,
+    vectorfit.long, ordiellipse.long, pvclust.long,
+    ensemble.spatialBlock, ensemble.envBlock,
+    ensemble.PET.seasons, ensemble.prec.season, ensemble.tmean.season, ensemble.season.suitability,
     .onAttach)
 
 if(tools:::.OStype() == "windows") {

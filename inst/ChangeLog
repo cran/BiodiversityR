@@ -18,9 +18,29 @@ BiodiversityR versions
 	https://rpubs.com/Roeland-KINDT
 
 
-Version 2-12-3 (December 2020)
+Version 2.13-1 (April 2021)
 
-	* Moved package rgl to Suggests as requested by prof. Brain D Ripley (13-DEC-2020)
+	* New functions ensemble.spatialBlock and ensemble.envBlock that allow for 
+	stratification methods available via the blockCV package. These functions were modified
+ 	from functions available previously from the ensemble.blockCV package.
+
+	* New function pvclust.long that allows plotting of results from pvclust onto
+	ordination diagrams.
+
+	* New functions ensemble.PET.seasons, ensemble.prec.season and ensemble.tmean.season
+	that return raster layers with the number of growing periods, their starts and lengths,
+	and the precipitation and mean temperatures of a selected (growing) period.
+
+	* New function ensemble.season.suitability that enables the calculation of crop
+	suitability from ecocrop-like thresholds and growing season temperature and
+	precipitation.
+
+	* Readme file 
+
+
+Version 2.12-3 (December 2020)
+
+	* Moved package rgl to Suggests as requested by prof. Brian D Ripley (13-DEC-2020)
 
 	* Moved package vegan3d to Suggests
 

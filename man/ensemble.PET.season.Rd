@@ -40,9 +40,9 @@ The function returns and writes a raster layer
 }
 
 \references{
-Chave J et al. 2014. Improved allometric models to estimate the aboveground biomass of tropical trees. Global Change Biology \url{https://doi.org/10.1111/gcb.12629}
+Chave J et al. 2014. Improved allometric models to estimate the aboveground biomass of tropical trees. Global Change Biology \doi{10.1111/gcb.12629}
 
-Aragao LZ et al. 2007. Spatial patterns and fire response of recent Amazonian droughts. Geophysical Research Letters 34(7) \url{https://doi.org/10.1029/2006GL028946}
+Aragao LZ et al. 2007. Spatial patterns and fire response of recent Amazonian droughts. Geophysical Research Letters 34(7) \doi{10.1029/2006GL028946}
 }
 
 \author{ Roeland Kindt (World Agroforestry Centre)}

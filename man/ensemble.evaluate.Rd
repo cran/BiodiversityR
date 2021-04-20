@@ -53,11 +53,11 @@ AUCdiff: Difference between AUC for calibration and the testing data
 
 Ferro CA, Stephenson DB. 2011. Extremal Dependence Indices: Improved Verification Measures for Deterministic Forecasts of Rare Binary Events. Wea. Forecasting 26: 699-713. 
 
-Wunderlich RF, Lin Y-P, Anthony J, Petway JR. 2019. Two alternative evaluation metrics to replace the true skill statistic in the assessment of species distribution models. Nature Conservation 35: 97-116. \url{https://doi.org/10.3897/natureconservation.35.33918}
+Wunderlich RF, Lin Y-P, Anthony J, Petway JR. 2019. Two alternative evaluation metrics to replace the true skill statistic in the assessment of species distribution models. Nature Conservation 35: 97-116. \doi{10.3897/natureconservation.35.33918}
 
-Castellanos AA, Huntley JW, Voelker G, Lawing AM. 2019. Environmental filtering improves ecological niche models across multiple scales. \url{https://doi.org/10.1111/2041-210X.13142}
+Castellanos AA, Huntley JW, Voelker G, Lawing AM. 2019. Environmental filtering improves ecological niche models across multiple scales. \doi{10.1111/2041-210X.13142}
 
-Kindt R. 2018. Ensemble species distribution modelling with transformed suitability values. Environmental Modelling & Software 100: 136-145. \url{https://doi.org/10.1016/j.envsoft.2017.11.009}
+Kindt R. 2018. Ensemble species distribution modelling with transformed suitability values. Environmental Modelling & Software 100: 136-145. \doi{10.1016/j.envsoft.2017.11.009}
 }
 
 \author{ Roeland Kindt (World Agroforestry Centre)}
