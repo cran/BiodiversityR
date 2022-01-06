@@ -1,6 +1,6 @@
 # R Commander Menu Definitions
 
-# last modified 2019-01-04 by J. Fox
+# last modified 2020-08-10 by J. Fox
 
 #   type    menu/item      operation/parent  label                                          command/menu                activation  install?
 
@@ -27,6 +27,7 @@
     menu    exitMenu        fileMenu        ""                                              ""                          ""          ""
     item    exitMenu        command         "From Commander"                                CloseCommander              ""          ""
     item    exitMenu        command         "From Commander and R"                          closeCommanderAndR          ""          ""
+    item    exitMenu        command         "Restart the Commander"                          restartCommander          ""          ""
     item    fileMenu        cascade         "Exit"                                          exitMenu                    ""          ""
     item    topMenu         cascade         "File"                                          fileMenu                    ""          ""
     menu    editMenu        topMenu         ""                                              ""                          ""          ""
@@ -60,8 +61,6 @@
     item    importMenu      command         "from SAS b7dat file..."                        importSASb7dat                   ""           "packageAvailable('RcmdrMisc')"
     item    importMenu      command         "from Minitab data set..."                      importMinitab               ""          "packageAvailable('foreign')"
     item    importMenu      command         "from STATA data set..."                        importSTATA                 ""          "packageAvailable('foreign')"
-#    item    importMenu      command         "from Excel, Access or dBase data set..."       importRODBCtable            ""          "WindowsP() && packageAvailable('RODBC') && (.Platform$r_arch == 'i386')"
-#    item    importMenu      command         "from Excel file..."                            importExcel                 ""      "packageAvailable('XLConnect') && (!WindowsP() | (.Platform$r_arch != 'i386')) && hasJava()"
     item    importMenu      command         "from Excel file..."                            importExcel                 ""      "packageAvailable('readxl')"
 
     item    dataMenu        cascade         "Import data"                                   importMenu                  ""          ""
@@ -82,6 +81,9 @@
     item	activeMenu		command			"Remove row(s) from active data set..."			RemoveRows					"activeDataSetP()"          ""
     item    activeMenu      command         "Stack variables in active data set..."         Stack                       "activeDataSetP() && numericP(2)"          ""
     item    activeMenu      command         "Remove cases with missing data..."             filterNA                    "activeDataSetP()"          ""
+    item    activeMenu      command         "Reshape data set from long to wide format..."  reshapeLong2Wide            "activeDataSetP()"          ""
+    item    activeMenu      command         "Reshape data set from wide to long format..."  reshapeWide2Long            "activeDataSetP()"          ""    
+    item    activeMenu      command         "Convert all character variables to factors"  convertStrings2Factors      "characterP()"          ""
     item    activeMenu      command         "Save active data set..."                       saveDataSet                 "activeDataSetP()"          ""
     item    activeMenu      command         "Export active data set..."                     exportDataSet               "activeDataSetP()"          ""
     item    dataMenu        cascade         "Active data set"                               activeMenu                  ""          ""
@@ -90,7 +92,8 @@
     item    variablesMenu   command         "Compute new variable..."                       Compute                     "activeDataSetP()"          ""
     item    variablesMenu   command         "Add observation numbers to data set"           addObsNumbers               "activeDataSetP()"          ""
     item    variablesMenu   command         "Standardize variables..."                      standardize                 "numericP()"                ""
-    item    variablesMenu   command         "Convert numeric variables to factors..."       numericToFactor             "numericP()"                ""
+    item    variablesMenu   command         "Convert numeric variables to factors..."      numericToFactor             "numericP()"    ""
+    item    variablesMenu   command         "Convert character variables to factors..."  characterToFactor           "characterP()"    ""
     item    variablesMenu   command         "Bin numeric variable..."                       binVariable                 "numericP()"                "packageAvailable('RcmdrMisc')"
     item    variablesMenu   command         "Reorder factor levels..."                      reorderFactor               "factorsP()"                ""
     item    variablesMenu   command         "Drop unused factor levels..."                  dropUnusedFactorLevels      "factorsP()"                ""
@@ -108,7 +111,6 @@
     item    summariesMenu   command         "Table of statistics..."                        statisticsTable             "numericP() && factorsP()"  ""
     item    summariesMenu   command         "Correlation matrix..."                         correlationMatrix           "numericP(2)"               "packageAvailable('RcmdrMisc')"
     item    summariesMenu   command         "Correlation test..."                           correlationTest             "numericP(2)"               "packageAvailable('RcmdrMisc')"
-#    item    summariesMenu   command         "Shapiro-Wilk test of normality..."             ShapiroTest                 "numericP()"                ""
     item    summariesMenu   command         "Test of normality..."                          NormalityTest               "numericP()"                "packageAvailable('nortest')"
     item    summariesMenu   command         "Transform toward normality..."                          transformVariables               "numericP()"                "packageAvailable('car')"
 
@@ -122,6 +124,8 @@
     item    meansMenu       command         "Paired t-test..."                              pairedTTest                 "numericP(2)"          ""
     item    meansMenu       command         "One-way ANOVA..."                              oneWayAnova                 "numericP() && factorsP()" "packageAvailable('multcomp') && packageAvailable('abind')"
     item    meansMenu       command         "Multi-way ANOVA..."                            multiWayAnova               "numericP() && factorsP()"          ""
+    item    meansMenu       command         "One-factor repeated-measures ANOVA/ANCOVA..."  oneWayRepeatedMeasures      "numericP(2)"                       ""
+    item    meansMenu       command         "Two-factor repeated-measures ANOVA/ANCOVA..."  twoWayRepeatedMeasures      "numericP(4)"                       ""
     menu    proportionsMenu statisticsMenu  ""                                              ""                          ""          ""
     item    proportionsMenu command         "Single-sample proportion test..."              singleProportionTest        "twoLevelFactorsP()"                ""
     item    proportionsMenu command         "Two-sample proportions test..."                twoSampleProportionsTest    "twoLevelFactorsP(2)" "packageAvailable('abind')"
@@ -170,7 +174,7 @@
     item    graphsMenu      command         "Index plot..."                                 indexPlot                   "numericP()"          "packageAvailable('RcmdrMisc')"
     item    graphsMenu      command         "Dot plot..."                                   DotPlot                     "numericP()"          "packageAvailable('RcmdrMisc')"
     item    graphsMenu      command         "Histogram..."                                  Histogram                   "numericP()"          "packageAvailable('RcmdrMisc')"
-    item    graphsMenu      command         "Plot discrete numeric variable..."             DiscretePlot                "numericP()"          "packageAvailable('RcmdrMisc')"
+    item    graphsMenu      command         "Plot discrete numeric variable..."             DiscretePlot                "discreteNumericP()"          "packageAvailable('RcmdrMisc')"
     item    graphsMenu      command         "Density estimate..."                           DensityPlot         "numericP()"          ""
     item    graphsMenu      command         "Stem-and-leaf display..."                      stemAndLeaf                 "numericP()"  "packageAvailable('aplpack')"
     item    graphsMenu      command         "Boxplot..."                                    boxPlot                     "numericP()" 		  ""
@@ -211,7 +215,7 @@
     item    modelsMenu      separator       ""                                              ""                          ""          ""
     item    modelsMenu      command         "Confidence intervals..."                       confidenceIntervals         "modelCapability('con')" "packageAvailable('MASS') && packageAvailable('abind')"
     item    modelsMenu      command         "Bootstrap confidence intervals..."             Bootstrap                   "modelCapability('boot')" "packageAvailable('boot')"
-    item    modelsMenu      command         "Delta method confidence interval..."           DeltaMethodConfInt          "modelCapability('del')" ""
+    item    modelsMenu      command         "Delta method confidence interval..."           DeltaMethodConfInt          "modelCapability('del')" "getRcmdr('capabilities')$tktable"
     menu    hypothesisMenu  modelsMenu      ""                                              ""                          ""          ""
     item    modelsMenu      cascade         "Hypothesis tests"                              hypothesisMenu              ""          ""
     item    hypothesisMenu  command         "ANOVA table..."                                anovaTable                  "modelCapability('aov') || modelCapability('Aov')" "packageAvailable('car')"
@@ -423,9 +427,7 @@
     item    helpMenu        command         "Using R Markdown"                              browseRMarkdown             ""          ""
     item    topMenu         cascade         "Help"                                          helpMenu                    ""          ""
 
-
-    # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
-    # DEC 2018
+    # Biodiversity analysis (R. Kindt, World Agroforestry, CIFOR-ICRAF)
 
     menu    biodivMenu      topMenu         ""                                              ""                          ""          ""
     menu    communMenu      biodivMenu      ""                                              ""                          ""          ""
@@ -525,6 +527,7 @@
     item    ensMenu         cascade         "Absence data set"                              absMenu                     ""          ""
     item    ensMenu         cascade         "Ensemble suitability modeling"                 calibMenu                   ""          ""
     item    biodivMenu      cascade         "Help"                                          helpbioMenu                 ""          ""
+
 
 
 

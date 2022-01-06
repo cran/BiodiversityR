@@ -1,13 +1,12 @@
-`ensemble.raster` <- function(
+`ensemble.terra` <- function(
     xn=NULL, 
     models.list=NULL, 
     input.weights=models.list$output.weights,
     thresholds=models.list$thresholds,
     RASTER.species.name=models.list$species.name, 
-    RASTER.stack.name=xn@title, 
-    RASTER.format="raster", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
+    RASTER.stack.name="xnTitle", 
+    RASTER.filetype="GTiff", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
     RASTER.models.overwrite=TRUE,
-    KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
     evaluate=FALSE, SINK=FALSE,
     p=models.list$p, a=models.list$a,
     pt=models.list$pt, at=models.list$at,
@@ -16,8 +15,8 @@
 {
     .BiodiversityR <- new.env()
 #    if (! require(dismo)) {stop("Please install the dismo package")}
-    if (is.null(xn) == T) {stop("value for parameter xn is missing (RasterStack object)")}
-    if(inherits(xn, "RasterStack") == F) {stop("xn is not a RasterStack object")}
+    if (is.null(xn) == T) {stop("value for parameter xn is missing (SpatRaster object)")}
+    if(inherits(xn, "SpatRaster") == F) {stop("xn is not a SpatRaster object")}
     if (is.null(models.list) == T) {stop("provide 'models.list' as models will not be recalibrated and retested")}
     if (is.null(input.weights) == T) {input.weights <- models.list$output.weights}
     if (is.null(thresholds) == T) {stop("provide 'thresholds' as models will not be recalibrated and retested")}
@@ -39,11 +38,6 @@
         names(at) <- c("x", "y")
     }
 #
-    if (KML.out==T && raster::isLonLat(xn)==F) {
-        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of stack ", xn@title , " is not longitude and latitude", "\n", sep = ""))
-        KML.out <- FALSE
-    }
-#
     retest <- FALSE
     if (evaluate == T) { 
         if (is.null(p)==T || is.null(a)==T) {
@@ -58,7 +52,7 @@
             if(identical(pt, p) == F || identical(at, a) == F)  {retest <- TRUE}
         }
     }
-#
+# 
 # create output file
     dir.create("outputs", showWarnings = F)
     paste.file <- paste(getwd(), "/outputs/", RASTER.species.name, "_output.txt", sep="")
@@ -87,31 +81,23 @@
     for (i in 1:length(vars.xn) ) {
         if (any(vars==vars.xn[i]) == F) {
             cat(paste("\n", "NOTE: RasterStack layer '", vars.xn[i], "' was not calibrated as explanatory variable", "\n", sep = ""))
-            xn <- raster::dropLayer(xn, which(names(xn) == vars.xn[i]))
-            xn <- raster::stack(xn)
+            xn <- terra::subset(xn, which(names(xn) == vars.xn[i]))
+            xn <- terra::rast(xn)
         }
     }
 #
-# set minimum and maximum values for xn
-    for (i in 1:raster::nlayers(xn)) {
-        xn[[i]] <- raster::setMinMax(xn[[i]])
-    }
-
 # declare categorical layers for xn
     factors <- models.list$factors
     if(is.null(factors) == F) {
         for (i in 1:length(factors)) {
             j <- which(names(xn) == factors[i])
-            xn[[j]] <- raster::as.factor(xn[[j]])
+            xn[[j]] <- terra::as.factor(xn[[j]])
         }
     }
     if(length(factors) == 0) {factors <- NULL}
     factlevels <- models.list$factlevels
     dummy.vars <- models.list$dummy.vars
     dummy.vars.noDOMAIN <- models.list$dummy.vars.noDOMAIN 
-#
-    KML.blur <- trunc(KML.blur)
-    if (KML.blur < 1) {KML.blur <- 1}
 #
     if (is.null(input.weights) == F) {
         MAXENT <- max(c(input.weights["MAXENT"], -1), na.rm=T)
@@ -244,7 +230,7 @@
 #  ensure that cases with missing values are removed
         if (! requireNamespace("party")) {stop("Please install the party package")}
         predict.CF <- function(object, newdata) {
-# avoid problems with single variables, especially with raster::predict
+# avoid problems with single variables, especially with terra::predict
             for (i in 1:ncol(newdata)) {
                 if (is.integer(newdata[, i])) {newdata[, i] <- as.numeric(newdata[, i])}
             }
@@ -382,23 +368,14 @@
     dir.create("ensembles/suitability", showWarnings = F)
     dir.create("ensembles/count", showWarnings = F)
     dir.create("ensembles/presence", showWarnings = F)
-    if(KML.out == T) {
-        dir.create("kml", showWarnings = F)    
-        dir.create("kml/suitability", showWarnings = F)
-        dir.create("kml/count", showWarnings = F)
-        dir.create("kml/presence", showWarnings = F)
-    }
 #
     stack.title <- RASTER.stack.name
     if (gsub(".", "_", stack.title, fixed=T) != stack.title) {cat(paste("\n", "WARNING: title of stack (", stack.title, ") contains '.'", "\n\n", sep = ""))}
 #
     raster.title <- paste(RASTER.species.name, "_", stack.title , sep="")
-    rasterfull <- paste("ensembles//suitability//", raster.title , sep="")
-    kmlfull <- paste("kml//suitability//", raster.title , sep="")
-    rastercount <- paste("ensembles//count//", raster.title , sep="")
-    kmlcount <- paste("kml//count//", raster.title , sep="")
-    rasterpresence <- paste("ensembles//presence//", raster.title, sep="")
-    kmlpresence <- paste("kml//presence//", raster.title, sep="")
+    rasterfull <- paste("ensembles//suitability//", raster.title , ".tif", sep="")
+    rastercount <- paste("ensembles//count//", raster.title , ".tif", sep="")
+    rasterpresence <- paste("ensembles//presence//", raster.title, ".tif", sep="")
 #
     RASTER.species.orig <- RASTER.species.name
     if (RASTER.models.overwrite==T) {
@@ -408,7 +385,7 @@
     }
 #
     cat(paste("\n", "Start of predictions for organism: ", RASTER.species.orig, "\n", sep = ""))
-    cat(paste("Predictions for RasterStack: ", stack.title, "\n", sep = ""))
+    cat(paste("Predictions for SpatRaster: ", stack.title, "\n", sep = ""))
     ensemble.statistics <- NULL
     cat(paste("ensemble raster layers will be saved in folder ", getwd(), "//ensembles", "\n\n", sep = ""))
     statistics.names <- c("n.models", "ensemble.threshold", "ensemble.min", "ensemble.max", "count.min", "count.max") 
@@ -417,8 +394,8 @@
 #
 # sometimes still error warnings for minimum and maximum values of the layers
 # set minimum and maximum values for xn
-    for (i in 1:raster::nlayers(xn)) {
-        xn[[i]] <- raster::setMinMax(xn[[i]])
+    for (i in 1:terra::nlyr(xn)) {
+        xn[[i]] <- terra::setMinMax(xn[[i]])
     }
 
 # count models
@@ -433,34 +410,35 @@
         jar <- paste(system.file(package="dismo"), "/java/maxent.jar", sep='')
         results <- MAXENT.OLD
         pmaxent <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_MAXENT", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_MAXENT.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_MAXENT_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pmaxent <- raster::predict(object=results, x=xn, na.rm=TRUE, 
-                    filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pmaxent <- terra::predict(object=results, x=xn, na.rm=TRUE, 
+                    filename=fullname, overwrite=TRUE),
                 error= function(err) {print(paste("MAXENT prediction failed"))},
                 silent=F)
             }else{
-                pmaxent <- raster::predict(object=results, x=xn, na.rm=TRUE, 
-                    filename=fullname, progress='text', overwrite=TRUE)
+                pmaxent <- terra::predict(object=results, x=xn, na.rm=TRUE, 
+                    filename=fullname, overwrite=TRUE)
             }
         if (is.null(pmaxent) == F) {
             results2 <- MAXENT.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pmaxent, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pmaxent, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "MAXENT"
-                pmaxent <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pmaxent <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pmaxent <- trunc(1000*pmaxent)
-            raster::writeRaster(x=pmaxent, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pmaxent, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmaxent, p)/1000
-                abs1 <- raster::extract(pmaxent, a)/1000
+                pres1 <- terra::extract(pmaxent, y=p)[,2]/1000
+                abs1 <- terra::extract(pmaxent, y=a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["MAXENT"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -471,8 +449,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmaxent, pt)/1000
-                abs1 <- raster::extract(pmaxent, at)/1000
+                pres1 <- terra::extract(pmaxent, pt)[,2]/1000
+                abs1 <- terra::extract(pmaxent, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -487,34 +465,35 @@
         cat(paste("\n", mc, ". Maximum entropy algorithm (package: maxnet)\n", sep=""))
         results <- MAXNET.OLD
         pmaxnet <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_MAXNET", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_MAXNET.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_MAXNET_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pmaxnet <- raster::predict(object=xn, model=results, fun=predict.maxnet2, na.rm=TRUE, clamp=MAXNET.clamp, type=MAXNET.type,
-                    filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pmaxnet <- terra::predict(object=xn, model=results, fun=predict.maxnet2, na.rm=TRUE, clamp=MAXNET.clamp, type=MAXNET.type,
+                    filename=fullname, overwrite=TRUE),
                 error= function(err) {print(paste("MAXNET prediction failed"))},
                 silent=F)
             }else{
-                pmaxnet <- raster::predict(object=xn, model=results, fun=predict.maxnet2, na.rm=TRUE, clamp=MAXNET.clamp, type=MAXNET.type,
-                    filename=fullname, progress='text', overwrite=TRUE)
+                pmaxnet <- terra::predict(object=xn, model=results, fun=predict.maxnet2, na.rm=TRUE, clamp=MAXNET.clamp, type=MAXNET.type,
+                    filename=fullname, overwrite=TRUE)
             }
         if (is.null(pmaxnet) == F) {
             results2 <- MAXNET.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pmaxnet, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1.tif", sep="")
+                terra::writeRaster(x=pmaxnet, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "MAXNET"
-                pmaxnet <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pmaxnet <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pmaxnet <- trunc(1000*pmaxnet)
-            raster::writeRaster(x=pmaxnet, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pmaxnet, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmaxnet, p)/1000
-                abs1 <- raster::extract(pmaxnet, a)/1000
+                pres1 <- terra::extract(pmaxnet, y=p)[, 2]/1000
+                abs1 <- terra::extract(pmaxnet, y=a)[, 2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["MAXNET"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -525,8 +504,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmaxnet, pt)/1000
-                abs1 <- raster::extract(pmaxnet, at)/1000
+                pres1 <- (terra::extract(pmaxnet, pt)[,2])/1000
+                abs1 <- (terra::extract(pmaxnet, at)[,2])/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -541,36 +520,37 @@
         cat(paste("\n", mc, ". Maxlike algorithm (package: maxlike)\n", sep=""))
         results <- MAXLIKE.OLD
         pmaxlike <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_MAXLIKE", sep="")
-        xn.num <- raster::subset(xn, subset=models.list$num.vars)
+        fullname <- paste("models/", RASTER.species.name, "_MAXLIKE.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_MAXLIKE_step1.tif", sep="")
+        xn.num <- terra::subset(xn, subset=models.list$num.vars)
         if (CATCH.OFF == F) {
-            tryCatch(pmaxlike <- raster::predict(object=xn.num, model=results, na.rm=TRUE, 
-                    filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pmaxlike <- terra::predict(object=xn.num, model=results, na.rm=TRUE, 
+                    filename=fullname, overwrite=TRUE),
                 error= function(err) {print(paste("MAXLIKE prediction failed"))},
                 silent=F)
         }else{
-            pmaxlike <- raster::predict(object=xn.num, model=results, na.rm=TRUE, 
-                filename=fullname, progress='text', overwrite=TRUE)
+            pmaxlike <- terra::predict(object=xn.num, model=results, na.rm=TRUE, 
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pmaxlike) == F) {
             results2 <- MAXLIKE.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
 #                fullname2 <- paste("models//", "MAXLIKE_step1", sep="")
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pmaxlike, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1.tif", sep="")
+                terra::writeRaster(x=pmaxlike, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "MAXLIKE"
-                pmaxlike <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pmaxlike <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pmaxlike <- trunc(1000*pmaxlike)
-            raster::writeRaster(x=pmaxlike, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pmaxlike, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmaxlike, p)/1000
-                abs1 <- raster::extract(pmaxlike, a)/1000
+                pres1 <- terra::extract(pmaxlike, p)[,2]/1000
+                abs1 <- terra::extract(pmaxlike, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["MAXLIKE"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -581,8 +561,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmaxlike, pt)/1000
-                abs1 <- raster::extract(pmaxlike, at)/1000
+                pres1 <- terra::extract(pmaxlike, pt)[,2]/1000
+                abs1 <- terra::extract(pmaxlike, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -600,34 +580,35 @@
         } 
         results <- GBM.OLD
         pgbm <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_GBM", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_GBM.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_GBM_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pgbm <- raster::predict(object=xn, model=results, na.rm=TRUE, factors=factlevels,
-                    n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pgbm <- terra::predict(object=xn, model=results, na.rm=TRUE, factors=factlevels,
+                    n.trees=results$n.trees, type="response", filename=fullname, overwrite=TRUE),
                 error= function(err) {print(paste("GBM prediction failed"))},
                 silent=F)
         }else{
-            pgbm <- raster::predict(object=xn, model=results, na.rm=TRUE, factors=factlevels,
-                n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE)
+            pgbm <- terra::predict(object=xn, model=results, na.rm=TRUE, factors=factlevels,
+                n.trees=results$n.trees, type="response", filename=fullname, overwrite=TRUE)
         }
         if (is.null(pgbm) == F) {
             results2 <- GBM.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pgbm, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1.tif", sep="")
+                terra::writeRaster(x=pgbm, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "GBM"
-                pgbm <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pgbm <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pgbm <- trunc(1000*pgbm)
-            raster::writeRaster(x=pgbm, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pgbm, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pgbm, p)/1000
-                abs1 <- raster::extract(pgbm, a)/1000
+                pres1 <- terra::extract(pgbm, p)[,2]/1000
+                abs1 <- terra::extract(pgbm, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GBM"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -638,8 +619,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pgbm, pt)/1000
-                abs1 <- raster::extract(pgbm, at)/1000
+                pres1 <- terra::extract(pgbm, pt)[,2]/1000
+                abs1 <- terra::extract(pgbm, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -657,35 +638,36 @@
         } 
         results <- GBMSTEP.OLD
         pgbms <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_GBMSTEP", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_GBMSTEP.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_GBMSTEP_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pgbms <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factlevels,
-                n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pgbms <- terra::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factlevels,
+                n.trees=results$n.trees, type="response", filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("stepwise GBM prediction failed"))},
             silent=F)
         }else{
-            pgbms <- raster::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factlevels,
-                n.trees=results$n.trees, type="response", filename=fullname, progress='text', overwrite=TRUE)
+            pgbms <- terra::predict(object=xn, model=results, fun=gbm::predict.gbm, na.rm=TRUE, factors=factlevels,
+                n.trees=results$n.trees, type="response", filename=fullname, overwrite=TRUE)
         }
         if (is.null(pgbms) == F) {
             results2 <- GBMSTEP.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pgbms, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pgbms, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "GBMSTEP"
-                pgbms <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pgbms <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pgbms <- trunc(1000*pgbms)
 # corrected writing in new format (August 2020)
-            raster::writeRaster(x=pgbms, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pgbms, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pgbms, p)/1000
-                abs1 <- raster::extract(pgbms, a)/1000
+                pres1 <- terra::extract(pgbms, p)[,2]/1000
+                abs1 <- terra::extract(pgbms, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GBMSTEP"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -696,8 +678,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pgbms, pt)/1000
-                abs1 <- raster::extract(pgbms, at)/1000
+                pres1 <- terra::extract(pgbms, pt)[,2]/1000
+                abs1 <- terra::extract(pgbms, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -712,34 +694,35 @@
         cat(paste("\n", mc, ". Random forest algorithm (package: randomForest)\n", sep=""))
         results <- RF.OLD
         prf <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_RF", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_RF.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_RF_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(prf <- raster::predict(object=xn, model=results, fun=predict.RF, na.rm=TRUE, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(prf <- terra::predict(object=xn, model=results, fun=predict.RF, na.rm=TRUE, factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("random forest prediction failed"))},
             silent=F)
         }else{
-            prf <- raster::predict(object=xn, model=results, fun=predict.RF, na.rm=TRUE, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            prf <- terra::predict(object=xn, model=results, fun=predict.RF, na.rm=TRUE, factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(prf) == F) {
             results2 <- RF.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=prf, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=prf, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "RF"
-                prf <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                prf <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             prf <- trunc(1000*prf)
-            raster::writeRaster(x=prf, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=prf, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(prf, p)/1000
-                abs1 <- raster::extract(prf, a)/1000
+                pres1 <- terra::extract(prf, p)[,2]/1000
+                abs1 <- terra::extract(prf, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["RF"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -750,8 +733,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(prf, pt)/1000
-                abs1 <- raster::extract(prf, at)/1000
+                pres1 <- terra::extract(prf, pt)[,2]/1000
+                abs1 <- terra::extract(prf, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -766,34 +749,35 @@
         cat(paste("\n", mc, ". Random forest algorithm (package: party)\n", sep=""))
         results <- CF.OLD
         pcf <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_CF", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_CF.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_CF_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pcf <- raster::predict(object=xn, model=results, fun=predict.CF, na.rm=TRUE, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pcf <- terra::predict(object=xn, model=results, fun=predict.CF, na.rm=TRUE, factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("random forest prediction failed"))},
             silent=F)
         }else{
-            pcf <- raster::predict(object=xn, model=results, fun=predict.CF, na.rm=TRUE, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            pcf <- terra::predict(object=xn, model=results, fun=predict.CF, na.rm=TRUE, factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pcf) == F) {
             results2 <- CF.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pcf, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pcf, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "CF"
-                pcf <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pcf <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pcf <- trunc(1000*pcf)
-            raster::writeRaster(x=pcf, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pcf, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pcf, p)/1000
-                abs1 <- raster::extract(pcf, a)/1000
+                pres1 <- terra::extract(pcf, p)[,2]/1000
+                abs1 <- terra::extract(pcf, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["CF"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -804,8 +788,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pcf, pt)/1000
-                abs1 <- raster::extract(pcf, at)/1000
+                pres1 <- terra::extract(pcf, pt)[,2]/1000
+                abs1 <- terra::extract(pcf, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -820,34 +804,35 @@
         cat(paste("\n", mc, ". Generalized Linear Model \n", sep=""))
         results <- GLM.OLD
         pglm <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_GLM", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_GLM.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_GLM_step1.tif", sep="")
         if (CATCH.OFF == T) {
-            tryCatch(pglm <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pglm <- terra::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("GLM prediction failed"))},
             silent=F)
         }else{
-            pglm <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            pglm <- terra::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pglm) == F) {
             results2 <- GLM.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pglm, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pglm, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "GLM"
-                pglm <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pglm <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pglm <- trunc(1000*pglm)
-            raster::writeRaster(x=pglm, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pglm, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pglm, p)/1000
-                abs1 <- raster::extract(pglm, a)/1000
+                pres1 <- terra::extract(pglm, p)[,2]/1000
+                abs1 <- terra::extract(pglm, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GLM"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -858,8 +843,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pglm, pt)/1000
-                abs1 <- raster::extract(pglm, at)/1000
+                pres1 <- terra::extract(pglm, pt)[,2]/1000
+                abs1 <- terra::extract(pglm, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -874,34 +859,35 @@
         cat(paste("\n", mc, ". Stepwise Generalized Linear Model \n", sep=""))
         results <- GLMSTEP.OLD
         pglms <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_GLMSTEP", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_GLMSTEP.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_GLMSTEP_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pglms <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pglms <- terra::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("stepwise GLM prediction failed"))},
             silent=F)
         }else{
-            pglms <- raster::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            pglms <- terra::predict(object=xn, model=results, na.rm=TRUE, type="response", factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pglms) == F) {
             results2 <- GLMSTEP.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pglms, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pglms, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "GLMSTEP"
-                pglms <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pglms <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pglms <- trunc(1000*pglms)
-            raster::writeRaster(x=pglms, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pglms, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pglms, p)/1000
-                abs1 <- raster::extract(pglms, a)/1000
+                pres1 <- terra::extract(pglms, p)[,2]/1000
+                abs1 <- terra::extract(pglms, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GLMSTEP"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -912,8 +898,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pglms, pt)/1000
-                abs1 <- raster::extract(pglms, at)/1000
+                pres1 <- terra::extract(pglms, pt)[,2]/1000
+                abs1 <- terra::extract(pglms, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -928,34 +914,35 @@
         cat(paste("\n", mc, ". Generalized Additive Model (package: gam)\n", sep=""))
         results <- GAM.OLD
         pgam <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_GAM", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_GAM.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_GAM_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pgam <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, na.rm=TRUE, type="response", factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pgam <- terra::predict(object=xn, model=results, fun=gam::predict.Gam, na.rm=TRUE, type="response", factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("GAM (package: gam) prediction failed"))},
             silent=F)
         }else{
-            pgam <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, na.rm=TRUE, type="response", factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            pgam <- terra::predict(object=xn, model=results, fun=gam::predict.Gam, na.rm=TRUE, type="response", factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pgam) == F) {
             results2 <- GAM.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pgam, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pgam, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "GAM"
-                pgam <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pgam <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pgam <- trunc(1000*pgam)
-            raster::writeRaster(x=pgam, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pgam, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pgam, p)/1000
-                abs1 <- raster::extract(pgam, a)/1000
+                pres1 <- terra::extract(pgam, p)[,2]/1000
+                abs1 <- terra::extract(pgam, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GAM"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -966,8 +953,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pgam, pt)/1000
-                abs1 <- raster::extract(pgam, at)/1000
+                pres1 <- terra::extract(pgam, pt)[,2]/1000
+                abs1 <- terra::extract(pgam, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -982,34 +969,35 @@
         cat(paste("\n", mc, ". Stepwise Generalized Additive Model (package: gam)\n", sep=""))
         results <- GAMSTEP.OLD
         pgams <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_GAMSTEP", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_GAMSTEP.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_GAMSTEP_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pgams <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, type="response", na.rm=TRUE, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pgams <- terra::predict(object=xn, model=results, fun=gam::predict.Gam, type="response", na.rm=TRUE, factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("stepwise GAM (package: gam) prediction failed"))},
             silent=F)
         }else{
-            pgams <- raster::predict(object=xn, model=results, fun=gam::predict.Gam, type="response", na.rm=TRUE, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            pgams <- terra::predict(object=xn, model=results, fun=gam::predict.Gam, type="response", na.rm=TRUE, factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pgams) == F) {
             results2 <- GAMSTEP.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pgams, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pgams, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "GAMSTEP"
-                pgams <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pgams <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pgams <- trunc(1000*pgams)
-            raster::writeRaster(x=pgams, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pgams, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pgams, p)/1000
-                abs1 <- raster::extract(pgams, a)/1000
+                pres1 <- terra::extract(pgams, p)[,2]/1000
+                abs1 <- terra::extract(pgams, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GAMSTEP"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1020,8 +1008,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pgams, pt)/1000
-                abs1 <- raster::extract(pgams, at)/1000
+                pres1 <- terra::extract(pgams, pt)[,2]/1000
+                abs1 <- terra::extract(pgams, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1039,34 +1027,35 @@
         } 
         results <- MGCV.OLD
         pmgcv <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_MGCV", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_MGCV.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_MGCV_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pmgcv <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pmgcv <- terra::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("GAM (package: mgcv) prediction failed"))},
             silent=F)
         }else{
-            pmgcv <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            pmgcv <- terra::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pmgcv) == F) {
             results2 <- MGCV.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pmgcv, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pmgcv, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "MGCV"
-                pmgcv <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pmgcv <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pmgcv <- trunc(1000*pmgcv)
-            raster::writeRaster(x=pmgcv, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pmgcv, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmgcv, p)/1000
-                abs1 <- raster::extract(pmgcv, a)/1000
+                pres1 <- terra::extract(pmgcv, p)[,2]/1000
+                abs1 <- terra::extract(pmgcv, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["MGCV"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1077,8 +1066,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmgcv, pt)/1000
-                abs1 <- raster::extract(pmgcv, at)/1000
+                pres1 <- terra::extract(pmgcv, pt)[,2]/1000
+                abs1 <- terra::extract(pmgcv, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1096,34 +1085,35 @@
         } 
         results <- MGCVFIX.OLD
         pmgcvf <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_MGCVFIX", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_MGCVFIX.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_MGCVFIX_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pmgcvf <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pmgcvf <- terra::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("GAM with fixed d.f. regression splines (package: mgcv) prediction failed"))},
             silent=F)
         }else{
-            pmgcvf <- raster::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            pmgcvf <- terra::predict(object=xn, model=results, fun=predict.MGCV, na.rm=TRUE, type="response", factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pmgcvf) == F) {
             results2 <- MGCVFIX.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pmgcvf, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pmgcvf, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "MGCVFIX"
-                pmgcvf <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pmgcvf <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pmgcvf <- trunc(1000*pmgcvf)
-            raster::writeRaster(x=pmgcvf, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pmgcvf, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmgcvf, p)/1000
-                abs1 <- raster::extract(pmgcvf, a)/1000
+                pres1 <- terra::extract(pmgcvf, p)[,2]/1000
+                abs1 <- terra::extract(pmgcvf, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["MGCVFIX"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1134,8 +1124,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmgcvf, pt)/1000
-                abs1 <- raster::extract(pmgcvf, at)/1000
+                pres1 <- terra::extract(pmgcvf, pt)[,2]/1000
+                abs1 <- terra::extract(pmgcvf, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1153,34 +1143,35 @@
         } 
         results <- EARTH.OLD
         pearth <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_EARTH", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_EARTH.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_EARTH_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pearth <- raster::predict(object=xn, model=results, fun=predict.EARTH, na.rm=TRUE, type="response", factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pearth <- terra::predict(object=xn, model=results, fun=predict.EARTH, na.rm=TRUE, type="response", factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("MARS (package: earth) prediction failed"))},
             silent=F)
         }else{
-            pearth <- raster::predict(object=xn, model=results, fun=predict.EARTH, na.rm=TRUE, type="response", factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            pearth <- terra::predict(object=xn, model=results, fun=predict.EARTH, na.rm=TRUE, type="response", factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pearth) == F) {
             results2 <- EARTH.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pearth, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pearth, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "EARTH"
-                pearth <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pearth <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pearth <- trunc(1000*pearth)
-            raster::writeRaster(x=pearth, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pearth, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pearth, p)/1000
-                abs1 <- raster::extract(pearth, a)/1000
+                pres1 <- terra::extract(pearth, p)[,2]/1000
+                abs1 <- terra::extract(pearth, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["EARTH"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1191,8 +1182,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pearth, pt)/1000
-                abs1 <- raster::extract(pearth, at)/1000
+                pres1 <- terra::extract(pearth, pt)[,2]/1000
+                abs1 <- terra::extract(pearth, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1210,34 +1201,35 @@
         } 
         results <- RPART.OLD
         prpart <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_RPART", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_RPART.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_RPART_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(prpart <- raster::predict(object=xn, model=results, na.rm=TRUE, type="prob", index=2, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(prpart <- terra::predict(object=xn, model=results, na.rm=TRUE, type="prob", index=2, factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("RPART prediction failed"))},
             silent=F)
         }else{
-            prpart <- raster::predict(object=xn, model=results, na.rm=TRUE, type="prob", index=2, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            prpart <- terra::predict(object=xn, model=results, na.rm=TRUE, type="prob", index=2, factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(prpart) == F) {
             results2 <- RPART.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=prpart, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=prpart, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "RPART"
-                prpart <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                prpart <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             prpart <- trunc(1000*prpart)
-            raster::writeRaster(x=prpart, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=prpart, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(prpart, p)/1000
-                abs1 <- raster::extract(prpart, a)/1000
+                pres1 <- terra::extract(prpart, p)[,2]/1000
+                abs1 <- terra::extract(prpart, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["RPART"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1248,8 +1240,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(prpart, pt)/1000
-                abs1 <- raster::extract(prpart, at)/1000
+                pres1 <- terra::extract(prpart, pt)[,2]/1000
+                abs1 <- terra::extract(prpart, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1267,34 +1259,35 @@
         } 
         results <- NNET.OLD
         pnnet <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_NNET", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_NNET.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_NNET_step1.tif", sep="")
         if (CATCH.OFF == F){
-            tryCatch(pnnet <- raster::predict(object=xn, model=results, fun=predict.NNET, na.rm=TRUE, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pnnet <- terra::predict(object=xn, model=results, fun=predict.NNET, na.rm=TRUE, factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("Artificial Neural Network (package: nnet) prediction failed"))},
             silent=F)
         }else{
-            pnnet <- raster::predict(object=xn, model=results, fun=predict.NNET, na.rm=TRUE, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            pnnet <- terra::predict(object=xn, model=results, fun=predict.NNET, na.rm=TRUE, factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pnnet) == F) {
             results2 <- NNET.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pnnet, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pnnet, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "NNET"
-                pnnet <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pnnet <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pnnet <- trunc(1000*pnnet)
-            raster::writeRaster(x=pnnet, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pnnet, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pnnet, p)/1000
-                abs1 <- raster::extract(pnnet, a)/1000
+                pres1 <- terra::extract(pnnet, p)[,2]/1000
+                abs1 <- terra::extract(pnnet, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["NNET"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1305,8 +1298,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pnnet, pt)/1000
-                abs1 <- raster::extract(pnnet, at)/1000
+                pres1 <- terra::extract(pnnet, pt)[,2]/1000
+                abs1 <- terra::extract(pnnet, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1324,34 +1317,35 @@
         } 
         results <- FDA.OLD
         pfda <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_FDA", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_FDA.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_FDA_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pfda <- raster::predict(object=xn, model=results, na.rm=TRUE, type="posterior", index=2, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pfda <- terra::predict(object=xn, model=results, na.rm=TRUE, type="posterior", index=2, factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("FDA prediction failed"))},
             silent=F)
         }else{
-            pfda <- raster::predict(object=xn, model=results, na.rm=TRUE, type="posterior", index=2, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            pfda <- terra::predict(object=xn, model=results, na.rm=TRUE, type="posterior", index=2, factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pfda) == F) {
             results2 <- FDA.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pfda, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pfda, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "FDA"
-                pfda <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pfda <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pfda <- trunc(1000*pfda)
-            raster::writeRaster(x=pfda, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pfda, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pfda, p)/1000
-                abs1 <- raster::extract(pfda, a)/1000
+                pres1 <- terra::extract(pfda, p)[,2]/1000
+                abs1 <- terra::extract(pfda, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["FDA"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1362,8 +1356,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pfda, pt)/1000
-                abs1 <- raster::extract(pfda, at)/1000
+                pres1 <- terra::extract(pfda, pt)[,2]/1000
+                abs1 <- terra::extract(pfda, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1381,35 +1375,36 @@
         } 
         results <- SVM.OLD
         psvm <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_SVM", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_SVM.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_SVM_step1.tif", sep="")
         predict.svm2 <- as.function(kernlab::predict)
         if (CATCH.OFF == F) {
-            tryCatch(psvm <- raster::predict(object=xn, model=results, fun=predict.svm2, na.rm=TRUE, type="probabilities", index=2, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(psvm <- terra::predict(object=xn, model=results, fun=predict.svm2, na.rm=TRUE, type="probabilities", index=2, factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("Support Vector Machines (package: kernlab) prediction failed"))},
             silent=F)
         }else{
-            psvm <- raster::predict(object=xn, model=results, fun=predict.svm2, na.rm=TRUE, type="probabilities", index=2, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            psvm <- terra::predict(object=xn, model=results, fun=predict.svm2, na.rm=TRUE, type="probabilities", index=2, factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(psvm) == F) {
             results2 <- SVM.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=psvm, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=psvm, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "SVM"
-                psvm <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                psvm <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             psvm <- trunc(1000*psvm)
-            raster::writeRaster(x=psvm, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=psvm, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(psvm, p)/1000
-                abs1 <- raster::extract(psvm, a)/1000
+                pres1 <- terra::extract(psvm, p)[,2]/1000
+                abs1 <- terra::extract(psvm, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["SVM"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1420,8 +1415,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(psvm, pt)/1000
-                abs1 <- raster::extract(psvm, at)/1000
+                pres1 <- terra::extract(psvm, pt)[,2]/1000
+                abs1 <- terra::extract(psvm, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1436,35 +1431,36 @@
         cat(paste("\n", mc, ". Support Vector Machines (package: e1071)\n", sep=""))
         results <- SVME.OLD
         psvme <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_SVME", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_SVME.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_SVME_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(psvme <- raster::predict(object=xn, model=results, fun=predict.SVME, na.rm=TRUE, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(psvme <- terra::predict(object=xn, model=results, fun=predict.SVME, na.rm=TRUE, factors=factlevels,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("SVM prediction (e1071 package) failed"))},
             warning= function(war) {print(paste("SVM prediction (e1071 package) failed"))},
             silent=F)
         }else{
-            psvme <- raster::predict(object=xn, model=results, fun=predict.SVME, na.rm=TRUE, factors=factlevels,
-                filename=fullname, progress='text', overwrite=TRUE)
+            psvme <- terra::predict(object=xn, model=results, fun=predict.SVME, na.rm=TRUE, factors=factlevels,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(psvme) == F) {
             results2 <- SVME.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=psvme, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=psvme, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "SVME"
-                psvme <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                psvme <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             psvme <- trunc(1000*psvme)
-            raster::writeRaster(x=psvme, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=psvme, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(psvme, p)/1000
-                abs1 <- raster::extract(psvme, a)/1000
+                pres1 <- terra::extract(psvme, p)[,2]/1000
+                abs1 <- terra::extract(psvme, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["SVME"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1475,8 +1471,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(psvme, pt)/1000
-                abs1 <- raster::extract(psvme, at)/1000
+                pres1 <- terra::extract(psvme, pt)[,2]/1000
+                abs1 <- terra::extract(psvme, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1494,36 +1490,37 @@
         }
         results <- GLMNET.OLD
         pglmnet <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_GLMNET", sep="")
-        xn.num <- raster::subset(xn, subset=models.list$num.vars)
+        fullname <- paste("models/", RASTER.species.name, "_GLMNET.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_GLMNET_step1.tif", sep="")
+        xn.num <- terra::subset(xn, subset=models.list$num.vars)
         if (CATCH.OFF == F) {
-            tryCatch(pglmnet <- raster::predict(object=xn.num, model=results, fun=predict.GLMNET, na.rm=TRUE, GLMNET.class=GLMNET.class,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pglmnet <- terra::predict(object=xn.num, model=results, fun=predict.GLMNET, na.rm=TRUE, GLMNET.class=GLMNET.class,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("GLMNET prediction (glmnet package) failed"))},
             warning= function(war) {print(paste("GLMNET prediction (glmnet package) failed"))},
             silent=F)
         }else{
-            pglmnet <- raster::predict(object=xn.num, model=results, fun=predict.GLMNET, na.rm=TRUE, GLMNET.class=GLMNET.class,
-                filename=fullname, progress='text', overwrite=TRUE)
+            pglmnet <- terra::predict(object=xn.num, model=results, fun=predict.GLMNET, na.rm=TRUE, GLMNET.class=GLMNET.class,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pglmnet) == F) {
             results2 <- GLMNET.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pglmnet, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pglmnet, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "GLMNET"
-                pglmnet <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pglmnet <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pglmnet <- trunc(1000*pglmnet)
-            raster::writeRaster(x=pglmnet, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pglmnet, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pglmnet, p)/1000
-                abs1 <- raster::extract(pglmnet, a)/1000
+                pres1 <- terra::extract(pglmnet, p)[,2]/1000
+                abs1 <- terra::extract(pglmnet, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["GLMNET"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1534,8 +1531,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pglmnet, pt)/1000
-                abs1 <- raster::extract(pglmnet, at)/1000
+                pres1 <- terra::extract(pglmnet, pt)[,2]/1000
+                abs1 <- terra::extract(pglmnet, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1550,34 +1547,35 @@
         cat(paste("\n", mc, ". original BIOCLIM algorithm (package: BiodiversityR)\n", sep=""))
         results <- BIOCLIM.O.OLD
         pbioO <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_BIOCLIMO", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_BIOCLIMO.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_BIOCLIMO_step1.tif", sep="")
         if (CATCH.OFF == F){
-            tryCatch(pbioO <- raster::predict(object=xn, model=results, fun=predict.BIOCLIM.O, na.rm=TRUE, 
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pbioO <- terra::predict(object=xn, model=results, fun=predict.BIOCLIM.O, na.rm=TRUE, 
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("original BIOCLIM prediction failed"))},
             silent=F)
         }else{
-            pbioO <- raster::predict(object=xn, model=results, fun=predict.BIOCLIM.O, na.rm=TRUE, 
-                filename=fullname, progress='text', overwrite=TRUE)
+            pbioO <- terra::predict(object=xn, model=results, fun=predict.BIOCLIM.O, na.rm=TRUE, 
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pbioO) == F) {
             results2 <- BIOCLIM.O.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pbioO, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pbioO, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "BIOCLIM.O"
-                pbioO <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pbioO <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pbioO <- trunc(1000*pbioO)
-            raster::writeRaster(x=pbioO, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pbioO, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pbioO, p)/1000
-                abs1 <- raster::extract(pbioO, a)/1000
+                pres1 <- terra::extract(pbioO, p)[,2]/1000
+                abs1 <- terra::extract(pbioO, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["BIOCLIM.O"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1588,8 +1586,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pbioO, pt)/1000
-                abs1 <- raster::extract(pbioO, at)/1000
+                pres1 <- terra::extract(pbioO, pt)[,2]/1000
+                abs1 <- terra::extract(pbioO, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1601,8 +1599,8 @@
     }
     if (output.weights["BIOCLIM"] > 0 || output.weights["DOMAIN"] > 0 || output.weights["MAHAL"] > 0 || output.weights["MAHAL01"] > 0) {
         if(is.null(factors) == F) {
-            xn <- raster::dropLayer(xn, which(names(xn) %in% factors)) 
-            xn <- raster::stack(xn)              
+            xn <- terra::subset(xn, which((names(xn) %in% factors) == FALSE))
+#            xn <- terra::rast(xn)              
         }
     }
     if (output.weights["BIOCLIM"] > 0) {  
@@ -1610,34 +1608,40 @@
         cat(paste("\n", mc, ". BIOCLIM algorithm (package: dismo)\n", sep=""))
         results <- BIOCLIM.OLD
         pbio <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_BIOCLIM", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_BIOCLIM.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_BIOCLIM_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pbio <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
-                filename=fullname, progress='text', overwrite=TRUE),
+#            tryCatch(pbio <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
+            tryCatch(pbio <- terra::predict(object=xn.num, model=results, na.rm=TRUE,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("BIOCLIM prediction failed"))},
             silent=F)
         }else{
-            pbio <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
-                filename=fullname, progress='text', overwrite=TRUE)
+#            pbio <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
+#                filename=fullname, overwrite=TRUE)
+            
+            pbio <- terra::predict(object=xn.num, model=results, na.rm=TRUE,
+                                      filename=fullname, overwrite=TRUE)            
+            
         }
         if (is.null(pbio) == F) {
             results2 <- BIOCLIM.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pbio, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pbio, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "BIOCLIM"
-                pbio <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pbio <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pbio <- trunc(1000*pbio)
-            raster::writeRaster(x=pbio, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pbio, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pbio, p)/1000
-                abs1 <- raster::extract(pbio, a)/1000
+                pres1 <- terra::extract(pbio, p)[,2]/1000
+                abs1 <- terra::extract(pbio, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["BIOCLIM"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1648,8 +1652,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pbio, pt)/1000
-                abs1 <- raster::extract(pbio, at)/1000
+                pres1 <- terra::extract(pbio, pt)[,2]/1000
+                abs1 <- terra::extract(pbio, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1661,47 +1665,53 @@
     }
     if (output.weights["DOMAIN"] > 0) {
         if(is.null(factors) == F) {
-            xn <- raster::dropLayer(xn, which(names(xn) %in% dummy.vars.noDOMAIN)) 
-            xn <- raster::stack(xn)              
+            xn <- terra::subset(xn, which((names(xn) %in% dummy.vars.noDOMAIN) == FALSE)) 
+#            xn <- terra::rast(xn)              
         }
     }
     if (output.weights["DOMAIN"] > 0) {
         mc <- mc+1
         cat(paste("\n", mc, ". DOMAIN algorithm (package: dismo)\n", sep=""))
         if(is.null(models.list$dummy.vars.noDOMAIN) == F) {
-            xn <- raster::dropLayer(xn, which(names(xn) %in% models.list$dummy.vars.noDOMAIN))
-            xn <- raster::stack(xn)          
+            xn <- terra::subset(xn, which((names(xn) %in% models.list$dummy.vars.noDOMAIN) == FALSE))
+#            xn <- terra::rast(xn)          
         }
         results <- DOMAIN.OLD
         pdom <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_DOMAIN", sep="")
+        fullname <- paste("models/", RASTER.species.name, "_DOMAIN.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_DOMAIN_step1.tif", sep="")
         if (CATCH.OFF == F) {
-            tryCatch(pdom <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
-                filename=fullname, progress='text', overwrite=TRUE),
+#            tryCatch(pdom <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
+            tryCatch(pdom <- terra::predict(object=xn, model=results, na.rm=TRUE, 
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("DOMAIN prediction failed"))},
             silent=F)
         }else{
-            pdom <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
-                filename=fullname, progress='text', overwrite=TRUE)
+#            pdom <- dismo::predict(object=results, x=xn, na.rm=TRUE, 
+#                filename=fullname, overwrite=TRUE)
+            
+            pdom <- terra::predict(object=xn, model=results, na.rm=TRUE,
+                                   filename=fullname, overwrite=TRUE) 
+            
         }
         if (is.null(pdom) == F) {
             results2 <- DOMAIN.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pdom, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+#                fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pdom, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "DOMAIN"
-                pdom <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pdom <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pdom <- trunc(1000*pdom)
-            raster::writeRaster(x=pdom, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pdom, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pdom, p)/1000
-                abs1 <- raster::extract(pdom, a)/1000
+                pres1 <- terra::extract(pdom, p)[,2]/1000
+                abs1 <- terra::extract(pdom, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["DOMAIN"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1712,8 +1722,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pdom, pt)/1000
-                abs1 <- raster::extract(pdom, at)/1000
+                pres1 <- terra::extract(pdom, pt)[,2]/1000
+                abs1 <- terra::extract(pdom, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1725,8 +1735,8 @@
     }
     if (output.weights["MAHAL"] > 0 || output.weights["MAHAL01"] > 0) {  
         if(is.null(dummy.vars) == F) {
-            xn <- raster::dropLayer(xn, which(names(xn) %in% dummy.vars))
-            xn <- raster::stack(xn)            
+            xn <- terra::subset(xn, which((names(xn) %in% dummy.vars) == FALSE))
+#            xn <- terra::rast(xn)            
         }
     }
     if (output.weights["MAHAL"] > 0) {  
@@ -1734,30 +1744,31 @@
         cat(paste("\n", mc, ". Mahalanobis algorithm (package: dismo)\n", sep=""))
         results <- MAHAL.OLD
         pmahal <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_MAHAL", sep="")
-# not possible to use the predict.mahal function as raster::predict automatically reverts to dismo::predict for 'DistModel' objects
+        fullname <- paste("models/", RASTER.species.name, "_MAHAL.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_MAHAL_step1.tif", sep="")
+# not possible to use the predict.mahal function as terra::predict automatically reverts to dismo::predict for 'DistModel' objects
         results2 <- MAHAL.PROBIT.OLD
 # PROBIT FALSE        
         if (is.null(results2) == F) {
             if (CATCH.OFF == F) {
-                tryCatch(pmahal <- raster::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=FALSE,
-                    filename=fullname, progress='text', overwrite=TRUE),
+                tryCatch(pmahal <- terra::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=FALSE,
+                    filename=fullname, overwrite=TRUE),
                 error= function(err) {print(paste("Mahalanobis prediction failed"))},
                 silent=F)
             }else{       
-                pmahal <- raster::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=FALSE,
-                    filename=fullname, progress='text', overwrite=TRUE)
+                pmahal <- terra::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=FALSE,
+                    filename=fullname, overwrite=TRUE)
             }
 # PROBIT TRUE
         }else{
             if (CATCH.OFF == F) {
-                tryCatch(pmahal <- raster::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=TRUE,
-                    filename=fullname, progress='text', overwrite=TRUE),
+                tryCatch(pmahal <- terra::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=TRUE,
+                    filename=fullname, overwrite=TRUE),
                 error= function(err) {print(paste("Mahalanobis prediction failed"))},
                 silent=F)
             }else{
-                pmahal <- raster::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=TRUE,
-                    filename=fullname, progress='text', overwrite=TRUE)
+                pmahal <- terra::predict(object=xn, model=results, fun=predict.MAHAL, na.rm=TRUE, PROBIT=TRUE,
+                    filename=fullname, overwrite=TRUE)
             }
         }
 
@@ -1765,20 +1776,20 @@
 #            results2 <- MAHAL.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pmahal, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+ #               fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pmahal, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "MAHAL"
-                pmahal <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pmahal <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pmahal <- trunc(1000*pmahal)
-            raster::writeRaster(x=pmahal, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pmahal, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmahal, p)/1000
-                abs1 <- raster::extract(pmahal, a)/1000
+                pres1 <- terra::extract(pmahal, p)[,2]/1000
+                abs1 <- terra::extract(pmahal, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["MAHAL"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1789,8 +1800,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmahal, pt)/1000
-                abs1 <- raster::extract(pmahal, at)/1000
+                pres1 <- terra::extract(pmahal, pt)[,2]/1000
+                abs1 <- terra::extract(pmahal, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1804,21 +1815,22 @@
         mc <- mc+1
         cat(paste("\n", mc, ". Mahalanobis algorithm (transformed within 0 to 1 interval)", "\n", sep=""))
         if(is.null(dummy.vars) == F) {
-            xn <- raster::dropLayer(xn, which(names(xn) %in% dummy.vars))
-            xn <- raster::stack(xn)            
+            xn <- terra::subset(xn, which((names(xn) %in% dummy.vars) == FALSE))
+#            xn <- terra::rast(xn)            
         }
         results <- MAHAL01.OLD
 #        pmahal <- NULL
-        fullname <- paste("models/", RASTER.species.name, "_MAHAL01", sep="")
-# not possible to use the predict.mahal function as raster::predict automatically reverts to dismo::predict for 'DistModel' objects
+        fullname <- paste("models/", RASTER.species.name, "_MAHAL01.tif", sep="")
+        fullname2 <- paste("models/", RASTER.species.name, "_MAHAL01_step1.tif", sep="")
+# not possible to use the predict.mahal function as terra::predict automatically reverts to dismo::predict for 'DistModel' objects
         if (CATCH.OFF == F) {
-            tryCatch(pmahal01 <- raster::predict(object=xn, model=results, fun=predict.MAHAL01, na.rm=TRUE, MAHAL.shape=MAHAL.shape,
-                filename=fullname, progress='text', overwrite=TRUE),
+            tryCatch(pmahal01 <- terra::predict(object=xn, model=results, fun=predict.MAHAL01, na.rm=TRUE, MAHAL.shape=MAHAL.shape,
+                filename=fullname, overwrite=TRUE),
             error= function(err) {print(paste("transformed Mahalanobis prediction failed"))},
             silent=F)
         }else{
-            pmahal01 <- raster::predict(object=xn, model=results, fun=predict.MAHAL01, na.rm=TRUE, MAHAL.shape=MAHAL.shape,
-                filename=fullname, progress='text', overwrite=TRUE)
+            pmahal01 <- terra::predict(object=xn, model=results, fun=predict.MAHAL01, na.rm=TRUE, MAHAL.shape=MAHAL.shape,
+                filename=fullname, overwrite=TRUE)
         }
         if (is.null(pmahal01) == F) {
 #            pmahal <- pmahal - 1 - MAHAL.shape
@@ -1827,20 +1839,20 @@
             results2 <- MAHAL01.PROBIT.OLD
             if (is.null(results2) == F) {
                 cat(paste("Probit transformation", "\n", sep=""))
-                fullname2 <- paste(fullname, "_step1", sep="")
-                raster::writeRaster(x=pmahal01, filename=fullname2, progress='text', overwrite=TRUE)
-                explan.stack <- raster::stack(fullname2)
+ #               fullname2 <- paste(fullname, "_step1", sep="")
+                terra::writeRaster(x=pmahal01, filename=fullname2, overwrite=TRUE)
+                explan.stack <- terra::rast(fullname2)
                 names(explan.stack) <- "MAHAL01"
-                pmahal01 <- raster::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
-                    filename=fullname, progress='text', overwrite=TRUE)                
+                pmahal01 <- terra::predict(object=explan.stack, model=results2, na.rm=TRUE, type="response",
+                    filename=fullname, overwrite=TRUE)                
             }
             pmahal01 <- trunc(1000*pmahal01)
-            raster::writeRaster(x=pmahal01, filename=fullname, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+            terra::writeRaster(x=pmahal01, filename=fullname, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
             if(evaluate == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations p and a", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmahal01, p)/1000
-                abs1 <- raster::extract(pmahal01, a)/1000
+                pres1 <- terra::extract(pmahal01, p)[,2]/1000
+                abs1 <- terra::extract(pmahal01, a)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
                 thresholds.raster["MAHAL01"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -1851,8 +1863,8 @@
             if(retest == T) {
                 eval1 <- pres1 <- abs1 <- NULL
                 cat(paste("\n", "Evaluation at locations pt and at", "\n\n", sep = ""))
-                pres1 <- raster::extract(pmahal01, pt)/1000
-                abs1 <- raster::extract(pmahal01, at)/1000
+                pres1 <- terra::extract(pmahal01, pt)[,2]/1000
+                abs1 <- terra::extract(pmahal01, at)[,2]/1000
                 eval1 <- dismo::evaluate(p=pres1, a=abs1)
                 print(eval1)
             }
@@ -1886,237 +1898,227 @@
     mc <- mc+1
     cat(paste("\n\n", mc, ". Ensemble algorithm\n", sep=""))
     ensemble.statistics["n.models"] <- sum(as.numeric(output.weights > 0))
-    ensemble <- xn[[1]] == raster::NAvalue(xn[[1]])
-    raster::setMinMax(ensemble)
+#    ensemble <- xn[[1]] == terra::NAflag(xn[[1]])
+# avoid problems with SRS not matching
+    ensemble <- terra::rast(fullname)
+    ensemble <- ensemble > Inf
+    terra::setMinMax(ensemble)
     names(ensemble) <- raster.title
-    raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+    terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
     enscount <- ensemble 
-    raster::setMinMax(enscount)
+    terra::setMinMax(enscount)
     names(enscount) <- paste(raster.title, "_count", sep="")
-    raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+    terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     enspresence <- ensemble
-    raster::setMinMax(enspresence)
+    terra::setMinMax(enspresence)
     names(enspresence) <- paste(raster.title, "_presence", sep="")
-    raster::writeRaster(x=enspresence, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+    terra::writeRaster(x=enspresence, filename=rasterpresence, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     if (output.weights["MAXENT"] > 0) {
         ensemble <- ensemble + output.weights["MAXENT"] * pmaxent
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
         pmaxent <- pmaxent >= 1000 * thresholds["MAXENT"]
         enscount <- enscount + pmaxent
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["MAXNET"] > 0) {
         ensemble <- ensemble + output.weights["MAXNET"] * pmaxnet
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
         pmaxnet <- pmaxnet >= 1000 * thresholds["MAXNET"]
         enscount <- enscount + pmaxnet
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["MAXLIKE"] > 0) {
         ensemble <- ensemble + output.weights["MAXLIKE"] * pmaxlike
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
         pmaxlike <- pmaxlike >= 1000 * thresholds["MAXLIKE"]
         enscount <- enscount + pmaxlike
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GBM"] > 0) {
         ensemble <- ensemble + output.weights["GBM"] * pgbm
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
         pgbm <- pgbm >= 1000 * thresholds["GBM"]
         enscount <- enscount + pgbm
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GBMSTEP"] > 0) {
         ensemble <- ensemble + output.weights["GBMSTEP"] * pgbms
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
         pgbms <- pgbms >= 1000 * thresholds["GBMSTEP"]
         enscount <- enscount + pgbms
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["RF"] > 0) {
         ensemble <- ensemble + output.weights["RF"] * prf
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
         prf <- prf >= 1000 * thresholds["RF"]
         enscount <- enscount + prf
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["CF"] > 0) {
         ensemble <- ensemble + output.weights["CF"] * pcf
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
         pcf <- pcf >= 1000 * thresholds["CF"]
         enscount <- enscount + pcf
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GLM"] > 0) {
         ensemble <- ensemble + output.weights["GLM"] * pglm
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)    
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)    
         pglm <- pglm >= 1000 * thresholds["GLM"]
         enscount <- enscount + pglm
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GLMSTEP"] > 0) {
         ensemble <- ensemble + output.weights["GLMSTEP"] * pglms
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
         pglms <- pglms >= 1000 * thresholds["GLMSTEP"]
         enscount <- enscount + pglms
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GAM"] > 0) {
         ensemble <- ensemble + output.weights["GAM"] * pgam
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pgam <- pgam >= 1000 * thresholds["GAM"]
         enscount <- enscount + pgam
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GAMSTEP"] > 0) {
         ensemble <- ensemble + output.weights["GAMSTEP"] * pgams
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pgams <- pgams >= 1000 * thresholds["GAMSTEP"]
         enscount <- enscount + pgams
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["MGCV"] > 0) {
         ensemble <- ensemble + output.weights["MGCV"] * pmgcv
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pmgcv <- pmgcv >= 1000 * thresholds["MGCV"]
         enscount <- enscount + pmgcv
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["MGCVFIX"] > 0) {
         ensemble <- ensemble + output.weights["MGCVFIX"] * pmgcvf
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pmgcvf <- pmgcvf >= 1000 * thresholds["MGCVFIX"]
         enscount <- enscount + pmgcvf
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["EARTH"] > 0) {
         ensemble <- ensemble + output.weights["EARTH"] * pearth
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pearth <- pearth >= 1000 * thresholds["EARTH"]
         enscount <- enscount + pearth
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["RPART"] > 0) {
         ensemble <- ensemble + output.weights["RPART"] * prpart
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         prpart <- prpart >= 1000 * thresholds["RPART"]
         enscount <- enscount + prpart
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["NNET"] > 0) {
         ensemble <- ensemble + output.weights["NNET"] * pnnet
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pnnet <- pnnet >= 1000 * thresholds["NNET"]
         enscount <- enscount + pnnet
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["FDA"] > 0) {
         ensemble <- ensemble + output.weights["FDA"] * pfda
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pfda <- pfda >= 1000 * thresholds["FDA"]
         enscount <- enscount + pfda
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["SVM"] > 0) {
         ensemble <- ensemble + output.weights["SVM"] * psvm
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         psvm <- psvm >= 1000 * thresholds["SVM"]
         enscount <- enscount + psvm
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["SVME"] > 0) {
         ensemble <- ensemble + output.weights["SVME"] * psvme
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         psvme <- psvme >= 1000 * thresholds["SVME"]
         enscount <- enscount + psvme
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GLMNET"] > 0) {
         ensemble <- ensemble + output.weights["GLMNET"] * pglmnet
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pglmnet <- pglmnet >= 1000 * thresholds["GLMNET"]
         enscount <- enscount + pglmnet
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["BIOCLIM.O"] > 0) {
         ensemble <- ensemble + output.weights["BIOCLIM.O"] * pbioO
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pbioO <- pbioO >= 1000 * thresholds["BIOCLIM.O"]
         enscount <- enscount + pbioO
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+ #       terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["BIOCLIM"] > 0) {
         ensemble <- ensemble + output.weights["BIOCLIM"] * pbio
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pbio <- pbio >= 1000 * thresholds["BIOCLIM"]
         enscount <- enscount + pbio
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["DOMAIN"] > 0) {
         ensemble <- ensemble + output.weights["DOMAIN"] * pdom
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pdom <- pdom >= 1000 * thresholds["DOMAIN"]
         enscount <- enscount + pdom
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["MAHAL"] > 0) {
         ensemble <- ensemble + output.weights["MAHAL"] * pmahal
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pmahal <- pmahal >= 1000 * thresholds["MAHAL"]
         enscount <- enscount + pmahal
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
     if (output.weights["MAHAL01"] > 0) {
         ensemble <- ensemble + output.weights["MAHAL01"] * pmahal01
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pmahal01 <- pmahal01 >= 1000 * thresholds["MAHAL01"]
         enscount <- enscount + pmahal01
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
     }
 #
+terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
+    
 # note that submodels had already been multiplied by 1000
     ensemble <- trunc(ensemble)
-    raster::setMinMax(ensemble)
-    ensemble.statistics["ensemble.min"] <- raster::minValue(ensemble)
-    ensemble.statistics["ensemble.max"] <- raster::maxValue(ensemble)
+    terra::setMinMax(ensemble)
+    ensemble.statistics[c("ensemble.min", "ensemble.max")] <- as.numeric(terra::minmax(ensemble))
 #    names(ensemble) <- raster.title
-#    raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#    terra::writeRaster(x=ensemble, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #  avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(ensemble, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
+    terra::writeRaster(ensemble, filename="working.tif", overwrite=T)
+    working.raster <- terra::rast("working.tif")
     names(working.raster) <- raster.title
-    raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+    terra::writeRaster(working.raster, filename=rasterfull, overwrite=TRUE, filetype=RASTER.filetype, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
-    raster::setMinMax(enscount)
-    ensemble.statistics["count.min"] <- raster::minValue(enscount)
-    ensemble.statistics["count.max"] <- raster::maxValue(enscount)
+    terra::setMinMax(enscount)
+    ensemble.statistics[c("count.min", "count.max")] <- as.numeric(terra::minmax(enscount))
 #    names(enscount) <- paste(raster.title, "_count", sep="")
-#    raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#    terra::writeRaster(x=enscount, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
 #  avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(enscount, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
+    terra::writeRaster(enscount, filename="working.tif", overwrite=T)
+    working.raster <- terra::rast("working.tif")
     names(working.raster) <- paste(raster.title, "_count", sep="")
-    raster::writeRaster(working.raster, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
-#
-    if (KML.out == T) {
-        raster::writeRaster(enscount, filename="KMLworking.grd", overwrite=T)
-        KMLworking.raster <- raster::raster("KMLworking.grd")
-        names(KMLworking.raster) <- paste(raster.title, "_count", sep="")
-        nmax <- sum(as.numeric(output.weights > 0))
-        if (nmax > 3) {
-            raster::KML(KMLworking.raster, filename=kmlcount, col=c("grey", "black", grDevices::rainbow(n=(nmax-2), start=0, end=1/3), "blue"),
-                colNA=0, blur=10, overwrite=T, breaks=seq(from=-1, to=nmax, by=1))
-        }else{
-            raster::KML(KMLworking.raster, filename=kmlcount, col=c("grey", grDevices::rainbow(n=nmax, start=0, end=1/3)),
-                colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
-        }
-    }
+    terra::writeRaster(working.raster, filename=rastercount, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
 #
     if(evaluate == T) {
         eval1 <- NULL
         cat(paste("\n", "Evaluation of created ensemble raster layer (", rasterfull, ") at locations p and a", "\n\n", sep = ""))
-        pres_consensus <- raster::extract(ensemble, p)/1000
-        abs_consensus <- raster::extract(ensemble, a)/1000
+        pres_consensus <- terra::extract(ensemble, p)[,2]/1000
+        abs_consensus <- terra::extract(ensemble, a)[,2]/1000
         eval1 <- dismo::evaluate(p=pres_consensus, a=abs_consensus)
         print(eval1)
         thresholds["ENSEMBLE"] <- ensemble.threshold(eval1, threshold.method=threshold.method, threshold.sensitivity=threshold.sensitivity, 
@@ -2127,50 +2129,22 @@
     if(retest == T) {
         eval1 <- NULL
         cat(paste("\n", "Evaluation of created ensemble raster layer (", rasterfull, ") at locations pt and at", "\n\n", sep = ""))
-        pres_consensus <- raster::extract(ensemble, pt)/1000
-        abs_consensus <- raster::extract(ensemble, at)/1000
+        pres_consensus <- terra::extract(ensemble, pt)[,2]/1000
+        abs_consensus <- terra::extract(ensemble, at)[,2]/1000
         eval1 <- dismo::evaluate(p=pres_consensus, a=abs_consensus)
         print(eval1)
     }
     ensemble.statistics["ensemble.threshold"] <- thresholds["ENSEMBLE"]
 #
-    if (KML.out == T) {
-        raster::writeRaster(ensemble, filename="KMLworking.grd", overwrite=T)
-        KMLworking.raster <- raster::raster("KMLworking.grd")
-        raster::setMinMax(KMLworking.raster)
-        names(KMLworking.raster) <- raster.title
-        raster::writeRaster(KMLworking.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        thresholdx <- 1000 * as.numeric(thresholds["ENSEMBLE"])
-        raster.min <- raster::minValue(KMLworking.raster)
-        raster.max <- raster::maxValue(KMLworking.raster)
-        abs.breaks <- 8
-        pres.breaks <- 8
-        seq1 <- round(seq(from=raster.min, to=thresholdx, length.out=abs.breaks), 4)
-        seq1 <- seq1[1:(abs.breaks-1)]
-        seq1[-abs.breaks]
-        seq1 <- unique(seq1)
-        seq2 <- round(seq(from = thresholdx, to = raster.max, length.out=pres.breaks), 4)
-        seq2 <- unique(seq2)
-        raster::KML(KMLworking.raster, filename=kmlfull, breaks = c(seq1, seq2), col = c(grDevices::rainbow(n=length(seq1), start=0, end =1/6), grDevices::rainbow(n=length(seq2)-1, start=3/6, end=4/6)), colNA = 0, 
-            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE)
-    }
     enspresence <- ensemble >= 1000 * thresholds["ENSEMBLE"]
-    raster::setMinMax(enspresence)
+    terra::setMinMax(enspresence)
 #    names(enspresence) <- paste(raster.title, "_presence", sep="")
-#    raster::writeRaster(x=enspresence, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#    terra::writeRaster(x=enspresence, filename=rasterpresence, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
 #  avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(enspresence, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
+    terra::writeRaster(enspresence, filename="working.tif", overwrite=T)
+    working.raster <- terra::rast("working.tif")
     names(working.raster) <- paste(raster.title, "_presence", sep="")
-    raster::writeRaster(working.raster, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
-#
-    if (KML.out == T) {
-        raster::writeRaster(enspresence, filename="KMLworking.grd", overwrite=T)
-        KMLworking.raster <- raster::raster("KMLworking.grd")
-        names(KMLworking.raster) <- paste(raster.title, "_presence", sep="")
-        raster::KML(KMLworking.raster, filename=kmlpresence, col=c("grey", "green"),
-            colNA=0, blur=KML.blur, maxpixels=KML.maxpixels, overwrite=T)
-    }
+    terra::writeRaster(working.raster, filename=rasterpresence, overwrite=TRUE, filetype=RASTER.filetype, datatype="INT1U", NAflag=255)
 #
     cat(paste("\n", "End of modelling for organism: ", RASTER.species.orig, "\n\n", sep = ""))
     cat(paste("Predictions were made for RasterStack: ", stack.title, "\n\n", sep = ""))

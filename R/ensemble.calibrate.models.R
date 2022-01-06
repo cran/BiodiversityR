@@ -58,20 +58,40 @@
         k <- max(k.list$groupp)
     }
 
+x.was.terra <- FALSE    
+    
 # check data
     if (is.null(TrainData) == T) {
-        if(is.null(x) == T) {stop("value for parameter x is missing (RasterStack object)")}
-        if(inherits(x,"RasterStack") == F) {stop("x is not a RasterStack object")}
-#        if(raster::projection(x)=="NA") {
-#            raster::projection(x) <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
-#        }
+        if(is.null(x) == T) {stop("value for parameter x is missing (raster::RasterStack or terra::rast object)")}
+        if(inherits(x,"RasterStack") == FALSE && inherits(x, "SpatRaster") == FALSE) {stop("x is not a RasterStack or SpatRaster object")}
+        if(inherits(x, "SpatRaster")) {
+            cat(paste("\n", "NOTE: raster procedures will be done via the raster package, not terra", "\n", sep = ""))
+            cat(paste("This also allows usage of dismo::prepareData internally.", "\n", sep = ""))
+            x <- raster::stack(x)
+            x.was.terra <- TRUE
+        }
         if(is.null(p) == T) {stop("presence locations are missing (parameter p)")}
     }
-    if(is.null(p) == F) {names(p) <- c("x", "y")}
-    if(is.null(a) == F) {names(a) <- c("x", "y")}
-    if(is.null(pt) == F) {names(pt) <- c("x", "y")}
-    if(is.null(at) == F) {names(at) <- c("x", "y")}
-    if(is.null(MAXENT.a) == F) {names(MAXENT.a) <- c("x", "y")}
+    if(is.null(p) == F) {
+        p <- data.frame(p)
+        names(p) <- c("x", "y")
+    }
+    if(is.null(a) == F) {
+        a <- data.frame(a)
+        names(a) <- c("x", "y")
+    }
+    if(is.null(pt) == F) {
+        pt <- data.frame(pt)
+        names(pt) <- c("x", "y")
+    }
+    if(is.null(at) == F) {
+        at <- data.frame(at)
+        names(at) <- c("x", "y")
+    }
+    if(is.null(MAXENT.a) == F) {
+        MAXENT.a <- data.frame(MAXENT.a)
+        names(MAXENT.a) <- c("x", "y")      
+    }
 #
     if(models.save==T) {
         models.keep <- TRUE
@@ -100,10 +120,8 @@
     if (is.null(TrainData) == F) {
         TrainData <- data.frame(TrainData)
         if (names(TrainData)[1] !="pb") {stop("first column for TrainData should be 'pb' containing presence (1) and absence (0) data")}
-        if (is.null(x) == F) { 
-            if (raster::nlayers(x) != (ncol(TrainData)-1)) {
-                cat(paste("\n", "WARNING: different number of explanatory variables in rasterStack and TrainData", sep = ""))
-            }
+        if (raster::nlayers(x) != (ncol(TrainData)-1)) {
+            cat(paste("\n", "WARNING: different number of explanatory variables in rasterStack and TrainData", sep = ""))
         }
     }
 
@@ -231,9 +249,10 @@
             }
         }
         # set minimum and maximum values
-            for (i in 1:raster::nlayers(x)) {
-                x[[i]] <- raster::setMinMax(x[[i]])
-            }
+        for (i in 1:raster::nlayers(x)) {
+            x[[i]] <- raster::setMinMax(x[[i]])
+        }
+
         # declare factor layers
         if(is.null(factors)==F) {
             for (i in 1:length(factors)) {

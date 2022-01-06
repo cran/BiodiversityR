@@ -64,40 +64,56 @@
         k <- max(k.list$groupa)
     }
 
+    x.was.terra <- FALSE
+    
 # new option using data.frame
     if (is.null(TrainTestData == TRUE)) {
-    if(is.null(x) == T) {stop("value for parameter x is missing (RasterStack object)")}
-    if(inherits(x, "RasterStack") == F) {stop("x is not a RasterStack object")}
-    if(is.null(p) == T) {stop("presence locations are missing (parameter p)")}
-    if(is.null(p) == F) {names(p) <- c("x", "y")}
-    if(is.null(a) == F) {names(a) <- c("x", "y")}
-    if(is.null(MAXENT.a) == F) {names(MAXENT.a) <- c("x", "y")}
-
-    if (is.null(layer.drops) == F) {
-        layer.drops <- as.character(layer.drops)
-        if (is.null(x)==F) {x <- raster::dropLayer(x, which(names(x) %in% layer.drops))}
-        x <- raster::stack(x)
-        factors <- as.character(factors)
-        dummy.vars <- as.character(dummy.vars)
-        nd <- length(layer.drops)
-        for (i in 1:nd) {
-            if (is.null(factors) == F) {
-                factors <- factors[factors != layer.drops[i]]
-                if(length(factors) == 0) {factors <- NULL}
-            }
-            if (is.null(dummy.vars) == F) {
-                dummy.vars <- dummy.vars[dummy.vars != layer.drops[i]]
-                if(length(dummy.vars) == 0) {dummy.vars <- NULL}
-            }
+        if(inherits(x, "RasterStack") == FALSE && inherits(x, "SpatRaster") == FALSE) {stop("x is not a RasterStack object")}
+# use the raster format for preparing and checking the data
+        if(inherits(x, "SpatRaster")) {
+            x <- raster::stack(x)
+            x.was.terra <- TRUE
         }
-        if(length(layer.drops) == 0) {layer.drops <- NULL}
-    }
+        if(is.null(p) == T) {stop("presence locations are missing (parameter p)")}
+        if(is.null(p) == F) {
+            p <- data.frame(p)
+            names(p) <- c("x", "y")
+        }
+        if(is.null(a) == F) {
+            a <- data.frame(a)
+            names(a) <- c("x", "y")
+        }
+        if(is.null(MAXENT.a) == F) {
+            MAXENT.a <- data.frame(MAXENT.a)
+            names(MAXENT.a) <- c("x", "y")
+        }
+        if (is.null(layer.drops) == F) {
+            layer.drops <- as.character(layer.drops)
+            if (inherits(x, "RasterStack")) {
+                x <- raster::dropLayer(x, which(names(x) %in% layer.drops))
+                x <- raster::stack(x)
+            }
+            factors <- as.character(factors)
+            dummy.vars <- as.character(dummy.vars)
+            nd <- length(layer.drops)
+            for (i in 1:nd) {
+                if (is.null(factors) == F) {
+                    factors <- factors[factors != layer.drops[i]]
+                    if(length(factors) == 0) {factors <- NULL}
+                }
+                if (is.null(dummy.vars) == F) {
+                    dummy.vars <- dummy.vars[dummy.vars != layer.drops[i]]
+                    if(length(dummy.vars) == 0) {dummy.vars <- NULL}
+                }
+            }
+            if(length(layer.drops) == 0) {layer.drops <- NULL}
+        }
     } # no data.frame
 
     if (is.null(TrainTestData) == F) {
         TrainTestData <- data.frame(TrainTestData)
         if (names(TrainTestData)[1] !="pb") {stop("first column for TrainTestData should be 'pb' containing presence (1) and absence (0) data")}
-        if (is.null(x) == F) { 
+        if (inherits(x, "RasterStack")) { 
             if (raster::nlayers(x) != (ncol(TrainTestData)-1)) {
                 cat(paste("\n", "WARNING: different number of explanatory variables in rasterStack and TrainTestData", sep = ""))
             }
@@ -612,6 +628,9 @@
     cat(paste(")", "\n", sep=""))
 
     if (SINK==T && OLD.SINK==F) {sink(file=NULL, append=T)}
+
+    if (x.was.terra == TRUE) {x <- terra::rast(x)}
+    
     if (data.keep == F) {
         cat(paste("\n\n"))
         return(list(AUC.table=output, table=output, output.weights=output.weights, AUC.with.suggested.weights=output2, 

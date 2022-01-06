@@ -8,16 +8,21 @@
 {
     .BiodiversityR <- new.env()
 #    if (! require(dismo)) {stop("Please install the dismo package")}
-    if(inherits(PREC.stack, "RasterStack") == F) {stop("PREC.stack is not a RasterStack object")}
-    if(inherits(PET.stack, "RasterStack") == F) {stop("PET.stack is not a RasterStack object")}
+   
+    if(inherits(PREC.stack, "RasterStack") == FALSE && inherits(PREC.stack, "SpatRaster") == FALSE) {stop("PREC.stack is not a RasterStack or SpatRaster object")}
+    if(inherits(PET.stack, "RasterStack") == FALSE && inherits(PET.stack, "SpatRaster") == FALSE) {stop("PET.stack is not a RasterStack or SpatRaster object")}
     
     names(PREC.stack) <- paste0("PREC", 1:length(names(PREC.stack)))
     names(PET.stack) <- paste0("PET", 1:length(names(PET.stack)))    
-
-    x <- raster::stack(c(PREC.stack, PET.stack)) 
-
-    PET.season.object <- list(PREC.names=names(PREC.stack), PET.names=names(PET.stack))
-
+    
+    if (inherits(PREC.stack, "RasterStack") == TRUE) {
+        x <- raster::stack(c(PREC.stack, PET.stack))
+    }else{
+        x <- terra::rast(list(PREC.stack, PET.stack))
+    }
+    
+    PET.season.object <- list(PREC.names=names(PREC.stack), PET.names=names(PET.stack))    
+    
     indices <- c("seasons", "start1", "length1", "start2", "length2", "start3", "length3")
     index1 <- indices[match(index, indices)]
  
@@ -106,16 +111,32 @@
     }
 #
 # predict
-    if (CATCH.OFF == F) {
-        tryCatch(PET.seasons.raster <- raster::predict(object=x, model=PET.season.object, fun=predict.PET.seasons, index=index1, na.rm=TRUE, 
-               filename=filename, overwrite=overwrite, ...),
-           error= function(err) {print(paste("prediction of", index1, "failed"))},
-           silent=F)
-    }else{
-        PET.seasons.raster <- raster::predict(object=x, model=PET.season.object, fun=predict.PET.seasons, na.rm=TRUE, 
-               filename=filename, overwrite=overwrite, ...)
+    if (inherits(PREC.stack, "RasterStack") == TRUE) {
+        
+        if (CATCH.OFF == F) {
+            tryCatch(PET.seasons.raster <- raster::predict(object=x, model=PET.season.object, fun=predict.PET.seasons, na.rm=TRUE, 
+                                                          filename=filename, overwrite=overwrite, ...),
+                     error= function(err) {print(paste("prediction of", index1, "failed"))},
+                     silent=F)
+        }else{
+            PET.seasons.raster <- raster::predict(object=x, model=PET.season.object, fun=predict.PET.seasons, na.rm=TRUE, 
+                                                 filename=filename, overwrite=overwrite, ...)
+        }
+        
+    }else{        
+        if (CATCH.OFF == F) {
+            tryCatch(PET.seasons.raster <- terra::predict(object=x, model=PET.season.object, fun=predict.PET.seasons, na.rm=TRUE, 
+                                                         filename=filename, overwrite=overwrite, ...),
+                     error= function(err) {print(paste("prediction of", index1, "failed"))},
+                     silent=F)
+        }else{
+            PET.seasons.raster <- terra::predict(object=x, model=PET.season.object, fun=predict.PET.seasons, na.rm=TRUE, 
+                                                filename=filename, overwrite=overwrite, ...)
+        }       
+        
     }
-#    
+        
+    names(PET.seasons.raster) <- index1 
     return(PET.seasons.raster)  
 }
 
@@ -128,15 +149,19 @@
 {
     .BiodiversityR <- new.env()
 #    if (! require(dismo)) {stop("Please install the dismo package")}
-    if(inherits(PREC.stack, "RasterStack") == F) {stop("PREC.stack is not a RasterStack object")}
-    if(inherits(start.layer, "RasterLayer") == F) {stop("start.layer is not a RasterLayer object")}
-    if(inherits(length.layer, "RasterLayer") == F) {stop("length.layer is not a RasterLayer object")}
+    if(inherits(PREC.stack, "RasterStack") == FALSE && inherits(PREC.stack, "SpatRaster") == FALSE) {stop("PREC.stack is not a RasterStack or SpatRaster object")}
+    if(inherits(start.layer, "RasterLayer") == FALSE && inherits(start.layer, "SpatRaster") == FALSE) {stop("start.layer is not a RasterLayer or SpatRaster object")}
+    if(inherits(length.layer, "RasterLayer") == FALSE && inherits(length.layer, "SpatRaster") == FALSE) {stop("length.layer is not a RasterLayer or SpatRaster object")}
     
     names(PREC.stack) <- paste0("PREC", 1:length(names(PREC.stack)))
     names(start.layer) <- "start"    
     names(length.layer) <- "length"  
 
-    x <- raster::stack(c(PREC.stack, start.layer, length.layer)) 
+    if(inherits(PREC.stack, "RasterStack") == TRUE) {
+        x <- raster::stack(c(PREC.stack, start.layer, length.layer)) 
+    }else{
+        x <- terra::rast(list(PREC.stack, start.layer, length.layer)) 
+    }
 
     prec.season.object <- list(PREC.names=names(PREC.stack))
  
@@ -155,16 +180,30 @@
     }
 #
 # predict
-    if (CATCH.OFF == F) {
-        tryCatch(prec.season.raster <- raster::predict(object=x, model=prec.season.object, fun=predict.prec.season, na.rm=TRUE, 
-               filename=filename, overwrite=overwrite, ...),
-           error= function(err) {print(paste("prediction failed"))},
-           silent=F)
+    if(inherits(PREC.stack, "RasterStack") == TRUE) {    
+        if (CATCH.OFF == F) {
+            tryCatch(prec.season.raster <- raster::predict(object=x, model=prec.season.object, fun=predict.prec.season, na.rm=TRUE, 
+                                                       filename=filename, overwrite=overwrite, ...),
+                     error= function(err) {print(paste("prediction failed"))},
+                     silent=F)
+        }else{
+            prec.season.raster <- raster::predict(object=x, model=prec.season.object, fun=predict.prec.season, na.rm=TRUE, 
+                                              filename=filename, overwrite=overwrite, ...)
+        }
     }else{
-        prec.season.raster <- raster::predict(object=x, model=prec.season.object, fun=predict.prec.season, na.rm=TRUE, 
-               filename=filename, overwrite=overwrite, ...)
+        if (CATCH.OFF == F) {
+            tryCatch(prec.season.raster <- terra::predict(object=x, model=prec.season.object, fun=predict.prec.season, na.rm=TRUE, 
+                                                           filename=filename, overwrite=overwrite, ...),
+                     error= function(err) {print(paste("prediction failed"))},
+                     silent=F)
+        }else{
+            prec.season.raster <- terra::predict(object=x, model=prec.season.object, fun=predict.prec.season, na.rm=TRUE, 
+                                                  filename=filename, overwrite=overwrite, ...)
+        }       
+        
     }
-#    
+    
+    names(prec.season.raster) <- "prec.season"
     return(prec.season.raster)  
 }
 
@@ -177,16 +216,20 @@
 {
     .BiodiversityR <- new.env()
 #    if (! require(dismo)) {stop("Please install the dismo package")}
-    if(inherits(TMEAN.stack, "RasterStack") == F) {stop("TMEAN.stack is not a RasterStack object")}
-    if(inherits(start.layer, "RasterLayer") == F) {stop("start.layer is not a RasterLayer object")}
-    if(inherits(length.layer, "RasterLayer") == F) {stop("length.layer is not a RasterLayer object")}
+    if(inherits(TMEAN.stack, "RasterStack") == FALSE && inherits(TMEAN.stack, "SpatRaster") == FALSE) {stop("TMEAN.stack is not a RasterStack or SpatRaster object")}
+    if(inherits(start.layer, "RasterLayer") == FALSE && inherits(start.layer, "SpatRaster") == FALSE) {stop("start.layer is not a RasterLayer or SpatRaster object")}
+    if(inherits(length.layer, "RasterLayer") == FALSE && inherits(length.layer, "SpatRaster") == FALSE) {stop("length.layer is not a RasterLayer or SpatRaster object")}
     
     names(TMEAN.stack) <- paste0("TMEAN", 1:length(names(TMEAN.stack)))
     names(start.layer) <- "start"    
     names(length.layer) <- "length"  
 
-    x <- raster::stack(c(TMEAN.stack, start.layer, length.layer)) 
-
+    if(inherits(TMEAN.stack, "RasterStack") == TRUE) {
+        x <- raster::stack(c(TMEAN.stack, start.layer, length.layer)) 
+    }else{
+        x <- terra::rast(list(TMEAN.stack, start.layer, length.layer)) 
+    }
+    
     tmean.season.object <- list(TMEAN.names=names(TMEAN.stack))
  
     predict.tmean.season <- function(object=tmean.season.object, newdata=newdata) {
@@ -204,17 +247,31 @@
     }
 #
 # predict
-    if (CATCH.OFF == F) {
-        tryCatch(tmean.season.raster <- raster::predict(object=x, model=tmean.season.object, fun=predict.tmean.season, na.rm=TRUE, 
-               filename=filename, overwrite=overwrite, ...),
-           error= function(err) {print(paste("prediction failed"))},
-           silent=F)
+    if(inherits(TMEAN.stack, "RasterStack") == TRUE) {
+    
+        if (CATCH.OFF == F) {
+            tryCatch(tmean.season.raster <- raster::predict(object=x, model=tmean.season.object, fun=predict.tmean.season, na.rm=TRUE, 
+                   filename=filename, overwrite=overwrite, ...),
+                 error= function(err) {print(paste("prediction failed"))},
+                 silent=F)
+        }else{
+            tmean.season.raster <- raster::predict(object=x, model=tmean.season.object, fun=predict.tmean.season, na.rm=TRUE, 
+                filename=filename, overwrite=overwrite, ...)
+        }
     }else{
-        tmean.season.raster <- raster::predict(object=x, model=tmean.season.object, fun=predict.tmean.season, na.rm=TRUE, 
-               filename=filename, overwrite=overwrite, ...)
+        if (CATCH.OFF == F) {
+            tryCatch(tmean.season.raster <- terra::predict(object=x, model=tmean.season.object, fun=predict.tmean.season, na.rm=TRUE, 
+                                                            filename=filename, overwrite=overwrite, ...),
+                     error= function(err) {print(paste("prediction failed"))},
+                     silent=F)
+        }else{
+            tmean.season.raster <- terra::predict(object=x, model=tmean.season.object, fun=predict.tmean.season, na.rm=TRUE, 
+                                                   filename=filename, overwrite=overwrite, ...)
+        }
     }
-#    
-    return(tmean.season.raster)  
+# 
+    names(tmean.season.raster) <- "tmean.season"
+    return(tmean.season.raster)
 }
 
 
@@ -226,7 +283,7 @@
 {
     .BiodiversityR <- new.env()
 #    if (! require(dismo)) {stop("Please install the dismo package")}
-    if(inherits(season.raster, "RasterLayer") == F) {stop("season.raster is not a RasterLayer object")}
+    if(inherits(season.raster, "RasterLayer") == FALSE && inherits(season.raster, "SpatRaster") == FALSE) {stop("season.raster is not a RasterLayer or SpatRaster object")}
     
     suit.object <- list(thresholds=thresholds[order(thresholds)])
  
@@ -249,20 +306,33 @@
             }
             result[i] <- R.out                   
         }
-        return(result)
+        return(as.numeric(result))
     }
 #
 # predict
-    if (CATCH.OFF == F) {
-        tryCatch(suit.raster <- raster::predict(object=season.raster, model=suit.object, fun=predict.suit, na.rm=TRUE, 
-               filename=filename, overwrite=overwrite, ...),
-           error= function(err) {print(paste("prediction failed"))},
-           silent=F)
+    if(inherits(season.raster, "RasterLayer") == TRUE) {
+        if (CATCH.OFF == F) {
+            tryCatch(suit.raster <- raster::predict(object=season.raster, model=suit.object, fun=predict.suit, na.rm=TRUE, 
+                filename=filename, overwrite=overwrite, ...),
+            error= function(err) {print(paste("prediction failed"))},
+            silent=F)
+        }else{
+            suit.raster <- raster::predict(object=season.raster, model=suit.object, fun=predict.suit, na.rm=TRUE, 
+                filename=filename, overwrite=overwrite, ...)
+        }
     }else{
-        suit.raster <- raster::predict(object=season.raster, model=suit.object, fun=predict.suit, na.rm=TRUE, 
-               filename=filename, overwrite=overwrite, ...)
+        if (CATCH.OFF == F) {
+            tryCatch(suit.raster <- terra::predict(object=season.raster, model=suit.object, fun=predict.suit, na.rm=TRUE, 
+                                                    filename=filename, overwrite=overwrite, ...),
+                     error= function(err) {print(paste("prediction failed"))},
+                     silent=F)
+        }else{
+            suit.raster <- terra::predict(object=season.raster, model=suit.object, fun=predict.suit, na.rm=TRUE, 
+                                           filename=filename, overwrite=overwrite, ...)
+        }       
     }
 #    
+    names(suit.raster) <- "suitability"
     return(suit.raster)  
 }
 

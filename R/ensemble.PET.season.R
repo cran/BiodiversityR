@@ -7,13 +7,17 @@
 {
     .BiodiversityR <- new.env()
 #    if (! require(dismo)) {stop("Please install the dismo package")}
-    if(inherits(PREC.stack, "RasterStack") == F) {stop("PREC.stack is not a RasterStack object")}
-    if(inherits(PET.stack, "RasterStack") == F) {stop("PET.stack is not a RasterStack object")}
-    
+    if(inherits(PREC.stack, "RasterStack") == FALSE && inherits(PREC.stack, "SpatRaster") == FALSE) {stop("PREC.stack is not a RasterStack or SpatRaster object")}
+    if(inherits(PET.stack, "RasterStack") == FALSE && inherits(PET.stack, "SpatRaster") == FALSE) {stop("PET.stack is not a RasterStack or SpatRaster object")}
+
     names(PREC.stack) <- paste0("PREC", 1:length(names(PREC.stack)))
     names(PET.stack) <- paste0("PET", 1:length(names(PET.stack)))    
 
-    x <- raster::stack(c(PREC.stack, PET.stack)) 
+    if (inherits(PREC.stack, "RasterStack")) {
+        x <- raster::stack(c(PREC.stack, PET.stack))
+    }else{
+        x <- terra::rast(list(PREC.stack, PET.stack))
+    }
 
     PET.season.object <- list(PREC.names=names(PREC.stack), PET.names=names(PET.stack))
  
@@ -54,16 +58,33 @@
     }
 #
 # predict
-    if (CATCH.OFF == F) {
+    
+    if (inherits(PREC.stack, "RasterStack")) {
+    
+        if (CATCH.OFF == F) {
         tryCatch(PET.season.raster <- raster::predict(object=x, model=PET.season.object, fun=predict.PET.season, na.rm=TRUE, 
                filename=filename, overwrite=overwrite, ...),
-           error= function(err) {print(paste("prediction of aridity deficit failed"))},
-           silent=F)
-    }else{
-        PET.season.raster <- raster::predict(object=x, model=PET.season.object, fun=predict.PET.season, na.rm=TRUE, 
+                   error= function(err) {print(paste("prediction of aridity deficit failed"))},
+                   silent=F)
+        }else{
+            PET.season.raster <- raster::predict(object=x, model=PET.season.object, fun=predict.PET.season, na.rm=TRUE, 
                filename=filename, overwrite=overwrite, ...)
+        }
+
+    }else{        
+        if (CATCH.OFF == F) {
+            tryCatch(PET.season.raster <- terra::predict(object=x, model=PET.season.object, fun=predict.PET.season, na.rm=TRUE, 
+                                                          filename=filename, overwrite=overwrite, ...),
+                     error= function(err) {print(paste("prediction of aridity deficit failed"))},
+                     silent=F)
+        }else{
+            PET.season.raster <- terra::predict(object=x, model=PET.season.object, fun=predict.PET.season, na.rm=TRUE, 
+                                                 filename=filename, overwrite=overwrite, ...)
+        }       
+          
     }
-#    
+  
+    names(PET.season.raster) <- "PET.season"  
     return(PET.season.raster)  
 }
 

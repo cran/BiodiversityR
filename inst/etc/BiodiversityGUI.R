@@ -5146,7 +5146,7 @@ clusterGUI <- function(){
     types <- c("dendrogram1 (hang = -1)", "dendrogram2 (hang = 0.1)", "dendrogram3 (horizontal)", 
         "dendrogram (color_branches)", "dendrogram (colored_dots)", "circlize_dendrogram", 
         "phylogram (ape package)", "cladogram (ape package)", "fan (ape package)", "unrooted (ape package)",    
-        "rectangles", "pruned dendrogram", "silhouette", "kgs", "cophenetic", "cascadeKM", "reorder (variable)", "labels (variable)", 
+        "rectangles", "pruned dendrogram", "silhouette", "cophenetic", "cascadeKM", "reorder (variable)", "labels (variable)", 
         "tiplabels (variable size)", "tiplabels (factor)", "aspectHeatmap (ClassDiscovery)", "aspectHeatmap (save cluster membership)", "heat map (Thresher)")
     for (x in types) tkinsert(typeBox, "end", x)
     cexVariable <- tclVar("1")
@@ -5344,11 +5344,6 @@ clusterGUI <- function(){
         if (plottype == "silhouette"){
             doItAndPrint(paste("plot(silhouette(cutree(as.hclust(", modelValue,"), k=", clusters, "), distmatrix))", sep=""))
         }  
-        if (plottype == "kgs" && method != "kmeans" && method != "cascadeKM" && method != "pam" && method != "clara" && method != "fanny"){
-            justDoIt(paste("library(maptree)", sep=""))
-            logger(paste("library(maptree)", sep=""))
-            doItAndPrint(paste("plot(kgs(", modelValue, ", distmatrix, maxclust=min(20, nrow(", .communityDataSet, "))))", sep=""))             
-        }        
         if (plottype == "rectangles" && method != "kmeans" && method != "cascadeKM" && method != "pam" && method != "clara" && method != "fanny"){
             justDoIt(paste("rect.hclust(", modelValue, ", k=", clusters, ", border='", col, "')", sep=""))             
             logger(paste("rect.hclust(", modelValue, ", k=", clusters, ", border='", col, "')", sep=""))  

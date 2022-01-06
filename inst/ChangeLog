@@ -18,6 +18,26 @@ BiodiversityR versions
 	https://rpubs.com/Roeland-KINDT
 
 
+Version 2.14-1 (January 2022; Ty Segall's Harmonizer version)
+
+  * New function ensemble.terra that creates raster files via the terra package with 
+  similar functionality as ensemble.raster.
+  
+  * ensemble.calibrate.models and ensemble.calibrate.weights functions now work with
+  package terra's SpatRaster objects (and still with package raster's rasterStack 
+  objects).
+
+  * ensemble.PET.season, ensemble.PET.seasons, ensemble.prec.season, 
+  ensemble.tmean.season and ensemble.season.suitability functions now work with package
+  terra's SpatRaster objects (and still with package raster's rasterStack and
+  rasterLayerobjects).
+
+  * removed dependency on the orphaned 'maptree' package. Used previously for an option
+  of 'kgs' in the clustering GUI.
+
+  * Compatible with Rcmdr version 2.7-2 (January 2022)
+
+
 Version 2.13-1 (April 2021)
 
 	* New functions ensemble.spatialBlock and ensemble.envBlock that allow for 
@@ -420,7 +440,7 @@ Version 2.9-1 (February 2018; Ty Segall's Freedom's Goblin version)
 	* in the output of the ensemble.mean function, niche overlap between input suitability
 	layers and the mean (consensus) layer is calculated via Warren's I index that is based
 	on the Hellinger distance (dismo::nicheOverlap; Warren et al. 2008. Evolution 
-	62-11: 2868–2883)
+	62-11: 2868?2883)
 
 	* in the ensemble.batch function, random selection of background locations (if an 
 	option) is repeated in each run

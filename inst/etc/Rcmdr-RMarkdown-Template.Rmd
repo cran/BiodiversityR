@@ -1,7 +1,7 @@
 ---
 title: "Replace with Main Title"
 author: "Your Name"
-date: "AUTOMATIC"
+date: "`r Sys.Date()`"  # Uses current date
 ---
 
 

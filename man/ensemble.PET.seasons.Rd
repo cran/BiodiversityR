@@ -9,7 +9,7 @@ Raster calculations of beginnings and lengths of growing seasons from the differ
 }
 
 \description{
-The main function of \code{ensemble.PET.seasons} calculates the number of growing seasons and their starts and lengths from the dry period criterion of 2 * P < PET (\url{http://www.fao.org/nr/climpag/cropfor/lgp_en.asp}). Functions \code{ensemble.PREC.season} and \code{ensemble.TMEAN.season} calculate the total precipitation and average temperature for provided starts and lengths of a growing season. Together with data on optimal and absolute precipitation and temperature limits for a selected crop (as available from FAO's ECOCROP database), these layers enable the calculation of crop suitability using methods detailed in Chapman et al. (2020).
+The main function of \code{ensemble.PET.seasons} calculates the number of growing seasons and their starts and lengths from the dry period criterion of 2 * P < PET (\url{https://www.fao.org/nr/climpag/cropfor/lgp_en.asp}). Functions \code{ensemble.PREC.season} and \code{ensemble.TMEAN.season} calculate the total precipitation and average temperature for provided starts and lengths of a growing season. Together with data on optimal and absolute precipitation and temperature limits for a selected crop (as available from FAO's ECOCROP database), these layers enable the calculation of crop suitability using methods detailed in Chapman et al. (2020).
 }
 
 \usage{
@@ -81,7 +81,7 @@ The function returns and writes raster layers.
 
 Ramirez-Villegas J, Jarvis A and Laderach P. 2013. Empirical approaches for assessing impacts of climate change on agriculture: The EcoCrop model and a case study with grain sorghum. Agricultural and Forest Meteorology \doi{10.1016/j.agrformet.2011.09.005}
 
-Chapman et al. 2020. Impact of climate change on crop suitability in sub-Saharan Africa in parameterized and convection-permitting regional climate models. Environmental Research Letters \url{https://iopscience.iop.org/article/10.1088/1748-9326/ab9daf}
+Chapman et al. 2020. Impact of climate change on crop suitability in sub-Saharan Africa in parameterized and convection-permitting regional climate models. Environmental Research Letters 15:094086.
 
 }
 
@@ -136,7 +136,7 @@ prec.suit <- ensemble.season.suitability(season.raster=prec.season,
     thresholds=c(300, 500, 1000, 3000), 
     filename="precSuitability.tif", CATCH.OFF=FALSE)  
 
-# step 3: calculate average temperature in first rainy steason,
+# step 3: calculate average temperature in first rainy season,
 # then use this value to calculate temperature suitability
 
 tmean.season <- ensemble.tmean.season(TMEAN.stack=T.stack, 

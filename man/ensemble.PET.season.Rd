@@ -42,7 +42,7 @@ The function returns and writes a raster layer
 \references{
 Chave J et al. 2014. Improved allometric models to estimate the aboveground biomass of tropical trees. Global Change Biology \doi{10.1111/gcb.12629}
 
-Aragao LZ et al. 2007. Spatial patterns and fire response of recent Amazonian droughts. Geophysical Research Letters 34(7) \doi{10.1029/2006GL028946}
+Aragao LZ et al. 2007. Spatial patterns and fire response of recent Amazonian droughts. Geophysical Research Letters 34(7) 
 }
 
 \author{ Roeland Kindt (World Agroforestry Centre)}
@@ -61,7 +61,7 @@ library(raster)
 stack1 <- stack(monthly.prec.files)
 stack2 <- stack(monthly.PET.files)
 # note that the stacks should be of the same extend and resolution
-ENSEMBLE.PET.season(PREC.stack=stack1, PET.stack=stack2,
+ensemble.PET.season(PREC.stack=stack1, PET.stack=stack2,
     filename=paste(getwd(), '//Aridity.deficit.tif', sep=""))
 
 }
