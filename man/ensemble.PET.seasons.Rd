@@ -9,7 +9,7 @@ Raster calculations of beginnings and lengths of growing seasons from the differ
 }
 
 \description{
-The main function of \code{ensemble.PET.seasons} calculates the number of growing seasons and their starts and lengths from the dry period criterion of 2 * P < PET (\url{https://www.fao.org/nr/climpag/cropfor/lgp_en.asp}). Functions \code{ensemble.PREC.season} and \code{ensemble.TMEAN.season} calculate the total precipitation and average temperature for provided starts and lengths of a growing season. Together with data on optimal and absolute precipitation and temperature limits for a selected crop (as available from FAO's ECOCROP database), these layers enable the calculation of crop suitability using methods detailed in Chapman et al. (2020).
+The main function of \code{ensemble.PET.seasons} calculates the number of growing seasons and their starts and lengths from the dry period criterion of 2 * P < PET (\url{https://www.fao.org/3/w2962e/w2962e-03.htm}). Functions \code{ensemble.PREC.season} and \code{ensemble.TMEAN.season} calculate the total precipitation and average temperature for provided starts and lengths of a growing season. Together with data on optimal and absolute precipitation and temperature limits for a selected crop (as available from FAO's ECOCROP database), these layers enable the calculation of crop suitability using methods detailed in Chapman et al. (2020).
 }
 
 \usage{

@@ -1,6 +1,6 @@
 `radfitresult` <-
 function(x,y="",factor,level,plotit=T){
-    if(class(y) == "data.frame") {
+    if(inherits(y, "data.frame")) {
         subs <- y[,factor]==level
         for (q in 1:length(subs)) {
             if(is.na(subs[q])) {subs[q]<-F}

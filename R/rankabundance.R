@@ -1,6 +1,6 @@
 `rankabundance` <-
 function(x,y="",factor="",level,digits=1,t=qt(0.975,df=n-1)) {
-    if(class(y) == "data.frame" && factor != "") {
+    if(inherits(y, "data.frame") && factor != "") {
         subs <- y[,factor]==level
         for (q in 1:length(subs)) {
             if(is.na(subs[q])) {subs[q]<-F}

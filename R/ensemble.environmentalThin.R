@@ -10,28 +10,43 @@
 
 # distEnviro.thin operates on stacked distances (do not recalculate distance each run)
     'distEnviro.thin' <- function(x, x2, thin.dist=0.1, thin.n=50) {
-        while(min(x2[, 3]) < thin.dist && nrow(x2) > 1) {
-            p <- nrow(x2)
-            x2 <- x2[sample(p), ]
-            first.min <- which(x2[, 3] < thin.dist)
+# Algorithm modified in MAR-2022 to always reach the minimum distance, but
+# in case fewer locations were retained, use a previous step from the removal process      
+        x2.c <- x2
+        while(min(x2.c[, 3]) < thin.dist && nrow(x2.c) > 1) {
+            retained.c <- unique(c(x2.c[, 1], x2.c[, 2]))
+            if (length(retained.c) >= thin.n) {x2.prev <- x2.c}
+            p <- nrow(x2.c)
+            x2.c <- x2.c[sample(p), ]
+            first.min <- which(x2.c[, 3] < thin.dist)
             first.min <- first.min[1]
             random.col <- as.numeric(runif(1) > 0.5)+1
-            selected <- x2[first.min, random.col]
-            rows1 <- x2[, 1] != selected
-            x2 <- x2[rows1, , drop=F]
-            rows2 <- x2[, 2] != selected
-            x2 <- x2[rows2, , drop=F]
+            selected <- x2.c[first.min, random.col]
+            rows1 <- x2.c[, 1] != selected
+            x2.c <- x2.c[rows1, , drop=F]
+            rows2 <- x2.c[, 2] != selected
+            x2.c <- x2.c[rows2, , drop=F]
         }
+        retained.c <- unique(c(x2.c[, 1], x2.c[, 2]))
+        if (length(retained.c) >= thin.n) {
+            x2 <- x2.c
+        }else{
+            x2 <- x2.prev
+        }
+        
         retained <- unique(c(x2[, 1], x2[, 2]))
         x3 <- x[retained, ]
-# special case where the remaining 2 locations are closer than minimum distance
+        
+        # special case where the remaining 2 locations are closer than minimum distance
         if (nrow(x3)==2 && x2[1, 3] < thin.dist) {
             retained <- sample(retained, size=1)
             x3 <- x[retained, , drop=F]
         }
-# rather than maximizing number of locations, keep increasing distance among them until target thin.n
-# now again use the first algorithm
+        # Modified MAR-2022!
+        # In case a larger number of locations was retained, use the first algorithm again
+        retained <- unique(c(x2[, 1], x2[, 2]))
         retained.n <- length(unique(c(x2[, 1], x2[, 2])))
+        
         while(retained.n > thin.n) {
             first.min <- which.min(x2[, 3])
             first.min <- first.min[1]
@@ -47,18 +62,22 @@
         x3 <- x[retained, ]
         dist.min <- min(x2[, 3])
         return(list(x3=x3, dist.min=dist.min, retained=retained))
-        }
-#
-    if (verbose == T) {silent <- FALSE}
-#
+    }
+
+    if (verbose == TRUE) {silent <- FALSE}
+
     if(thin.n >= nrow(x)) {
         if (silent == F) {
             cat(paste("WARNING: thinning parameter larger or equal to number of available locations", "\n"))
             cat(paste("therefore all locations selected", "\n\n"))
         }
-        return(list(retained=x, not.retained=NULL))
-    }
-#
+        if (return.notRetained == TRUE) {
+            return(list(retained=x, not.retained=NULL))
+        }else{
+            return(x)
+        }
+    }        
+
 # create background data
     if (is.null(extracted.data) == TRUE) {
         background.data <- raster::extract(predictors.stack, x)
@@ -73,11 +92,11 @@
     background.data <- background.data[TrainValid,]
 
 # PCA of scaled variables
-    rda.result <- vegan::rda(X=background.data, scale=T)
+    rda.result <- vegan::rda(X=background.data, scale=TRUE)
 # select number of axes
     ax <- 1
     while ( (sum(vegan::eigenvals(rda.result)[c(1:ax)])/sum(vegan::eigenvals(rda.result))) < pca.var ) {ax <- ax+1}
-    if (silent == F) {cat(paste("\n", "Percentage of variance of the selected axes (1 to ", ax, ") of principal components analysis: ", 100*sum(vegan::eigenvals(rda.result)[c(1:ax)])/sum(vegan::eigenvals(rda.result)), "\n", sep = ""))}
+    if (silent == FALSE) {cat(paste("\n", "Percentage of variance of the selected axes (1 to ", ax, ") of principal components analysis: ", 100*sum(vegan::eigenvals(rda.result)[c(1:ax)])/sum(vegan::eigenvals(rda.result)), "\n", sep = ""))}
     rda.scores <- vegan::scores(rda.result, display="sites", scaling=1, choices=c(1:ax))
     rda.dist <- as.matrix(vegdist(rda.scores, method="euc"))
     rda.dist <- signif(rda.dist, digits=6)
@@ -111,7 +130,7 @@
     }
     x3 <- x[retained, ]
     dist.min1 <- min(x2[, 3])
-    if (silent == F) {
+    if (silent == FALSE) {
         cat(paste("Environmentally thinned point location data set obtained with first algorithm", "\n", sep=""))
         cat(paste("number of locations: ", nrow(x3), "\n"))
         cat(paste("minimum distance: ", dist.min1, "\n"))
@@ -145,13 +164,13 @@
             retained <- dist1$retained
         }
     }
-    if (verbose == T) {cat(paste("\n"))}
-    if (silent == F) {
+    if (verbose == TRUE) {cat(paste("\n"))}
+    if (silent == FALSE) {
         cat(paste("number of locations: ", nrow(loc.out), "\n"))
         cat(paste("minimum distance: ", dist.all, "\n"))
     }
-    if (return.notRetained == T) {
-        x.not <- x[(c(1:nrow(x)) %in% retained) == F, ]
+    if (return.notRetained == TRUE) {
+        x.not <- x[(c(1:nrow(x)) %in% retained) == FALSE, ]
         return(list(retained=loc.out, not.retained=x.not))
     }else{
         return(loc.out)

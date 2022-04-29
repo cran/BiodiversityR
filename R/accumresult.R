@@ -3,7 +3,7 @@ function(x,y="",factor="",level,scale="",method="exact",permutations=100,conditi
     op <- options()
     options(warn=-1)
     subs <- c(1:nrow(x))
-    if(class(y) == "data.frame" && factor != "") {
+    if(inherits(y, "data.frame") && factor != "") {
         subs <- y[,factor]==level
         for (q in 1:length(subs)) {
             if(is.na(subs[q])) {subs[q]<-F}

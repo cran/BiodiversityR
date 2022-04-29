@@ -3,22 +3,22 @@
 \alias{ensemble.ecocrop.object}
 
 \title{
-Mapping of novel environmental conditions (areas where some of the environmental conditions are outside the range of environmental conditions of a reference area).
+Suitability mapping via absolute and optimal precipitation and temperature limits as in the ECOCROP model.
 }
 
 \description{
-Function \code{ensemble.novel} creates the map with novel conditions. Function \code{ensemble.novel.object} provides the reference values used by the prediction function used by \code{\link[raster]{predict}} . 
+Function \code{ensemble.ecocrop} creates the map with novel conditions. Function \code{ensemble.novel.object} provides the reference values used by the prediction function used by \code{\link[raster]{predict}} . 
 }
 
 \usage{
 ensemble.ecocrop(x = NULL, ecocrop.object = NULL, 
-    RASTER.object.name = ecocrop.object$name, RASTER.stack.name = x@title,
-    RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
-    KML.out = TRUE, KML.blur = 10, KML.maxpixels = 100000,
+    RASTER.object.name = ecocrop.object$name, 
+    RASTER.stack.name = "xTitle",
+    RASTER.format = "GTiff", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
     CATCH.OFF = FALSE)
 
 ensemble.ecocrop.object(temp.thresholds, rain.thresholds, name = "crop01", 
-    temp.multiply = 10, annual.temps = TRUE, transform = 1)
+    temp.multiply = 1, annual.temps = TRUE, transform = 1)
 
 }
 
@@ -30,15 +30,12 @@ ensemble.ecocrop.object(temp.thresholds, rain.thresholds, name = "crop01",
   \item{RASTER.format}{ Format of the raster files that will be generated. See \code{\link[raster]{writeFormats}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.datatype}{ Format of the raster files that will be generated. See \code{\link[raster]{dataType}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.NAflag}{ Value that is used to store missing data. See \code{\link[raster]{writeRaster}}.  }
-  \item{KML.out}{ If \code{TRUE}, then kml files will be saved in a subfolder 'kml/zones'.  }
-  \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
-  \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
   \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
 
   \item{temp.thresholds}{ Optimal and absolute thresholds for temperatures. These will be sorted as: absolute minimum temperature, optimal minimum temperature, optimal maximum temperature and absolute maximum temperature.  }
   \item{rain.thresholds}{ Optimal and absolute thresholds for annual rainfall. These will be sorted as: absolute minimum rainfall, optimal minimum rainfall, optimal maximum rainfall and absolute maximum rainfall.  }
   \item{name}{ Name of the object, expect to expected to identify the species or crop }
-  \item{temp.multiply}{ Multiplier for temperature values. Default of 10 is to be used with raster layers where temperature was multiplied by 10 such as Worldclim or AFRICLIM.   }
+  \item{temp.multiply}{ Multiplier for temperature values. The value of 10 is to be used with raster layers where temperature was multiplied by 10 such as Worldclim version 1 or AFRICLIM.   }
   \item{annual.temps}{ If \code{TRUE} then temperature limits are assumed to apply to mean annual temperature (bioclimatic variable bio1). If \code{FALSE} then minimum temperature limits are assumed to apply to the temperature of the coldest month (bioclimatic variable bio6) and maximum temperature limits are assumed to apply to the temperature of the hottest month (bioclimatic variable bio5). See also \code{\link[dismo]{biovars}}.   } 
   \item{transform}{ Exponent used to transform probability values obtained from interpolating between optimal and absolute limits. Exponent of 2 results in squaring probabilities, for example input probabilities of 0.5 transformed to 0.5^2 = 0.25.  }
 }
@@ -82,8 +79,11 @@ predictors <- subset(predictors, subset=c("bio5", "bio6", "bio12"))
 predictors
 predictors@title <- "base"
 
+# As the raster data correspond to WorldClim version 1,
+# the temperatures need to be multiplied by 10
 Brazil.ecocrop <- ensemble.ecocrop.object(temp.thresholds=c(20, 36, 12, 40), 
-    rain.thresholds=c(2400, 2800, 1400, 3500), 
+    rain.thresholds=c(2400, 2800, 1400, 3500),
+    temp.multiply=10,
     annual.temps=FALSE, name="Bertholletia_excelsa")
 Brazil.ecocrop
 ensemble.ecocrop(predictors, ecocrop.object=Brazil.ecocrop)

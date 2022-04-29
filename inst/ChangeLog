@@ -18,24 +18,44 @@ BiodiversityR versions
 	https://rpubs.com/Roeland-KINDT
 
 
+Version 2-14.2 (April 2022)
+
+	* New functions ensemble.concave.hull(), ensemble.concave.venn() and 
+	ensemble.concave.union() that enable analysis of niche overlaps in environmental space
+	for different combinations of climates and geographical origins of accessions via 	
+	concave or convex hulls, building on methods used by Pironon et al. 2019.
+	https://doi.org/10.1038/s41558-019-0585-7.
+
+	* New functions ensemble.envirem.masterstack(), ensemble.envirem.solradstack() and 
+	ensemble.envirem.run() that allow to calculate and expanded set of bioclimatic variables
+	via teh envirem package with data.frames as input.
+
+	* Function ensemble.environmentalThin() was modified to result in exactly the 
+	target number of environmentally-thinned locations.
+  
+	* The speed of function ensemble.ecocrop() was increased. The function now also works
+	with the SpatRaster objects of the terra package. Note that the setting of argument
+	temp.multiply was changed from 10 to 1 to work with later versions of WorldClim.
+
+
 Version 2.14-1 (January 2022; Ty Segall's Harmonizer version)
 
-  * New function ensemble.terra that creates raster files via the terra package with 
-  similar functionality as ensemble.raster.
+ 	* New function ensemble.terra() that creates raster files via the terra package with 
+	similar functionality as ensemble.raster.
   
-  * ensemble.calibrate.models and ensemble.calibrate.weights functions now work with
-  package terra's SpatRaster objects (and still with package raster's rasterStack 
-  objects).
+	* ensemble.calibrate.models() and ensemble.calibrate.weights() functions now work with
+	package terra's SpatRaster objects (and still with package raster's rasterStack 
+	objects).
 
-  * ensemble.PET.season, ensemble.PET.seasons, ensemble.prec.season, 
-  ensemble.tmean.season and ensemble.season.suitability functions now work with package
-  terra's SpatRaster objects (and still with package raster's rasterStack and
-  rasterLayerobjects).
+ 	* ensemble.PET.season(), ensemble.PET.seasons(), ensemble.prec.season(), 
+	ensemble.tmean.season() and ensemble.season.suitability() functions now work with 
+	package terra's SpatRaster objects (and still with package raster's rasterStack and
+	rasterLayerobjects).
 
-  * removed dependency on the orphaned 'maptree' package. Used previously for an option
-  of 'kgs' in the clustering GUI.
+	* Removed dependency on the orphaned 'maptree' package. Used previously for an option
+	of 'kgs' in the clustering GUI.
 
-  * Compatible with Rcmdr version 2.7-2 (January 2022)
+	* Compatible with Rcmdr version 2.7-2 (January 2022)
 
 
 Version 2.13-1 (April 2021)

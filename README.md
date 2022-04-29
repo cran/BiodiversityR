@@ -21,7 +21,9 @@ sites as rows, species as columns and abundance values as cell values)
 and an **environmental data set** (typically providing numerical and
 categorical variables for the different sites) as inputs. After being
 launched on CRAN, new methods from `vegan` have been integrated in the
-package as documented in the **ChangeLog** file.
+package as documented in the
+[**ChangeLog**](https://cran.r-project.org/package=BiodiversityR/ChangeLog)
+file.
 
 A major update of `BiodiversityR` involved the inclusion of different
 methods of ensemble suitability modelling, as described
@@ -535,6 +537,10 @@ pvlong <- pvclust.long(dune.pv, cl.data1)
 
 ## Generate the plot
 
+With a similar methodology as available in **ordicluster**, higher
+clustering levels in the hierarchy can be removed via variable *prune*
+available from the results for nodes and branches.
+
 ``` r
 plotgg4 <- ggplot() + 
     geom_vline(xintercept = c(0), color = "grey70", linetype = 2) +
@@ -543,12 +549,16 @@ plotgg4 <- ggplot() +
     ylab(axis.long1[2, "label"]) +  
     scale_x_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +
     scale_y_continuous(sec.axis = dup_axis(labels=NULL, name=NULL)) +
-    geom_segment(data=subset(pvlong$segments, pvlong$segments$prune > 3),
-               aes(x=x1, y=y1, xend=x2, yend=y2, colour=au>=0.89, 
+    geom_segment(data=subset(pvlong$segments, 
+                             pvlong$segments$prune > 3),
+               aes(x=x1, y=y1, xend=x2, yend=y2, 
+                   colour=au>=0.89, 
                    size=au),
                show.legend=TRUE) +
-    geom_point(data=subset(pvlong$nodes, pvlong$nodes$prune > 3), 
-               aes(x=x, y=y, fill=au>=0.89), 
+    geom_point(data=subset(pvlong$nodes, 
+                           pvlong$nodes$prune > 3), 
+               aes(x=x, y=y, 
+                   fill=au>=0.89), 
                shape=21, size=2, colour="black") +
     geom_point(data=sites.long1, 
                aes(x=axis1, y=axis2, shape=Management), 
@@ -573,7 +583,7 @@ plotgg4
 sessionInfo()
 #> R version 4.0.2 (2020-06-22)
 #> Platform: x86_64-w64-mingw32/x64 (64-bit)
-#> Running under: Windows 10 x64 (build 18363)
+#> Running under: Windows 10 x64 (build 19042)
 #> 
 #> Matrix products: default
 #> 
@@ -591,7 +601,7 @@ sessionInfo()
 #> other attached packages:
 #>  [1] pvclust_2.2-0        dplyr_1.0.2          ggsci_2.9           
 #>  [4] ggrepel_0.8.2        concaveman_1.1.0     ggforce_0.3.2       
-#>  [7] ggplot2_3.3.3        BiodiversityR_2.13-1 vegan_2.5-6         
+#>  [7] ggplot2_3.3.3        BiodiversityR_2.14-2 vegan_2.5-6         
 #> [10] lattice_0.20-41      permute_0.9-5       
 #> 
 #> loaded via a namespace (and not attached):
@@ -603,16 +613,16 @@ sessionInfo()
 #> [16] curl_4.3            compiler_4.0.2      htmlTable_2.0.0    
 #> [19] isoband_0.2.1       sandwich_2.5-1      labeling_0.3       
 #> [22] tcltk2_1.2-11       effects_4.1-4       scales_1.1.1       
-#> [25] checkmate_2.0.0     RcmdrMisc_2.7-0     stringr_1.4.0      
+#> [25] checkmate_2.0.0     RcmdrMisc_2.7-2     stringr_1.4.0      
 #> [28] digest_0.6.25       foreign_0.8-80      relimp_1.0-5       
 #> [31] minqa_1.2.4         rmarkdown_2.3       rio_0.5.16         
 #> [34] base64enc_0.1-3     jpeg_0.1-8.1        pkgconfig_2.0.3    
-#> [37] htmltools_0.5.1.1   Rcmdr_2.6-2         lme4_1.1-23        
+#> [37] htmltools_0.5.1.1   Rcmdr_2.7-2         lme4_1.1-23        
 #> [40] htmlwidgets_1.5.1   rlang_0.4.8         readxl_1.3.1       
 #> [43] rstudioapi_0.11     farver_2.0.3        generics_0.1.0     
 #> [46] zoo_1.8-8           acepack_1.4.1       zip_2.0.4          
 #> [49] car_3.0-8           magrittr_1.5        Formula_1.2-3      
-#> [52] Matrix_1.2-18       Rcpp_1.0.4.6        munsell_0.5.0      
+#> [52] Matrix_1.2-18       Rcpp_1.0.7          munsell_0.5.0      
 #> [55] abind_1.4-5         lifecycle_0.2.0     stringi_1.4.6      
 #> [58] yaml_2.2.1          carData_3.0-4       MASS_7.3-51.6      
 #> [61] grid_4.0.2          parallel_4.0.2      forcats_0.5.0      
