@@ -1,7 +1,7 @@
 Package: BiodiversityR
 Type: Package
 Title: Package for Community Ecology and Suitability Analysis
-Version: 2.14-2
+Version: 2.14-2.1
 Date: 2022-4-29
 Author: Roeland Kindt [cre, aut] (<https://orcid.org/0000-0002-7672-0712>)
 Authors@R: 
@@ -18,13 +18,13 @@ Depends: R (>= 3.2.2), tcltk, vegan (>= 2.5-1)
 Imports: Rcmdr (>= 2.7-0), ggplot2 (>= 3.3.3)
 Suggests: vegan3d, rgl, permute, lattice, MASS, mgcv, cluster, car,
         RODBC, rpart, effects, multcomp, ellipse, sp, splancs, spatial,
-        akima, nnet, dismo, raster (>= 3.5-11), terra (>= 1.4-22),
+        interp, nnet, dismo, raster (>= 3.5-11), terra (>= 1.4-22),
         rgdal, maxlike, gbm, randomForest, gam (>= 1.15), earth, mda,
         kernlab, e1071, glmnet, tools, methods, bootstrap,
         PresenceAbsence, geosphere, maptools, ENMeval, red, rgeos,
         igraph, Rlof, maxnet, party, readxl, colorspace, dplyr, rlang,
         sf, blockCV, envirem, concaveman
-Packaged: 2022-04-29 07:53:39 UTC; RKINDT
+Packaged: 2022-07-04 09:27:00 UTC; ripley
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2022-04-29 10:20:02 UTC
+Date/Publication: 2022-07-04 11:29:22 UTC

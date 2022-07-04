@@ -18,7 +18,7 @@ residualssurface(model, data, x, y, gam = F, npol = 2, plotit = T, filled = F, b
   \item{y}{ Vertical position of the sample units. }
   \item{gam}{ Interpolate the spatial structure by \code{\link[mgcv]{gam}} (if "TRUE") or by \code{\link[spatial]{surf.ls}} (if "FALSE"). }
   \item{npol}{ Degree of polynomial surface as passed to \code{\link[spatial]{surf.ls}}. }
-  \item{plotit}{ Plot the interpolated surface (through \code{\link[akima]{interp}} and the residuals) . }
+  \item{plotit}{ Plot the interpolated surface (through \code{\link[interp]{interp}} and the residuals) . }
   \item{filled}{ Fill the contours by \code{\link[graphics]{filled.contour}}. }
   \item{bubble}{ Provide a bubble graph of the residuals: circles indicate positive residuals, whereas squares indicate negative residuals. }
 }
@@ -48,7 +48,7 @@ Tree diversity analysis: A manual and
 \examples{
 library(vegan)
 library(mgcv)
-library(akima)
+library(interp)
 data(faramea)
 Count.model1 <- lm(Faramea.occidentalis ~ Precipitation,
     data=faramea, na.action=na.exclude)

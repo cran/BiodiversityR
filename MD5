@@ -1,4 +1,4 @@
-9caae17acda00992b4561ad637cb3c6b *DESCRIPTION
+23df81729d14e637aa94edebd04055a9 *DESCRIPTION
 e71205f23da285273378c6baa4256ded *NAMESPACE
 ecb5a7fd2efe453efaaa86f3b08c9354 *R/BiodiversityR.changeLog.R
 473f3c555173e7f23b1b3cbc9b511d97 *R/BiodiversityRGUI.R
@@ -45,7 +45,7 @@ a0d05521ad23bdb1ca247f1fc41b0061 *R/ensemble.dummy.variables.R
 a9d32134a705322b1d91b03e095f420d *R/ensemble.ecocrop.R
 d5bf2137ddbd7044ff24af7ab330bcb3 *R/ensemble.envirem.R
 402ce1b0df8e3e342d9374a817bd5c2a *R/ensemble.environmentalThin.R
-8a8a3545372c3f1123746fd07da465f3 *R/ensemble.evaluate.R
+0bd3390bc9514988fa3bb2b5774fb3c5 *R/ensemble.evaluate.R
 e4dc34521b9d5c26ca86eb14851c4718 *R/ensemble.formulae.R
 58474d4a941ad5a7b0a63d4dd09acd38 *R/ensemble.habitat.change.R
 098f6d4dc6a4be787a2ee3493b447f61 *R/ensemble.mean.R
@@ -93,7 +93,7 @@ e889385ec871325f7642ec6d09eb256e *R/renyicomp.R
 68b6f1d111238981a3b37a8946bb2b20 *R/renyiplot.R
 3eab42b7a11822d6a4d3717cec92f853 *R/renyiresult.R
 f9e0ae40762506093d4b653428f0e77c *R/replaceNAcomm.R
-322d2c0dc04c7930781d2d792a4a23a3 *R/residualssurface.R
+cc6b1dca951324a1687932a642fd2394 *R/residualssurface.R
 4167129346ee17bd49d46420f31272b9 *R/same.sites.R
 f0851e5829fe6b8dcf4615e1e4d3a1da *R/sites.long.R
 301b1c339b6914d3981ea84cfda691ce *R/spatialsample.R
@@ -101,15 +101,15 @@ aa1380c896e45ec3cd9c5c7e15868c24 *R/stackcommunitydataset.R
 4b72bbf68242d74031ea27e473e5134d *R/subsetcomm.R
 79df62b5d9cfed17747aa696774147d1 *R/zzz.R
 6543f9ba1f0924ce3d0a91a05ec82b77 *README.md
-5717a563b6f62fc947fe0bce5916c4eb *build/partial.rdb
-0f7ce92d43d1e21c9e61fc30419e1295 *data/BCI.env.txt
-77c30a1c6120d4cab8025ae8a36aaae7 *data/CucurbitaClim.txt
-6c8adddbfd2f05bbecb50c6230e313fa *data/faramea.txt
-d3e2e4f87f4a39fcf40a70be2559af59 *data/ifri.txt
-a7fc35dd5d33fb725893ad70036f1047 *data/transfgradient.txt
-9d75fbcfa8f3e2cdf2b5acda316dcc8d *data/transfspecies.txt
-d08d5872d6f4fa015693fb0624bc35de *data/warcom.txt
-f53cf478d4f95ef79fdc3c94c7e82fde *data/warenv.txt
+0c6ad5b3446721162c89589e8077ab1c *build/partial.rdb
+edddfea34eba1fa61a4f362ccff0f8ca *data/BCI.env.txt.gz
+0c9d4cc9e0f58fc3d5a90e7d86e007fe *data/CucurbitaClim.txt.gz
+f72277beca109b0ec047c5f2ed31f4af *data/faramea.txt.gz
+790f30dc46cc2527d2bf07136114004b *data/ifri.txt.gz
+04ecd64269d7c932161f03086e391ab8 *data/transfgradient.txt.gz
+ebb736803bcf16727b2adfd7651391d6 *data/transfspecies.txt.gz
+b00946f5252e292e4f8b3673137df22c *data/warcom.txt.gz
+61ae079652611b2b7c8decf721b3d6af *data/warenv.txt.gz
 6a4025160e177508da213c6d97f8bced *inst/CITATION
 3ac85acf9eb4a638a571d28db898f316 *inst/ChangeLog
 07ad6569f2895d7cd3c74a31c5742ed5 *inst/etc/BiodiversityGUI.R
@@ -216,7 +216,7 @@ c74a1426d367930309ca09a2c6bf520a *man/ordisymbol.Rd
 fe9b801dff69d1754dc11b82a66c88f0 *man/rankabundance.Rd
 1871e089b94d2e2de08d95f558caf187 *man/removeNAcomm.Rd
 4e4f909180e01b5f14c2a8a321051150 *man/renyiresult.Rd
-f1c3d637dfa22ccc1b272863775c4ea9 *man/residualssurface.Rd
+49ad1af427cd633815b02f30562e79b4 *man/residualssurface.Rd
 74222a40b5c130977887cfaf0090e09f *man/sites.long.Rd
 7b3a6584eee7a24789be8bac9ccbfc70 *man/spatialsample.Rd
 66a4dc752394a0cefe0cabdda3a75c94 *man/transfgradient.Rd

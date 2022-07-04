@@ -14,9 +14,9 @@ function(model,data,x,y,gam=F,npol=2,plotit=T,filled=F,bubble=F) {
     if (plotit==T) {
         fitted <- fitted(result)
         if (filled==F) {
-            graphics::contour(akima::interp(xpos, ypos, fitted, duplicate="mean"), lwd=2)
+            graphics::contour(interp::interp(xpos, ypos, fitted, duplicate="mean"), lwd=2)
         }else{
-            graphics::filled.contour(akima::interp(xpos, ypos, fitted, duplicate="mean"), color.palette=grDevices::terrain.colors)
+            graphics::filled.contour(interp::interp(xpos, ypos, fitted, duplicate="mean"), color.palette=grDevices::terrain.colors)
         }
         if (bubble==T && filled==F) {
             res2 <- abs(res)
