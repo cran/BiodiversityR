@@ -1,30 +1,30 @@
 Package: BiodiversityR
 Type: Package
 Title: Package for Community Ecology and Suitability Analysis
-Version: 2.14-2.1
-Date: 2022-4-29
+Version: 2.14-3
+Date: 2022-8-5
 Author: Roeland Kindt [cre, aut] (<https://orcid.org/0000-0002-7672-0712>)
 Authors@R: 
     c(person(given = "Roeland",
              family = "Kindt",
              role = c("cre", "aut"),
-             email = "R.KINDT@CGIAR.ORG",
+             email = "RoelandCEKindt@gmail.com",
              comment = c(ORCID = "0000-0002-7672-0712")))
-Maintainer: Roeland Kindt <R.KINDT@CGIAR.ORG>
+Maintainer: Roeland Kindt <RoelandCEKindt@gmail.com>
 Description: Graphical User Interface (via the R-Commander) and utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website. In 2012, methods for (ensemble) suitability modelling and mapping were expanded in the package.
 License: GPL-3
 URL: http://www.worldagroforestry.org/output/tree-diversity-analysis
-Depends: R (>= 3.2.2), tcltk, vegan (>= 2.5-1)
+Depends: R (>= 3.2.2), tcltk, vegan (>= 2.6-0)
 Imports: Rcmdr (>= 2.7-0), ggplot2 (>= 3.3.3)
 Suggests: vegan3d, rgl, permute, lattice, MASS, mgcv, cluster, car,
         RODBC, rpart, effects, multcomp, ellipse, sp, splancs, spatial,
-        interp, nnet, dismo, raster (>= 3.5-11), terra (>= 1.4-22),
-        rgdal, maxlike, gbm, randomForest, gam (>= 1.15), earth, mda,
-        kernlab, e1071, glmnet, tools, methods, bootstrap,
-        PresenceAbsence, geosphere, maptools, ENMeval, red, rgeos,
-        igraph, Rlof, maxnet, party, readxl, colorspace, dplyr, rlang,
-        sf, blockCV, envirem, concaveman
-Packaged: 2022-07-04 09:27:00 UTC; ripley
+        nnet, dismo, raster (>= 3.5-11), terra (>= 1.4-22), rgdal,
+        maxlike, gbm, randomForest, gam (>= 1.15), earth, mda, kernlab,
+        e1071, glmnet, tools, methods, bootstrap, PresenceAbsence,
+        geosphere, maptools, ENMeval, red, rgeos, igraph, Rlof, maxnet,
+        party, readxl, colorspace, dplyr, rlang, sf, blockCV, envirem,
+        concaveman
+Packaged: 2022-08-01 14:21:22 UTC; RKINDT
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2022-07-04 11:29:22 UTC
+Date/Publication: 2022-08-06 14:10:09 UTC

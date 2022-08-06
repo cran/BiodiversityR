@@ -9,7 +9,7 @@ Sample units without any species result in "NaN" values in the distance matrix f
 }
 
 \usage{
-dist.zeroes(comm,dist)
+dist.zeroes(comm, dist)
 }
 
 \arguments{
@@ -41,12 +41,12 @@ Tree diversity analysis: A manual and
 
 \examples{
 library(vegan)
-matrix <- array(0,dim=c(5,3))
-matrix[4,] <- c(1,2,3)
-matrix[5,] <- c(1,0,0)
-dist1 <- vegdist(matrix,method="kulc")
+matrix <- array(0, dim=c(5,3))
+matrix[4,] <- c(1, 2, 3)
+matrix[5,] <- c(1, 0, 0)
+dist1 <- vegdist(matrix, method="kulc")
 dist1
-dist2 <- dist.zeroes(matrix,dist1)
+dist2 <- dist.zeroes(matrix, dist1)
 dist2
 }
 

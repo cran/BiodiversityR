@@ -1,6 +1,7 @@
 `diversityresult` <- function(
     x, y=NULL, factor=NULL, level=NULL, 
-    index=c("Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", 
+    index=c("Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger",
+        "simpson.unb", "simpson.unb.inverse", 
         "richness", "abundance", "Jevenness", "Eevenness", 
         "jack1", "jack2", "chao", "boot"),
     method=c("pooled", "each site", "mean", "sd", "max", "jackknife"),
@@ -8,6 +9,7 @@
 {
 
     INDEX <- c("Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", 
+        "simpson.unb", "simpson.unb.inverse", 
         "richness", "abundance", "Jevenness", "Eevenness", 
         "jack1", "jack2", "chao", "boot")
     if ((index %in% INDEX) == F) {stop(paste("choose an accepted index, not index: ", index, sep=""))}
@@ -38,6 +40,8 @@
         if (index == "Shannon") {result <- diversity(x, index="shannon", MARGIN=marg)}
         if (index == "Simpson") {result <- diversity(x, index="simpson", MARGIN=marg)}
         if (index == "inverseSimpson") {result <- diversity(x, index="invsimpson", MARGIN=marg)}
+        if (index == "simpson.unb") {result <- simpson.unb(x)}
+        if (index == "simpson.unb.inverse") {result <- simpson.unb(x, inverse=TRUE)}
         if (index == "Logalpha") {result <- fisher.alpha(x, MARGIN=1)}
         if (index == "Berger") {
             if (marg == 2) {

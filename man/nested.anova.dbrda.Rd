@@ -5,13 +5,14 @@
 \title{Nested Analysis of Variance via Distance-based Redundancy Analysis or Non-parametric Multivariate Analysis of Variance}
 
 \description{
-The functions provide nested analysis of variance for a two-level hierarchical model. The functions are implemented by estimating the correct F-ratio for the main and nested factors (assuming the nested factor is random) and using the recommended permutation procedures to test the significance of these F-ratios. F-ratios are estimated from variance estimates that are provided by distance-based redundancy analysis (\code{\link[vegan]{capscale}}) or non-parametric multivariate analysis of variance (\code{\link[vegan]{adonis}}).
+The functions provide nested analysis of variance for a two-level hierarchical model. The functions are implemented by estimating the correct F-ratio for the main and nested factors (assuming the nested factor is random) and using the recommended permutation procedures to test the significance of these F-ratios. F-ratios are estimated from variance estimates that are provided by distance-based redundancy analysis (\code{\link[vegan]{capscale}}) or non-parametric multivariate analysis of variance (\code{\link[vegan]{adonis2}}).
 }
 
 \usage{
 nested.anova.dbrda(formula, data, method="euc", add=FALSE,
     permutations=100, warnings=FALSE)
-nested.npmanova(formula, data, method="euc", permutations=100, warnings=FALSE)
+nested.npmanova(formula, data, method="euc", 
+    permutations=100, warnings=FALSE)
 }
 
 \arguments{
@@ -25,9 +26,11 @@ nested.npmanova(formula, data, method="euc", permutations=100, warnings=FALSE)
 }
 
 \details{
-The functions provide two alternative procedures for multivariate analysis of variance on the basis of any distance measure. Function \code{nested.anova.dbrda} proceeds via \code{\link[vegan]{capscale}}, whereas \code{nested.npmanova} proceeds via \code{\link[vegan]{adonis}}. Both methods are complementary to each other as \code{nested.npmanova} always provides correct F-ratios and estimations of significance, whereas \code{nested.anova.dbrda} does not provide correct F-ratios and estimations of significance when negative eigenvalues are encountered or constants are added to the distance matrix, but always provides an ordination diagram. 
+The functions provide two alternative procedures for multivariate analysis of variance on the basis of any distance measure. Function \code{nested.anova.dbrda} proceeds via \code{\link[vegan]{capscale}}, whereas \code{nested.npmanova} proceeds via \code{\link[vegan]{adonis2}}. Both methods are complementary to each other as \code{nested.npmanova} always provides correct F-ratios and estimations of significance, whereas \code{nested.anova.dbrda} does not provide correct F-ratios and estimations of significance when negative eigenvalues are encountered or constants are added to the distance matrix, but always provides an ordination diagram. 
  
 The F-ratio for the main factor is estimated as the mean square of the main factor divided by the mean square of the nested factor. The significance of the F-ratio of the main factor is tested by permuting entire blocks belonging to levels of the nested factor. The significance of the F-ratio of the nested factor is tested by permuting sample units within strata defined by levels of the main factor.
+
+
 
 }
 

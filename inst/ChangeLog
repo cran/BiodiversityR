@@ -18,6 +18,33 @@ BiodiversityR versions
 	https://rpubs.com/Roeland-KINDT
 
 
+
+Version 2-14-3 (August 2022)
+
+	* Removed suggested package akima (email from Prof. Ripley 4-JUN-2022). Function 
+	residualssurface() was removed.
+
+	* New argument of 'aitchison_pseudocount' in function CAPdiscrim() to allow the new
+	methods of 'aitchison' and 'robust.aitchison' from vegan::vegdist().
+
+	* Added options of 'aitchison' and 'robust.aitchison' to documentation options of 
+	distdisplayed().
+
+	* Function nested.npmanova() now uses vegan::adonis2().
+
+	* Functions diversityresult(), diversitycomp() and diversityvariables() now include
+        options for the unbiased Simpson calculated via function vegan::simpson.unb()
+
+	* GUI now includes 'aitchison' and 'robust.aitchison' among options for calculations of
+	distances matrices. Note, however, that such methods may only work when calculating the
+	distance matrix first before using other methods such as ordination methods.
+
+	* Diversity calculation GUI now includes the options of 'simpson.unb' and 
+	'simpson.unb.inverse'.
+
+	* BiodiversityR now depends on vegan version 2.6-2.
+
+
 Version 2-14.2 (April 2022)
 
 	* New functions ensemble.concave.hull(), ensemble.concave.venn() and 

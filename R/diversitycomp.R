@@ -1,6 +1,7 @@
 `diversitycomp` <- function(
     x, y=NULL, factor1=NULL, factor2=NULL, 
-    index=c("Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", 
+    index=c("Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger",
+        "simpson.unb", "simpson.unb.inverse", 
         "richness", "abundance", "Jevenness", "Eevenness", 
         "jack1", "jack2", "chao", "boot"),
     method=c("pooled", "mean", "sd", "max", "jackknife"), 
@@ -8,6 +9,7 @@
 {
 
     INDEX <- c("Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", 
+        "simpson.unb", "simpson.unb.inverse",
         "richness", "abundance", "Jevenness", "Eevenness", 
         "jack1", "jack2", "chao", "boot")
     if ((index %in% INDEX) == F) {stop(paste("choose an accepted index, not index: ", index, sep=""))}

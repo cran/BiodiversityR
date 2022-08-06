@@ -1,5 +1,6 @@
 `nested.anova.dbrda` <-
-function (formula, data, method = "euc", add = FALSE, permutations = 100, 
+function (formula, data, method = "euc", add = FALSE, 
+    permutations = 100,
     warnings = FALSE) 
 {
     randomize = function(data, toplev, lowlev) {
@@ -58,112 +59,9 @@ function (formula, data, method = "euc", add = FALSE, permutations = 100,
         "jaccard", "raup", "binomial", "chao")
     methodid <- pmatch(method, METHODS)
     method <- METHODS[methodid]
-    if (add == TRUE) {
-        if (method == "manhattan") {
-            model <- capscale(formula, data1, distance = "manhattan", 
-                add = TRUE)
-        }
-        if (method == "euclidean") {
-            model <- capscale(formula, data1, distance = "euclidean")
-        }
-        if (method == "canberra") {
-            model <- capscale(formula, data1, distance = "canberra", 
-                add = TRUE)
-        }
-        if (method == "bray") {
-            model <- capscale(formula, data1, distance = "bray", 
-                add = TRUE)
-        }
-        if (method == "kulczynski") {
-            model <- capscale(formula, data1, distance = "kulczynski", 
-                add = TRUE)
-        }
-        if (method == "gower") {
-            model <- capscale(formula, data1, distance = "gower", 
-                add = TRUE)
-        }
-        if (method == "morisita") {
-            model <- capscale(formula, data1, distance = "morisita", 
-                add = TRUE)
-        }
-        if (method == "horn") {
-            model <- capscale(formula, data1, distance = "horn", 
-                add = TRUE)
-        }
-        if (method == "mountford") {
-            model <- capscale(formula, data1, distance = "mountford", 
-                add = TRUE)
-        }
-        if (method == "jaccard") {
-            model <- capscale(formula, data1, distance = "jaccard", 
-                add = TRUE)
-        }
-        if (method == "raup") {
-            model <- capscale(formula, data1, distance = "raup", 
-                add = TRUE)
-        }
-        if (method == "binomial") {
-            model <- capscale(formula, data1, distance = "binomial", 
-                add = TRUE)
-        }
-        if (method == "chao") {
-            model <- capscale(formula, data1, distance = "chao", 
-                add = TRUE)
-        }
-    }
-    else {
-        if (method == "manhattan") {
-            model <- capscale(formula, data1, distance = "manhattan", 
-                add = FALSE)
-        }
-        if (method == "euclidean") {
-            model <- capscale(formula, data1, distance = "euclidean")
-        }
-        if (method == "canberra") {
-            model <- capscale(formula, data1, distance = "canberra", 
-                add = FALSE)
-        }
-        if (method == "bray") {
-            model <- capscale(formula, data1, distance = "bray", 
-                add = FALSE)
-        }
-        if (method == "kulczynski") {
-            model <- capscale(formula, data1, distance = "kulczynski", 
-                add = FALSE)
-        }
-        if (method == "gower") {
-            model <- capscale(formula, data1, distance = "gower", 
-                add = FALSE)
-        }
-        if (method == "morisita") {
-            model <- capscale(formula, data1, distance = "morisita", 
-                add = FALSE)
-        }
-        if (method == "horn") {
-            model <- capscale(formula, data1, distance = "horn", 
-                add = FALSE)
-        }
-        if (method == "mountford") {
-            model <- capscale(formula, data1, distance = "mountford", 
-                add = FALSE)
-        }
-        if (method == "jaccard") {
-            model <- capscale(formula, data1, distance = "jaccard", 
-                add = FALSE)
-        }
-        if (method == "raup") {
-            model <- capscale(formula, data1, distance = "raup", 
-                add = FALSE)
-        }
-        if (method == "binomial") {
-            model <- capscale(formula, data1, distance = "binomial", 
-                add = FALSE)
-        }
-        if (method == "chao") {
-            model <- capscale(formula, data1, distance = "chao", 
-                add = FALSE)
-        }
-    }
+
+    model <- capscale(formula, data1, distance=method, add=add)
+
 # remember the data
     model$call$data <- data1
 #

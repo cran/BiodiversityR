@@ -46,11 +46,13 @@ Tree diversity analysis: A manual and
 \author{Roeland Kindt (World Agroforestry Centre)}
 
 \examples{
+\dontrun{
 library(vegan)
 data(dune)
 Community.1 <- disttransform(dune, method='hellinger')
-Distmatrix.1 <- vegdist(Community.1,method='euclidean')
+Distmatrix.1 <- vegdist(Community.1, method='euclidean')
 Distmatrix.1
+}
 }
 
 \keyword{multivariate} 

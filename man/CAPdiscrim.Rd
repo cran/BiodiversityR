@@ -8,18 +8,22 @@ This function provides a method for CAP that follows the procedure as described 
 }
 
 \usage{
-CAPdiscrim(formula, data, dist="bray", axes=4, m=0, mmax=10, add=FALSE, permutations=0)
+CAPdiscrim(formula, data, dist="bray", axes=4, 
+    m=0, mmax=10, add=FALSE, 
+    permutations=0,
+    aitchison_pseudocount=1)
 }
 
 \arguments{
   \item{formula}{ Formula with a community data frame (with sites as rows, species as columns and species abundance as cell values) or distance matrix on the left-hand side and a categorical variable on the right-hand side (only the first explanatory variable will be used). }
   \item{data}{ Environmental data set. }
-  \item{dist}{ Method for calculating ecological distance with function \code{\link[vegan]{vegdist}}: partial match to "manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "morisita", "horn" or "mountford". This argument is ignored in case that the left-hand side of the formula already is a distance matrix. }
+  \item{dist}{ Method for calculating ecological distance with function \code{\link[vegan]{vegdist}}: partial match to "manhattan", "euclidean", "canberra", "bray", "kulczynski", "jaccard", "gower", "morisita", "horn", "mountford", "aitchison" and "robust.aitchison". This argument is ignored in case that the left-hand side of the formula already is a distance matrix. }
   \item{axes}{ Number of PCoA axes (\code{\link[stats]{cmdscale}}) to provide in the result. }
   \item{m}{ Number of PCoA axes to be investigated by discriminant analysis (\code{\link[MASS]{lda}}). If m=0 then the number of axes that provides the best distinction between the groups is calculated (following the method of Anderson and Willis).  }
   \item{mmax}{ The maximum number of PCoA axes considered when searching (m=0) for the number of axes that provide the best classification success.  }
   \item{add}{ Add a constant to the non-diagonal dissimilarities such that the modified dissimilarities are Euclidean; see also \code{\link[stats]{cmdscale}}.  }
   \item{permutations}{ The number of permutations for significance testing.  }
+  \item{aitchison_pseudocount}{ Pseudocount setting as in \code{\link[vegan]{vegdist}}.  }
 }
 
 \details{
@@ -71,10 +75,14 @@ Tree diversity analysis: A manual and
 \author{Roeland Kindt (World Agroforestry Centre)}
 
 \examples{
+
+\dontrun{
 library(vegan)
 library(MASS)
 data(dune)
 data(dune.env)
+# categorical variables should not be ordered
+dune$Management <- factor(dune$Management, ordered=FALSE)
 Ordination.model1 <- CAPdiscrim(dune~Management, data=dune.env,
     dist="bray", axes=2, m=0, add=FALSE)
 Ordination.model1
@@ -90,8 +98,8 @@ for (mseq in 1:14) {
     points(mseq, CAPdiscrim.result$percent)
 }
 
-#
 
+}
 }
 
 \keyword{multivariate} 

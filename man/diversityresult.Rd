@@ -11,7 +11,8 @@ Provides alternative methods of obtaining results on diversity statistics than p
 
 \usage{
 diversityresult(x, y = NULL, factor = NULL, level = NULL, 
-    index=c("Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", 
+    index=c("Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger",
+        "simpson.unb", "simpson.unb.inverse", 
         "richness", "abundance", "Jevenness", "Eevenness", 
         "jack1", "jack2", "chao", "boot"),
     method=c("pooled", "each site", "mean", "sd", "max", "jackknife"), 
@@ -22,6 +23,7 @@ diversityvariables(x, y, digits=8)
 diversitycomp(x, y = NULL, 
     factor1 = NULL ,factor2 = NULL,
     index=c("Shannon", "Simpson", "inverseSimpson", "Logalpha", "Berger", 
+        "simpson.unb", "simpson.unb.inverse",
         "richness", "abundance", "Jevenness", "Eevenness", 
         "jack1", "jack2", "chao", "boot"),
     method=c("pooled", "mean", "sd", "max", "jackknife"),
@@ -33,7 +35,7 @@ diversitycomp(x, y = NULL,
   \item{y}{ Environmental data frame. }
   \item{factor}{ Variable of the environmental data frame that defines subsets to calculate diversity statistics for. }
   \item{level}{ Level of the variable to create the subset to calculate diversity statistics. }
-  \item{index}{ Type of diversity statistic with "richness" to calculate species richness, "abundance" to calculate abundance, "Shannon" to calculate the Shannon diversity index, "Simpson" to calculate 1-Simpson concentration index, "inverseSimpson" to calculate the reciprocal Simpson diversity index, "Logalpha" to calculate the log series alpha diversity index, "Berger" to calculate the reciprocal Berger-Parker diversity index, "Jevenness" to calculate one Shannon evenness index, "Eevenness" to calculate another Shannon evenness index, "jack1" to calculate the first-order jackknife gamma diversity estimator, "jack2" to calculate the second-order jackknife gamma diversity estimator, "chao" to calculate the Chao gamma diversity estimator and "boot" to calculate the bootstrap gamma diversity estimator. }
+  \item{index}{ Type of diversity statistic with "richness" to calculate species richness, "abundance" to calculate abundance, "Shannon" to calculate the Shannon diversity index, "Simpson" to calculate 1-Simpson concentration index, "inverseSimpson" to calculate the reciprocal Simpson diversity index, "simpson.unb" to calculate the unbiased Simpson index, "simpson.unb.inverse" to calculate the unbiased inverse simpson index, "Logalpha" to calculate the log series alpha diversity index, "Berger" to calculate the reciprocal Berger-Parker diversity index, "Jevenness" to calculate one Shannon evenness index, "Eevenness" to calculate another Shannon evenness index, "jack1" to calculate the first-order jackknife gamma diversity estimator, "jack2" to calculate the second-order jackknife gamma diversity estimator, "chao" to calculate the Chao gamma diversity estimator and "boot" to calculate the bootstrap gamma diversity estimator. }
   \item{method}{ Method of calculating the diversity statistics: "pooled" calculates the diversity of the entire community (all sites pooled), "each site" calculates diversity for each site separetly, "mean" calculates the average diversity of the sites, "sd" calculates the standard deviation of the diversity of the sites, "max" calculates the maximum diversity of the sites, whereas "jackknife" calculates the jackknifed diversity for the entire data frame. }
   \item{sortit}{ Sort the sites by increasing values of the diversity statistic. }
   \item{digits}{ Number of digits in the results. }
@@ -75,6 +77,8 @@ Tree diversity analysis: A manual and
 
 \examples{
 
+\dontrun{
+
 library(vegan)
 data(dune.env)
 data(dune)
@@ -107,6 +111,8 @@ diversitycomp(dune, y=dune.env, factor1="Management", factor2="Moisture",
     index="Shannon", method="pooled", digits=6)
 diversitycomp(dune, y=dune.env, factor1="Management", factor2="Moisture", 
     index="Shannon", method="mean", digits=6)
+
+}
 }
 
 \keyword{multivariate} 

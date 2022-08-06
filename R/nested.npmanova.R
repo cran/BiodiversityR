@@ -1,5 +1,7 @@
 `nested.npmanova` <-
-function(formula,data,method="euc",permutations=100,warnings=FALSE){
+function(formula, data, method="euc", permutations=100,
+    warnings=FALSE)
+{
     randomize=function(data,toplev,lowlev){
         newdata <- data
         orig.levs <- levels(droplevels(data[,lowlev]))
@@ -46,38 +48,55 @@ function(formula,data,method="euc",permutations=100,warnings=FALSE){
     toplev <- all.vars(formula)[2]
     lowlev <- all.vars(formula)[3]
     data1 <- data
-    assign("data1",data1,envir=.BiodiversityR) 
-    adonis1 <- adonis(formula,data1,permutations=2,method=method)
-    adonis1 <- data.frame(adonis1$aov.tab)
-    anovadat <- adonis1[1:3, c(1:4,6)]
-    df1 <- anovadat[1,1]
-    df2 <- anovadat[2,1]
+    assign("data1", data1, envir=.BiodiversityR) 
+# modified August 2022
+    adonis1 <- adonis2(formula, data1, permutations=2, method=method)
+# modified August 2022 to work with adonis2
+#    adonis1 <- data.frame(adonis1$aov.tab)
+    adonis1 <- data.frame(adonis1)
+
+# modified August 2022, column with R2 was removed from original results
+#    anovadat <- adonis1[1:3, -5]
+    anovadat <- adonis1[1:3, ]
+
+    df1 <- anovadat[1, 1]
+    df2 <- anovadat[2, 1]
     df3 <- nrow(distmatrix)-df1-df2-1
-    sstop <- anovadat[1,2]
-    sslow <- anovadat[2,2]
-    ssres <- anovadat[3,2]
-    vartot <- adonis1[4,2]
-    Ftop <- anovadat[1,3] <- (sstop/df1)/(sslow/df2)
-    Flow <- anovadat[2,3] <- (sslow/df2)/(ssres/df3)
+    sstop <- anovadat[1, 2]
+    sslow <- anovadat[2, 2]
+    ssres <- anovadat[3, 2]
+    vartot <- adonis1[4, 2]
+# new F calculations in column 3
+    Ftop <- anovadat[1, 3] <- (sstop/df1)/(sslow/df2)
+    Flow <- anovadat[2, 3] <- (sslow/df2)/(ssres/df3)
+    anovadat[3, 3] <- NA
     counter <- 1
     for (i in 1:permutations) {
-        data2 <- randomize(data,toplev,lowlev)
+        data2 <- randomize(data, toplev, lowlev)
         assign("data2", data2, envir=.BiodiversityR)
-        adonis2 <- adonis(formula,data=data2,method=method,permutations=2)
-        adonis2 <- data.frame(adonis2$aov.tab)
-        Frand <- (adonis2[1,2]/df1)/(adonis2[2,2]/df2)
+# modified August 2022
+#        adonis2r <- adonis(formula, data=data2, method=method, permutations=2)
+#        adonis2r <- data.frame(adonis2r$aov.tab)
+        adonis2r <- adonis2(formula, data=data2, method=method, permutations=2)
+        adonis2r <- data.frame(adonis2r)
+        Frand <- (adonis2r[1,2]/df1)/(adonis2r[2,2]/df2)
         if (Frand >= Ftop) {counter <- counter+1}
     }    
     signi <- counter/(permutations+1)
+# new permutations in column 4
     anovadat[1,4] <- anovadat[2,4] <- permutations
+# significance in column 5
     anovadat[1,5] <- signi
     counter <- 1
     for (i in 1:permutations) {
-        data2 <- randomize2(data,toplev)
+        data2 <- randomize2(data, toplev)
         assign("data2", data2, envir=.BiodiversityR)
-        adonis2 <- adonis(formula,data=data2,method=method,permutations=2)
-        adonis2 <- data.frame(adonis2$aov.tab)
-        Frand <- (adonis2[2,2]/df2)/(adonis2[3,2]/df3)
+# modified August 2022
+#        adonis2r <- adonis(formula, data=data2, method=method, permutations=2)
+#        adonis2r <- data.frame(adonis2r$aov.tab)
+        adonis2r <- adonis2(formula, data=data2, method=method, permutations=2)
+        adonis2r <- data.frame(adonis2r)
+        Frand <- (adonis2r[2,2]/df2)/(adonis2r[3,2]/df3)
         if (Frand >= Flow) {counter <- counter+1}
     } 
     remove("data1", envir=.BiodiversityR)

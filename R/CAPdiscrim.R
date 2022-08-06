@@ -1,6 +1,6 @@
 `CAPdiscrim` <-
 function(formula, data, dist="bray", axes=4, m=0, mmax=10,
-    add=FALSE, permutations=0) {
+    add=FALSE, permutations=0, aitchison_pseudocount=1) {
 #    if (!require(MASS)) {stop("Requires package MASS")}
     CAPresult=function(points, y, group, axes=axes, m=1, eig) {
         lda1 <- MASS::lda(y[,group]~points[,1:m], CV=T, tol=1.0e-25)
@@ -22,7 +22,7 @@ function(formula, data, dist="bray", axes=4, m=0, mmax=10,
         distmatrix <- x
         x <- data.frame(as.matrix(x))
     }else{
-        distmatrix <- vegdist(x, method = dist)
+        distmatrix <- vegdist(x, method = dist, pseudocount=aitchison_pseudocount)
     }
     distmatrix <- as.dist(distmatrix, diag=F, upper=F)
     pcoa <- cmdscale(distmatrix, k=nrow(x)-1, eig=T, add=add)    
