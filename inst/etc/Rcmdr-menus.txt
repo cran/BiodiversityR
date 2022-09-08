@@ -1,6 +1,6 @@
 # R Commander Menu Definitions
 
-# last modified 2020-08-10 by J. Fox
+# last modified 2022-06-30 by J. Fox
 
 #   type    menu/item      operation/parent  label                                          command/menu                activation  install?
 
@@ -34,6 +34,7 @@
     item    editMenu        command         "Edit R Markdown document"                      editMarkdown                ""          "MarkdownP()"
     item    editMenu        command         "Edit knitr document"                           editKnitr                   ""          "knitrP()"
     item    editMenu        command         "Remove last Markdown command block"            removeLastRmdBlock          ""          "MarkdownP()"
+    item    editMenu        command         "Remove last Markdown section title"            removeLastRmdSection          ""          "MarkdownP()"
     item    editMenu        command         "Remove last knitr command block"               removeLastRnwBlock          ""          "knitrP()"
     item    editMenu        separator       ""                                              ""                          ""          ""
     item    editMenu        command         "Cut"                                           onCut                       ""          ""
@@ -77,8 +78,9 @@
     item    activeMenu      command         "Set case names..."                             setCaseNames                "activeDataSetP()"          ""
     item    activeMenu      command         "Subset active data set..."                     subsetDataSet               "activeDataSetP()"          ""
     item    activeMenu      command         "Sort active data set..."                       sortDataSet                 "activeDataSetP()"          ""
-    item	activeMenu		command			"Aggregate variables in active data set..."		Aggregate					"activeDataSetP() && factorsP()"  ""
-    item	activeMenu		command			"Remove row(s) from active data set..."			RemoveRows					"activeDataSetP()"          ""
+    item    activeMenu	    command	    "Aggregate variables in active data set..."     Aggregate			"activeDataSetP() && factorsP()"  ""
+    item    activeMenu	    command	    "Select row(s) from active data set..."	    SelectRows			"activeDataSetP()"          ""
+    item    activeMenu	    command	    "Remove row(s) from active data set..."	    RemoveRows			"activeDataSetP()"          ""
     item    activeMenu      command         "Stack variables in active data set..."         Stack                       "activeDataSetP() && numericP(2)"          ""
     item    activeMenu      command         "Remove cases with missing data..."             filterNA                    "activeDataSetP()"          ""
     item    activeMenu      command         "Reshape data set from long to wide format..."  reshapeLong2Wide            "activeDataSetP()"          ""
@@ -235,7 +237,9 @@
     item    modelsGraphsMenu      command         "Basic diagnostic plots"                        plotModel                   "modelCapability('plt')"          ""
     item    modelsGraphsMenu      command         "Residual quantile-comparison plot..."          residualQQPlot              "modelCapability('qqp')" "packageAvailable('car')"
     item    modelsGraphsMenu      command         "Component+residual plots..."                      CRPlots                     "modelCapability('crp')" "packageAvailable('car')"
-    item    modelsGraphsMenu      command         "Added-variable plots..."                          AVPlots                     "modelCapability('avp')" "packageAvailable('car')"
+    item    modelsGraphsMenu      command         "3D Component+residual plot..."                      CRPlot3D                     "modelCapability('crp3d') && PredictorsP(2, 'numeric') && PredictorsP(3)" "packageAvailable('car')"
+    item    modelsGraphsMenu      command         "Added-variable plots..."      AVPlots                     "modelCapability('avp')" "packageAvailable('car')"
+    item    modelsGraphsMenu      command         "3D added-variable plot..."                      AVPlot3D                     "modelCapability('avp3d') && CoefficientsP(3)" "packageAvailable('car')"
     item    modelsGraphsMenu      command         "Influence plot..."                                InfluencePlot               "modelCapability('infp')" "packageAvailable('car')"
     item    modelsGraphsMenu      command         "Influence index plot..."                                InfluenceIndexPlot               "modelCapability('infp')" "packageAvailable('car')"
 
@@ -427,7 +431,8 @@
     item    helpMenu        command         "Using R Markdown"                              browseRMarkdown             ""          ""
     item    topMenu         cascade         "Help"                                          helpMenu                    ""          ""
 
-    # Biodiversity analysis (R. Kindt, World Agroforestry, CIFOR-ICRAF)
+    # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
+    # DEC 2018
 
     menu    biodivMenu      topMenu         ""                                              ""                          ""          ""
     menu    communMenu      biodivMenu      ""                                              ""                          ""          ""
@@ -527,9 +532,5 @@
     item    ensMenu         cascade         "Absence data set"                              absMenu                     ""          ""
     item    ensMenu         cascade         "Ensemble suitability modeling"                 calibMenu                   ""          ""
     item    biodivMenu      cascade         "Help"                                          helpbioMenu                 ""          ""
-
-
-
-
 
 

@@ -1,8 +1,8 @@
 Package: BiodiversityR
 Type: Package
 Title: Package for Community Ecology and Suitability Analysis
-Version: 2.14-3
-Date: 2022-8-5
+Version: 2.14-4
+Date: 2022-9-8
 Author: Roeland Kindt [cre, aut] (<https://orcid.org/0000-0002-7672-0712>)
 Authors@R: 
     c(person(given = "Roeland",
@@ -15,7 +15,7 @@ Description: Graphical User Interface (via the R-Commander) and utility function
 License: GPL-3
 URL: http://www.worldagroforestry.org/output/tree-diversity-analysis
 Depends: R (>= 3.2.2), tcltk, vegan (>= 2.6-0)
-Imports: Rcmdr (>= 2.7-0), ggplot2 (>= 3.3.3)
+Imports: Rcmdr (>= 2.8-0), ggplot2 (>= 3.3.3)
 Suggests: vegan3d, rgl, permute, lattice, MASS, mgcv, cluster, car,
         RODBC, rpart, effects, multcomp, ellipse, sp, splancs, spatial,
         nnet, dismo, raster (>= 3.5-11), terra (>= 1.4-22), rgdal,
@@ -24,7 +24,7 @@ Suggests: vegan3d, rgl, permute, lattice, MASS, mgcv, cluster, car,
         geosphere, maptools, ENMeval, red, rgeos, igraph, Rlof, maxnet,
         party, readxl, colorspace, dplyr, rlang, sf, blockCV, envirem,
         concaveman
-Packaged: 2022-08-01 14:21:22 UTC; RKINDT
+Packaged: 2022-09-08 08:28:24 UTC; RKINDT
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2022-08-06 14:10:09 UTC
+Date/Publication: 2022-09-08 09:32:59 UTC

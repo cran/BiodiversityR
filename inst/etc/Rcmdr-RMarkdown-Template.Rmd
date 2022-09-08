@@ -4,6 +4,17 @@ author: "Your Name"
 date: "`r Sys.Date()`"  # Uses current date
 ---
 
+<!-- 
+You can edit this R Markdown document, for example to explain what you're
+doing and to draw conclusions from your data analysis. 
+
+Auto-generated section titles, typically preceded by ###, can also be edited. 
+
+It's generally not a good idea to edit the R code that the R Commander writes, 
+but you can freely edit between (not within) R "code blocks." Each R code
+block starts with ```{r} and ends with ```.
+-->
+
 
 ```{r echo=FALSE, message=FALSE}
 # include this code chunk as-is to set options

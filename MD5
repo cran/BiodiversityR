@@ -1,4 +1,4 @@
-c88af155331af15f21470fd81a5bcb24 *DESCRIPTION
+f93675711b4d03a63427e370cd50261f *DESCRIPTION
 885f0ff12014dffd23493355b5178c11 *NAMESPACE
 ecb5a7fd2efe453efaaa86f3b08c9354 *R/BiodiversityR.changeLog.R
 473f3c555173e7f23b1b3cbc9b511d97 *R/BiodiversityRGUI.R
@@ -100,7 +100,7 @@ aa1380c896e45ec3cd9c5c7e15868c24 *R/stackcommunitydataset.R
 4b72bbf68242d74031ea27e473e5134d *R/subsetcomm.R
 79df62b5d9cfed17747aa696774147d1 *R/zzz.R
 6543f9ba1f0924ce3d0a91a05ec82b77 *README.md
-89fbf6fa713cf90a4af292d94897c93a *build/partial.rdb
+afbe4209b3bb961ba3e41cbfe79ea507 *build/partial.rdb
 0f7ce92d43d1e21c9e61fc30419e1295 *data/BCI.env.txt
 77c30a1c6120d4cab8025ae8a36aaae7 *data/CucurbitaClim.txt
 6c8adddbfd2f05bbecb50c6230e313fa *data/faramea.txt
@@ -110,7 +110,7 @@ a7fc35dd5d33fb725893ad70036f1047 *data/transfgradient.txt
 d08d5872d6f4fa015693fb0624bc35de *data/warcom.txt
 f53cf478d4f95ef79fdc3c94c7e82fde *data/warenv.txt
 6a4025160e177508da213c6d97f8bced *inst/CITATION
-8d3f5f6adea61f05f1e2a2f0654184c4 *inst/ChangeLog
+b60c862bc1c7d427835618506abab518 *inst/ChangeLog
 e7412078db1c54ba3797ead9ea0d0713 *inst/etc/BiodiversityGUI.R
 5f95f29c4896d26a847c9c41f3591112 *inst/etc/BiodiversityR-menus.txt
 22a8a26570fc6d836ed86e2f124b668b *inst/etc/Nations.txt
@@ -119,11 +119,12 @@ e7412078db1c54ba3797ead9ea0d0713 *inst/etc/BiodiversityGUI.R
 f2d7a27d016369f2bd616744b24c1f67 *inst/etc/R-logo.gif
 69de7db4d4c25e80fe65cd4d3c21fad2 *inst/etc/R-logo.ico
 c2128aa27494eb3df882dadd7ed576da *inst/etc/Rcmdr-Markdown-Template.Rmd
-03523711d7fd01a57a4ade05d61d05c5 *inst/etc/Rcmdr-RMarkdown-Template.Rmd
+49d277002d75c50396d689fe83404d68 *inst/etc/Rcmdr-RMarkdown-Template.Rmd
 412b643dccac535db3cacc78e8c91c0c *inst/etc/Rcmdr-hex.pdf
 3ce4fee044b7cd447276fa41c65125db *inst/etc/Rcmdr-knitr-Template.Rnw
-df11beec9d5680c118fac237492b4e60 *inst/etc/Rcmdr-menus.txt
-6770daee93627189f5a1fa912b0ac168 *inst/etc/Rcmdr-model-capabilities.txt
+f619b5a5e1567894e210a5176a85a560 *inst/etc/Rcmdr-menus.txt
+650283396f8f9d74b164cd3e5f83c6e6 *inst/etc/Rcmdr-model-capabilities.txt
+8fbae734995ec18a4cd0f992b497e21d *inst/etc/Rcmdr-operations.txt
 459dbaaedac47f3ea03da9b97350985b *inst/etc/Thumbs.db
 df9255d1f7ced44df68c65ef7d9e2c42 *inst/etc/apply.gif
 f80f0f625d1ab499497068dc27b6334d *inst/etc/blank.gif
@@ -137,15 +138,18 @@ ceabe7facd20a5ecf6ab63bac3e8e3b0 *inst/etc/dune.xls
 6bee3168f9d856ab70f8314c4ae451fc *inst/etc/dune.xlsx
 e6d01c56fe5fd753eae38a3962114003 *inst/etc/dunestacked.csv
 18c235b4282b5c2776eae5e2de2f1224 *inst/etc/edit.gif
+3add54ab885c1dbe65878dc05ae6d28b *inst/etc/error.gif
 9394d0716a5cfa57278fb652fd4e74fc *inst/etc/find.gif
 74400da1660209f6b9481e7f2ebd8d64 *inst/etc/help-old.gif
 bacf553062046d2c98f5c5f6ee24984b *inst/etc/help.gif
+16400372a9b1514c171fe041166734dc *inst/etc/info.gif
 c533f1b3c6f5474b0f75d26348e551bf *inst/etc/linux/Rcmdr.desktop
 27e2b1072be1724789b0c334ff19d1f2 *inst/etc/linux/Rcmdr.svg
 e2d6a07e715ba9186049016646cd35e6 *inst/etc/model-classes.txt
 175dbaab20c4f15e00fdfc8c90791d44 *inst/etc/model.gif
 aba9e0fd899f3dd8c827e7e29d7d3a5b *inst/etc/ok.gif
 9480f5faf5d444f7d92d7505512a75f3 *inst/etc/paste.gif
+01d148b25793adfceceb89cc454c8294 *inst/etc/question.gif
 9ec4ac5e48064e9f81751620a2f5340e *inst/etc/redo.gif
 147d76b2d0bbdf6a67567ef4493d90c9 *inst/etc/remove.gif
 bd7489f77f67150334544ab2c51c77dc *inst/etc/reset.gif
@@ -153,6 +157,7 @@ bd7489f77f67150334544ab2c51c77dc *inst/etc/reset.gif
 ca3abe919a2e8bdda6cb3ea2cad42264 *inst/etc/submit.gif
 6cbe4b339278d1f229af126010bd6d68 *inst/etc/undo.gif
 4623953295902071454beefce5d473ab *inst/etc/view.gif
+fcc2d28db72ac816df91c75d30edae3c *inst/etc/warning.gif
 5cdae925e114c7097433b4e2ca2748d2 *man/BCI.env.Rd
 4e24907356b2a67b8d611ae8c5f95cc4 *man/BiodiversityR-package.Rd
 baf2916860ea86015cdffc7382c364de *man/BiodiversityR.changeLog.Rd
