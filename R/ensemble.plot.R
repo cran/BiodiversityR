@@ -4,7 +4,7 @@
         "consensussuitability", "consensuspresence", "consensuscount", "consensussd"), 
     dev.new.width=7, dev.new.height=7,
     main=paste(RASTER.species.name, " ", plot.method, " for ", RASTER.stack.name, sep=""),
-    positive.filters=c("grd"), negative.filters=c("xml"), 
+    positive.filters=c("tif"), negative.filters=c("xml"), 
     p=NULL, a=NULL,
     threshold=-1,
     threshold.method="spec_sens", threshold.sensitivity=0.9, threshold.PresenceAbsence=FALSE,
@@ -12,8 +12,7 @@
     pres.breaks=6, pres.col=NULL,
     sd.breaks=9, sd.col=NULL,
     absencePresence.col=NULL, 
-    count.col=NULL,
-    maptools.boundaries=TRUE, maptools.col="dimgrey", ...
+    count.col=NULL, ...
 )
 {
 
@@ -201,11 +200,11 @@
                 legend.shrink=0.8, cex.axis=0.8, main=main, sub=subtitle, ...)
        }
 
-        if (maptools.boundaries == T) {
-            utils::data("wrld_simpl", package="maptools", envir=.BiodiversityR)
-            maptools.wrld_simpl <- eval(as.name("wrld_simpl"), envir=.BiodiversityR)
-            raster::plot(maptools.wrld_simpl, add=T, border=maptools.col)
-        }
+#        if (maptools.boundaries == T) {
+#            utils::data("wrld_simpl", package="maptools", envir=.BiodiversityR)
+#            maptools.wrld_simpl <- eval(as.name("wrld_simpl"), envir=.BiodiversityR)
+#            raster::plot(maptools.wrld_simpl, add=T, border=maptools.col)
+#        }
 
     }
 

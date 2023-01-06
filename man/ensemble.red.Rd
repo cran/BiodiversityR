@@ -20,11 +20,11 @@ ensemble.red(x)
 ensemble.chull.create(x.pres = NULL, p = NULL, buffer.width = 0.2,
     buffer.maxmins = FALSE, lonlat.dist = FALSE,
     poly.only = FALSE,
-    RASTER.format = "raster", RASTER.datatype = "INT1U", RASTER.NAflag = 255,
+    RASTER.format = "GTiff", RASTER.datatype = "INT1U", RASTER.NAflag = 255,
     overwrite = TRUE, ...)
 
 ensemble.chull.apply(x.spec = NULL, mask.layer=NULL, keep.old=T,
-    RASTER.format="raster", RASTER.datatype="INT1U", RASTER.NAflag=255,
+    RASTER.format="GTiff", RASTER.datatype="INT1U", RASTER.NAflag = 255,
     overwrite=TRUE, ...)
 
 ensemble.chull.buffer.distances(p = NULL, 
@@ -117,21 +117,21 @@ predictors@title <- "red"
 presence_file <- paste(system.file(package="dismo"), '/ex/bradypus.csv', sep='')
 pres <- read.table(presence_file, header=TRUE, sep=',')
 
-# fit 5 ensemble models (could take some time!)
+# fit 4 ensemble models (could take some time!)
 # (examples for the red package use 100 models)
 ensembles <- ensemble.batch(x=predictors, 
     xn=c(predictors),
     species.presence=pres, 
     thin.km=100,
     k.splits=4, k.test=0, 
-    n.ensembles=5, 
+    n.ensembles=4, 
     SINK=TRUE, 
     ENSEMBLE.best=10, ENSEMBLE.exponent=c(1, 2, 3), 
     ENSEMBLE.min=0.6,
-    MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, CF=1,
-    GLM=1, GLMSTEP=1, GAM=1, GAMSTEP=1, MGCV=1, MGCVFIX=1, 
+    MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=1, CF=0,
+    GLM=0, GLMSTEP=1, GAM=1, GAMSTEP=0, MGCV=1, MGCVFIX=0, 
     EARTH=1, RPART=1, NNET=1, FDA=1, SVM=1, SVME=1, 
-    BIOCLIM.O=1, BIOCLIM=1, DOMAIN=1, MAHAL=0, MAHAL01=1,
+    BIOCLIM.O=0, BIOCLIM=1, DOMAIN=0, MAHAL=0, MAHAL01=0,
     PROBIT=TRUE,
     Yweights="BIOMOD",
     formulae.defaults=TRUE)
@@ -140,126 +140,67 @@ ensembles <- ensemble.batch(x=predictors,
 # AOO and EOO are determined for each count level
 library(red)
 count.file <- paste(getwd(), 
-    "/ensembles/consensuscount/Bradypus variegatus_red.grd", sep="")
+    "/ensembles/consensuscount/Bradypus variegatus_red.tif", sep="")
 count.raster <- raster(count.file)
 ensemble.red(count.raster)
 
 # do not predict presence in polygons completely outside convex hull
 # of known presence locations
 pres.file <- paste(getwd(), 
-    "/ensembles/consensuspresence/Bradypus variegatus_red.grd", sep="")
+    "/ensembles/consensuspresence/Bradypus variegatus_red.tif", sep="")
 pres.raster <- raster(pres.file)
 pres1 <- pres[, -1]
 chull.created <- ensemble.chull.create(x.pres=pres.raster, p=pres1)
 
 mask.raster <- chull.created$mask.layer
+plot(mask.raster, col=c("black", "green"))
 mask.poly <- chull.created$convex.hull
 
 pres.chull <- ensemble.chull.apply(pres.raster, mask=mask.raster, keep.old=T)
 
-# load previous for plotting
-pres.file.old <- paste(getwd(), 
-    "/ensembles/consensuspresence/Bradypus variegatus_red_old.grd", sep="")
-pres.raster.old <- raster(pres.file.old)
-
 par.old <- graphics::par(no.readonly=T)
 par(mfrow=c(1,2))
-plot(pres.raster.old, breaks=c(-1, 0, 1), col=c("grey", "green"),
+plot(pres.raster, breaks=c(-1, 0, 1), col=c("grey", "green"),
     main="before convex hull")
 points(pres1, col="blue")
 
 # load new
-pres.file <- paste(getwd(), 
-    "/ensembles/consensuspresence/Bradypus variegatus_red.grd", sep="")
-pres.raster <- raster(pres.file)
-plot(pres.raster, breaks=c(-1, 0, 1), col=c("grey", "green"),
+pres.file.new <- paste(getwd(), 
+    "/ensembles/chull/Bradypus variegatus_red.tif", sep="")
+pres.raster.new <- raster(pres.file.new)
+plot(pres.raster.new, breaks=c(-1, 0, 1), col=c("grey", "green"),
     main="after convex hull")
 plot(mask.poly, add=T, border="blue")
 
-# new application of ensemble.red
-dev.new()
-plot(count.raster, main="before convex hull")
-ensemble.red(count.raster)
-# all cells where species is predicted not to be present according to the mask layer
-# will be modified to a count of zero
-count.chull <- ensemble.chull.apply(count.raster, mask=mask.raster, keep.old=T)
-# load new
-count.file <- paste(getwd(), 
-    "/ensembles/consensuscount/Bradypus variegatus_red.grd", sep="")
-count.raster <- raster(count.file)
-ensemble.red(count.raster)
-dev.new()
-plot(count.raster, main="after convex hull")
-# par.old <- graphics::par(no.readonly=T)
-
 # create a smaller hull (0.05 * largest distance)
-# First write back the original absence-presence file
-pres.file.original <- paste(getwd(), 
-    "/ensembles/consensuspresence/Bradypus variegatus_red_old.grd", sep="")
-pres.file <- paste(getwd(), 
-    "/ensembles/consensuspresence/Bradypus variegatus_red.grd", sep="")
-pres.raster <- raster(pres.file.original)
-# save as the original file
-writeRaster(pres.raster, filename=pres.file, overwrite=T)
-pres.raster <- raster(pres.file)
-
 chull.created <- ensemble.chull.create(x.pres=pres.raster, p=pres1, 
     buffer.width=0.05, lonlat.dist=TRUE)
 mask.raster <- chull.created$mask.layer
 mask.poly <- chull.created$convex.hull
 pres.chull <- ensemble.chull.apply(pres.raster, mask=mask.raster, keep.old=T)
 
-# load previous for plotting
-pres.file.old <- paste(getwd(), 
-    "/ensembles/consensuspresence/Bradypus variegatus_red_old.grd", sep="")
-pres.raster.old <- raster(pres.file.old)
-
 par(mfrow=c(1,2))
-plot(pres.raster.old, breaks=c(-1, 0, 1), col=c("grey", "green"),
+plot(pres.raster, breaks=c(-1, 0, 1), col=c("grey", "green"),
     main="before convex hull")
 points(pres1, col="blue")
-
-# load new
-pres.file <- paste(getwd(), 
-    "/ensembles/consensuspresence/Bradypus variegatus_red.grd", sep="")
-pres.raster <- raster(pres.file)
-plot(pres.raster, breaks=c(-1, 0, 1), col=c("grey", "green"),
+pres.raster.new <- raster(pres.file.new)
+plot(pres.raster.new, breaks=c(-1, 0, 1), col=c("grey", "green"),
     main="after convex hull")
 plot(mask.poly, add=T, border="blue")
 
-
 # create a hull based on the distance to the location with the farthest neighbour
-# First write back the original absence-presence file
-pres.file.original <- paste(getwd(), 
-    "/ensembles/consensuspresence/Bradypus variegatus_red_old.grd", sep="")
-pres.file <- paste(getwd(), 
-    "/ensembles/consensuspresence/Bradypus variegatus_red.grd", sep="")
-pres.raster <- raster(pres.file.original)
-# save as the original file
-writeRaster(pres.raster, filename=pres.file, overwrite=T)
-pres.raster <- raster(pres.file)
-
 chull.created <- ensemble.chull.create(x.pres=pres.raster, p=pres1, 
     buffer.maxmins=TRUE, buffer.width=0.9, lonlat.dist=TRUE)
 mask.raster <- chull.created$mask.layer
 mask.poly <- chull.created$convex.hull
 pres.chull <- ensemble.chull.apply(pres.raster, mask=mask.raster, keep.old=T)
 
-# load previous for plotting
-pres.file.old <- paste(getwd(), 
-    "/ensembles/consensuspresence/Bradypus variegatus_red_old.grd", sep="")
-pres.raster.old <- raster(pres.file.old)
-
 par(mfrow=c(1,2))
-plot(pres.raster.old, breaks=c(-1, 0, 1), col=c("grey", "green"),
+plot(pres.raster, breaks=c(-1, 0, 1), col=c("grey", "green"),
     main="before convex hull")
 points(pres1, col="blue")
-
-# load new
-pres.file <- paste(getwd(), 
-    "/ensembles/consensuspresence/Bradypus variegatus_red.grd", sep="")
-pres.raster <- raster(pres.file)
-plot(pres.raster, breaks=c(-1, 0, 1), col=c("grey", "green"),
+pres.raster.new <- raster(pres.file.new)
+plot(pres.raster.new, breaks=c(-1, 0, 1), col=c("grey", "green"),
     main="after convex hull")
 plot(mask.poly, add=T, border="blue")
 

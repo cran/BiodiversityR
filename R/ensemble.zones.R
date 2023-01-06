@@ -1,8 +1,8 @@
 `ensemble.zones` <- function(
     presence.raster=NULL, centroid.object=NULL, x=NULL, ext=NULL,
     RASTER.species.name=centroid.object$name, RASTER.stack.name = x@title,
-    RASTER.format="raster", RASTER.datatype="INT1S", RASTER.NAflag=-127,
-    KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
+    RASTER.format="GTiff", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
+#    KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
     CATCH.OFF=FALSE
 )
 {
@@ -15,10 +15,10 @@
     if (is.null(centroid.object) == T) {stop("value for parameter centroid.object is missing (hint: use the ensemble.centroids function)")}
 #
 # 
-    if (KML.out==T && raster::isLonLat(presence.raster)==F) {
-        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of presence.raster is not longitude and latitude", "\n", sep = ""))
-        KML.out <- FALSE
-    }
+#    if (KML.out==T && raster::isLonLat(presence.raster)==F) {
+#        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of presence.raster is not longitude and latitude", "\n", sep = ""))
+#        KML.out <- FALSE
+#    }
 # 
 predict.zone <- function(object=centroid.object, newdata=newdata) {
     centroids <- object$centroids
@@ -63,10 +63,10 @@ predict.zone <- function(object=centroid.object, newdata=newdata) {
 # avoid problems with non-existing directories and prepare for output
     dir.create("ensembles", showWarnings = F)
     dir.create("ensembles/zones", showWarnings = F)
-    if(KML.out == T) {
-        dir.create("kml", showWarnings = F)
-        dir.create("kml/zones", showWarnings = F)
-    }
+#    if(KML.out == T) {
+#        dir.create("kml", showWarnings = F)
+#        dir.create("kml/zones", showWarnings = F)
+#    }
     stack.title <- RASTER.stack.name
 #    if (gsub(".", "_", stack.title, fixed=T) != stack.title) {cat(paste("\n", "WARNING: title of stack (", stack.title, ") contains '.'", "\n\n", sep = ""))}
     rasterfull <- paste("ensembles/zones/", RASTER.species.name, "_", stack.title , sep="")
@@ -92,19 +92,21 @@ predict.zone <- function(object=centroid.object, newdata=newdata) {
 
 #
 # avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(zones.raster, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
-    names(working.raster) <- paste(RASTER.species.name, "_", stack.title , "_zones", sep="")
-    raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+# no longer used with default format of GTiff since DEC-2022
+    raster::writeRaster(zones.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#    raster::writeRaster(zones.raster, filename="working.grd", overwrite=T)
+#    working.raster <- raster::raster("working.grd")
+#    names(working.raster) <- paste(RASTER.species.name, "_", stack.title , "_zones", sep="")
+#    raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
-    if (KML.out == T) {
-        nc <- nrow(centroid.object$centroids)
-        raster::KML(working.raster, filename=kmlfull, col = grDevices::rainbow(n = nc, start = 0.2, end = 0.8), colNA = 0, 
-            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE, breaks = c(0:nc))
-    }
+#    if (KML.out == T) {
+#        nc <- nrow(centroid.object$centroids)
+#        raster::KML(working.raster, filename=kmlfull, col = grDevices::rainbow(n = nc, start = 0.2, end = 0.8), colNA = 0, 
+#            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE, breaks = c(0:nc))
+#    }
 
     cat(paste("\n", "zones provided in folder: ", getwd(), "//ensembles//zones", "\n", sep=""))
-    zones.raster <- raster::raster(rasterfull)
+#    zones.raster <- raster::raster(rasterfull)
     return(zones.raster)
 }
 

@@ -1,8 +1,8 @@
 `ensemble.mean` <- function(
     RASTER.species.name="Species001", RASTER.stack.name="base",
-    positive.filters=c("grd", "_ENSEMBLE_"), negative.filters=c("xml"), 
-    RASTER.format="raster", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
-    KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
+    positive.filters=c("tif", "_ENSEMBLE_"), negative.filters=c("xml"), 
+    RASTER.format="GTiff", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
+#    KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
     abs.breaks=6, pres.breaks=6, sd.breaks=9,
     p=NULL, a=NULL,
     pt=NULL, at=NULL,
@@ -30,13 +30,13 @@
     dir.create("ensembles/consensuscount", showWarnings = F)
     dir.create("ensembles/consensuspresence", showWarnings = F)
     dir.create("ensembles/consensussd", showWarnings = F)
-    if(KML.out == T) {
-        dir.create("kml", showWarnings = F)
-        dir.create("kml/consensussuitability", showWarnings = F)
-        dir.create("kml/consensuscount", showWarnings = F)
-        dir.create("kml/consensuspresence", showWarnings = F)
-        dir.create("kml/consensussd", showWarnings = F)
-    }
+#    if(KML.out == T) {
+#        dir.create("kml", showWarnings = F)
+#        dir.create("kml/consensussuitability", showWarnings = F)
+#        dir.create("kml/consensuscount", showWarnings = F)
+#        dir.create("kml/consensuspresence", showWarnings = F)
+#        dir.create("kml/consensussd", showWarnings = F)
+#    }
 #
 # get ensemble input files
     species_focus <- RASTER.species.name
@@ -84,10 +84,11 @@
     raster::writeRaster(x=ensemble.mean, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
 # avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(ensemble.mean, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
-    names(working.raster) <- filename0
-    raster::writeRaster(working.raster, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+# no longer used with default GTiff format since DEC-2022
+#    raster::writeRaster(ensemble.mean, filename="working.grd", overwrite=T)
+#    working.raster <- raster::raster("working.grd")
+#    names(working.raster) <- filename0
+#    raster::writeRaster(working.raster, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
 # nicheOverlap
     nicheOverlaps <- numeric(length(names(ensemble.stack)))
@@ -109,10 +110,11 @@
     raster::writeRaster(x=ensemble.sd, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
 #  avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(ensemble.sd, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
-    names(working.raster) <- filename0
-    raster::writeRaster(working.raster, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+# no longer used with default GTiff format since DEC-2022
+#    raster::writeRaster(ensemble.sd, filename="working.grd", overwrite=T)
+#    working.raster <- raster::raster("working.grd")
+#    names(working.raster) <- filename0
+#    raster::writeRaster(working.raster, filename=filename1, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
 #
     threshold.mean <- threshold
@@ -146,29 +148,29 @@
 
 #
 # 
-    if (KML.out==T && raster::isLonLat(ensemble.mean)==F) {
-        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) is not longitude and latitude", "\n", sep = ""))
-        KML.out <- FALSE
-    }
-    if (KML.out == T) {
-        raster.min <- raster::minValue(ensemble.mean)
-        raster.max <- raster::maxValue(ensemble.mean)
-        seq1 <- round(seq(from=raster.min, to=threshold.mean, length.out=abs.breaks), 4)
-        seq1 <- seq1[1:(abs.breaks-1)]
-        seq1[-abs.breaks]
-        seq1 <- unique(seq1)
-        seq2 <- round(seq(from = threshold.mean, to = raster.max, length.out=pres.breaks), 4)
-        seq2 <- unique(seq2)
-        filename2 <- paste(getwd(), "//kml//consensussuitability//", filename0, sep="")
-        raster::KML(ensemble.mean, filename=filename2, breaks = c(seq1, seq2), col = c(grDevices::rainbow(n=length(seq1), start=0, end =1/6), grDevices::rainbow(n=length(seq2)-1, start=3/6, end=4/6)), colNA = 0, 
-            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE)
+#    if (KML.out==T && raster::isLonLat(ensemble.mean)==F) {
+#        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) is not longitude and latitude", "\n", sep = ""))
+#        KML.out <- FALSE
+#    }
+#    if (KML.out == T) {
+#        raster.min <- raster::minValue(ensemble.mean)
+#        raster.max <- raster::maxValue(ensemble.mean)
+#        seq1 <- round(seq(from=raster.min, to=threshold.mean, length.out=abs.breaks), 4)
+#        seq1 <- seq1[1:(abs.breaks-1)]
+#        seq1[-abs.breaks]
+#        seq1 <- unique(seq1)
+#        seq2 <- round(seq(from = threshold.mean, to = raster.max, length.out=pres.breaks), 4)
+#        seq2 <- unique(seq2)
+#        filename2 <- paste(getwd(), "//kml//consensussuitability//", filename0, sep="")
+#        raster::KML(ensemble.mean, filename=filename2, breaks = c(seq1, seq2), col = c(grDevices::rainbow(n=length(seq1), start=0, end =1/6), grDevices::rainbow(n=length(seq2)-1, start=3/6, end=4/6)), colNA = 0, 
+#            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE)
 #
-        sd.max <- raster::cellStats(ensemble.sd, stat='max')
-        seq1 <- seq(from = 0, to = sd.max, length.out = sd.breaks)
-        filename2b <- paste(getwd(), "//kml//consensussd//", filename0, sep="")
-        raster::KML(ensemble.sd, filename=filename2b, col=grDevices::rainbow(n = length(seq1)-1, start = 1/6, end = 4/6), colNA = 0, 
-            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE, breaks = seq1)
-    }
+#        sd.max <- raster::cellStats(ensemble.sd, stat='max')
+#        seq1 <- seq(from = 0, to = sd.max, length.out = sd.breaks)
+#        filename2b <- paste(getwd(), "//kml//consensussd//", filename0, sep="")
+#        raster::KML(ensemble.sd, filename=filename2b, col=grDevices::rainbow(n = length(seq1)-1, start = 1/6, end = 4/6), colNA = 0, 
+#            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE, breaks = seq1)
+#    }
 #
 # presence-absence maps based on the mean maps
     enspresence <- ensemble.mean >= 1000 * threshold.mean
@@ -178,16 +180,17 @@
     raster::writeRaster(x=enspresence, filename=filename3, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #
 #  avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(enspresence, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
-    names(working.raster) <- filename0
-    raster::writeRaster(working.raster, filename=filename3, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+# no longer used with default GTiff format since DEC-2022
+#    raster::writeRaster(enspresence, filename="working.grd", overwrite=T)
+#    working.raster <- raster::raster("working.grd")
+#    names(working.raster) <- filename0
+#    raster::writeRaster(working.raster, filename=filename3, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #
-    if (KML.out == T) {
-        filename4 <- paste(getwd(), "//kml//consensuspresence//", filename0, sep="")
-        raster::KML(enspresence, filename=filename4, col=c("grey", "green"),
-            colNA=0, blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE)
-    }
+#    if (KML.out == T) {
+#        filename4 <- paste(getwd(), "//kml//consensuspresence//", filename0, sep="")
+#        raster::KML(enspresence, filename=filename4, col=c("grey", "green"),
+#            colNA=0, blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE)
+#    }
 #
 # count maps: counting the number of ensembles predicting presence
 
@@ -212,22 +215,23 @@
     raster::writeRaster(x=ensemble.count, filename=filename5, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #
 #  avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(ensemble.count, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
-    names(working.raster) <- filename0
-    raster::writeRaster(working.raster, filename=filename5, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+# no longer used with default GTiff format since DEC-2022
+#    raster::writeRaster(ensemble.count, filename="working.grd", overwrite=T)
+#    working.raster <- raster::raster("working.grd")
+#    names(working.raster) <- filename0
+#    raster::writeRaster(working.raster, filename=filename5, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #
-    if (KML.out == T) {
-        filename6 <- paste(getwd(), "//kml//consensuscount//", filename0, sep="")
-        nmax <- length(presence.files)
-        if (nmax > 3) {
-            raster::KML(ensemble.count, filename=filename6, col=c("grey", "black", grDevices::rainbow(n=(nmax-2), start=0, end=1/3), "blue"),
-                colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
-        }else{
-            raster::KML(ensemble.count, filename=filename6, col=c("grey", grDevices::rainbow(n=nmax, start=0, end=1/3)),
-                colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
-        }
-    }
+#    if (KML.out == T) {
+#        filename6 <- paste(getwd(), "//kml//consensuscount//", filename0, sep="")
+#        nmax <- length(presence.files)
+#        if (nmax > 3) {
+#            raster::KML(ensemble.count, filename=filename6, col=c("grey", "black", grDevices::rainbow(n=(nmax-2), start=0, end=1/3), "blue"),
+#                colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
+#        }else{
+#            raster::KML(ensemble.count, filename=filename6, col=c("grey", grDevices::rainbow(n=nmax, start=0, end=1/3)),
+#                colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
+#        }
+#    }
     return(list(threshold=threshold.mean, nicheOverlaps=nicheOverlaps, call=match.call() ))
 }
 

@@ -3305,8 +3305,8 @@ distmatrixGUI <- function(){
     treatasdistCheckBox <- tkcheckbutton(method2Frame, variable=treatasdistVariable)
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
     distances <- c("euclidean", "manhattan", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
-        "chao", "cao", "mahalanobis", "aitchison", "robust.aitchison", 
-        "hellinger", "scaled hellinger", "chord", "scaled chord", 
+        "chao", "cao", "mahalanobis", "hellinger", "aitchison", "robust.aitchison", 
+        "Hellinger", "scaled Hellinger", "chord", "scaled chord", 
         "w", "-1", "c", "wb", "r", "I", "e", "t", "me", "j", "sor", "m", "-2", "co", "cc", "g", "-3", "l", "19", "hk", "rlb", "sim", "gl", "z",
         "designdist", "chaodist",
         "averaged euclidean", "averaged manhattan", "averaged canberra", "averaged clark", "averaged bray", "averaged kulczynski", "averaged jaccard", "averaged gower", "averaged altGower", "averaged morisita", "averaged horn", "averaged mountford", "averaged raup" , "averaged binomial", 
@@ -3316,7 +3316,7 @@ distmatrixGUI <- function(){
         dist <- distances[as.numeric(tkcurselection(distBox))+1]
         modelValue <- tclvalue(modelName)
         if (dist %in% c("euclidean", "manhattan", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
-            "chao", "cao", "mahalanobis")) {
+            "chao", "cao", "mahalanobis", "hellinger")) {
             logger(paste(modelValue, " <- vegdist(", .communityDataSet, ", method='", dist, "', na.rm=T)", sep=""))
             assign(modelValue, justDoIt(paste("vegdist(",.communityDataSet, ", method='",dist, "', na.rm=T)", sep="")), envir=.GlobalEnv)
             doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
@@ -3489,7 +3489,7 @@ unconordiGUI <- function(){
     distScroll <- tkscrollbar(method2Frame, repeatinterval=5, command=function(...) tkyview(distBox, ...))
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
     distances <- c("euclidean", "manhattan", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
-            "chao", "cao", "mahalanobis")
+            "chao", "cao", "mahalanobis", "hellinger")
     for (x in distances) tkinsert(distBox, "end", x)
     summaryVariable <- tclVar("1")
     summaryCheckBox <- tkcheckbutton(method4Frame, variable=summaryVariable)
@@ -4238,7 +4238,7 @@ conordiGUI <- function(){
     distScroll <- tkscrollbar(method2Frame, repeatinterval=5, command=function(...) tkyview(distBox, ...))
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
     distances <- c("euclidean", "manhattan", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
-            "chao", "cao", "mahalanobis", "aitchison", "robust.aitchison")
+            "chao", "cao", "mahalanobis", "hellinger", "aitchison", "robust.aitchison")
     for (x in distances) tkinsert(distBox, "end", x)
     summaryVariable <- tclVar("1")
     summaryCheckBox <- tkcheckbutton(method3Frame, variable=summaryVariable)
@@ -4399,7 +4399,7 @@ conordiGUI <- function(){
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
-            doItAndPrint(paste("adonis2(", formula, ", data=" , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+            doItAndPrint(paste("adonis2(", formula, ", data=" , .activeDataSet, ", by='terms', method='", dist, "', permutations=", perm, ")", sep=""))
         }
         if (method=="capscale (lingoes)") {
             if(treatasdist==T){
@@ -4410,7 +4410,7 @@ conordiGUI <- function(){
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
-            doItAndPrint(paste("adonis2(", formula, ", data=" , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+            doItAndPrint(paste("adonis2(", formula, ", data=" , .activeDataSet, ", by='terms', method='", dist, "', permutations=", perm, ")", sep=""))
         }
         if (method=="capscale (cailliez)") {
             if(treatasdist==T){
@@ -4421,7 +4421,7 @@ conordiGUI <- function(){
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
-            doItAndPrint(paste("adonis2(", formula, ", data=" , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+            doItAndPrint(paste("adonis2(", formula, ", data=" , .activeDataSet, ", by='terms', method='", dist, "', permutations=", perm, ")", sep=""))
         }
         if (method=="dbrda") {
             if(treatasdist==T){
@@ -4432,7 +4432,7 @@ conordiGUI <- function(){
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
-            doItAndPrint(paste("adonis2(", formula, ", data=" , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+            doItAndPrint(paste("adonis2(", formula, ", data=" , .activeDataSet, ", by='terms', method='", dist, "', permutations=", perm, ")", sep=""))
         }
         if (method=="dbrda (lingoes)") {
             if(treatasdist==T){
@@ -4443,7 +4443,7 @@ conordiGUI <- function(){
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
-            doItAndPrint(paste("adonis2(", formula, ", data=" , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+            doItAndPrint(paste("adonis2(", formula, ", data=" , .activeDataSet, ", by='terms', method='", dist, "', permutations=", perm, ")", sep=""))
         }
         if (method=="dbrda (cailliez)") {
             if(treatasdist==T){
@@ -4454,7 +4454,7 @@ conordiGUI <- function(){
             if(treatasdist==F){
                 doItAndPrint(paste("dist.eval(", .communityDataSet, ",'", dist, "')", sep=""))
             }
-            doItAndPrint(paste("adonis2(", formula, ", data=" , .activeDataSet, ", method='", dist, "', permutations=", perm, ")", sep=""))
+            doItAndPrint(paste("adonis2(", formula, ", data=" , .activeDataSet, ", by='terms', method='", dist, "', permutations=", perm, ")", sep=""))
         }
         if (method=="prc") {
             command <- paste("prc(", .communityDataSet, ", " ,tclvalue(rhsVariable), ")", sep="")
@@ -4541,6 +4541,7 @@ conordiGUI <- function(){
                 doItAndPrint(paste("permutest(", modelValue, ", permutations=", perm, ", first=T)", sep=""))
                 if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='terms')", sep=""))}
                 if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='margin')", sep=""))}
+                if (method !="prc") {doItAndPrint(paste("anova.cca(", modelValue, ", step=", perm, ", by='onedf')", sep=""))}
             }
         }
         if(treatasdist==T  && method!="RDA" && method!="CCA"  && method!="prc" && method!="multiconstrained (RDA)" && method!="multiconstrained (CCA)"){
@@ -5120,7 +5121,7 @@ clusterGUI <- function(){
     distScroll <- tkscrollbar(method2Frame, repeatinterval=5, command=function(...) tkyview(distBox, ...))
     tkconfigure(distBox, yscrollcommand=function(...) tkset(distScroll, ...))
     distances <- c("euclidean", "manhattan", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
-        "chao", "cao", "mahalanobis", "aitchison", "robust.aitchison")
+        "chao", "cao", "mahalanobis", "hellinger", "aitchison", "robust.aitchison")
     for (x in distances) tkinsert(distBox, "end", x)
     treatasdistVariable <- tclVar("0")
     treatasdistCheckBox <- tkcheckbutton(method3Frame, variable=treatasdistVariable)
@@ -5482,7 +5483,7 @@ mantelGUI <- function(){
     dist1Scroll <- tkscrollbar(method3Frame, repeatinterval=5, command=function(...) tkyview(dist1Box, ...))
     tkconfigure(dist1Box, yscrollcommand=function(...) tkset(dist1Scroll, ...))
     distances <- c("euclidean", "manhattan", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
-        "chao", "cao", "mahalanobis", "aitchison", "robust.aitchison")
+        "chao", "cao", "mahalanobis", "hellinger", "aitchison", "robust.aitchison")
     for (x in distances) tkinsert(dist1Box, "end", x)
     dist2Box <- tklistbox(method2Frame, width=27, height=5,
         selectmode="single", background="white", exportselection="FALSE") 

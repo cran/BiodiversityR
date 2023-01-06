@@ -1,8 +1,8 @@
 Package: BiodiversityR
 Type: Package
 Title: Package for Community Ecology and Suitability Analysis
-Version: 2.14-4
-Date: 2022-9-8
+Version: 2.15-1
+Date: 2023-1-2
 Author: Roeland Kindt [cre, aut] (<https://orcid.org/0000-0002-7672-0712>)
 Authors@R: 
     c(person(given = "Roeland",
@@ -14,17 +14,16 @@ Maintainer: Roeland Kindt <RoelandCEKindt@gmail.com>
 Description: Graphical User Interface (via the R-Commander) and utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website. In 2012, methods for (ensemble) suitability modelling and mapping were expanded in the package.
 License: GPL-3
 URL: http://www.worldagroforestry.org/output/tree-diversity-analysis
-Depends: R (>= 3.2.2), tcltk, vegan (>= 2.6-0)
+Depends: R (>= 3.2.2), tcltk, vegan (>= 2.6-4)
 Imports: Rcmdr (>= 2.8-0), ggplot2 (>= 3.3.3)
 Suggests: vegan3d, rgl, permute, lattice, MASS, mgcv, cluster, car,
         RODBC, rpart, effects, multcomp, ellipse, sp, splancs, spatial,
-        nnet, dismo, raster (>= 3.5-11), terra (>= 1.4-22), rgdal,
-        maxlike, gbm, randomForest, gam (>= 1.15), earth, mda, kernlab,
-        e1071, glmnet, tools, methods, bootstrap, PresenceAbsence,
-        geosphere, maptools, ENMeval, red, rgeos, igraph, Rlof, maxnet,
-        party, readxl, colorspace, dplyr, rlang, sf, blockCV, envirem,
-        concaveman
-Packaged: 2022-09-08 08:28:24 UTC; RKINDT
+        nnet, dismo, raster (>= 3.6-11), terra (>= 1.6-47), maxlike,
+        gbm, randomForest, gam (>= 1.15), earth, mda, kernlab, e1071,
+        glmnet, tools, methods, bootstrap, PresenceAbsence, geosphere,
+        ENMeval, red, igraph, Rlof, maxnet, party, readxl, colorspace,
+        dplyr, rlang, sf, blockCV, envirem, concaveman
+Packaged: 2023-01-04 06:14:41 UTC; RKINDT
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2022-09-08 09:32:59 UTC
+Date/Publication: 2023-01-06 10:00:30 UTC

@@ -5,9 +5,9 @@
     thresholds=models.list$thresholds,
     RASTER.species.name=models.list$species.name, 
     RASTER.stack.name=xn@title, 
-    RASTER.format="raster", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
+    RASTER.format="GTiff", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
     RASTER.models.overwrite=TRUE,
-    KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
+#    KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
     evaluate=FALSE, SINK=FALSE,
     p=models.list$p, a=models.list$a,
     pt=models.list$pt, at=models.list$at,
@@ -39,10 +39,10 @@
         names(at) <- c("x", "y")
     }
 #
-    if (KML.out==T && raster::isLonLat(xn)==F) {
-        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of stack ", xn@title , " is not longitude and latitude", "\n", sep = ""))
-        KML.out <- FALSE
-    }
+#    if (KML.out==T && raster::isLonLat(xn)==F) {
+#        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of stack ", xn@title , " is not longitude and latitude", "\n", sep = ""))
+#        KML.out <- FALSE
+#    }
 #
     retest <- FALSE
     if (evaluate == T) { 
@@ -110,8 +110,8 @@
     dummy.vars <- models.list$dummy.vars
     dummy.vars.noDOMAIN <- models.list$dummy.vars.noDOMAIN 
 #
-    KML.blur <- trunc(KML.blur)
-    if (KML.blur < 1) {KML.blur <- 1}
+#    KML.blur <- trunc(KML.blur)
+#    if (KML.blur < 1) {KML.blur <- 1}
 #
     if (is.null(input.weights) == F) {
         MAXENT <- max(c(input.weights["MAXENT"], -1), na.rm=T)
@@ -382,12 +382,12 @@
     dir.create("ensembles/suitability", showWarnings = F)
     dir.create("ensembles/count", showWarnings = F)
     dir.create("ensembles/presence", showWarnings = F)
-    if(KML.out == T) {
-        dir.create("kml", showWarnings = F)    
-        dir.create("kml/suitability", showWarnings = F)
-        dir.create("kml/count", showWarnings = F)
-        dir.create("kml/presence", showWarnings = F)
-    }
+#    if(KML.out == T) {
+#        dir.create("kml", showWarnings = F)    
+#        dir.create("kml/suitability", showWarnings = F)
+#        dir.create("kml/count", showWarnings = F)
+#        dir.create("kml/presence", showWarnings = F)
+#    }
 #
     stack.title <- RASTER.stack.name
     if (gsub(".", "_", stack.title, fixed=T) != stack.title) {cat(paste("\n", "WARNING: title of stack (", stack.title, ") contains '.'", "\n\n", sep = ""))}
@@ -396,7 +396,7 @@
     rasterfull <- paste("ensembles//suitability//", raster.title , sep="")
     kmlfull <- paste("kml//suitability//", raster.title , sep="")
     rastercount <- paste("ensembles//count//", raster.title , sep="")
-    kmlcount <- paste("kml//count//", raster.title , sep="")
+    kmlcount <- paste("kml//count//", raster.title, sep="")
     rasterpresence <- paste("ensembles//presence//", raster.title, sep="")
     kmlpresence <- paste("kml//presence//", raster.title, sep="")
 #
@@ -1900,217 +1900,221 @@
     raster::writeRaster(x=enspresence, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     if (output.weights["MAXENT"] > 0) {
         ensemble <- ensemble + output.weights["MAXENT"] * pmaxent
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
         pmaxent <- pmaxent >= 1000 * thresholds["MAXENT"]
         enscount <- enscount + pmaxent
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["MAXNET"] > 0) {
         ensemble <- ensemble + output.weights["MAXNET"] * pmaxnet
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
         pmaxnet <- pmaxnet >= 1000 * thresholds["MAXNET"]
         enscount <- enscount + pmaxnet
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["MAXLIKE"] > 0) {
         ensemble <- ensemble + output.weights["MAXLIKE"] * pmaxlike
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)       
         pmaxlike <- pmaxlike >= 1000 * thresholds["MAXLIKE"]
         enscount <- enscount + pmaxlike
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GBM"] > 0) {
         ensemble <- ensemble + output.weights["GBM"] * pgbm
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
         pgbm <- pgbm >= 1000 * thresholds["GBM"]
         enscount <- enscount + pgbm
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GBMSTEP"] > 0) {
         ensemble <- ensemble + output.weights["GBMSTEP"] * pgbms
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
         pgbms <- pgbms >= 1000 * thresholds["GBMSTEP"]
         enscount <- enscount + pgbms
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["RF"] > 0) {
         ensemble <- ensemble + output.weights["RF"] * prf
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
         prf <- prf >= 1000 * thresholds["RF"]
         enscount <- enscount + prf
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["CF"] > 0) {
         ensemble <- ensemble + output.weights["CF"] * pcf
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
         pcf <- pcf >= 1000 * thresholds["CF"]
         enscount <- enscount + pcf
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GLM"] > 0) {
         ensemble <- ensemble + output.weights["GLM"] * pglm
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)    
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)    
         pglm <- pglm >= 1000 * thresholds["GLM"]
         enscount <- enscount + pglm
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GLMSTEP"] > 0) {
         ensemble <- ensemble + output.weights["GLMSTEP"] * pglms
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)      
         pglms <- pglms >= 1000 * thresholds["GLMSTEP"]
         enscount <- enscount + pglms
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GAM"] > 0) {
         ensemble <- ensemble + output.weights["GAM"] * pgam
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pgam <- pgam >= 1000 * thresholds["GAM"]
         enscount <- enscount + pgam
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GAMSTEP"] > 0) {
         ensemble <- ensemble + output.weights["GAMSTEP"] * pgams
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pgams <- pgams >= 1000 * thresholds["GAMSTEP"]
         enscount <- enscount + pgams
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["MGCV"] > 0) {
         ensemble <- ensemble + output.weights["MGCV"] * pmgcv
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pmgcv <- pmgcv >= 1000 * thresholds["MGCV"]
         enscount <- enscount + pmgcv
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["MGCVFIX"] > 0) {
         ensemble <- ensemble + output.weights["MGCVFIX"] * pmgcvf
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pmgcvf <- pmgcvf >= 1000 * thresholds["MGCVFIX"]
         enscount <- enscount + pmgcvf
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["EARTH"] > 0) {
         ensemble <- ensemble + output.weights["EARTH"] * pearth
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pearth <- pearth >= 1000 * thresholds["EARTH"]
         enscount <- enscount + pearth
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["RPART"] > 0) {
         ensemble <- ensemble + output.weights["RPART"] * prpart
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         prpart <- prpart >= 1000 * thresholds["RPART"]
         enscount <- enscount + prpart
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["NNET"] > 0) {
         ensemble <- ensemble + output.weights["NNET"] * pnnet
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pnnet <- pnnet >= 1000 * thresholds["NNET"]
         enscount <- enscount + pnnet
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["FDA"] > 0) {
         ensemble <- ensemble + output.weights["FDA"] * pfda
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pfda <- pfda >= 1000 * thresholds["FDA"]
         enscount <- enscount + pfda
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["SVM"] > 0) {
         ensemble <- ensemble + output.weights["SVM"] * psvm
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         psvm <- psvm >= 1000 * thresholds["SVM"]
         enscount <- enscount + psvm
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["SVME"] > 0) {
         ensemble <- ensemble + output.weights["SVME"] * psvme
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         psvme <- psvme >= 1000 * thresholds["SVME"]
         enscount <- enscount + psvme
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["GLMNET"] > 0) {
         ensemble <- ensemble + output.weights["GLMNET"] * pglmnet
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pglmnet <- pglmnet >= 1000 * thresholds["GLMNET"]
         enscount <- enscount + pglmnet
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["BIOCLIM.O"] > 0) {
         ensemble <- ensemble + output.weights["BIOCLIM.O"] * pbioO
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pbioO <- pbioO >= 1000 * thresholds["BIOCLIM.O"]
         enscount <- enscount + pbioO
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["BIOCLIM"] > 0) {
         ensemble <- ensemble + output.weights["BIOCLIM"] * pbio
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pbio <- pbio >= 1000 * thresholds["BIOCLIM"]
         enscount <- enscount + pbio
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["DOMAIN"] > 0) {
         ensemble <- ensemble + output.weights["DOMAIN"] * pdom
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pdom <- pdom >= 1000 * thresholds["DOMAIN"]
         enscount <- enscount + pdom
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["MAHAL"] > 0) {
         ensemble <- ensemble + output.weights["MAHAL"] * pmahal
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pmahal <- pmahal >= 1000 * thresholds["MAHAL"]
         enscount <- enscount + pmahal
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
     if (output.weights["MAHAL01"] > 0) {
         ensemble <- ensemble + output.weights["MAHAL01"] * pmahal01
-        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
         pmahal01 <- pmahal01 >= 1000 * thresholds["MAHAL01"]
         enscount <- enscount + pmahal01
-        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+#        raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     }
 #
 # note that submodels had already been multiplied by 1000
     ensemble <- trunc(ensemble)
     raster::setMinMax(ensemble)
+    raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
     ensemble.statistics["ensemble.min"] <- raster::minValue(ensemble)
     ensemble.statistics["ensemble.max"] <- raster::maxValue(ensemble)
 #    names(ensemble) <- raster.title
 #    raster::writeRaster(x=ensemble, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #  avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(ensemble, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
-    names(working.raster) <- raster.title
-    raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+# no longer used with default GTiff format since DEC-2022
+#    raster::writeRaster(ensemble, filename="working.grd", overwrite=T)
+#    working.raster <- raster::raster("working.grd")
+#    names(working.raster) <- raster.title
+#   raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
     raster::setMinMax(enscount)
+    raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
     ensemble.statistics["count.min"] <- raster::minValue(enscount)
     ensemble.statistics["count.max"] <- raster::maxValue(enscount)
 #    names(enscount) <- paste(raster.title, "_count", sep="")
 #    raster::writeRaster(x=enscount, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #  avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(enscount, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
-    names(working.raster) <- paste(raster.title, "_count", sep="")
-    raster::writeRaster(working.raster, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+# no longer used with default GTiff format since DEC-2022
+#    raster::writeRaster(enscount, filename="working.grd", overwrite=T)
+#    working.raster <- raster::raster("working.grd")
+#    names(working.raster) <- paste(raster.title, "_count", sep="")
+#    raster::writeRaster(working.raster, filename=rastercount, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #
-    if (KML.out == T) {
-        raster::writeRaster(enscount, filename="KMLworking.grd", overwrite=T)
-        KMLworking.raster <- raster::raster("KMLworking.grd")
-        names(KMLworking.raster) <- paste(raster.title, "_count", sep="")
-        nmax <- sum(as.numeric(output.weights > 0))
-        if (nmax > 3) {
-            raster::KML(KMLworking.raster, filename=kmlcount, col=c("grey", "black", grDevices::rainbow(n=(nmax-2), start=0, end=1/3), "blue"),
-                colNA=0, blur=10, overwrite=T, breaks=seq(from=-1, to=nmax, by=1))
-        }else{
-            raster::KML(KMLworking.raster, filename=kmlcount, col=c("grey", grDevices::rainbow(n=nmax, start=0, end=1/3)),
-                colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
-        }
-    }
+#    if (KML.out == T) {
+#        raster::writeRaster(enscount, filename="KMLworking.grd", overwrite=T)
+ #       KMLworking.raster <- raster::raster("KMLworking.grd")
+#        names(KMLworking.raster) <- paste(raster.title, "_count", sep="")
+#        nmax <- sum(as.numeric(output.weights > 0))
+#        if (nmax > 3) {
+#            raster::KML(KMLworking.raster, filename=kmlcount, col=c("grey", "black", grDevices::rainbow(n=(nmax-2), start=0, end=1/3), "blue"),
+#                colNA=0, blur=10, overwrite=T, breaks=seq(from=-1, to=nmax, by=1))
+#        }else{
+#            raster::KML(KMLworking.raster, filename=kmlcount, col=c("grey", grDevices::rainbow(n=nmax, start=0, end=1/3)),
+#                colNA=0, blur=10, overwrite=TRUE, breaks=seq(from=-1, to=nmax, by=1))
+#        }
+#    }
 #
     if(evaluate == T) {
         eval1 <- NULL
@@ -2134,43 +2138,45 @@
     }
     ensemble.statistics["ensemble.threshold"] <- thresholds["ENSEMBLE"]
 #
-    if (KML.out == T) {
-        raster::writeRaster(ensemble, filename="KMLworking.grd", overwrite=T)
-        KMLworking.raster <- raster::raster("KMLworking.grd")
-        raster::setMinMax(KMLworking.raster)
-        names(KMLworking.raster) <- raster.title
-        raster::writeRaster(KMLworking.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
-        thresholdx <- 1000 * as.numeric(thresholds["ENSEMBLE"])
-        raster.min <- raster::minValue(KMLworking.raster)
-        raster.max <- raster::maxValue(KMLworking.raster)
-        abs.breaks <- 8
-        pres.breaks <- 8
-        seq1 <- round(seq(from=raster.min, to=thresholdx, length.out=abs.breaks), 4)
-        seq1 <- seq1[1:(abs.breaks-1)]
-        seq1[-abs.breaks]
-        seq1 <- unique(seq1)
-        seq2 <- round(seq(from = thresholdx, to = raster.max, length.out=pres.breaks), 4)
-        seq2 <- unique(seq2)
-        raster::KML(KMLworking.raster, filename=kmlfull, breaks = c(seq1, seq2), col = c(grDevices::rainbow(n=length(seq1), start=0, end =1/6), grDevices::rainbow(n=length(seq2)-1, start=3/6, end=4/6)), colNA = 0, 
-            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE)
-    }
+#    if (KML.out == T) {
+#        raster::writeRaster(ensemble, filename="KMLworking.grd", overwrite=T)
+#        KMLworking.raster <- raster::raster("KMLworking.grd")
+#        raster::setMinMax(KMLworking.raster)
+#        names(KMLworking.raster) <- raster.title
+#        raster::writeRaster(KMLworking.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+#        thresholdx <- 1000 * as.numeric(thresholds["ENSEMBLE"])
+#        raster.min <- raster::minValue(KMLworking.raster)
+#        raster.max <- raster::maxValue(KMLworking.raster)
+#        abs.breaks <- 8
+#        pres.breaks <- 8
+#        seq1 <- round(seq(from=raster.min, to=thresholdx, length.out=abs.breaks), 4)
+#        seq1 <- seq1[1:(abs.breaks-1)]
+#        seq1[-abs.breaks]
+#        seq1 <- unique(seq1)
+#        seq2 <- round(seq(from = thresholdx, to = raster.max, length.out=pres.breaks), 4)
+#        seq2 <- unique(seq2)
+#        raster::KML(KMLworking.raster, filename=kmlfull, breaks = c(seq1, seq2), col = c(grDevices::rainbow(n=length(seq1), start=0, end =1/6), grDevices::rainbow(n=length(seq2)-1, start=3/6, end=4/6)), colNA = 0, 
+#            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE)
+#    }
     enspresence <- ensemble >= 1000 * thresholds["ENSEMBLE"]
     raster::setMinMax(enspresence)
+    raster::writeRaster(enspresence, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #    names(enspresence) <- paste(raster.title, "_presence", sep="")
 #    raster::writeRaster(x=enspresence, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #  avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(enspresence, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
-    names(working.raster) <- paste(raster.title, "_presence", sep="")
-    raster::writeRaster(working.raster, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
+# no longer used with default GTiff format since DEC-2022
+#    raster::writeRaster(enspresence, filename="working.grd", overwrite=T)
+#    working.raster <- raster::raster("working.grd")
+#    names(working.raster) <- paste(raster.title, "_presence", sep="")
+#    raster::writeRaster(working.raster, filename=rasterpresence, progress='text', overwrite=TRUE, format=RASTER.format, datatype="INT1U", NAflag=255)
 #
-    if (KML.out == T) {
-        raster::writeRaster(enspresence, filename="KMLworking.grd", overwrite=T)
-        KMLworking.raster <- raster::raster("KMLworking.grd")
-        names(KMLworking.raster) <- paste(raster.title, "_presence", sep="")
-        raster::KML(KMLworking.raster, filename=kmlpresence, col=c("grey", "green"),
-            colNA=0, blur=KML.blur, maxpixels=KML.maxpixels, overwrite=T)
-    }
+#    if (KML.out == T) {
+#        raster::writeRaster(enspresence, filename="KMLworking.grd", overwrite=T)
+ #       KMLworking.raster <- raster::raster("KMLworking.grd")
+#        names(KMLworking.raster) <- paste(raster.title, "_presence", sep="")
+#        raster::KML(KMLworking.raster, filename=kmlpresence, col=c("grey", "green"),
+#            colNA=0, blur=KML.blur, maxpixels=KML.maxpixels, overwrite=T)
+#    }
 #
     cat(paste("\n", "End of modelling for organism: ", RASTER.species.orig, "\n\n", sep = ""))
     cat(paste("Predictions were made for RasterStack: ", stack.title, "\n\n", sep = ""))

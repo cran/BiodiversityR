@@ -17,9 +17,8 @@ prepare.bioenv(env, as.numeric = c())
 \arguments{
   \item{x}{ Community data frame with sites as rows, species as columns and species abundance as cell values. }
   \item{env}{ Environmental data frame with sites as rows and variables as columns. }
-  \item{dist}{ Method for calculating ecological distance with function \code{\link[vegan]{vegdist}}: partial match to "manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "morisita", "horn" or "mountford". }
+  \item{dist}{ Method for calculating ecological distance with function \code{\link[vegan]{vegdist}}: partial match to "manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "morisita", "horn", "mountford", "raup", "binomial", "chao", "cao", "mahalanobis", "hellinger". }
   \item{as.numeric}{ Vector with names of variables in the environmental data set to be converted to numeric variables. }
-
 }
 
 \details{

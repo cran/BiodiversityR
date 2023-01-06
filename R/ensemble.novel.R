@@ -49,8 +49,8 @@
 `ensemble.novel` <- function(
   x=NULL, novel.object=NULL, 
   RASTER.object.name=novel.object$name, RASTER.stack.name = x@title,
-  RASTER.format="raster", RASTER.datatype="INT1S", RASTER.NAflag=-127,
-  KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
+  RASTER.format="GTiff", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
+#  KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
   CATCH.OFF=FALSE
 )
 {
@@ -62,10 +62,10 @@
   if (all.equal(names(novel.object$minima), names(novel.object$maxima)) == F) {{stop("different variable names for maxima and minima")}}
   # 
 # 
-    if (KML.out==T && raster::isLonLat(x)==F) {
-        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of stack ", x@title , " is not longitude and latitude", "\n", sep = ""))
-        KML.out <- FALSE
-    }
+#    if (KML.out==T && raster::isLonLat(x)==F) {
+#        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of stack ", x@title , " is not longitude and latitude", "\n", sep = ""))
+#        KML.out <- FALSE
+#    }
 #
   predict.novel <- function(object=novel.object, newdata=newdata) {
     minima <- object$minima
@@ -107,6 +107,7 @@
     }
     
     p <- as.numeric(result)
+    p <- trunc(p)
     return(p)
   } 
   
@@ -137,15 +138,15 @@
   # avoid problems with non-existing directories and prepare for output
   dir.create("ensembles", showWarnings = F)
   dir.create("ensembles/novel", showWarnings = F)
-  if (KML.out == T) {
-    dir.create("kml", showWarnings = F)
-    dir.create("kml/novel", showWarnings = F)
-  }
+#  if (KML.out == T) {
+#    dir.create("kml", showWarnings = F)
+#    dir.create("kml/novel", showWarnings = F)
+#  }
   if(length(x@title) == 0) {x@title <- "stack1"}
   stack.title <- RASTER.stack.name
   if (gsub(".", "_", stack.title, fixed=T) != stack.title) {cat(paste("\n", "WARNING: title of stack (", stack.title, ") contains '.'", "\n\n", sep = ""))}
   rasterfull <- paste("ensembles/novel/", RASTER.object.name, "_", stack.title , "_novel", sep="")
-  kmlfull <- paste("kml/novel/", RASTER.object.name, "_", stack.title , "_novel", sep="")
+#  kmlfull <- paste("kml/novel/", RASTER.object.name, "_", stack.title , "_novel", sep="")
   
   #
   # predict
@@ -159,7 +160,7 @@
            filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format)
   }
   # save as integer
-  novel.raster <- trunc(novel.raster)
+#  novel.raster <- trunc(novel.raster)
   raster::setMinMax(novel.raster)
   cat(paste("\n", "raster layer with novel areas (1) created (0 indicates not novel)", "\n", sep = ""))
   print(novel.raster)
@@ -167,19 +168,20 @@
   
   #
   # avoid possible problems with saving of names of the raster layers
-  raster::writeRaster(novel.raster, filename="working.grd", overwrite=T)
-  working.raster <- raster::raster("working.grd")
-  names(working.raster) <- paste(RASTER.object.name, "_", stack.title , "_novel", sep="")
-  raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+  # no longer used with default GTiff format since DEC-2022
+#  raster::writeRaster(novel.raster, filename="working.grd", overwrite=T)
+#  working.raster <- raster::raster("working.grd")
+#  names(working.raster) <- paste(RASTER.object.name, "_", stack.title , "_novel", sep="")
+#  raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
   
   #
-  if (KML.out == T) {
-    raster::KML(working.raster, filename=kmlfull, col = c("grey", "green"), colNA = 0, 
-                blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE, breaks = c(-1, 0, 1))
-  }
+#  if (KML.out == T) {
+#    raster::KML(working.raster, filename=kmlfull, col = c("grey", "green"), colNA = 0, 
+#                blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE, breaks = c(-1, 0, 1))
+#  }
   
   cat(paste("\n", "novel climate raster provided in folder: ", getwd(), "//ensembles//novel", "\n", sep=""))
-  novel.raster <- raster::raster(rasterfull)
+#  novel.raster <- raster::raster(rasterfull)
   return(novel.raster)
 }
 

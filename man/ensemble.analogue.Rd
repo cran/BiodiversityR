@@ -13,8 +13,7 @@ Function \code{ensemble.analogue} creates the map with climatic distance and pro
 \usage{
 ensemble.analogue(x = NULL, analogue.object = NULL, analogues = 1,
     RASTER.object.name = analogue.object$name, RASTER.stack.name = x@title,
-    RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
-    KML.out = T, KML.blur = 10, KML.maxpixels = 100000, 
+    RASTER.format = "GTiff", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
     limits = c(1, 5, 20, 50), limit.colours = c('red', 'orange', 'blue', 'grey'),
     CATCH.OFF = FALSE)
 
@@ -32,9 +31,6 @@ ensemble.analogue.object(ref.location, future.stack, current.stack, name = "refe
   \item{RASTER.format}{ Format of the raster files that will be generated. See \code{\link[raster]{writeFormats}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.datatype}{ Format of the raster files that will be generated. See \code{\link[raster]{dataType}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.NAflag}{ Value that is used to store missing data. See \code{\link[raster]{writeRaster}}.  }
-  \item{KML.out}{ If \code{TRUE}, then kml files will be saved in a subfolder 'kml/zones'.  }
-  \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
-  \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
   \item{limits}{ Limits indicating the accumulated number of closest analogue sites. These limits will correspond to different colours in the KML map. In the default setting, the closest analogue will be coloured red and the second to fifth closest analogues will be coloured orange.  }
   \item{limit.colours}{ Colours for the different limits based on number of analogues.  }
   \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
@@ -137,7 +133,7 @@ Florida.analogue.sd
 
 # plot analogues on climatic distance maps
 par(mfrow=c(1,2))
-analogue.file <- paste(getwd(), "//ensembles//analogue//FloridaMahal_south_analogue.grd", sep="")
+analogue.file <- paste(getwd(), "//ensembles//analogue//FloridaMahal_south_analogue.tif", sep="")
 plot(raster(analogue.file), main="Mahalanobis climatic distance")
 points(Florida.analogue.sd[3:50, "lat"] ~ Florida.analogue.sd[3:50, "lon"], 
     pch=1, col="red", cex=1)
@@ -148,7 +144,7 @@ points(Florida.analogue.mahal[2, "lat"] ~ Florida.analogue.mahal[2, "lon"],
 legend(x="topright", legend=c("closest", "Mahalanobis", "SD"), pch=c(22, 3 , 1), 
     col=c("blue" , "black", "red"))
 
-analogue.file <- paste(getwd(), "//ensembles//analogue//FloridaSD_south_analogue.grd", sep="")
+analogue.file <- paste(getwd(), "//ensembles//analogue//FloridaSD_south_analogue.tif", sep="")
 plot(raster(analogue.file), main="Climatic distance normalized by standard deviation")
 points(Florida.analogue.mahal[3:50, "lat"] ~ Florida.analogue.mahal[3:50, "lon"], 
     pch=3, col="black", cex=1)

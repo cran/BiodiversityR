@@ -2,6 +2,7 @@
 \alias{ensemble.concave.hull}
 \alias{ensemble.concave.venn}
 \alias{ensemble.concave.union}
+\alias{ensemble.outliers}
 
 \title{
 Analysis of Niche Overlap in Environmental Space for Changed Climates via Concave Hulls
@@ -13,15 +14,15 @@ Building on methodologies described by Pironon et al. (\doi{10.1038/s41558-019-0
 
 \usage{
 ensemble.concave.hull(
-        baseline.data,
-        change.data,
-        complete.cases = TRUE,
-        VIF = TRUE, VIF.max = 20, VIF.silent = TRUE,
-        method = c("rda", "pca", "prcomp"),
-        ax1 = 1, ax2 = 2,
-        concavity = 2.5,
-        buffer.dist = NA,
-        ggplot = TRUE)
+    baseline.data,
+    change.data,
+    complete.cases = TRUE,
+    VIF = TRUE, VIF.max = 20, VIF.silent = TRUE,
+    method = c("rda", "pca", "prcomp"),
+    ax1 = 1, ax2 = 2,
+    concavity = 2.5,
+    buffer.dist = NA,
+    ggplot = TRUE)
 
 ensemble.concave.venn(
     x,
@@ -37,6 +38,12 @@ ensemble.concave.union(
     buffer.dist = x$buffer.dist,
     ggplot = TRUE,
     show.candidate.points = TRUE)
+
+ensemble.outliers(
+    x,
+    ID.var = NULL, bioc.vars = NULL,
+    fence.k = 2.5, n_min = 5) 
+
 }
 
 \arguments{
@@ -59,6 +66,11 @@ ensemble.concave.union(
 
   \item{candidate.venns}{ list with outputs from the \code{\link[BiodiversityR]{ensemble.concave.venn}} function.  }
 
+  \item{ID.var}{ Variable name used as identifier  }
+  \item{bioc.vars}{ Variables included in the analysis of outliers }
+  \item{fence.k}{ Multiplier to calculate distance of observation from Interquartile lower and upper limits as used by Tukey's Fences method to detect outliers  }
+  \item{n_min}{ Minimum number of variables for identifying outliers }
+
 }
 
 \details{
@@ -76,6 +88,8 @@ Function \code{\link[BiodiversityR]{ensemble.concave.union}} combines candidate 
 Both \code{\link[BiodiversityR]{ensemble.concave.venn}} and \code{\link[BiodiversityR]{ensemble.concave.union}} return measures of niche overlap based on areas of overlap between the candidate hull and the part of hull for the changed climate that is not covered by the hull for the baseline climate. These functions also indicate for each of the accessions of the focal species in the changed climate whether they occur in a novel climate (novel == TRUE; this information was obtained by \code{\link[BiodiversityR]{ensemble.concave.hull}}) and whether they are inside the hull of the candidate accessions (candidate.in == TRUE).
 
 The optional plot shows the locations of accessions for the changed climate. For \code{\link[BiodiversityR]{ensemble.concave.hull}}, colouring is based on having novel climates (not occurring in the overlap between the two hulls) or not. For the other functions, locations are only shown for accessions with novel climates. Colouring is based on being inside the hull for the candidate accessions or not.
+
+Function \code{\link[BiodiversityR]{ensemble.outliers}} generalizes Tukey's fences method to require that a multivariate outlier is a univariate outlier for a minimum number of \code{n_min} variables (see )
 
 }
 
@@ -102,6 +116,8 @@ Function \code{ensemble.concave.hull} returns a list with following elements:
 
 \references{
 Pironon et al. (2019). Potential adaptive strategies for 29 sub-Saharan crops under future climate change. Nat. Clim. Chang. 9: 758-736. \doi{10.1038/s41558-019-0585-7}
+
+van Zonneveld et al. (2018). Tree genetic resources at risk in South America: a  spatial threat assessment to prioritize populations for conservation. Diversity and Distributions 24: 718-729
 
 van Zonneveld et al. (2022 in prep). Forgotten foods for healthy diets in a warmer Africa.
 }
@@ -217,6 +233,11 @@ union100.res <- ensemble.concave.union(conc100.res,
                                      candidate.venns=spec.res)
 plot(union100.res$ggplot.out)
 table(union100.res$change.points[ , c("novel", "candidate.in")])
+
+# Identify outliers
+baseline.outliers <- ensemble.outliers(alata.base,
+    bioc.vars=paste0("bioc", 1:19))
+baseline.outliers[baseline.outliers$outlier == TRUE, ]
 
 }
 

@@ -13,8 +13,7 @@ Implementation of the BIOCLIM algorithm more similar to the original BIOCLIM alg
 \usage{
 ensemble.bioclim(x = NULL, bioclim.object = NULL, 
     RASTER.object.name = bioclim.object$species.name, RASTER.stack.name = x@title,
-    RASTER.format = "raster",
-    KML.out = TRUE, KML.blur = 10, KML.maxpixels = 100000,
+    RASTER.format = "GTiff",
     CATCH.OFF = FALSE)
 
 ensemble.bioclim.object(x = NULL, p = NULL, fraction = 0.9,
@@ -29,9 +28,6 @@ ensemble.bioclim.object(x = NULL, p = NULL, fraction = 0.9,
   \item{RASTER.object.name}{ First part of the names of the raster file that will be generated, expected to identify the species or crop for which ranges were calculated }
   \item{RASTER.stack.name}{ Last part of the names of the raster file that will be generated, expected to identify the predictor stack used }
   \item{RASTER.format}{ Format of the raster files that will be generated. See \code{\link[raster]{writeFormats}} and \code{\link[raster]{writeRaster}}.  }
-  \item{KML.out}{ If \code{TRUE}, then kml files will be saved in a subfolder 'kml/zones'.  }
-  \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
-  \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
   \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
 
   \item{p}{ presence points used for calibrating the suitability models, typically available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}.  }
@@ -114,16 +110,16 @@ Bradypus.bioclim3 <- ensemble.bioclim.object(predictors, p=NULL, quantiles=T,
     factors="biome", species.name="America")
 Bradypus.bioclim3
 
-ensemble.bioclim(x=predictors, bioclim.object=Bradypus.bioclim, KML.out=T)
-ensemble.bioclim(x=predictors, bioclim.object=Bradypus.bioclim3, KML.out=T)
+ensemble.bioclim(x=predictors, bioclim.object=Bradypus.bioclim)
+ensemble.bioclim(x=predictors, bioclim.object=Bradypus.bioclim3)
 
 par.old <- graphics::par(no.readonly=T)
 graphics::par(mfrow=c(1,2))
 
-rasterfull1 <- paste("ensembles//Bradypus_base_BIOCLIM_orig", sep="")
+rasterfull1 <- paste("ensembles//Bradypus_base_BIOCLIM_orig.tif", sep="")
 raster::plot(raster(rasterfull1), breaks=c(-0.1, 0, 0.5, 1), 
     col=c("grey", "blue", "green"), main="original method")
-rasterfull2 <- paste("ensembles//America_base_BIOCLIM_orig", sep="")
+rasterfull2 <- paste("ensembles//America_base_BIOCLIM_orig.tif", sep="")
 raster::plot(raster(rasterfull2), breaks=c(-0.1, 0, 0.5, 1), 
     col=c("grey", "blue", "green"), main="America")
 
@@ -131,7 +127,7 @@ graphics::par(par.old)
 
 # compare with implementation bioclim in dismo
 bioclim.dismo <- bioclim(predictors, p=pres)
-rasterfull2 <- paste("ensembles//Bradypus_base_BIOCLIM_dismo", sep="")
+rasterfull2 <- paste("ensembles//Bradypus_base_BIOCLIM_dismo.tif", sep="")
 raster::predict(object=predictors, model=bioclim.dismo, na.rm=TRUE, 
     filename=rasterfull2, progress='text', overwrite=TRUE)
 
@@ -163,12 +159,12 @@ predictors.dummy@title <- "base_dummy"
 Bradypus.dummy <- ensemble.bioclim.object(predictors.dummy, quantiles=T, 
     p=pres, species.name="Bradypus")
 Bradypus.dummy
-ensemble.bioclim(x=predictors.dummy, bioclim.object=Bradypus.dummy, KML.out=F)
+ensemble.bioclim(x=predictors.dummy, bioclim.object=Bradypus.dummy)
 
 par.old <- graphics::par(no.readonly=T)
 graphics::par(mfrow=c(1,2))
 
-rasterfull3 <- paste("ensembles//Bradypus_base_dummy_BIOCLIM_orig", sep="")
+rasterfull3 <- paste("ensembles//Bradypus_base_dummy_BIOCLIM_orig.tif", sep="")
 raster::plot(raster(rasterfull1), breaks=c(-0.1, 0, 0.5, 1), col=c("grey", "blue", "green"), 
     main="numeric predictors")
 raster::plot(raster(rasterfull3), breaks=c(-0.1, 0, 0.5, 1), col=c("grey", "blue", "green"), 

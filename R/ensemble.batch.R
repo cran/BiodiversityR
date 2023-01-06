@@ -9,8 +9,8 @@
     n.ensembles=1, 
     VIF.max=10, VIF.keep=NULL,
     SINK=FALSE, CATCH.OFF=FALSE,
-    RASTER.format="raster", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
-    KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
+    RASTER.datatype="INT2S", RASTER.NAflag=-32767,
+#    KML.out=FALSE, KML.maxpixels=100000, KML.blur=10,
     models.save=FALSE,
     threshold.method="spec_sens", threshold.sensitivity=0.9, threshold.PresenceAbsence=FALSE,
     ENSEMBLE.best=0, ENSEMBLE.min=0.7, ENSEMBLE.exponent=1, ENSEMBLE.weight.min=0.05,
@@ -50,6 +50,7 @@
 )
 {
     .BiodiversityR <- new.env()
+    RASTER.format <- "GTiff"
 #
     k.test <- as.integer(k.test)
     k.splits <- as.integer(k.splits)
@@ -397,26 +398,26 @@
                 models.list=calibration2$models,            
                 RASTER.species.name=RASTER.species.name1, 
                 evaluate=T, p=p.batch, a=a.batch,
-                RASTER.format=RASTER.format, RASTER.datatype=RASTER.datatype, RASTER.NAflag=RASTER.NAflag,
-                KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur)
+                RASTER.format=RASTER.format, RASTER.datatype=RASTER.datatype, RASTER.NAflag=RASTER.NAflag)
+#                KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur)
         }else{
             rasters2 <- ensemble.raster(xn=xn.f, 
                 models.list=calibration2$models,            
                 RASTER.species.name=RASTER.species.name1, 
-                RASTER.format=RASTER.format, RASTER.datatype=RASTER.datatype, RASTER.NAflag=RASTER.NAflag,
-                KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur)
+                RASTER.format=RASTER.format, RASTER.datatype=RASTER.datatype, RASTER.NAflag=RASTER.NAflag)
+#                KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur)
         }
 
-        if(runs==n.ensembles && n.ensembles>1 && RASTER.format=="raster") {
+        if(runs==n.ensembles && n.ensembles>1) {
 
 # recalculate threshold for mean of predictions with calibration stack (xn[[1]])
 # use threshold to calculate mean ensemble, ensemble count, ensemble presence and ensemble sd
             if (n == 1) {
                 calibrate.mean <- NULL
                 calibrate.mean <- ensemble.mean(RASTER.species.name=focal.species, RASTER.stack.name=xn.f@title,
-                    positive.filters = c("grd", "_ENSEMBLE_"), negative.filters = c("xml"), 
+                    positive.filters = c("tif", "_ENSEMBLE_"), negative.filters = c("xml"), 
                     RASTER.format=RASTER.format, RASTER.datatype=RASTER.datatype, RASTER.NAflag=RASTER.NAflag,
-                    KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur,
+#                    KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur,
                     p=p.batch, a=a.batch,
                     pt = NULL, at = NULL,
                     threshold = -1,
@@ -424,9 +425,9 @@
                 cat(paste("\n", "threshold for mean suitability: ", calibrate.mean$threshold, "\n", sep = ""))
             }else{
                 ensemble.mean(RASTER.species.name=focal.species, RASTER.stack.name=xn.f@title,
-                    positive.filters = c("grd", "_ENSEMBLE_"), negative.filters = c("xml"), 
+                    positive.filters = c("tif", "_ENSEMBLE_"), negative.filters = c("xml"), 
                     RASTER.format=RASTER.format, RASTER.datatype=RASTER.datatype, RASTER.NAflag=RASTER.NAflag,
-                    KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur,
+#                    KML.out=KML.out, KML.maxpixels=KML.maxpixels, KML.blur=KML.blur,
                     p=NULL, a=NULL,
                     pt = NULL, at = NULL,
                     threshold = calibrate.mean$threshold,

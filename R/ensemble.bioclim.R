@@ -102,8 +102,8 @@
 `ensemble.bioclim` <- function(
     x=NULL, bioclim.object=NULL, 
     RASTER.object.name=bioclim.object$species.name, RASTER.stack.name = x@title,
-    RASTER.format="raster",
-    KML.out=TRUE, KML.blur=10, KML.maxpixels=100000,
+    RASTER.format="GTiff",
+#    KML.out=TRUE, KML.blur=10, KML.maxpixels=100000,
     CATCH.OFF=FALSE
 )
 {
@@ -114,10 +114,10 @@
     if (is.null(bioclim.object) == T) {stop("value for parameter bioclim.object is missing (hint: use the ensemble.bioclim.object function)")}
 # 
 # 
-    if (KML.out==T && raster::isLonLat(x)==F) {
-        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of stack ", x@title , " is not longitude and latitude", "\n", sep = ""))
-        KML.out <- FALSE
-    }
+#    if (KML.out==T && raster::isLonLat(x)==F) {
+#        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of stack ", x@title , " is not longitude and latitude", "\n", sep = ""))
+#        KML.out <- FALSE
+#    }
 #
     predict.bioclim <- function(object=bioclim.object, newdata=newdata) {
         lower.limits <- object$lower.limits
@@ -157,7 +157,7 @@
   
 # avoid problems with non-existing directories and prepare for output
     dir.create("ensembles", showWarnings = F)
-    if (KML.out == T) {dir.create("kml", showWarnings = F)}
+#    if (KML.out == T) {dir.create("kml", showWarnings = F)}
     if(length(x@title) == 0) {x@title <- "stack1"}
     stack.title <- RASTER.stack.name
     rasterfull <- paste("ensembles//", RASTER.object.name, "_", stack.title , "_BIOCLIM_orig", sep="")
@@ -176,21 +176,22 @@
     }
 #    bioclim.raster <- trunc(1000*bioclim.raster)
 #    cat(paste("\n", "raster layer created (probabilities multiplied by 1000)", "\n", sep = ""))
-    raster::setMinMax(bioclim.raster)
+#    raster::setMinMax(bioclim.raster)
     print(bioclim.raster)
 
 #
 # avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(bioclim.raster, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
-    names(working.raster) <- paste(RASTER.object.name, "_", stack.title , "_BIOCLIM_orig", sep="")
-    raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format)
+# not done any longer as default is GTiff from DEC-2022
+#    raster::writeRaster(bioclim.raster, filename="working.grd", overwrite=T)
+#    working.raster <- raster::raster("working.grd")
+#    names(working.raster) <- paste(RASTER.object.name, "_", stack.title , "_BIOCLIM_orig", sep="")
+#    raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=TRUE, format=RASTER.format)
 #  
-    if (KML.out == T) {
+#    if (KML.out == T) {
 #        working.raster <- trunc(1000*working.raster)
-        raster::KML(working.raster, filename=kmlfull, col = c("grey", "blue", "green"), colNA = 0, 
-            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=T, breaks = c(-0.1, 0, 0.5, 1.0))
-    }
+#        raster::KML(working.raster, filename=kmlfull, col = c("grey", "blue", "green"), colNA = 0, 
+#            blur=KML.blur, maxpixels=KML.maxpixels, overwrite=T, breaks = c(-0.1, 0, 0.5, 1.0))
+#    }
   
     cat(paste("\n", "bioclim raster provided in folder: ", getwd(), "//ensembles", "\n", sep=""))
     return(bioclim.raster)

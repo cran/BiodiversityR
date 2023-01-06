@@ -323,3 +323,33 @@
     
 }
 
+ensemble.outliers <- function(x,
+    ID.var=NULL, bioc.vars=NULL,
+    fence.k=2.5, n_min=5) 
+{
+    y <- x
+    y$count <- rep(0, nrow(y))
+  
+    if (is.null(ID.var)) {
+        y$ID <- row.names(y)
+        ID.var <- "ID"
+    }else{
+        x <- x[, which(names(x) != ID.var), drop=FALSE]
+    }
+
+    if (is.null(bioc.vars) == FALSE) {x <- x[, bioc.vars, drop=FALSE]}
+
+    for (i in 1:ncol(x)) {    
+        iqr <- IQR(x[, i], na.rm=TRUE)
+        lb <- summary(x[, i], na.rm=TRUE)[2] - iqr * fence.k
+        ub <- summary(x[, i], na.rm=TRUE)[5] + iqr * fence.k
+# error in the function when only one variable  
+#  outl <- as.numeric(x[, i] <= lb | x[, i] >= ub)
+        outl <- as.numeric(x[, i] < lb | x[, i] > ub)   
+        y$count <- y$count + outl
+    }
+
+    y$outlier <- y$count >= n_min
+  
+  return(y[, c(ID.var, "count", "outlier")])
+}

@@ -13,8 +13,7 @@ Function \code{ensemble.novel} creates the map with novel conditions. Function \
 \usage{
 ensemble.novel(x = NULL, novel.object = NULL,
     RASTER.object.name = novel.object$name, RASTER.stack.name = x@title,
-    RASTER.format = "raster", RASTER.datatype = "INT1S", RASTER.NAflag = -127, 
-    KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
+    RASTER.format = "GTiff", RASTER.datatype = "INT2S", RASTER.NAflag = -32767, 
     CATCH.OFF = FALSE)
 
 ensemble.novel.object(x = NULL, name = "reference1", mask.raster = NULL,
@@ -30,9 +29,6 @@ ensemble.novel.object(x = NULL, name = "reference1", mask.raster = NULL,
   \item{RASTER.format}{ Format of the raster files that will be generated. See \code{\link[raster]{writeFormats}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.datatype}{ Format of the raster files that will be generated. See \code{\link[raster]{dataType}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.NAflag}{ Value that is used to store missing data. See \code{\link[raster]{writeRaster}}.  }
-  \item{KML.out}{ If \code{TRUE}, then kml files will be saved in a subfolder 'kml/zones'.  }
-  \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
-  \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
   \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
 
   \item{name}{ Name of the object, expect to expected to identify the area and time period for which ranges were calculated and where no novel conditions will be detected }
@@ -80,7 +76,7 @@ predictors.current <- stack(predictors.current)
 
 novel.test <- ensemble.novel.object(predictors.current, name="noveltest")
 novel.test
-novel.raster <- ensemble.novel(x=predictors, novel.object=novel.test, KML.out=T)
+novel.raster <- ensemble.novel(x=predictors, novel.object=novel.test)
 novel.raster
 
 plot(novel.raster)
@@ -96,7 +92,7 @@ pres.data <- data.frame(extract(predictors, y=pres))
 # ranges and maps
 Bradypus.ranges1 <- ensemble.novel.object(pres.data, name="Bradypus", quantiles=F)
 Bradypus.ranges1
-Bradypus.novel1 <- ensemble.novel(x=predictors, novel.object=Bradypus.ranges1, KML.out=T)
+Bradypus.novel1 <- ensemble.novel(x=predictors, novel.object=Bradypus.ranges1)
 Bradypus.novel1
 
 par.old <- graphics::par(no.readonly=T)
@@ -110,7 +106,7 @@ points(pres[, 2] ~ pres[, 1], pch=1, col="red", cex=0.8)
 # use 90 percent intervals similar to BIOCLIM methodology
 Bradypus.ranges2 <- ensemble.novel.object(pres.data, name="BradypusQuantiles", quantiles=T)
 Bradypus.ranges2
-Bradypus.novel2 <- ensemble.novel(x=predictors, novel.object=Bradypus.ranges2, KML.out=T)
+Bradypus.novel2 <- ensemble.novel(x=predictors, novel.object=Bradypus.ranges2)
 Bradypus.novel2
 raster::plot(Bradypus.novel2, breaks=c(-0.1, 0, 1), col=c("green", "grey"), 
     main="Suitability mapping using quantile range")
@@ -137,15 +133,14 @@ predictors.dummy.current <- stack(predictors.dummy.current)
 
 novel.levels <- ensemble.novel.object(predictors.dummy.current, name="novellevels")
 novel.levels
-novel.levels.raster <- ensemble.novel(x=predictors.dummy, novel.object=novel.levels, 
-    KML.out=T)
+novel.levels.raster <- ensemble.novel(x=predictors.dummy, novel.object=novel.levels)
 novel.levels.raster
 
 novel.levels.quantiles <- ensemble.novel.object(predictors.dummy.current, quantiles=TRUE,
     name="novellevels_quantiles")
 novel.levels.quantiles
 novel.levels.quantiles.raster <- ensemble.novel(x=predictors.dummy, 
-    novel.object=novel.levels.quantiles, KML.out=T)
+    novel.object=novel.levels.quantiles)
 novel.levels.quantiles.raster
 
 # difference in ranges for variables with low frequencies

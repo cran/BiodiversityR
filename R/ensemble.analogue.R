@@ -55,8 +55,8 @@
 `ensemble.analogue` <- function(
     x=NULL, analogue.object=NULL, analogues=1,
     RASTER.object.name=analogue.object$name, RASTER.stack.name=x@title,
-    RASTER.format="raster", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
-    KML.out=T, KML.blur=10, KML.maxpixels = 100000, 
+    RASTER.format="GTiff", RASTER.datatype="INT2S", RASTER.NAflag=-32767,
+#    KML.out=T, KML.blur=10, KML.maxpixels = 100000, 
     limits=c(1, 5, 20, 50), limit.colours=c('red', 'orange', 'blue', 'grey'),
     CATCH.OFF=FALSE
 )
@@ -67,10 +67,10 @@
     if(inherits(x, "RasterStack") == F) {stop("x is not a RasterStack object")}
     if (is.null(analogue.object) == T) {stop("value for parameter analogue.object is missing (hint: use the ensemble.analogue.object function)")}
 # 
-    if (KML.out==T && raster::isLonLat(x)==F) {
-        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of stack ", x@title , " is not longitude and latitude", "\n", sep = ""))
-        KML.out <- FALSE
-    }
+#    if (KML.out==T && raster::isLonLat(x)==F) {
+#        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of stack ", x@title , " is not longitude and latitude", "\n", sep = ""))
+#        KML.out <- FALSE
+#    }
 #
     predict.analogue <- function(object=analogue.object, newdata=newdata) {
         method <- object$method
@@ -96,6 +96,7 @@
 	    p <- rowSums(out)
 	    z2 <- 1/z
 	    p <- p ^ z2
+	    p <- round(p, digits=8)
 	    return(p)
         }
     }
@@ -103,10 +104,10 @@
 # avoid problems with non-existing directories and prepare for output
     dir.create("ensembles", showWarnings = F)
     dir.create("ensembles/analogue", showWarnings = F)
-    if (KML.out == T) {
-      dir.create("kml", showWarnings = F)
-      dir.create("kml/analogue", showWarnings = F)
-    }
+#    if (KML.out == T) {
+#      dir.create("kml", showWarnings = F)
+#      dir.create("kml/analogue", showWarnings = F)
+#    }
     if(length(x@title) == 0) {x@title <- "stack1"}
     stack.title <- RASTER.stack.name
     if (gsub(".", "_", stack.title, fixed=T) != stack.title) {cat(paste("\n", "WARNING: title of stack (", stack.title, ") contains '.'", "\n\n", sep = ""))}
@@ -124,16 +125,19 @@
        analogue.raster <- raster::predict(object=x, model=analogue.object, fun=predict.analogue, na.rm=TRUE, 
            filename=rasterfull, progress='text', overwrite=T, format=RASTER.format)
     }
-    analogue.raster <- round(analogue.raster, digits=8)
-    raster::setMinMax(analogue.raster)
+    
+# modified DEC-2022, rounding done within the function   
+#    analogue.raster <- round(analogue.raster, digits=8)
+#    raster::setMinMax(analogue.raster)
     print(analogue.raster)
 
 #
 # avoid possible problems with saving of names of the raster layers
-    raster::writeRaster(analogue.raster, filename="working.grd", overwrite=T)
-    working.raster <- raster::raster("working.grd")
-    names(working.raster) <- paste(RASTER.object.name, "_", stack.title , "_", analogue.object$method, "_z", analogue.object$z, "_analogue", sep="")
-    raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=T, format=RASTER.format)
+# not done from DEC-2022 as saving in GTiff format
+#    raster::writeRaster(analogue.raster, filename="working.grd", overwrite=T)
+#    working.raster <- raster::raster("working.grd")
+#    names(working.raster) <- paste(RASTER.object.name, "_", stack.title , "_", analogue.object$method, "_z", analogue.object$z, "_analogue", sep="")
+#    raster::writeRaster(working.raster, filename=rasterfull, progress='text', overwrite=T, format=)
 #  
     limits.data <- data.frame(limits)
     limits.data <- data.frame(cbind(limits, limits))
@@ -148,10 +152,10 @@
     cat(paste("\n", "suggested breaks in colour scheme", "\n", sep=""))	
     print(limits.data)
 #
-    if (KML.out == T) {
-        breaks1 <- c(raster::minValue(analogue.raster), limits.data[,1])
-        raster::KML(working.raster, filename=kmlfull, overwrite=T, blur=KML.blur, col=limit.colours, breaks=breaks1)
-    }
+#    if (KML.out == T) {
+#        breaks1 <- c(raster::minValue(analogue.raster), limits.data[,1])
+#        raster::KML(working.raster, filename=kmlfull, overwrite=T, blur=KML.blur, col=limit.colours, breaks=breaks1)
+#    }
 #
 # get locations
     j <- 1

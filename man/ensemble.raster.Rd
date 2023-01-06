@@ -18,9 +18,8 @@ ensemble.raster(xn = NULL,
     thresholds = models.list$thresholds,
     RASTER.species.name = models.list$species.name, 
     RASTER.stack.name = xn@title, 
-    RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
+    RASTER.format = "GTiff", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
     RASTER.models.overwrite = TRUE,
-    KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
     evaluate = FALSE, SINK = FALSE,
     p = models.list$p, a = models.list$a,
     pt = models.list$pt, at = models.list$at,
@@ -29,9 +28,8 @@ ensemble.raster(xn = NULL,
 ensemble.habitat.change(base.map = file.choose(), 
     other.maps = utils::choose.files(),
     change.folder = "ensembles/change",
-    RASTER.format = "raster", RASTER.datatype = "INT1U", RASTER.NAflag = 255,
-    KML.out = FALSE, KML.folder = "kml/change",
-    KML.maxpixels = 100000, KML.blur = 10)
+    RASTER.names = "changes",
+    RASTER.format = "GTiff", RASTER.datatype = "INT1U", RASTER.NAflag = 255)
 
 ensemble.area(x=NULL, km2=TRUE)
 
@@ -48,9 +46,6 @@ ensemble.area(x=NULL, km2=TRUE)
   \item{RASTER.datatype}{ Format of the raster files that will be generated. See \code{\link[raster]{dataType}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.NAflag}{ Value that is used to store missing data. See \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.models.overwrite}{ Overwrite the raster files that correspond to each suitability modelling algorithm (if \code{TRUE}). (Overwriting actually implies that raster files are created or overwritten that start with "working_").  }
-  \item{KML.out}{ if \code{FALSE}, then no kml layers (layers that can be shown in Google Earth) are produced. If \code{TRUE}, then kml files will be saved in a subfolder 'kml'.   }
-  \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
-  \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
   \item{evaluate}{ if \code{TRUE}, then evaluate the created raster layers at locations \code{p}, \code{a}, \code{pt} and \code{at} (if provided). See also \code{\link[dismo]{evaluate}} }
   \item{SINK}{ Append the results to a text file in subfolder 'outputs' (if \code{TRUE}). The name of file is based on argument \code{RASTER.species.name}. In case the file already exists, then results are appended. See also \code{\link[base]{sink}}.  }
   \item{p}{ presence points used for calibrating the suitability models, typically available in 2-column (x, y) or (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
@@ -62,7 +57,7 @@ ensemble.area(x=NULL, km2=TRUE)
   \item{base.map}{ filename with baseline map used to produce maps that show changes in suitable habitat }
   \item{other.maps}{ files with other maps used to produce maps that show changes in suitable habitat from a defined base.map  }
   \item{change.folder}{ folder where new maps documenting changes in suitable habitat will be stored. NOTE: please ensure that the base folder (eg: ../ensembles) exists already.  }
-  \item{KML.folder}{ folder where new maps (in Google Earth format) documenting changes in suitable habitat will be stored. NOTE: please ensure that the base folder (eg: ../kml) exists already.   }
+  \item{RASTER.names}{ names for the files in the change.folder (previously set as names of the other maps).  }
 
   \item{x}{ RasterLayer object (\code{\link[raster]{raster}}) in a longitude-latitude coordinate system  }
   \item{km2}{ Provide results in square km rather than square m. See also \code{\link[geosphere]{areaPolygon}}  }
@@ -74,8 +69,6 @@ The basic function \code{ensemble.raster} fits individual suitability models for
 Note that values in suitability maps are integer values that were calculated by multiplying probabilities by 1000 (see also \code{\link[base]{trunc}}).
 
 The \code{ensemble.habitat.change} function produces new raster layers that show changes in suitable and not suitable habitat between a base raster and a list of other rasters. The output uses the following coding: 0 = areas that remain unsuitable, 11 = areas that remain suitable, 10 = areas of lost habitat, 1 = areas of new habitat. (Codes are inspired on a binary classification of habitat suitability in base [1- or 0-] and other layer [-1 or -0], eg new habitat is coded 01 = 1).
-
-With \code{KML.out = TRUE}, kml files are created in a subfolder named "KML". The colouring of the consensus suitability PNG is based on 20 intervals of size 50 between 0 and 1000. The colouring of the presence-absence PNG uses green for presence and red for absence. The colouring of the count suitability PNG uses black for zero (no models predict presence) and blue for the theoretical maximum number of models to predict presence (i.e. the count of all final weights), whereas intermediate numbers (1 to theoretical maximum - 1) are ranged from red to green. The colouring of the habitat change maps are: black (cells that are never suitable [value: 0]), green (cells that are always suitable [value: 11]), red (cells that are lost habitat [value: 10] and blue (cells that are new habitat [value: 1]).
 
 The \code{ensemble.area} function calculates the area of different categories with \code{\link[geosphere]{areaPolygon}}
 
@@ -223,14 +216,15 @@ ensemble.raster.results2 <- ensemble.raster(
     SINK=TRUE, evaluate=TRUE,
     RASTER.species.name="Bradypus", RASTER.stack.name="recalibrated")
 
-base.file <- paste(getwd(), "/ensembles/presence/Bradypus_base.grd", sep="")
-other.file <- paste(getwd(), "/ensembles/presence/Bradypus_recalibrated.grd", sep="")
+base.file <- paste(getwd(), "/ensembles/presence/Bradypus_base.tif", sep="")
+other.file <- paste(getwd(), "/ensembles/presence/Bradypus_recalibrated.tif", sep="")
 
 changed.habitat <- ensemble.habitat.change(base.map=base.file, 
     other.maps=c(other.file),
-    change.folder="ensembles/change")
+    change.folder="ensembles/change",
+    RASTER.names="Bradypus_recalibrated")
 
-change.file <- paste(getwd(), "/ensembles/change/Bradypus_recalibrated_presence.grd", sep="")
+change.file <- paste(getwd(), "/ensembles/change/Bradypus_recalibrated.tif", sep="")
 
 par.old <- graphics::par(no.readonly=T)
 dev.new()

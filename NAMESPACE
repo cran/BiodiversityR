@@ -29,6 +29,7 @@ export(BiodiversityRGUI, check.datasets, check.ordiscores, spatialsample, makeco
     ensemble.PET.seasons, ensemble.prec.season, ensemble.tmean.season, ensemble.season.suitability,
     ensemble.envirem.masterstack, ensemble.envirem.solradstack, ensemble.envirem.run,
     ensemble.concave.hull, ensemble.concave.venn, ensemble.concave.union,
+    ensemble.outliers,
     .onAttach)
 
 if(tools:::.OStype() == "windows") {

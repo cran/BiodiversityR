@@ -22,8 +22,7 @@ ensemble.batch(x = NULL, xn = c(x),
     n.ensembles = 1,
     VIF.max = 10, VIF.keep = NULL, 
     SINK = FALSE, CATCH.OFF = FALSE, 
-    RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767, 
-    KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
+    RASTER.datatype = "INT2S", RASTER.NAflag = -32767, 
     models.save = FALSE,
     threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
     threshold.PresenceAbsence = FALSE,
@@ -64,9 +63,8 @@ ensemble.batch(x = NULL, xn = c(x),
     MAHAL.shape = 1)
 
 ensemble.mean(RASTER.species.name = "Species001", RASTER.stack.name = "base",
-    positive.filters = c("grd", "_ENSEMBLE_"), negative.filters = c("xml"), 
-    RASTER.format = "raster", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
-    KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
+    positive.filters = c("tif", "_ENSEMBLE_"), negative.filters = c("xml"), 
+    RASTER.format = "GTiff", RASTER.datatype = "INT2S", RASTER.NAflag = -32767,
     abs.breaks = 6, pres.breaks = 6, sd.breaks = 9,
     p = NULL, a = NULL,
     pt = NULL, at = NULL,
@@ -80,7 +78,7 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
     dev.new.width = 7, dev.new.height = 7,
     main = paste(RASTER.species.name, " ", plot.method, 
         " for ", RASTER.stack.name, sep=""),
-    positive.filters = c("grd"), negative.filters = c("xml"), 
+    positive.filters = c("tif"), negative.filters = c("xml"), 
     p=NULL, a=NULL,
     threshold = -1,
     threshold.method = "spec_sens", threshold.sensitivity = 0.9, 
@@ -89,8 +87,7 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
     pres.breaks = 6, pres.col = NULL,
     sd.breaks = 9, sd.col = NULL,
     absencePresence.col = NULL,
-    count.col = NULL,
-    maptools.boundaries = TRUE, maptools.col = "dimgrey", ...)
+    count.col = NULL, ...)
 }
 
 \arguments{
@@ -119,9 +116,6 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{RASTER.format}{ Format of the raster files that will be generated. See \code{\link[raster]{writeFormats}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.datatype}{ Format of the raster files that will be generated. See \code{\link[raster]{dataType}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.NAflag}{ Value that is used to store missing data. See \code{\link[raster]{writeRaster}}.  }
-  \item{KML.out}{ if \code{FALSE}, then no kml layers (layers that can be shown in Google Earth) are produced. If \code{TRUE}, then kml files will be saved in a subfolder 'kml'.   }
-  \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
-  \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
   \item{models.save}{ Save the list with model details to a file (if \code{TRUE}). The filename will be \code{species.name} with extension \code{.models}; this file will be saved in subfolder of \code{models}. When loading this file, model results will be available as \code{ensemble.models}. }
   \item{threshold.method}{ Method to calculate the threshold between predicted absence and presence; possibilities include \code{spec_sens} (highest sum of the true positive rate and the true negative rate), \code{kappa} (highest kappa value), \code{no_omission} (highest threshold that corresponds to no omission), \code{prevalence} (modeled prevalence is closest to observed prevalence) and \code{equal_sens_spec} (equal true positive rate and true negative rate). See \code{\link[dismo]{threshold}}. Options specific to the BiodiversityR implementation are: \code{threshold.mean} (resulting in calculating the mean value of \code{spec_sens}, \code{equal_sens_spec} and \code{prevalence}) and \code{threshold.min} (resulting in calculating the minimum value of \code{spec_sens}, \code{equal_sens_spec} and \code{prevalence}).   }
   \item{threshold.sensitivity}{ Sensitivity value for \code{threshold.method = 'sensitivity'}. See \code{\link[dismo]{threshold}}.   }
@@ -234,8 +228,6 @@ ensemble.plot(RASTER.species.name = "Species001", RASTER.stack.name = "base",
   \item{sd.col}{ specify colours for standard deviation   }
   \item{absencePresence.col}{ specify colours for absence - presence maps (see examples on how not to plot areas where the species is predicted absent)   }
   \item{count.col}{ specify colours for number of algorithms or ensembles (see examples on how not to plot areas where the species is predicted absent)   }
-  \item{maptools.boundaries}{ If \code{TRUE}, then plot approximate country boundaries \code{\link[maptools]{wrld_simpl}}   }
-  \item{maptools.col}{ Colour for approximate country boundaries plotted via \code{\link[maptools]{wrld_simpl}}   }
   \item{...}{ Other items passed to function \code{\link[raster]{plot}}. }
 
 }

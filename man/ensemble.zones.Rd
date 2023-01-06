@@ -14,8 +14,7 @@ Function \code{ensemble.zones} maps the zone of each raster cell within a presen
 ensemble.zones(presence.raster = NULL, centroid.object = NULL, 
     x = NULL, ext = NULL,
     RASTER.species.name = centroid.object$name, RASTER.stack.name = x@title, 
-    RASTER.format = "raster", RASTER.datatype = "INT1S", RASTER.NAflag = -127, 
-    KML.out = FALSE, KML.maxpixels = 100000, KML.blur = 10,
+    RASTER.format = "GTiff", RASTER.datatype = "INT2S", RASTER.NAflag = -32767, 
     CATCH.OFF = FALSE)
 
 ensemble.centroids(presence.raster = NULL, x = NULL, categories.raster = NULL,
@@ -35,9 +34,6 @@ ensemble.centroids(presence.raster = NULL, x = NULL, categories.raster = NULL,
   \item{RASTER.format}{ Format of the raster files that will be generated. See \code{\link[raster]{writeFormats}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.datatype}{ Format of the raster files that will be generated. See \code{\link[raster]{dataType}} and \code{\link[raster]{writeRaster}}.  }
   \item{RASTER.NAflag}{ Value that is used to store missing data. See \code{\link[raster]{writeRaster}}.  }
-  \item{KML.out}{ If \code{TRUE}, then kml files will be saved in a subfolder 'kml/zones'.  }
-  \item{KML.maxpixels}{ Maximum number of pixels for the PNG image that will be displayed in Google Earth. See also \code{\link[raster]{KML}}.  }
-  \item{KML.blur}{ Integer that results in increasing the size of the PNG image by \code{KML.blur^2}, which may help avoid blurring of isolated pixels. See also \code{\link[raster]{KML}}.  }
   \item{CATCH.OFF}{ Disable calls to function \code{\link[base]{tryCatch}}.  }
 
   \item{categories.raster}{ RasterLayer object (\code{\link[raster]{raster}}) documenting predefined zones such as vegetation types. In case this object is provided, then centroids will be calculated for each zone. }
@@ -91,7 +87,8 @@ background <- randomPoints(predictors, n=1000, extf=1.00)
 ensemble.calibrate.step1 <- ensemble.calibrate.models(
     x=predictors, p=pres, a=background,
     species.name="Bradypus",
-    MAXENT=0, MAXLIKE=0, GBM=0, GBMSTEP=0, RF=0, GLM=1, GLMSTEP=0, 
+    MAXENT=0, MAXLIKE=0, MAXNET=0, CF=0, 
+    GBM=0, GBMSTEP=0, RF=0, GLM=1, GLMSTEP=0, 
     GAM=0, GAMSTEP=0, MGCV=0, MGCVFIX=0,
     EARTH=0, RPART=0, NNET=0, FDA=0, SVM=0, SVME=0, GLMNET=0,
     BIOCLIM.O=0, BIOCLIM=0, DOMAIN=0, MAHAL=0, MAHAL01=0,
@@ -104,7 +101,7 @@ ensemble.raster.results <- ensemble.raster(xn=predictors,
 
 # get presence map as for example created with ensemble.raster in subfolder 'ensemble/presence'
 # presence values are values equal to 1
-presence.file <- paste("ensembles//presence//Bradypus_base.grd", sep="")
+presence.file <- paste("ensembles//presence//Bradypus_base.tif", sep="")
 presence.raster <- raster(presence.file)
 
 # let cascadeKM decide on the number of clusters
@@ -112,26 +109,26 @@ dev.new()
 centroids <- ensemble.centroids(presence.raster=presence.raster, 
     x=predictors, an=1000, plotit=T)
 ensemble.zones(presence.raster=presence.raster, centroid.object=centroids, 
-    x=predictors, RASTER.species.name="Bradypus", KML.out=T)
+    x=predictors, RASTER.species.name="Bradypus")
 
 dev.new()
-zones.file <- paste("ensembles//zones//Bradypus_base.grd", sep="")
+zones.file <- paste("ensembles//zones//Bradypus_base.tif", sep="")
 zones.raster <- raster(zones.file)
 max.zones <- maxValue(zones.raster)
 plot(zones.raster, breaks=c(0, c(1:max.zones)), 
     col = grDevices::rainbow(n=max.zones), main="zones")
 ensemble.zones(presence.raster=presence.raster, centroid.object=centroids, 
-    x=predictors, RASTER.species.name="Bradypus", KML.out=T)
+    x=predictors, RASTER.species.name="Bradypus")
 
 # manually choose 6 zones
 dev.new()
 centroids6 <- ensemble.centroids(presence.raster=presence.raster, 
     x=predictors, an=1000, plotit=T, centers=6)
 ensemble.zones(presence.raster=presence.raster, centroid.object=centroids6, 
-    x=predictors, RASTER.species.name="Bradypus6", KML.out=T)
+    x=predictors, RASTER.species.name="Bradypus6")
 
 dev.new()
-zones.file <- paste("ensembles//zones//Bradypus6_base.grd", sep="")
+zones.file <- paste("ensembles//zones//Bradypus6_base.tif", sep="")
 zones.raster <- raster(zones.file)
 max.zones <- maxValue(zones.raster)
 plot(zones.raster, breaks=c(0, c(1:max.zones)), 

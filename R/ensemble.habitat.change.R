@@ -2,9 +2,10 @@
     base.map=file.choose(), 
     other.maps=utils::choose.files(),
     change.folder="ensembles/change",
-    RASTER.format="raster", RASTER.datatype="INT1U", RASTER.NAflag=255,
-    KML.out=FALSE, KML.folder="kml/change",
-    KML.maxpixels=100000, KML.blur=10
+    RASTER.names="changes",
+    RASTER.format="GTiff", RASTER.datatype="INT1U", RASTER.NAflag=255
+#    KML.out=FALSE, KML.folder="kml/change",
+#    KML.maxpixels=100000, KML.blur=10
 )
 {
 #
@@ -30,16 +31,16 @@
     base.name <- names(base.raster)
     raster::setMinMax(base.raster)
 # 
-    if (KML.out==T && raster::isLonLat(base.raster)==F) {
-        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of baseline raster is not longitude and latitude", "\n", sep = ""))
-        KML.out <- FALSE
-    }
+#    if (KML.out==T && raster::isLonLat(base.raster)==F) {
+#        cat(paste("\n", "NOTE: not possible to generate KML files as Coordinate Reference System (CRS) of baseline raster is not longitude and latitude", "\n", sep = ""))
+#        KML.out <- FALSE
+#    }
 #
-    if(KML.out==T && KML.folder == "kml/change") {
-        dir.create("kml", showWarnings = F)
-        dir.create("kml/change", showWarnings = F)
-    }
-    if(KML.out == T && KML.folder != "kml/change") {dir.create(KML.folder, showWarnings = F)}
+#    if(KML.out==T && KML.folder == "kml/change") {
+#        dir.create("kml", showWarnings = F)
+#        dir.create("kml/change", showWarnings = F)
+#    }
+#    if(KML.out == T && KML.folder != "kml/change") {dir.create(KML.folder, showWarnings = F)}
 #
     if (raster::maxValue(base.raster) > 1) {
         cat(paste("Warning: base.raster has values larger than 1, hence does not provide presence-absence", sep=""))
@@ -53,7 +54,8 @@
     if(length(freq1[freq1[,1]==1, 2]) > 0) {frequencies[1, 2] <- freq1[freq1[,1]==1, 2]}
     for (i in 1:length(other.maps)) {
         other.raster <- raster::raster(other.maps[i])
-        raster.name <- names(other.raster)
+#        raster.name <- names(other.raster)
+        raster.name <- RASTER.names[i]
         raster::setMinMax(other.raster)
         if (raster::maxValue(base.raster) > 1) {
             cat(paste("Warning: other.maps [", i, "] has values larger than 1, hence does not provide presence-absence", sep=""))
@@ -64,10 +66,11 @@
         names(changes.raster) <- raster.name
         raster::writeRaster(changes.raster, filename=filename1, progress='text', format=RASTER.format, overwrite=TRUE, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #  avoid possible problems with saving of names of the raster layers
-        raster::writeRaster(changes.raster, filename="working.grd", overwrite=T)
-        working.raster <- raster::raster("working.grd")
-        names(working.raster) <- raster.name
-        raster::writeRaster(working.raster, filename=filename1, progress='text', format=RASTER.format, overwrite=TRUE, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
+# no longer used with detault GTiff format since DEC-2022
+#        raster::writeRaster(changes.raster, filename="working.grd", overwrite=T)
+#        working.raster <- raster::raster("working.grd")
+#        names(working.raster) <- raster.name
+#        raster::writeRaster(working.raster, filename=filename1, progress='text', format=RASTER.format, overwrite=TRUE, datatype=RASTER.datatype, NAflag=RASTER.NAflag)
 #
         rownames(frequencies)[i+1] <- raster.name
         freq1 <- raster::freq(changes.raster)
@@ -77,11 +80,11 @@
         if(length(freq1[freq1[,1]==10, 2]) > 0) {frequencies[i+1, 3] <- freq1[freq1[,1]==10, 2]}
         if(length(freq1[freq1[,1]==1, 2]) > 0) {frequencies[i+1, 4] <- freq1[freq1[,1]==1, 2]}
         filename2 <- paste(change.folder, "/", raster.name, sep="")
-        if (KML.out == T) {
-            filename2 <- paste(KML.folder, "/", raster.name, sep="")
-            raster::KML(changes.raster, filename=filename2, col=c("black","blue","red","green"), breaks=c(-1, 0, 1, 10, 11),
-                colNA=0, blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE)
-        }
+#        if (KML.out == T) {
+#            filename2 <- paste(KML.folder, "/", raster.name, sep="")
+#            raster::KML(changes.raster, filename=filename2, col=c("black","blue","red","green"), breaks=c(-1, 0, 1, 10, 11),
+#                colNA=0, blur=KML.blur, maxpixels=KML.maxpixels, overwrite=TRUE)
+#        }
     }
     cat(paste("\n", "Codes used in newly created rasters", sep=""))
     cat(paste("\n\t", "Code = 11 indicates that the cell is suitable for the base and the other map", sep=""))
@@ -91,12 +94,12 @@
     cat(paste("\n\n", "Frequencies (number of cells) of habitat changes", sep=""))
     cat(paste("\n", "(first row documents habitat for base map, i.e. the 'no change' scenario)", "\n\n", sep=""))
     print(frequencies)
-    if (KML.out == T) {
-        cat(paste("\n", "Colour coding in KML layer", sep=""))
-        cat(paste("\n\t", "Colour = green indicates that the cell is suitable for the base and the other map (Code = 11)", sep=""))
-        cat(paste("\n\t", "Colour = black indicates that the cell is not suitable for the base and the other map (Code = 0)", sep=""))
-        cat(paste("\n\t", "Colour = red indicates lost habitat (Code = 10; suitable for the base map, not suitable for the other map)", sep=""))
-        cat(paste("\n\t", "Colour = blue indicates new habitat (Code = 1; not suitable for the base map, suitable for the other map)", "\n", sep=""))
-    }
+#    if (KML.out == T) {
+#        cat(paste("\n", "Colour coding in KML layer", sep=""))
+ #       cat(paste("\n\t", "Colour = green indicates that the cell is suitable for the base and the other map (Code = 11)", sep=""))
+#        cat(paste("\n\t", "Colour = black indicates that the cell is not suitable for the base and the other map (Code = 0)", sep=""))
+#        cat(paste("\n\t", "Colour = red indicates lost habitat (Code = 10; suitable for the base map, not suitable for the other map)", sep=""))
+#        cat(paste("\n\t", "Colour = blue indicates new habitat (Code = 1; not suitable for the base map, suitable for the other map)", "\n", sep=""))
+#    }
     return(frequencies)
 }

@@ -7,7 +7,7 @@ function(x, dist){
         cat("You may want to use functions removezerospecies or dist.zeroes from Biodiversity.R\n")
     }else{
         tests <- c("manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup" , "binomial", 
-            "chao", "cao", "mahalanobis")
+            "chao", "cao", "mahalanobis", "hellinger")
         op <- options()
         options(warn=-1)
         if (any(dist==tests)) {
