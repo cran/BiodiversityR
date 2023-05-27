@@ -1,6 +1,7 @@
 \name{ensemble.evaluate}
 \alias{ensemble.evaluate}
 \alias{ensemble.SEDI}
+\alias{ensemble.Tjur}
 
 \title{
 Model evaluation including True Skill Statistic (TSS), AUCdiff and Symmetric Extremal Dependence Index (SEDI).
@@ -15,6 +16,8 @@ The main function of \code{ensemble.evaluate} calculates various model evaluatio
 ensemble.evaluate(eval, fixed.threshold = NULL, eval.train = NULL) 
 
 ensemble.SEDI(TPR, FPR, small = 1e-9) 
+
+ensemble.Tjur(eval)
 
 }
 
@@ -31,6 +34,8 @@ ensemble.SEDI(TPR, FPR, small = 1e-9)
 \details{
 Details for the True Skill Statistic (TSS = TPR + TNR - 1 = TPR - FPR), Symmetric Extremal Dependence Index (SEDI), False Negative Rate (omission or miss rate) and AUCdiff (AUCtrain - AUCtest) are available from Ferro and Stephenson (2011), Wunderlich et al. (2019) and Castellanos et al. (2019). 
 
+Tjur's (2009) coefficient of discrimination is calculated as the differences between the averages of fitted values for successes and failures (see also Erikson & Smith 2023).
+
 Values for TSS and SEDI are given for the fixed absence-presence threshold, as well as their maximal values across the entire range of candidate threshold values calculate by \code{\link[dismo]{evaluate}}.
 
 In case that \code{fixed.threshold} is not provided, it is calculated from the calibration ModelEvaluation as the threshold that maximizes the sum of TPR (sensitivity) and TNR (specificity) (and thus also maximizes the TSS for the calibration). 
@@ -39,14 +44,23 @@ In case that \code{fixed.threshold} is not provided, it is calculated from the c
 \value{
 A numeric vector with following values.
 
-AUC: Area Under The Curve for the testing ModelEvaluation
-TSS: maximum value of the True Skill Statistic over range of threshold values
-SEDI: maximum value of the Symmetric Extremal Dependence Index over range of threshold values
-TSS.fixed: True Skill Statistic at the fixed threshold value
-SEDI.fixed: SEDI at the fixed threshold value
-FNR.fixed: False Negative Rate (= omission rate) at the fixed threshold value
-MCR.fixed: Missclassification Rate at the fixed threshold value
-AUCdiff: Difference between AUC for calibration and the testing data
+- AUC: Area Under The Curve for the testing ModelEvaluation
+
+- TSS: maximum value of the True Skill Statistic over range of threshold values
+
+- SEDI: maximum value of the Symmetric Extremal Dependence Index over range of threshold values
+
+- TSS.fixed: True Skill Statistic at the fixed threshold value
+
+- SEDI.fixed: SEDI at the fixed threshold value
+
+- FNR.fixed: False Negative Rate (= omission rate) at the fixed threshold value
+
+- MCR.fixed: Missclassification Rate at the fixed threshold value
+
+- AUCdiff: Difference between AUC for calibration and the testing data
+
+- Tjur: Coefficient of Discrimination proposed by Tjur (2009)
 }
 
 \references{
@@ -58,6 +72,11 @@ Wunderlich RF, Lin Y-P, Anthony J, Petway JR. 2019. Two alternative evaluation m
 Castellanos AA, Huntley JW, Voelker G, Lawing AM. 2019. Environmental filtering improves ecological niche models across multiple scales. Methods in Ecology and Evolution 10: 481-492.
 
 Kindt R. 2018. Ensemble species distribution modelling with transformed suitability values. Environmental Modelling & Software 100: 136-145. \doi{10.1016/j.envsoft.2017.11.009}
+
+Tjur T. 2009. Coefficient of determination in logistic regression models - a new proposal: the coefficient of discrimination. The American Statistician 63: 366-372. \doi{10.1198/tast.2009.08210}
+
+Erickson KD, Smith AB. 2023. Modelling the rarest of the rare: a comparison between multi-species distribution models, ensembles of small models, and single-species models at extremely low sample sizes. Ecography e06500 \doi{10.1111/ecog.06500}
+
 }
 
 \author{ Roeland Kindt (World Agroforestry Centre)}

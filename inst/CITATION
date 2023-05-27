@@ -1,17 +1,17 @@
-citHeader("To cite BiodiversityR in publications use:")
 
-citEntry(entry="Book",
-         title = "Tree diversity analysis. A manual and software for common statistical methods for ecological and biodiversity studies",
-         author = personList(as.person("R. Kindt"), 
-                             as.person("R. Coe")),
-	 publisher = "World Agroforestry Centre (ICRAF)",
-         address      = "Nairobi (Kenya)",
-         year         = 2005,
-         note         = "ISBN 92-9059-179-X",
-         url          = "http://www.worldagroforestry.org/output/tree-diversity-analysis",
-         
-         textVersion = 
-         paste("Kindt, R. & Coe, R. (2005)", 
-               "Tree diversity analysis. A manual and software for common statistical methods for ecological and biodiversity studies.",
-               "World Agroforestry Centre (ICRAF), Nairobi. ISBN 92-9059-179-X.")
+bibentry(
+  bibtype = "book",
+  title = "Tree diversity analysis. A manual and software for common statistical methods for ecological and biodiversity studies",
+  publisher = "World Agroforestry Centre (ICRAF)",
+  author = c(
+    person("Roeland", "Kindt"),
+    person("Richard", "Coe")
+  ),
+  year = "2005",
+  note = "ISBN 92-9059-179-X",
+  url = "http://www.worldagroforestry.org/output/tree-diversity-analysis",
+
+  mheader = "To cite BiodiversityR in publications use:"
 )
+
+

@@ -61,7 +61,7 @@ Data set **dune** is a community data set, where variables (columns)
 typically correspond to different species and data represents abundance
 of each species. Species names were abbreviated to eight characters,
 with for example Agrostol representing [*Agrostis
-stolonifera*](http://apps.worldagroforestry.org/products/switchboard/index.php/name_like/Agrostis%20stolonifera).
+stolonifera*](https://apps.worldagroforestry.org/products/switchboard/index.php/name_like/Agrostis%20stolonifera).
 
 ``` r
 data(dune)

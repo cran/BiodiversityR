@@ -119,7 +119,7 @@ Pironon et al. (2019). Potential adaptive strategies for 29 sub-Saharan crops un
 
 van Zonneveld et al. (2018). Tree genetic resources at risk in South America: a  spatial threat assessment to prioritize populations for conservation. Diversity and Distributions 24: 718-729
 
-van Zonneveld et al. (2022 in prep). Forgotten foods for healthy diets in a warmer Africa.
+van Zonneveld et al. (2023). Forgotten food crops in sub-Saharan Africa for healthy diets in a changing climate. Proceedings of the National Academy of Sciences (PNAS) 120 (14) e2205794120. \doi{10.1073/pnas.2205794120}
 }
 
 \examples{

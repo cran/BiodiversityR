@@ -19,7 +19,7 @@ export(BiodiversityRGUI, check.datasets, check.ordiscores, spatialsample, makeco
     ensemble.bioclim.object, ensemble.bioclim, ensemble.bioclim.graph, ensemble.bioclim.graph.data, ensemble.VIF,
     ensemble.spatialThin, BiodiversityR.changeLog, ensemble.pairs, ensemble.chull.create, ensemble.chull.apply, ensemble.red,
     ensemble.spatialThin.quant, ensemble.environmentalThin, ensemble.outlierThin, ensemble.environmentalThin.clara,
-    ensemble.evaluate, ensemble.SEDI, ensemble.VIF.dataframe,
+    ensemble.evaluate, ensemble.SEDI, ensemble.Tjur, ensemble.VIF.dataframe,
     ensemble.terra,
     import.with.readxl,
     ensemble.PET.season, ensemble.chull.buffer.distances, ensemble.chull.MSDM,

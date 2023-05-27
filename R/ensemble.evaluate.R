@@ -18,6 +18,24 @@
 }
 
 
+# Inspired by: 
+# https://github.com/kerickson22/SDMs_for_rare_species_modeling/blob/main/code/00b_Constants.R
+
+#computeTjurR2 = function(Y, predY) {
+#
+#    R2 = mean(predY[which(Y == 1)]) - mean(predY[which(Y == 0)])
+#    return(R2)
+#}
+
+`ensemble.Tjur` <- function(
+    eval
+)
+{
+    result <- mean(eval@presence) - mean(eval@absence)
+    return(result)
+}
+
+
 `ensemble.evaluate` <- function(
     eval, fixed.threshold=NULL, eval.train=NULL) 
 {
@@ -30,8 +48,8 @@
             cat(paste("Calculated fixed threshold of ", fixed.threshold, " corresponding to highest sum of sensitivity and specificity", "\n", sep = ""))
         }
     }
-    result <- as.numeric(rep(NA, 8))
-    names(result) <- c("AUC", "TSS", "SEDI", "TSS.fixed", "SEDI.fixed", "FNR.fixed", "MCR.fixed", "AUCdiff")
+    result <- as.numeric(rep(NA, 9))
+    names(result) <- c("AUC", "TSS", "SEDI", "TSS.fixed", "SEDI.fixed", "FNR.fixed", "MCR.fixed", "AUCdiff", "Tjur")
     result["AUC"] <- eval@auc
     tss <- eval@TPR - eval@FPR
     result["TSS"] <- max(tss)
@@ -46,6 +64,7 @@
     }else{
        result["AUCdiff"] <- eval.train@auc - eval@auc
     }
+    result["Tjur"] <- ensemble.Tjur(eval)
     return(result)
 }
 

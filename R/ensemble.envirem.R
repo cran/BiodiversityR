@@ -105,7 +105,8 @@
     envirem.out <- envirem::layerCreation(masterstack=masterstack,
                                           solradstack=solradstack,
                                           var=var, ...)
-    return(as.data.frame(envirem.out))
+# Modified May 2023 with optional argument  
+    return(as.data.frame(envirem.out, optional=FALSE))
 }
 
 

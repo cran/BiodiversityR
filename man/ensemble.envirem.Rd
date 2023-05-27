@@ -106,10 +106,10 @@ master.input <- ensemble.envirem.masterstack(x=locs,
                              tminstack=tmin.stack,
                              tmeanstack=tmean.stack)
 
-# Calculate solar radiation for 1975
-# (Midpoint for the 1960-1990 WorldClim 2.1 baseline)
+# Calculate solar radiation for 1985
+# (Midpoint for the 1970-2000 WorldClim 2.1 baseline)
 solrad.stack <- ETsolradRasters(precip.stack[[1]], 
-                             year = 1975-1950, 
+                             year = 1985-1950, 
                              outputDir = NULL)
 
 solrad.input <- ensemble.envirem.solradstack(x=locs,
@@ -124,6 +124,7 @@ envirem.data1 <- ensemble.envirem.run(masterstack=master.input,
 # Generate all the envirem layers, then extract
 # See envirem package for envirem::layerCreation
 
+solradFiles <- grep('solrad', rasterFiles, value=TRUE)
 worldclim <- stack(setdiff(rasterFiles, solradFiles))
 assignNames(precip = 'prec_##')
 envirem.stack <- layerCreation(worldclim, solrad.stack, 
@@ -141,7 +142,7 @@ solrad2 <- array(dim=c(nrow(locs), 12))
 for (i in 1:nrow(locs)) {
   lat.i <- locs[i, 2]
   for (m in 1:12) {
-    solrad2[i, m] <- envirem:::calcSolRad(year=1975-1950,
+    solrad2[i, m] <- envirem:::calcSolRad(year=1985-1950,
                                           lat=lat.i,
                                           month=m)
   }

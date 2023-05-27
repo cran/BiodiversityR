@@ -18,6 +18,20 @@ BiodiversityR versions
 	https://rpubs.com/Roeland-KINDT
 
 
+version 2-15.2 (May 2023)
+
+  * New function ensemble.Tjur() to calculate Tjur's Coefficient of Discrimination for
+  logistic regression models.
+  
+  * Modified function ensemble.evaluate() to include results from ensemble.Tjur().
+  
+  * Corrected function ensemble.envirem.run() to work with newer versions of terra.
+  
+  * Updated citation of van Zonneveld et al. 2023 in the documentation of function
+  ensemble.concave.hull().
+  
+
+
 version 2-15.1 (January 2023; King Gizzard & the Lizzard Wizard Omnium Gatherum version)
 
   * Removed dependencies on rgdal, rgeos and maptools (requested by Roger Bivand on 19-DEC)

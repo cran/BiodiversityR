@@ -1,5 +1,5 @@
-4c87786d7d45cf5757c5641f5d5925c8 *DESCRIPTION
-afe8faed9c369f3e01caeaf74296742b *NAMESPACE
+7b9dd5ed0a5b78a5dd847e39635c7cf4 *DESCRIPTION
+0d7add5c453b5890906bda5c2728add3 *NAMESPACE
 ecb5a7fd2efe453efaaa86f3b08c9354 *R/BiodiversityR.changeLog.R
 473f3c555173e7f23b1b3cbc9b511d97 *R/BiodiversityRGUI.R
 32ebb9550db114e055aa60f9dd2bb174 *R/CAPdiscrim.R
@@ -43,9 +43,9 @@ cd5530a462a2475225a2b03dbfdc5739 *R/ensemble.concave.R
 13cad78e6da858953bfaddf4f615f9da *R/ensemble.drop1.R
 a0d05521ad23bdb1ca247f1fc41b0061 *R/ensemble.dummy.variables.R
 a9d32134a705322b1d91b03e095f420d *R/ensemble.ecocrop.R
-d5bf2137ddbd7044ff24af7ab330bcb3 *R/ensemble.envirem.R
+341d4284a0f203f8549139893d8e02fa *R/ensemble.envirem.R
 402ce1b0df8e3e342d9374a817bd5c2a *R/ensemble.environmentalThin.R
-3805e7c4d1e37f061541a1907728383d *R/ensemble.evaluate.R
+537147ad9d1ba5501758132aab34d04c *R/ensemble.evaluate.R
 e4dc34521b9d5c26ca86eb14851c4718 *R/ensemble.formulae.R
 e3861d7da584e279a3db2c833f697a67 *R/ensemble.habitat.change.R
 26a3777f68c6c31915d4d46fe7942ee6 *R/ensemble.mean.R
@@ -99,7 +99,7 @@ f0851e5829fe6b8dcf4615e1e4d3a1da *R/sites.long.R
 aa1380c896e45ec3cd9c5c7e15868c24 *R/stackcommunitydataset.R
 4b72bbf68242d74031ea27e473e5134d *R/subsetcomm.R
 79df62b5d9cfed17747aa696774147d1 *R/zzz.R
-6543f9ba1f0924ce3d0a91a05ec82b77 *README.md
+f6937db07f2371d8d36b7b5fba70d478 *README.md
 afbe4209b3bb961ba3e41cbfe79ea507 *build/partial.rdb
 0f7ce92d43d1e21c9e61fc30419e1295 *data/BCI.env.txt
 77c30a1c6120d4cab8025ae8a36aaae7 *data/CucurbitaClim.txt
@@ -109,8 +109,8 @@ a7fc35dd5d33fb725893ad70036f1047 *data/transfgradient.txt
 9d75fbcfa8f3e2cdf2b5acda316dcc8d *data/transfspecies.txt
 d08d5872d6f4fa015693fb0624bc35de *data/warcom.txt
 f53cf478d4f95ef79fdc3c94c7e82fde *data/warenv.txt
-6a4025160e177508da213c6d97f8bced *inst/CITATION
-6cc50563c4e169d7428547cc146c6d54 *inst/ChangeLog
+525b604501177ef5b37bf929f5c674ee *inst/CITATION
+166a703a68812052eaa48055872545e8 *inst/ChangeLog
 b8fb934071801835a471af74083fcb73 *inst/etc/BiodiversityGUI.R
 5f95f29c4896d26a847c9c41f3591112 *inst/etc/BiodiversityR-menus.txt
 22a8a26570fc6d836ed86e2f124b668b *inst/etc/Nations.txt
@@ -183,11 +183,11 @@ fc75ef34fb974d77351c6845a592d5ce *man/ensemble.batch.Rd
 67e6231d0ac649de01ae9687d09560e1 *man/ensemble.bioclim.Rd
 e74c5f2d2934c4ab450ebc2b12d21018 *man/ensemble.bioclim.graph.Rd
 362a5dfe0aab07941e090b571feafb64 *man/ensemble.blockCV.Rd
-b119c9e4bc31d264b416f78125ed0294 *man/ensemble.concave.Rd
+dde76b7ec427097a6713bd6134dcd5f9 *man/ensemble.concave.Rd
 e7676b4aec7a50aa82ad7a29b91ea57b *man/ensemble.dummy.variables.Rd
 50eefcc906ffbabf1a252af5e77d7da3 *man/ensemble.ecocrop.Rd
-eb1f76be6272d53cb663374a58a550f4 *man/ensemble.envirem.Rd
-eec85a962dc2f65c7e4c4b64f602fa7d *man/ensemble.evaluate.Rd
+c79a193fb4426c954148034ba8ee9f5b *man/ensemble.envirem.Rd
+f8ea26ced883585c82244f6904cb0081 *man/ensemble.evaluate.Rd
 ed956d95562eefe428fa2d0474c06d7f *man/ensemble.novel.Rd
 df277aa56ccce4ac28210a2949091f78 *man/ensemble.raster.Rd
 912037208c32eec54b1cf9d11994c233 *man/ensemble.red.Rd
