@@ -102,7 +102,8 @@
     var="all", ...
 )
 {
-    envirem.out <- envirem::layerCreation(masterstack=masterstack,
+# Modified Sep-2023 due to change from envirem::layerCreation  
+    envirem.out <- envirem::generateEnvirem(masterstack=masterstack,
                                           solradstack=solradstack,
                                           var=var, ...)
 # Modified May 2023 with optional argument  

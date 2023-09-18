@@ -21,9 +21,7 @@ sites as rows, species as columns and abundance values as cell values)
 and an **environmental data set** (typically providing numerical and
 categorical variables for the different sites) as inputs. After being
 launched on CRAN, new methods from `vegan` have been integrated in the
-package as documented in the
-[**ChangeLog**](https://cran.r-project.org/package=BiodiversityR/ChangeLog)
-file.
+package as documented in the ChangeLog file.
 
 A major update of `BiodiversityR` involved the inclusion of different
 methods of ensemble suitability modelling, as described
