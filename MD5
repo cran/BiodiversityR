@@ -1,4 +1,4 @@
-f1c8e52a87bffa3c907477702d859662 *DESCRIPTION
+70b1492c4c1ff827fb226daaaea5b09c *DESCRIPTION
 0d7add5c453b5890906bda5c2728add3 *NAMESPACE
 ecb5a7fd2efe453efaaa86f3b08c9354 *R/BiodiversityR.changeLog.R
 473f3c555173e7f23b1b3cbc9b511d97 *R/BiodiversityRGUI.R
@@ -43,7 +43,7 @@ cd5530a462a2475225a2b03dbfdc5739 *R/ensemble.concave.R
 13cad78e6da858953bfaddf4f615f9da *R/ensemble.drop1.R
 a0d05521ad23bdb1ca247f1fc41b0061 *R/ensemble.dummy.variables.R
 a9d32134a705322b1d91b03e095f420d *R/ensemble.ecocrop.R
-e9e5d4c85f78e38551ae7d54004a6b6d *R/ensemble.envirem.R
+f303592e4d46c41d35edbbf43203e7fd *R/ensemble.envirem.R
 402ce1b0df8e3e342d9374a817bd5c2a *R/ensemble.environmentalThin.R
 537147ad9d1ba5501758132aab34d04c *R/ensemble.evaluate.R
 e4dc34521b9d5c26ca86eb14851c4718 *R/ensemble.formulae.R
@@ -99,7 +99,7 @@ f0851e5829fe6b8dcf4615e1e4d3a1da *R/sites.long.R
 aa1380c896e45ec3cd9c5c7e15868c24 *R/stackcommunitydataset.R
 4b72bbf68242d74031ea27e473e5134d *R/subsetcomm.R
 79df62b5d9cfed17747aa696774147d1 *R/zzz.R
-81ddcfa1b504f75385e0ad70bee510fd *README.md
+e8abed5a96b39d7211ab550c8a0ed51d *README.md
 afbe4209b3bb961ba3e41cbfe79ea507 *build/partial.rdb
 0f7ce92d43d1e21c9e61fc30419e1295 *data/BCI.env.txt
 77c30a1c6120d4cab8025ae8a36aaae7 *data/CucurbitaClim.txt
@@ -110,7 +110,7 @@ a7fc35dd5d33fb725893ad70036f1047 *data/transfgradient.txt
 d08d5872d6f4fa015693fb0624bc35de *data/warcom.txt
 f53cf478d4f95ef79fdc3c94c7e82fde *data/warenv.txt
 525b604501177ef5b37bf929f5c674ee *inst/CITATION
-86c45e7f25d5d3417caf1fc64be52c4c *inst/ChangeLog
+513fc4543fd924d033287f213153d454 *inst/ChangeLog
 b8fb934071801835a471af74083fcb73 *inst/etc/BiodiversityGUI.R
 5f95f29c4896d26a847c9c41f3591112 *inst/etc/BiodiversityR-menus.txt
 22a8a26570fc6d836ed86e2f124b668b *inst/etc/Nations.txt
@@ -122,7 +122,7 @@ c2128aa27494eb3df882dadd7ed576da *inst/etc/Rcmdr-Markdown-Template.Rmd
 49d277002d75c50396d689fe83404d68 *inst/etc/Rcmdr-RMarkdown-Template.Rmd
 412b643dccac535db3cacc78e8c91c0c *inst/etc/Rcmdr-hex.pdf
 3ce4fee044b7cd447276fa41c65125db *inst/etc/Rcmdr-knitr-Template.Rnw
-f619b5a5e1567894e210a5176a85a560 *inst/etc/Rcmdr-menus.txt
+b6e3be88a430a55e4818952a7db5605b *inst/etc/Rcmdr-menus.txt
 650283396f8f9d74b164cd3e5f83c6e6 *inst/etc/Rcmdr-model-capabilities.txt
 8fbae734995ec18a4cd0f992b497e21d *inst/etc/Rcmdr-operations.txt
 459dbaaedac47f3ea03da9b97350985b *inst/etc/Thumbs.db
@@ -181,20 +181,20 @@ f6fe5a36ecae87dc41e21382c330d942 *man/diversityresult.Rd
 7bce462e390f5cedf4134fc161a7ce3d *man/ensemble.analogue.Rd
 fc75ef34fb974d77351c6845a592d5ce *man/ensemble.batch.Rd
 67e6231d0ac649de01ae9687d09560e1 *man/ensemble.bioclim.Rd
-e74c5f2d2934c4ab450ebc2b12d21018 *man/ensemble.bioclim.graph.Rd
+f2c644fdc91053952e852adc39e5c2a8 *man/ensemble.bioclim.graph.Rd
 362a5dfe0aab07941e090b571feafb64 *man/ensemble.blockCV.Rd
 dde76b7ec427097a6713bd6134dcd5f9 *man/ensemble.concave.Rd
 e7676b4aec7a50aa82ad7a29b91ea57b *man/ensemble.dummy.variables.Rd
-50eefcc906ffbabf1a252af5e77d7da3 *man/ensemble.ecocrop.Rd
-7a8bdb349f7381f241d33404dd332d58 *man/ensemble.envirem.Rd
+498b156a7dbda909217605ca15cf762a *man/ensemble.ecocrop.Rd
+9613d7fe954de7cda0f72aca32c6177b *man/ensemble.envirem.Rd
 f8ea26ced883585c82244f6904cb0081 *man/ensemble.evaluate.Rd
 ed956d95562eefe428fa2d0474c06d7f *man/ensemble.novel.Rd
 df277aa56ccce4ac28210a2949091f78 *man/ensemble.raster.Rd
-912037208c32eec54b1cf9d11994c233 *man/ensemble.red.Rd
+07a1dd152647eac09eff4b9209720dc0 *man/ensemble.red.Rd
 b76171ca6c6e88d659361ef40a32bea4 *man/ensemble.spatialThin.Rd
 6eeeded63388b457a337225765bc6a72 *man/ensemble.terra.Rd
 78204107ebe95ae34b66554aba831e5a *man/ensemble.zones.Rd
-cd076451c4a72c73fdaaafe8b5c7124c *man/evaluation.strip.Rd
+9f7c1b99fe5c4e0121889c105237cfc3 *man/evaluation.strip.Rd
 ed7778be31f31f5309ad8fc7fc3782d8 *man/faramea.Rd
 f56c5549c45fbbe2c133ffd7dba06f66 *man/figures/README-fig1-1.png
 47d62f515d75eda581c61d6054e5f1be *man/figures/README-fig2-1.png

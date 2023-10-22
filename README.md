@@ -52,7 +52,7 @@ library(pvclust)
 
 The data in the examples are data that were used as case study in [Data
 Analysis in Community and Landscape
-Ecology](https://doi.org/10.1017/CBO9780511525575) and also in the Tree
+Ecology](https://research.wur.nl/en/publications/data-analysis-in-community-and-landscape-ecology-2nd-edition) and also in the Tree
 Diversity Analysis manual.
 
 Data set **dune** is a community data set, where variables (columns)

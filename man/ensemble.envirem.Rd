@@ -16,14 +16,16 @@ ensemble.envirem.masterstack(
     x,
     precipstack, 
     tmaxstack, tminstack, 
-    tmeanstack=NULL)
+    tmeanstack = NULL,
+    envirem3 = TRUE)
 
 ensemble.envirem.solradstack(
-    x, solrad)
+    x, solrad,
+    envirem3 = TRUE)
 
 ensemble.envirem.run(
     masterstack, solradstack,
-    var="all", ...)
+    var = "all", ...)
 }
 
 \arguments{
@@ -32,6 +34,7 @@ ensemble.envirem.run(
   \item{tmaxstack}{ RasterStack object (\code{\link[raster]{stack}}) or SpatRaster object (\code{\link[terra]{rast}}) containing monthly maximum temperature data.  }
   \item{tminstack}{ RasterStack object (\code{\link[raster]{stack}}) or SpatRaster object (\code{\link[terra]{rast}}) containing monthly minimum temperature data.  }
   \item{tmeanstack}{ RasterStack object (\code{\link[raster]{stack}}) or SpatRaster object (\code{\link[terra]{rast}}) containing monthly average temperature data.  }
+  \item{envirem3}{ generate a SpatRaster object (\code{\link[terra]{rast}}) as used by envirem 3.  }
   \item{solrad}{ RasterStack object (\code{\link[raster]{stack}}) or SpatRaster object (\code{\link[terra]{rast}}) containing monthly extrasolar radiation data.  }  
   \item{masterstack}{ RasterStack object (\code{\link[raster]{stack}}) expected to have been created via \code{\link[BiodiversityR]{ensemble.envirem.masterstack}}.  }
   \item{solradstack}{ RasterStack object (\code{\link[raster]{stack}}) expected to have been created via \code{\link[BiodiversityR]{ensemble.envirem.solradstack}}.  }
@@ -82,29 +85,33 @@ rasterFiles <- list.files(system.file('extdata', package='envirem'),
 precip.files <- rasterFiles[grepl(pattern="prec_", 
                                 x=rasterFiles)]
 precip.files <- precip.files[c(1, 5:12, 2:4)]
-precip.stack <- raster::stack(precip.files)
+precip.stack <- terra::rast(precip.files)
 precip.stack
+names(precip.stack)
 
 tmin.files <- rasterFiles[grepl(pattern="tmin_", 
                                 x=rasterFiles)]
 tmin.files <- tmin.files[c(1, 5:12, 2:4)]
-tmin.stack <- raster::stack(tmin.files)
+tmin.stack <- terra::rast(tmin.files)
 tmin.stack
+names(tmin.stack)
 
 tmax.files <- rasterFiles[grepl(pattern="tmax_", 
                                 x=rasterFiles)]
 tmax.files <- tmax.files[c(1, 5:12, 2:4)]
-tmax.stack <- raster::stack(tmax.files)
+tmax.stack <- terra::rast(tmax.files)
 tmax.stack
+names(tmax.stack)
 
 tmean.files <- rasterFiles[grepl(pattern="tmean_", 
                                 x=rasterFiles)]
 tmean.files <- tmean.files[c(1, 5:12, 2:4)]
-tmean.stack <- raster::stack(tmean.files)
+tmean.stack <- terra::rast(tmean.files)
 tmean.stack
+names(tmean.stack)
 
 # Random locations
-locs <- dismo::randomPoints(precip.stack[[1]], n=50)
+locs <- dismo::randomPoints(raster::stack(precip.stack[[1]]), n=50)
 
 # Climatic data
 master.input <- ensemble.envirem.masterstack(x=locs,
@@ -113,10 +120,10 @@ master.input <- ensemble.envirem.masterstack(x=locs,
                              tminstack=tmin.stack,
                              tmeanstack=tmean.stack)
 
-# Calculate solar radiation for 1985
-# (Midpoint for the 1970-2000 WorldClim 2.1 baseline)
-solrad.stack <- ETsolradRasters(rast(precip.stack[[1]]), 
-                             year = 1985-1950, 
+# Calculate solar radiation for 1975
+# (Use other midpoint for the 1970-2000 WorldClim 2.1 baseline)
+solrad.stack <- ETsolradRasters(precip.stack[[1]], 
+                             year = 1975-1950, 
                              outputDir = NULL)
 
 solrad.input <- ensemble.envirem.solradstack(x=locs,
@@ -131,17 +138,13 @@ envirem.data1 <- ensemble.envirem.run(masterstack=master.input,
 # Generate all the envirem layers, then extract
 # See envirem package for envirem::generateEnvirem
 
-# create stack of temperature and precipitation rasters
-# and stack of solar radiation rasters
-solradFiles <- grep('solrad', rasterFiles, value=TRUE)
-worldclim <- rast(setdiff(rasterFiles, solradFiles))
-solar <- rast(solradFiles)
+worldclim <- rast(c(precip.files, tmax.files, tmin.files, tmean.files))
+names(worldclim)
 
-# set up naming scheme - only precip is different from default
 assignNames(precip = 'prec_##')
 
 # generate all possible envirem variables
-generateEnvirem(worldclim, solar, var='all', tempScale = 10)
+envirem.stack <- generateEnvirem(worldclim, solrad.stack, var='all', tempScale = 10)
 
 # set back to defaults
 assignNames(reset = TRUE)
@@ -157,7 +160,7 @@ solrad2 <- array(dim=c(nrow(locs), 12))
 for (i in 1:nrow(locs)) {
   lat.i <- locs[i, 2]
   for (m in 1:12) {
-    solrad2[i, m] <- envirem:::calcSolRad(year=1985-1950,
+    solrad2[i, m] <- envirem:::calcSolRad(year=1975-1950,
                                           lat=lat.i,
                                           month=m)
   }

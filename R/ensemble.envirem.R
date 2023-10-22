@@ -2,7 +2,8 @@
     x,
     precipstack, 
     tmaxstack, tminstack, 
-    tmeanstack=NULL
+    tmeanstack=NULL,
+    envirem3=TRUE
 )
 {
     if (inherits(precipstack, "RasterBrick")) {precipstack <- raster::stack(precipstack)}
@@ -54,22 +55,38 @@
     }else{
         input.data <- cbind(precip.data, tmax.data, tmin.data, tmean.data)
     }
-    
-    for (i in 1:ncol(input.data)) {
+  
+    if (envirem3 == FALSE ) {
+      
+     for (i in 1:ncol(input.data)) {
         rasteri <- raster::raster(matrix(input.data[, i]))
         if (i == 1) {
             masterstack <- raster::stack(rasteri)
         }else{
             masterstack <- raster::stack(c(masterstack, rasteri))
         }
-    }
+     }
     
+    }else{
+
+      for (i in 1:ncol(input.data)) {
+        rasteri <- terra::rast(matrix(input.data[, i]))
+        if (i == 1) {
+          masterstack <- rasteri
+        }else{
+          masterstack <- c(masterstack, rasteri)
+        }
+      }  
+      
+    }  
+
     names(masterstack) <- names(input.data)
     return(masterstack)
 }
 
 `ensemble.envirem.solradstack` <- function(
-    x, solrad
+    x, solrad,
+    envirem3=TRUE
 )
 {
     if (inherits(solrad, "RasterBrick")) {solrad <- raster::stack(solrad)}
@@ -82,16 +99,31 @@
     }
     
     names(input.data) <- paste0("et_solrad_", 1:ncol(input.data))
-    
-    for (i in 1:ncol(input.data)) {
+ 
+    if (envirem3 == FALSE ) {
+       
+     for (i in 1:ncol(input.data)) {
         rasteri <- raster::raster(matrix(input.data[, i]))
         if (i == 1) {
             solradout <- raster::stack(rasteri)
         }else{
             solradout <- raster::stack(c(solradout, rasteri))
-        }
+      }
     }
     
+    }else{
+
+      for (i in 1:ncol(input.data)) {
+        rasteri <- terra::rast(matrix(input.data[, i]))
+        if (i == 1) {
+          solradout <- rasteri
+        }else{
+          solradout <- c(solradout, rasteri)
+        }
+      }   
+            
+    }
+      
     names(solradout) <- names(input.data)
     return(solradout)
     

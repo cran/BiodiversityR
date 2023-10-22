@@ -40,7 +40,7 @@ In the graphs, means are indicated by an asterisk (\code{pch=8} and medians as l
 }
 
 \value{
-function \code{ensemble.bioclim.graph.data} creates a data frame, function code{ensemble.bioclim.graph} allows for plotting. 
+function \code{ensemble.bioclim.graph.data} creates a data frame, function \code{ensemble.bioclim.graph} allows for plotting. 
 }
 
 \author{ Roeland Kindt (World Agroforestry Centre) }

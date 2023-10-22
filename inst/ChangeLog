@@ -13,9 +13,21 @@ BiodiversityR versions
 
 	An article that documents the ensemble suitability modelling options of BiodiversityR
 	is available from https://doi.org/10.1016/j.envsoft.2017.11.009
+	(You could also be interested in https://www.cifor-icraf.org/knowledge/publication/8977/).
 
 	Various scripts for creating publication-ready graphs with ggplot2 are available from:
 	https://rpubs.com/Roeland-KINDT
+
+
+version 2-15.4 (October 2023)
+
+  * Removed references to rgeos in the documentation for function ensemble.chull.create()
+  that caused messages of 'unknown package'.
+  
+  * Include pvclust among the suggested packages (See also documentation for function 
+  pvclust.long()).
+  
+  * Made changes to be compatible with Rcmdr 2.9-1.
 
 
 version 2-15.3 (September 2023)

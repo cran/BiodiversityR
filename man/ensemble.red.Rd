@@ -42,7 +42,7 @@ ensemble.chull.MSDM(p = NULL, a = NULL, species.name = NULL,
 
   \item{x.pres}{ RasterLayer object (\code{\link[raster]{raster}}), representing 'presence' suitability layers (available from the 'presence' and 'consensuspresence' subdirectories of the 'ensembles' directory)  }
   \item{p}{ known presence locations, available in 2-column (lon, lat) dataframe; see also \code{\link[dismo]{prepareData}} and \code{\link[raster]{extract}}  }
-  \item{buffer.width}{ multiplier to create buffer (via \code{\link[rgeos]{gBuffer}}) by multiplying the maximum distance among the presence locations (calculated via \code{\link[raster]{pointDistance}})  }
+  \item{buffer.width}{ multiplier to create buffer (via \code{\link[sf]{st_buffer}}) by multiplying the maximum distance among the presence locations (calculated via \code{\link[raster]{pointDistance}})  }
   \item{buffer.maxmins}{ Calculate the buffer width based on the two neighbouring locations that are furthest apart (maximum of minimum distances from each location).  }
   \item{lonlat.dist}{ Estimate the distance in km for longitude latitude data.  }
   \item{poly.only}{ Only return the polygon with the convex hull, but do not create the mask layer.  }

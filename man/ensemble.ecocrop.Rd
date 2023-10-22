@@ -43,7 +43,7 @@ ensemble.ecocrop.object(temp.thresholds, rain.thresholds, name = "crop01",
 \details{
 Function \code{ensemble.ecocrop} maps suitability for a species or crop based on optimal and absolute temperature and rainfall limits. Where both temperature and rainfall are within the optimal limits, suitability of 1000 is calculated. Where both temperature and rainfall are outside the absolute limits, suitability of 0 is calculated. In situations where temperature or rainfall is in between the optimal and absolute limits, then suitability is interpolated between 0 and 1000, and the lowest suitability from temperature and rainfall is calculated. Setting very wide rainfall limits will simulate the effect of irrigation, i.e. where suitability only depends on temperature limits. 
 
-For a large range of crop and plant species, optimal and absolute limits are available from the FAO ecocrop database (\url{https://www.fao.org/land-water/land/land-governance/land-resources-planning-toolbox/category/details/en/c/1027491/}), hence the name of the function. A different implementation of suitability mapping based on ecocrop limits is available from \code{\link[dismo]{ecocrop}}. Ecocrop thresholds for several species are available from: \code{\link[dismo]{getCrop}}
+For a large range of crop and plant species, optimal and absolute limits are available from the FAO ecocrop database (\url{https://gaez.fao.org/pages/ecocrop-search}), hence the name of the function. A different implementation of suitability mapping based on ecocrop limits is available from \code{\link[dismo]{ecocrop}}. Ecocrop thresholds for several species are available from: \code{\link[dismo]{getCrop}}
 
 }
 

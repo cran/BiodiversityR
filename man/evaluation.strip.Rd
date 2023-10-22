@@ -52,7 +52,7 @@ A categorical (factor) variable is ranged for all the encountered levels (\code{
 }
 
 \value{
-function \code{evaluation.strip.data} creates a data frame, function code{evaluation.strip.data} allows for plotting. 
+function \code{evaluation.strip.data} creates a data frame, function \code{evaluation.strip.data} allows for plotting. 
 }
 
 \references{
