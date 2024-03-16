@@ -1,5 +1,5 @@
-70b1492c4c1ff827fb226daaaea5b09c *DESCRIPTION
-0d7add5c453b5890906bda5c2728add3 *NAMESPACE
+ea2f5db862cd572d1c1d4088024de8f2 *DESCRIPTION
+ca8ef6324b28c5a80278f2fc8d9229d4 *NAMESPACE
 ecb5a7fd2efe453efaaa86f3b08c9354 *R/BiodiversityR.changeLog.R
 473f3c555173e7f23b1b3cbc9b511d97 *R/BiodiversityRGUI.R
 32ebb9550db114e055aa60f9dd2bb174 *R/CAPdiscrim.R
@@ -98,6 +98,7 @@ f0851e5829fe6b8dcf4615e1e4d3a1da *R/sites.long.R
 301b1c339b6914d3981ea84cfda691ce *R/spatialsample.R
 aa1380c896e45ec3cd9c5c7e15868c24 *R/stackcommunitydataset.R
 4b72bbf68242d74031ea27e473e5134d *R/subsetcomm.R
+ca5ab584aee1c6c1610ba0819621c268 *R/treegoer.R
 79df62b5d9cfed17747aa696774147d1 *R/zzz.R
 e8abed5a96b39d7211ab550c8a0ed51d *README.md
 afbe4209b3bb961ba3e41cbfe79ea507 *build/partial.rdb
@@ -110,7 +111,7 @@ a7fc35dd5d33fb725893ad70036f1047 *data/transfgradient.txt
 d08d5872d6f4fa015693fb0624bc35de *data/warcom.txt
 f53cf478d4f95ef79fdc3c94c7e82fde *data/warenv.txt
 525b604501177ef5b37bf929f5c674ee *inst/CITATION
-513fc4543fd924d033287f213153d454 *inst/ChangeLog
+bd891588be0d23f7d3e137080c5fec11 *inst/ChangeLog
 b8fb934071801835a471af74083fcb73 *inst/etc/BiodiversityGUI.R
 5f95f29c4896d26a847c9c41f3591112 *inst/etc/BiodiversityR-menus.txt
 22a8a26570fc6d836ed86e2f124b668b *inst/etc/Nations.txt
@@ -222,5 +223,6 @@ fe9b801dff69d1754dc11b82a66c88f0 *man/rankabundance.Rd
 7b3a6584eee7a24789be8bac9ccbfc70 *man/spatialsample.Rd
 66a4dc752394a0cefe0cabdda3a75c94 *man/transfgradient.Rd
 1746f76e84827f40a205abc1770c3ef5 *man/transfspecies.Rd
+2a6675ee0b7fc4231c0982486b020493 *man/treegoer.Rd
 dd1340026eb17d11c362fa0e2bc77954 *man/warcom.Rd
 def300149f877b1b4a2d0bed7eb2022b *man/warenv.Rd

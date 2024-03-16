@@ -19,6 +19,16 @@ BiodiversityR versions
 	https://rpubs.com/Roeland-KINDT
 
 
+
+version 2-16.1 (March 2024; King Gizzard & the Lizard Wizard at the PALP Rocklette 
+Festival in August 2023 version)
+
+  * New functions treegoer.score(), treegoer.filter() and treegoer.widen() that calculate
+  a climate score similar to the algorithms that are used internally in the
+  GlobalUsefulNativeTrees database with environmental ranges documented by the Tree
+  Globally Observed Environmental Ranges database.
+
+
 version 2-15.4 (October 2023)
 
   * Removed references to rgeos in the documentation for function ensemble.chull.create()
@@ -51,7 +61,7 @@ version 2-15.2 (May 2023)
   ensemble.concave.hull().
 
 
-version 2-15.1 (January 2023; King Gizzard & the Lizzard Wizard Omnium Gatherum version)
+version 2-15.1 (January 2023; King Gizzard & the Lizard Wizard Omnium Gatherum version)
 
   * Removed dependencies on rgdal, rgeos and maptools (requested by Roger Bivand on 19-DEC)
   
