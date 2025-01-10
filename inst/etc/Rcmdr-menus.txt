@@ -431,7 +431,6 @@
     item    helpMenu        command         "Using R Markdown"                              browseRMarkdown             ""          ""
     item    topMenu         cascade         "Help"                                          helpMenu                    ""          ""
 
-
     # Biodiversity analysis (R. Kindt, World Agroforestry Centre)
     # DEC 2018
 
@@ -533,8 +532,6 @@
     item    ensMenu         cascade         "Absence data set"                              absMenu                     ""          ""
     item    ensMenu         cascade         "Ensemble suitability modeling"                 calibMenu                   ""          ""
     item    biodivMenu      cascade         "Help"                                          helpbioMenu                 ""          ""
-
-
 
 
 

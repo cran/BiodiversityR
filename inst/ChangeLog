@@ -20,6 +20,27 @@ BiodiversityR versions
 
 
 
+Version 2-17.1 (January 2025; King Gizzard & the Lizard Wizard US Tour 2024 live captures 
+by Chris Dempsey version)
+
+  * New function treegoer.position() that calculates the position of the planting site in
+  respect to the median of the species range
+  
+  * New function treegoer.map() that creates a suitability map with the same methods as
+  used by treegoer.score().
+  
+  * Updated treegoer.widen() to be compatible with treegoer.position().
+  
+  * Expanded functions treegoer.score() and treegoer.filter() to accommodate a climate score
+  of 0.5 for one-sided checks whether the planting site is outside the species' ranges.
+  
+  * Modified functions caprescale(), to use the vegan scores() function instead of summa
+  (see also vegan announcement #644)
+  
+  * Compatible with Rcmdr version 2.9-5
+
+
+
 version 2-16.1 (March 2024; King Gizzard & the Lizard Wizard at the PALP Rocklette 
 Festival in August 2023 version)
 

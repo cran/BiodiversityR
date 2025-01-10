@@ -1,8 +1,8 @@
 Package: BiodiversityR
 Type: Package
 Title: Package for Community Ecology and Suitability Analysis
-Version: 2.16-1
-Date: 2024-3-16
+Version: 2.17-1
+Date: 2025-1-10
 Author: Roeland Kindt [cre, aut] (<https://orcid.org/0000-0002-7672-0712>)
 Authors@R: 
     c(person(given = "Roeland",
@@ -14,8 +14,8 @@ Maintainer: Roeland Kindt <RoelandCEKindt@gmail.com>
 Description: Graphical User Interface (via the R-Commander) and utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website. In 2012, methods for (ensemble) suitability modelling and mapping were expanded in the package.
 License: GPL-3
 URL: http://www.worldagroforestry.org/output/tree-diversity-analysis
-Depends: R (>= 3.2.2), tcltk, vegan (>= 2.6-4)
-Imports: Rcmdr (>= 2.9-1), ggplot2 (>= 3.3.3)
+Depends: R (>= 3.2.2), tcltk, vegan (>= 2.6-8)
+Imports: Rcmdr (>= 2.9-5), ggplot2 (>= 3.3.3)
 Suggests: vegan3d, rgl, permute, lattice, MASS, mgcv, cluster, car,
         RODBC, rpart, effects, multcomp, ellipse, sp, splancs, spatial,
         nnet, dismo, raster (>= 3.6-11), terra (>= 1.6-47), maxlike,
@@ -24,7 +24,7 @@ Suggests: vegan3d, rgl, permute, lattice, MASS, mgcv, cluster, car,
         ENMeval, red, igraph, Rlof, maxnet, party, readxl, colorspace,
         dplyr, rlang, sf, blockCV, envirem (>= 3.0), concaveman,
         pvclust
-Packaged: 2024-03-16 08:11:39 UTC; RKINDT
+Packaged: 2025-01-10 13:10:22 UTC; RKINDT
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2024-03-16 09:10:02 UTC
+Date/Publication: 2025-01-10 14:10:06 UTC

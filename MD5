@@ -1,5 +1,5 @@
-ea2f5db862cd572d1c1d4088024de8f2 *DESCRIPTION
-ca8ef6324b28c5a80278f2fc8d9229d4 *NAMESPACE
+3fd8bd2dd900bbd96a51cb3aa4be7ae0 *DESCRIPTION
+c1d75b69ac1339899a8f05193343ceed *NAMESPACE
 ecb5a7fd2efe453efaaa86f3b08c9354 *R/BiodiversityR.changeLog.R
 473f3c555173e7f23b1b3cbc9b511d97 *R/BiodiversityRGUI.R
 32ebb9550db114e055aa60f9dd2bb174 *R/CAPdiscrim.R
@@ -98,7 +98,7 @@ f0851e5829fe6b8dcf4615e1e4d3a1da *R/sites.long.R
 301b1c339b6914d3981ea84cfda691ce *R/spatialsample.R
 aa1380c896e45ec3cd9c5c7e15868c24 *R/stackcommunitydataset.R
 4b72bbf68242d74031ea27e473e5134d *R/subsetcomm.R
-ca5ab584aee1c6c1610ba0819621c268 *R/treegoer.R
+1e8ff5364a9906b6eb3c297466694072 *R/treegoer.R
 79df62b5d9cfed17747aa696774147d1 *R/zzz.R
 e8abed5a96b39d7211ab550c8a0ed51d *README.md
 afbe4209b3bb961ba3e41cbfe79ea507 *build/partial.rdb
@@ -111,7 +111,7 @@ a7fc35dd5d33fb725893ad70036f1047 *data/transfgradient.txt
 d08d5872d6f4fa015693fb0624bc35de *data/warcom.txt
 f53cf478d4f95ef79fdc3c94c7e82fde *data/warenv.txt
 525b604501177ef5b37bf929f5c674ee *inst/CITATION
-bd891588be0d23f7d3e137080c5fec11 *inst/ChangeLog
+ed366b68542c5cbcad1d1ac8a6b3e285 *inst/ChangeLog
 b8fb934071801835a471af74083fcb73 *inst/etc/BiodiversityGUI.R
 5f95f29c4896d26a847c9c41f3591112 *inst/etc/BiodiversityR-menus.txt
 22a8a26570fc6d836ed86e2f124b668b *inst/etc/Nations.txt
@@ -123,7 +123,7 @@ c2128aa27494eb3df882dadd7ed576da *inst/etc/Rcmdr-Markdown-Template.Rmd
 49d277002d75c50396d689fe83404d68 *inst/etc/Rcmdr-RMarkdown-Template.Rmd
 412b643dccac535db3cacc78e8c91c0c *inst/etc/Rcmdr-hex.pdf
 3ce4fee044b7cd447276fa41c65125db *inst/etc/Rcmdr-knitr-Template.Rnw
-b6e3be88a430a55e4818952a7db5605b *inst/etc/Rcmdr-menus.txt
+a254853b09ea5da0350a4543f864c925 *inst/etc/Rcmdr-menus.txt
 650283396f8f9d74b164cd3e5f83c6e6 *inst/etc/Rcmdr-model-capabilities.txt
 8fbae734995ec18a4cd0f992b497e21d *inst/etc/Rcmdr-operations.txt
 459dbaaedac47f3ea03da9b97350985b *inst/etc/Thumbs.db
@@ -177,7 +177,7 @@ a726fb9e6e699e1b2e0fdd8ecaa97789 *man/distdisplayed.Rd
 2c1abbb2cdf358b9230e7e442bfd9a81 *man/disttransform.Rd
 f6fe5a36ecae87dc41e21382c330d942 *man/diversityresult.Rd
 0c2972dc952a0180e7c2442faff30610 *man/ensemble.PET.season.Rd
-4697a637f2ce3d6444757f794091934c *man/ensemble.PET.seasons.Rd
+95c76445ce1a58fe91f45f924d9cdfa8 *man/ensemble.PET.seasons.Rd
 06f73f71a2d586f5fe87eba25f7f2c3d *man/ensemble.Rd
 7bce462e390f5cedf4134fc161a7ce3d *man/ensemble.analogue.Rd
 fc75ef34fb974d77351c6845a592d5ce *man/ensemble.batch.Rd
@@ -223,6 +223,6 @@ fe9b801dff69d1754dc11b82a66c88f0 *man/rankabundance.Rd
 7b3a6584eee7a24789be8bac9ccbfc70 *man/spatialsample.Rd
 66a4dc752394a0cefe0cabdda3a75c94 *man/transfgradient.Rd
 1746f76e84827f40a205abc1770c3ef5 *man/transfspecies.Rd
-2a6675ee0b7fc4231c0982486b020493 *man/treegoer.Rd
+c7bb4bb18e3332d79606b2becaa862b0 *man/treegoer.Rd
 dd1340026eb17d11c362fa0e2bc77954 *man/warcom.Rd
 def300149f877b1b4a2d0bed7eb2022b *man/warenv.Rd

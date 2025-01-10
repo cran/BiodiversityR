@@ -30,7 +30,7 @@ export(BiodiversityRGUI, check.datasets, check.ordiscores, spatialsample, makeco
     ensemble.envirem.masterstack, ensemble.envirem.solradstack, ensemble.envirem.run,
     ensemble.concave.hull, ensemble.concave.venn, ensemble.concave.union,
     ensemble.outliers,
-    treegoer.score, treegoer.filter, treegoer.widen,
+    treegoer.score, treegoer.filter, treegoer.widen, treegoer.position, treegoer.map,
     .onAttach)
 
 if(tools:::.OStype() == "windows") {
