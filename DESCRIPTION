@@ -1,8 +1,8 @@
 Package: BiodiversityR
 Type: Package
 Title: Package for Community Ecology and Suitability Analysis
-Version: 2.17-1
-Date: 2025-1-10
+Version: 2.17-1.1
+Date: 2025-1-21
 Author: Roeland Kindt [cre, aut] (<https://orcid.org/0000-0002-7672-0712>)
 Authors@R: 
     c(person(given = "Roeland",
@@ -24,7 +24,7 @@ Suggests: vegan3d, rgl, permute, lattice, MASS, mgcv, cluster, car,
         ENMeval, red, igraph, Rlof, maxnet, party, readxl, colorspace,
         dplyr, rlang, sf, blockCV, envirem (>= 3.0), concaveman,
         pvclust
-Packaged: 2025-01-10 13:10:22 UTC; RKINDT
+Packaged: 2025-01-21 08:29:21 UTC; RKINDT
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2025-01-10 14:10:06 UTC
+Date/Publication: 2025-01-21 09:50:06 UTC

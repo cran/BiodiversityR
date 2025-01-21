@@ -1,4 +1,4 @@
-3fd8bd2dd900bbd96a51cb3aa4be7ae0 *DESCRIPTION
+50cf0be26b85b86d8c5c9f2bcece2256 *DESCRIPTION
 c1d75b69ac1339899a8f05193343ceed *NAMESPACE
 ecb5a7fd2efe453efaaa86f3b08c9354 *R/BiodiversityR.changeLog.R
 473f3c555173e7f23b1b3cbc9b511d97 *R/BiodiversityRGUI.R
@@ -10,7 +10,7 @@ c8dc946b6581609ec4eb9cf149b216de *R/accumcomp.R
 80a9cf4cd638db05c9c2dcdac72681c1 *R/accumresult.R
 cbe97846a2ee68f4bb0f3ceb47b3d6c9 *R/add.spec.scores.R
 9f295832664991a078b3ef86bcac322b *R/balanced.specaccum.R
-4d86d8f8742d27c893fa0826d9c5a06d *R/caprescale.R
+69fdd4f837ef9901b7148ca567293ec1 *R/caprescale.R
 42f2376ffac27ff283b26d7341b3be8b *R/check.datasets.R
 bcbff98f9beb954acb4bc361875a2013 *R/check.ordiscores.R
 608bf3e453112f9fe925318054df634b *R/crosstabanalysis.R
@@ -111,7 +111,7 @@ a7fc35dd5d33fb725893ad70036f1047 *data/transfgradient.txt
 d08d5872d6f4fa015693fb0624bc35de *data/warcom.txt
 f53cf478d4f95ef79fdc3c94c7e82fde *data/warenv.txt
 525b604501177ef5b37bf929f5c674ee *inst/CITATION
-ed366b68542c5cbcad1d1ac8a6b3e285 *inst/ChangeLog
+04e3a619877ab0ec398a75928fb50455 *inst/ChangeLog
 b8fb934071801835a471af74083fcb73 *inst/etc/BiodiversityGUI.R
 5f95f29c4896d26a847c9c41f3591112 *inst/etc/BiodiversityR-menus.txt
 22a8a26570fc6d836ed86e2f124b668b *inst/etc/Nations.txt

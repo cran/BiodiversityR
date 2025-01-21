@@ -29,7 +29,10 @@ function (x, verbose = FALSE)
     x$CA$v <- x$CA$v * const
     x$CA$u <- x$CA$u * const
     if (verbose == T) {
-        distmat <- as.matrix(vegdist(summary(x, axes = npeiv, 
+      
+# updated next line January 2025 scores instead of summary to handle the changes in vegan summary 
+# (https://github.com/vegandevs/vegan/discussions/644)        
+        distmat <- as.matrix(vegdist(scores(x, choices = seq_len(npeiv), 
             scaling = 1)$sites, method = "euc"))
         ssdist <- sum((distmat)^2)/(2 * nrow(distmat))
         if (substr(x$inertia, 1, 4) == "mean") {
@@ -44,13 +47,19 @@ function (x, verbose = FALSE)
         cat("SSTot reflected by distances among site scores on all axes:", 
             ssdist, "\n")
         if (is.null(x$CCA) == F) {
-            distmat <- as.matrix(vegdist(summary(x, axes = nceiv, 
+
+# updated next line January 2025 scores instead of summary to handle the changes in vegan summary 
+            distmat <- as.matrix(vegdist(scores(x, choices = seq_len(nceiv), 
                 scaling = 1)$constraints, method = "euc"))
             ssdistcf <- sum((distmat)^2)/(2 * nrow(distmat))
-            distmat <- as.matrix(vegdist(summary(x, axes = nceiv, 
+
+# updated next line January 2025 scores instead of summary to handle the changes in vegan summary 
+            distmat <- as.matrix(vegdist(scores(x, choices = seq_len(nceiv),  
                 scaling = 1)$sites, method = "euc"))
             ssdistcs <- sum((distmat)^2)/(2 * nrow(distmat))
-            distmat <- as.matrix(vegdist(summary(x, axes = npeiv, 
+            
+# updated next line January 2025 scores instead of summary to handle the changes in vegan summary         
+            distmat <- as.matrix(vegdist(scores(x, choices = seq_len(npeiv), 
                 scaling = 1)$sites[, ((nceiv + 1):npeiv)], method = "euc"))
             ssdistus <- sum((distmat)^2)/(2 * nrow(distmat))
             if (substr(x$inertia, 1, 4) == "mean") {
