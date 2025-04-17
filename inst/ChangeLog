@@ -19,6 +19,18 @@ BiodiversityR versions
 	https://rpubs.com/Roeland-KINDT
 
 
+Version 2.17-2 (April 2025)
+
+  * Modified nested.npmanova() based on suggestions by Jari Oksanen about the adonis2()
+  function (see also: https://github.com/vegandevs/vegan/issues/677).
+  
+  * Modified nested.anova.dbrda() based on suggestions by Jari Oksanen about suppressing
+  messages (see also: https://github.com/vegandevs/vegan/issues/682).
+  
+  * Modified documentation for caprescale() to use scores() instead of summary(), as also
+  done internally in the function (see version 2.17-1).
+
+
 Version 2.17-1.1 (January 2025 correction)
 
   * Inclusion of the modified caprescale() function created for version 2.17-1, something that

@@ -90,8 +90,9 @@ function (formula, data, method = "euc", add = FALSE,
     for (i in 1:permutations) {
         data2 <- randomize(data, toplev, lowlev)
         assign("data2", data2, envir=.BiodiversityR)
-        Ordinationperm <- capscale(formula1, data = data2, 
-            distance = method, add = add)
+# modified April 2025        
+        Ordinationperm <- suppressMessages(capscale(formula1, data = data2, 
+            distance = method, add = add))
         randomF <- (Ordinationperm$pCCA$tot.chi/df1)/(Ordinationperm$CCA$tot.chi/df2)
         if (randomF >= Ftop) {
             counter <- counter + 1
@@ -106,8 +107,9 @@ function (formula, data, method = "euc", add = FALSE,
     for (i in 1:permutations) {
         data2 <- randomize2(data, toplev)
         assign("data2", data2, envir=.BiodiversityR)
-        Ordinationperm <- capscale(formula1, data = data2, 
-            distance = method, add = add)
+# Modified April 2025
+        Ordinationperm <- suppressMessages(capscale(formula1, data = data2, 
+            distance = method, add = add))
         randomF <- (Ordinationperm$CCA$tot.chi/df2)/(Ordinationperm$CA$tot.chi/df3)
         if (randomF >= Flow) {
             counter <- counter + 1

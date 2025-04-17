@@ -49,8 +49,8 @@ function(formula, data, method="euc", permutations=100,
     lowlev <- all.vars(formula)[3]
     data1 <- data
     assign("data1", data1, envir=.BiodiversityR) 
-# modified August 2022
-    adonis1 <- adonis2(formula, data1, permutations=2, method=method)
+# modified August 2022 and April 2025
+    adonis1 <- adonis2(formula, data1, permutations=2, method=method, by="terms")
 # modified August 2022 to work with adonis2
 #    adonis1 <- data.frame(adonis1$aov.tab)
     adonis1 <- data.frame(adonis1)
