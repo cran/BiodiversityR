@@ -2,7 +2,7 @@ import(stats, Rcmdr, vegan)
 
 importFrom(tcltk, tkfont.create, tkbutton)
 
-export(BiodiversityRGUI, check.datasets, check.ordiscores, spatialsample, makecommunitydataset, stackcommunitydataset,
+export(BiodiversityRGUI, check.datasets, check.ordiscores, makecommunitydataset, stackcommunitydataset,
     removeNAcomm, replaceNAcomm, removeNAenv, subsetcomm, removezerospecies, balanced.specaccum, accumresult, accumplot, accumcomp,
     diversityresult, diversitycomp, diversityvariables,
     rankabundance, radfitresult, rankabunplot, rankabuncomp, renyiresult, renyiplot,

@@ -6,7 +6,7 @@
     theRange=NULL, return.object=FALSE, ...
 )
 {
-# Function to assign presence and background data to spatially separated folds via blockCV::spatialBlock
+# Function to assign presence and background data to spatially separated folds via blockCV's spatialBlock
 
     ensemble.data <- ensemble.calibrate.models(x=x, p=p, a=a, an=an, 
         SSB.reduce=FALSE, 
@@ -28,10 +28,14 @@
     PA.Spatial <- sf::st_as_sf(PA.input, coords=names(a.new), crs=raster::crs(x))
     if (is.null(EPSG) == FALSE) {sf::st_crs(PA.Spatial) <- EPSG}
 
-    sb1 <- blockCV::spatialBlock(speciesData=PA.Spatial, species="pb", theRange=theRange, k=k, ...)
+# Disabled August 2025
+#    sb1 <- blockCV::spatialBlock(speciesData=PA.Spatial, species="pb", theRange=theRange, k=k, ...)
 
-    k <- list(p=p.new, a=a.new, groupp=sb1$foldID[PA.input$pb == 1], groupa=sb1$foldID[PA.input$pb == 0])
 
+#    k <- list(p=p.new, a=a.new, groupp=sb1$foldID[PA.input$pb == 1], groupa=sb1$foldID[PA.input$pb == 0])
+
+    k <- sb1 <- NULL
+    
     if (return.object == F) {
         return(k)
     }else{
@@ -48,7 +52,7 @@
     return.object=FALSE, ...
 )
 {
-# Function to assign presence and background data to spatially separated folds via blockCV::envBlock
+# Function to assign presence and background data to spatially separated folds via blockCV's envBlock
 
     ensemble.data <- ensemble.calibrate.models(x=x, p=p, a=a, an=an, 
         SSB.reduce=FALSE, 
@@ -69,9 +73,12 @@
     PA.Spatial <- sp::SpatialPointsDataFrame(PA.input[, c(2:3)], data=PA.input, proj4string=raster::crs(x))
     if (is.null(EPSG) == FALSE) {sf::st_crs(PA.Spatial) <- EPSG}
 
-    eb1 <- blockCV::envBlock(rasterLayer=x, speciesData=PA.Spatial, species="pb", k=k, ...)
-    k <- list(p=p.new, a=a.new, groupp=eb1$foldID[PA.input$pb == 1], groupa=eb1$foldID[PA.input$pb == 0])
+# disabled August 2025
+#    eb1 <- blockCV::envBlock(rasterLayer=x, speciesData=PA.Spatial, species="pb", k=k, ...)
+#    k <- list(p=p.new, a=a.new, groupp=eb1$foldID[PA.input$pb == 1], groupa=eb1$foldID[PA.input$pb == 0])
 
+    k <- eb1 <- NULL
+    
     if (return.object == F) {
         return(k)
     }else{

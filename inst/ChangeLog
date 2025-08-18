@@ -19,6 +19,14 @@ BiodiversityR versions
 	https://rpubs.com/Roeland-KINDT
 
 
+Version 2.17-3 (August 2025)
+
+  * Addressed errors caused by the archiving of package blockCV on 2025-07-30
+  * Removed function spatialsample() as submission to CRAN reported that package splancs
+  did not exist (as reported by noSuggests testing). Function spatialsample was used for
+  some examples in the Tree Diversity Analysis manual.
+
+
 Version 2.17-2 (April 2025)
 
   * Modified nested.npmanova() based on suggestions by Jari Oksanen about the adonis2()

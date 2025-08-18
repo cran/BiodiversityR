@@ -1,9 +1,10 @@
 Package: BiodiversityR
 Type: Package
 Title: Package for Community Ecology and Suitability Analysis
-Version: 2.17-2
-Date: 2025-4-17
-Author: Roeland Kindt [cre, aut] (<https://orcid.org/0000-0002-7672-0712>)
+Version: 2.17-3
+Date: 2025-8-18
+Author: Roeland Kindt [cre, aut] (ORCID:
+    <https://orcid.org/0000-0002-7672-0712>)
 Authors@R: 
     c(person(given = "Roeland",
              family = "Kindt",
@@ -17,14 +18,13 @@ URL: http://www.worldagroforestry.org/output/tree-diversity-analysis
 Depends: R (>= 3.2.2), tcltk, vegan (>= 2.6-8)
 Imports: Rcmdr (>= 2.9-5), ggplot2 (>= 3.3.3)
 Suggests: vegan3d, rgl, permute, lattice, MASS, mgcv, cluster, car,
-        RODBC, rpart, effects, multcomp, ellipse, sp, splancs, spatial,
-        nnet, dismo, raster (>= 3.6-11), terra (>= 1.6-47), maxlike,
-        gbm, randomForest, gam (>= 1.15), earth, mda, kernlab, e1071,
+        RODBC, rpart, effects, multcomp, ellipse, sp, spatial, nnet,
+        dismo, raster (>= 3.6-11), terra (>= 1.6-47), maxlike, gbm,
+        randomForest, gam (>= 1.15), earth, mda, kernlab, e1071,
         glmnet, tools, methods, bootstrap, PresenceAbsence, geosphere,
         ENMeval, red, igraph, Rlof, maxnet, party, readxl, colorspace,
-        dplyr, rlang, sf, blockCV, envirem (>= 3.0), concaveman,
-        pvclust
-Packaged: 2025-04-17 07:26:55 UTC; RKINDT
+        dplyr, rlang, sf, envirem (>= 3.0), concaveman, pvclust
+Packaged: 2025-08-18 15:32:43 UTC; RKINDT
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2025-04-17 08:30:02 UTC
+Date/Publication: 2025-08-18 18:00:02 UTC
