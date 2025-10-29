@@ -19,6 +19,14 @@ BiodiversityR versions
 	https://rpubs.com/Roeland-KINDT
 
 
+Version 2.17-4 (October 2025)
+
+  * Reintegrated functionalities for the blockCV package as the package is available again.
+  * Functions ensemble.spatialBlock() and ensemble.envBlock() were modified to use newer
+  functions of the blockCV package. Locations not assigned to a particular fold were removed
+  in the 'k' output.
+
+
 Version 2.17-3 (August 2025)
 
   * Addressed errors caused by the archiving of package blockCV on 2025-07-30

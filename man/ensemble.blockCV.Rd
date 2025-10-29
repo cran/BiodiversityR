@@ -3,11 +3,11 @@
 \alias{ensemble.envBlock}
 
 \title{
-Spatially or environmentally separated folds for cross-validation via blockCV's spatialBlock or blockCV's envBlock
+Spatially or environmentally separated folds for cross-validation via blockCV's cv_spatial() or cv_cluster() functions
 }
 
 \description{
-The function is not functional at the moment as blockCV was archived. Previously the functions called blockCV's spatialBlock and blockCV's envBlock. Syntax is very similar to that of BiodiversityR::ensemble.calibrate.weights.
+The functions call blockCV's cv_spatial() and cv_cluster() functions. Syntax is very similar to that of BiodiversityR::ensemble.calibrate.weights.
 }
 
 \usage{
@@ -15,7 +15,7 @@ ensemble.spatialBlock(x = NULL, p = NULL,
     a = NULL, an = 1000, EPSG=NULL,
     excludep = FALSE, target.groups = FALSE, k = 4,
     factors = NULL,
-    theRange = NULL, return.object = FALSE, ...)
+    size = NULL, return.object = FALSE, ...)
 
 ensemble.envBlock(x = NULL, p = NULL, 
     a = NULL, an = 1000, EPSG=NULL,
@@ -34,14 +34,14 @@ ensemble.envBlock(x = NULL, p = NULL,
   \item{target.groups}{ Parameter that indicates (if \code{TRUE}) that the provided background points (argument \code{a}) represent presence points from a target group sensu Phillips et al. 2009 (these are species that are all collected or observed using the same methods or equipment). Setting the parameter to \code{TRUE} results in selecting the centres of cells of the target groups as background points, while avoiding to select the same cells twice. Via argument \code{excludep}, it is possible to filter out cells with presence observations (argument \code{p}).  }
   \item{k}{ Integer value. The number of desired folds for cross-validation. The default is \code{k = 4}. The interpretation of the argument is exactly the same as in \code{\link[BiodiversityR]{ensemble.calibrate.models}} and \code{\link[dismo]{kfold}}.  }
   \item{factors}{ vector that indicates which variables are factors; see also \code{\link[dismo]{prepareData}}  }
-  \item{theRange}{ Numeric value of the specified range by which blocks are created and training/testing data are separated. This distance should be in metres. .  }
-  \item{return.object}{ If \code{TRUE}, then also return ('block.object') the complete result of \code{spatialBlock} or \code{envBlock}. In addtion (if \code{TRUE}), return the species data ('speciesData') that was created for \code{blockCV}. To visualize these results, see below or from \code{foldExplorer}.  }
-  \item{...}{ Other arguments to pass to \code{spatialBlock} or \code{envBlock}, such \code{numLimit} (The minimum number of points in each fold for training-presence, training-absence, testing-presence and testing-absence) and \code{iteration} (The number of attempts to create folds that fulfil the \code{numLimit} requirement).   }
+  \item{size}{ Numeric value of the specified range by which blocks are created and training/testing data are separated. This distance should be in metres.  }
+  \item{return.object}{ If \code{TRUE}, then also return ('block.object') the complete result of \code{\link[blockCV]{cv_spatial}} or \code{\link[blockCV]{cv_cluster}}. In addition (if \code{TRUE}), return the species data ('speciesData') that was created for \code{blockCV}.  }
+  \item{...}{ Other arguments to pass to \code{\link[blockCV]{cv_spatial}} or \code{\link[blockCV]{cv_cluster}}.   }
 
 }
 
 \details{
-The functions internally call \code{spatialBlock} or \code{envBlock}. 
+The functions internally call \code{\link[blockCV]{cv_spatial}} or \code{\link[blockCV]{cv_cluster}}. 
 
 The result of the function includes a list (\code{k}) with following elements. This list can be directly imported into \code{\link[BiodiversityR]{ensemble.calibrate.weights}}, but only elements \code{groupp} and \code{groupa} will be used.
 
@@ -53,7 +53,7 @@ The result of the function includes a list (\code{k}) with following elements. T
 
      - \code{groupa} : k-fold identities for the background locations
 
-Optionally the function also returns elements \code{block.object} and \code{speciesData}. These can be used to visualize data with \code{foldExplorer}.
+Optionally the function also returns elements \code{block.object} and \code{speciesData}. 
 
 }
 
@@ -61,7 +61,7 @@ Optionally the function also returns elements \code{block.object} and \code{spec
 The function returns a list with the following elements:. 
 
 \item{k}{ A list with data on folds that can be directly used by \code{\link[BiodiversityR]{ensemble.calibrate.weights}}. }
-\item{block.object}{ the results of \code{spatialBlock} or \code{envBlock} }
+\item{block.object}{ the results of \code{\link[blockCV]{cv_spatial}} or \code{\link[blockCV]{cv_cluster}}. }
 \item{speciesData}{ a \code{\link[sp]{SpatialPointsDataFrame}} with species data}
 
 }
@@ -77,10 +77,9 @@ Roberts et al., 2017. Cross-validation strategies for data with temporal, spatia
 \examples{
 \dontrun{
 
-# FUNCTION DISABLED WHILE blockCV IS ARCHIVED
-
-# library(blockCV)
+library(blockCV)
 library(sf)
+library(ggplot2)
 
 # get predictor variables
 library(dismo)
@@ -102,78 +101,66 @@ background <- randomPoints(predictors, n=1000, p=pres, excludep=T, extf=1.00)
 background <- data.frame(background)
 colnames(background)=c('lon', 'lat')
 
-# spatial blocking with square blocks of 1000 km and minimum 20 points in each categor
+# spatial blocking with square blocks of 1000 km
 # fails if EPSG is not assigned
-# block.data <- ensemble.spatialBlock(x=predictors, p=pres, a=background, 
-#    EPSG=NULL,
-#    showBlocks=F, theRange=1000000, k=4, numLimit=20, iteration=1000, return.object=T)
-
-# block.data <- ensemble.spatialBlock(x=predictors, p=pres, a=background, 
-#    EPSG=4326,
-#    showBlocks=F, theRange=1000000, k=4, numLimit=20, iteration=1000, return.object=T)
+block.data <- ensemble.spatialBlock(x=predictors, p=pres, a=background, 
+    EPSG=NULL, plot=FALSE, 
+    size=1000000, k=4, hexagon=FALSE,
+    iteration=1000, return.object=TRUE)
 
 # explore the results
-# foldExplorer(blocks=block.data$block.object, rasterLayer=predictors, 
-#    speciesData=block.data$speciesData)
+cv.plot1 <- cv_plot(cv=block.data$block.object, 
+    r=terra::rast(predictors[[1]]))
+    
+p.ggplot <- block.data$k$p
+p.ggplot$k <- factor(block.data$k$groupp)
+cv.plot1 <- cv.plot1 +
+  geom_point(data=p.ggplot,
+             aes(x=x, y=y, color=k),
+             size=8, shape=1)
+cv.plot1
+
+a.ggplot <- block.data$k$a
+a.ggplot$k <- factor(block.data$k$groupa)
+cv.plot1 <- cv.plot1 +
+  geom_point(data=a.ggplot,
+             aes(x=x, y=y, color=k),
+             shape=3)
+cv.plot1
 
 # apply in calibration of ensemble weights
 # make sure that folds apply to subset of points
-# p.spatial <- block.data$k$p 
-# a.spatial <- block.data$k$a
-# k.spatial <- block.data$k
+p.spatial <- block.data$k$p 
+a.spatial <- block.data$k$a
+k.spatial <- block.data$k
 
-#ensemble.w1 <- ensemble.calibrate.weights(x=predictors, 
-#    p=p.spatial, a=a.spatial, k=k.spatial, 
-#    species.name="Bradypus",
-#    SINK=FALSE, PROBIT=TRUE,
-#    MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=0, CF=1,
-#    GLM=1, GLMSTEP=0, GAM=1, GAMSTEP=0, MGCV=0, MGCVFIX=0, 
-#    EARTH=0, RPART=0, NNET=1, FDA=0, SVM=0, SVME=0, GLMNET=0,
-#    BIOCLIM.O=1, BIOCLIM=1, DOMAIN=0, MAHAL=0, MAHAL01=0,
-#    ENSEMBLE.tune=TRUE,
-#    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3),
-#    ENSEMBLE.min=0.7,
-#    Yweights="BIOMOD", 
-#    formulae.defaults=TRUE)
+ensemble.w1 <- ensemble.calibrate.weights(x=predictors, 
+    p=p.spatial, a=a.spatial, k=k.spatial, 
+    species.name="Bradypus",
+    SINK=FALSE, PROBIT=TRUE,
+    MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=0, GBMSTEP=0, RF=0, CF=1,
+    GLM=1, GLMSTEP=0, GAM=1, GAMSTEP=0, MGCV=0, MGCVFIX=0, 
+    EARTH=0, RPART=0, NNET=1, FDA=0, SVM=0, SVME=0, GLMNET=0,
+    BIOCLIM.O=1, BIOCLIM=1, DOMAIN=0, MAHAL=0, MAHAL01=0,
+    ENSEMBLE.tune=TRUE,
+    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3),
+    ENSEMBLE.min=0.7,
+    Yweights="BIOMOD", 
+    formulae.defaults=TRUE)
 
 # confirm that correct folds were used
-#all.equal(ensemble.w1$groupp, block.data$k$groupp)
-#all.equal(ensemble.w1$groupa, block.data$k$groupa)
+all.equal(ensemble.w1$groupp, block.data$k$groupp)
+all.equal(ensemble.w1$groupa, block.data$k$groupa)
 
-# environmental blocking with minimum 5 points in each category
-#block.data2 <- ensemble.envBlock(x=predictors, p=pres, a=background, 
-#    factors="biome",
-#    k=4, numLimit=5, return.object=T)
+# environmental blocking
+block.data2 <- ensemble.envBlock(x=predictors, p=pres, a=background, 
+    k=4, return.object=TRUE)
 
 # explore the results
-#foldExplorer(blocks=block.data2$block.object, rasterLayer=predictors, 
-#    speciesData=block.data2$speciesData)
-
-# apply in calibration of ensemble weights
-# make sure that folds apply to subset of points
-#p.env <- block.data2$k$p 
-#a.env <- block.data2$k$a
-#k.env <- block.data2$k
-
-#ensemble.w2 <- ensemble.calibrate.weights(x=predictors, 
-#    p=p.env, a=a.env, k=k.env, 
-#    species.name="Bradypus",
-#    SINK=FALSE, PROBIT=TRUE,
-#    MAXENT=0, MAXNET=1, MAXLIKE=1, GBM=1, GBMSTEP=0, RF=0, CF=1,
-#    GLM=1, GLMSTEP=0, GAM=1, GAMSTEP=0, MGCV=0, MGCVFIX=0, 
-#    EARTH=0, RPART=0, NNET=1, FDA=0, SVM=0, SVME=0, GLMNET=0,
-#    BIOCLIM.O=1, BIOCLIM=1, DOMAIN=0, MAHAL=0, MAHAL01=0,
-#    ENSEMBLE.tune=TRUE,
-#    ENSEMBLE.best=0, ENSEMBLE.exponent=c(1, 2, 3),
-#    ENSEMBLE.min=0.7,
-#    factors="biome",
-#    Yweights="BIOMOD", 
-#    formulae.defaults=TRUE)
-
-# confirm that correct folds were used
-#all.equal(ensemble.w2$groupp, block.data2$k$groupp)
-#all.equal(ensemble.w2$groupa, block.data2$k$groupa)
-
+cv_plot(cv=block.data2$block.object,
+    x=block.data2$speciesData,
+    r=terra::rast(predictors[[1]]))
+    
 }
 
 }
