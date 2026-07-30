@@ -49,8 +49,8 @@ function(formula, data, method="euc", permutations=100,
     lowlev <- all.vars(formula)[3]
     data1 <- data
     assign("data1", data1, envir=.BiodiversityR) 
-# modified August 2022 and April 2025
-    adonis1 <- adonis2(formula, data1, permutations=2, method=method, by="terms")
+# modified August 2022, further modified August 2026: added by "terms"
+    adonis1 <- adonis2(formula, data1, permutations=2, method=method, by="terms") 
 # modified August 2022 to work with adonis2
 #    adonis1 <- data.frame(adonis1$aov.tab)
     adonis1 <- data.frame(adonis1)
@@ -74,10 +74,10 @@ function(formula, data, method="euc", permutations=100,
     for (i in 1:permutations) {
         data2 <- randomize(data, toplev, lowlev)
         assign("data2", data2, envir=.BiodiversityR)
-# modified August 2022
+# modified August 2022, further modified August 2026: added by "terms"
 #        adonis2r <- adonis(formula, data=data2, method=method, permutations=2)
 #        adonis2r <- data.frame(adonis2r$aov.tab)
-        adonis2r <- adonis2(formula, data=data2, method=method, permutations=2)
+        adonis2r <- adonis2(formula, data=data2, method=method, permutations=2, by="terms")
         adonis2r <- data.frame(adonis2r)
         Frand <- (adonis2r[1,2]/df1)/(adonis2r[2,2]/df2)
         if (Frand >= Ftop) {counter <- counter+1}
@@ -91,10 +91,10 @@ function(formula, data, method="euc", permutations=100,
     for (i in 1:permutations) {
         data2 <- randomize2(data, toplev)
         assign("data2", data2, envir=.BiodiversityR)
-# modified August 2022
+# modified August 2022, further modified August 2026: added by "terms"
 #        adonis2r <- adonis(formula, data=data2, method=method, permutations=2)
 #        adonis2r <- data.frame(adonis2r$aov.tab)
-        adonis2r <- adonis2(formula, data=data2, method=method, permutations=2)
+        adonis2r <- adonis2(formula, data=data2, method=method, permutations=2, by="terms")
         adonis2r <- data.frame(adonis2r)
         Frand <- (adonis2r[2,2]/df2)/(adonis2r[3,2]/df3)
         if (Frand >= Flow) {counter <- counter+1}

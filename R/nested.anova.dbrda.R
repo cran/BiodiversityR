@@ -30,10 +30,10 @@ function (formula, data, method = "euc", add = FALSE,
         }
         return(newdata)
     }
-    ow <- options("warn")
-    if (warnings == FALSE) {
-        options(warn = 0)
-    }
+#    ow <- options("warn")
+#    if (warnings == FALSE) {
+#        options(warn = 0)
+#    }
     formula <- as.formula(formula)
     if (length(all.vars(formula)) > 3) 
         stop(paste("function only works with one main and one nested factor"))
@@ -60,7 +60,12 @@ function (formula, data, method = "euc", add = FALSE,
     methodid <- pmatch(method, METHODS)
     method <- METHODS[methodid]
 
-    model <- capscale(formula, data1, distance=method, add=add)
+# modified August 2026
+    if (warnings == TRUE) {
+      model <- capscale(formula, data1, distance=method, add=add)
+    }else{
+      model <- suppressMessages(capscale(formula, data1, distance=method, add=add))
+    }
 
 # remember the data
     model$call$data <- data1
@@ -82,17 +87,27 @@ function (formula, data, method = "euc", add = FALSE,
     formula1 <- as.formula(paste(resp, "~", lowlev, "+Condition(", 
         toplev, ")"))
     environment(formula1) <- .BiodiversityR
-    model1 <- capscale(formula1, data = data1, distance = method, 
-        add = add)
+    
+# modified August 2026               
+    if (warnings == TRUE) {  
+      model1 <- capscale(formula1, data = data1, distance = method, add = add)
+    }else{
+      model1 <- suppressMessages(capscale(formula1, data = data1, distance = method, add = add))
+    }
     Ftop <- (model1$pCCA$tot.chi/df1)/(model1$CCA$tot.chi/df2)
     anovadat[1, 3] <- Ftop
     counter <- 1
     for (i in 1:permutations) {
         data2 <- randomize(data, toplev, lowlev)
         assign("data2", data2, envir=.BiodiversityR)
-# modified April 2025        
-        Ordinationperm <- suppressMessages(capscale(formula1, data = data2, 
-            distance = method, add = add))
+ 
+# modified August 2026               
+      if (warnings == TRUE) {    
+        Ordinationperm <- capscale(formula1, data = data2, distance = method, add = add)
+      }else{
+        Ordinationperm <- suppressMessages(capscale(formula1, data = data2, distance = method, add = add))
+      }  
+        
         randomF <- (Ordinationperm$pCCA$tot.chi/df1)/(Ordinationperm$CCA$tot.chi/df2)
         if (randomF >= Ftop) {
             counter <- counter + 1
@@ -107,9 +122,13 @@ function (formula, data, method = "euc", add = FALSE,
     for (i in 1:permutations) {
         data2 <- randomize2(data, toplev)
         assign("data2", data2, envir=.BiodiversityR)
-# Modified April 2025
-        Ordinationperm <- suppressMessages(capscale(formula1, data = data2, 
-            distance = method, add = add))
+        
+# modified August 2026               
+      if (warnings == TRUE) {          
+        Ordinationperm <- capscale(formula1, data = data2, distance = method, add = add)
+      }else{
+        Ordinationperm <- suppressMessages(capscale(formula1, data = data2, distance = method, add = add))
+      }
         randomF <- (Ordinationperm$CCA$tot.chi/df2)/(Ordinationperm$CA$tot.chi/df3)
         if (randomF >= Flow) {
             counter <- counter + 1
@@ -124,7 +143,7 @@ function (formula, data, method = "euc", add = FALSE,
         toplev, "\n")
     head <- paste("Total sum of squares of distance-based redundancy analysis:", 
         c(model$tot.chi), "\n")
-    options(ow)
+#    options(ow)
     structure(anovadat, heading = c(head, mod), Random.seed = NA, 
         class = c("anova.cca", "anova", "data.frame"))
 }

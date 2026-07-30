@@ -1,8 +1,8 @@
 Package: BiodiversityR
 Type: Package
 Title: Package for Community Ecology and Suitability Analysis
-Version: 2.17-4
-Date: 2025-10-27
+Version: 2.18-1
+Date: 2026-7-30
 Author: Roeland Kindt [cre, aut] (ORCID:
     <https://orcid.org/0000-0002-7672-0712>)
 Authors@R: 
@@ -14,7 +14,8 @@ Authors@R:
 Maintainer: Roeland Kindt <RoelandCEKindt@gmail.com>
 Description: Graphical User Interface (via the R-Commander) and utility functions (often based on the vegan package) for statistical analysis of biodiversity and ecological communities, including species accumulation curves, diversity indices, Renyi profiles, GLMs for analysis of species abundance and presence-absence, distance matrices, Mantel tests, and cluster, constrained and unconstrained ordination analysis. A book on biodiversity and community ecology analysis is available for free download from the website. In 2012, methods for (ensemble) suitability modelling and mapping were expanded in the package.
 License: GPL-3
-URL: http://www.worldagroforestry.org/output/tree-diversity-analysis
+URL:
+        https://www.landscapealliance.org/gtkp/resource/tree-diversity-analysis-manual/
 Depends: R (>= 3.2.2), tcltk, vegan (>= 2.6-8)
 Imports: Rcmdr (>= 2.9-5), ggplot2 (>= 3.3.3)
 Suggests: vegan3d, rgl, permute, lattice, MASS, mgcv, cluster, car,
@@ -25,7 +26,8 @@ Suggests: vegan3d, rgl, permute, lattice, MASS, mgcv, cluster, car,
         ENMeval, red, igraph, Rlof, maxnet, party, readxl, colorspace,
         dplyr, rlang, sf, envirem (>= 3.0), concaveman, pvclust,
         blockCV
-Packaged: 2025-10-29 04:34:35 UTC; RKINDT
+Packaged: 2026-07-30 12:43:56 UTC; RKINDT
+RoxygenNote: 7.3.3
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2025-10-29 06:30:09 UTC
+Date/Publication: 2026-07-30 16:20:27 UTC

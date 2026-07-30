@@ -9,7 +9,7 @@ bibentry(
   ),
   year = "2005",
   note = "ISBN 92-9059-179-X",
-  url = "http://www.worldagroforestry.org/output/tree-diversity-analysis",
+  url = "https://www.landscapealliance.org/gtkp/resource/tree-diversity-analysis-manual/",
 
   mheader = "To cite BiodiversityR in publications use:"
 )

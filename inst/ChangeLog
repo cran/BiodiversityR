@@ -1,8 +1,8 @@
 
 BiodiversityR versions
 
-	This ChangeLog provides information on new functions integrated in the package and some 
-	required updates. Updates related to error messages for new versions of the base and 
+	This ChangeLog provides information on new functions integrated in the package and some
+	required updates. Updates related to error messages for new versions of the base and
 	loaded packages are typically not included here (as these were addressed).
 
 	BiodiversityR details on installation are available from:
@@ -17,6 +17,12 @@ BiodiversityR versions
 
 	Various scripts for creating publication-ready graphs with ggplot2 are available from:
 	https://rpubs.com/Roeland-KINDT
+
+
+Version 2.18-1 (August 2026)
+
+  * Modified functions nested.npmanova() and nested.anova.dbrda(). Thanks to Florent Mazel
+  for reporting the issues.
 
 
 Version 2.17-4 (October 2025)
@@ -39,10 +45,10 @@ Version 2.17-2 (April 2025)
 
   * Modified nested.npmanova() based on suggestions by Jari Oksanen about the adonis2()
   function (see also: https://github.com/vegandevs/vegan/issues/677).
-  
+
   * Modified nested.anova.dbrda() based on suggestions by Jari Oksanen about suppressing
   messages (see also: https://github.com/vegandevs/vegan/issues/682).
-  
+
   * Modified documentation for caprescale() to use scores() instead of summary(), as also
   done internally in the function (see version 2.17-1).
 
@@ -53,28 +59,28 @@ Version 2.17-1.1 (January 2025 correction)
   was not achieved during the previous submission (see also vegan announcement #644)
 
 
-Version 2.17-1 (January 2025; King Gizzard & the Lizard Wizard US Tour 2024 live captures 
+Version 2.17-1 (January 2025; King Gizzard & the Lizard Wizard US Tour 2024 live captures
 by Chris Dempsey version)
 
   * New function treegoer.position() that calculates the position of the planting site in
   respect to the median of the species range
-  
+
   * New function treegoer.map() that creates a suitability map with the same methods as
   used by treegoer.score().
-  
+
   * Updated treegoer.widen() to be compatible with treegoer.position().
-  
+
   * Expanded functions treegoer.score() and treegoer.filter() to accommodate a climate score
   of 0.5 for one-sided checks whether the planting site is outside the species' ranges.
-  
-  * Modified functions caprescale(), to use the vegan::scores() function instead of 
+
+  * Modified functions caprescale(), to use the vegan::scores() function instead of
   vegan:::summary.cca() (see also vegan announcement #644)
-  
+
   * Compatible with Rcmdr version 2.9-5
 
 
 
-version 2.16-1 (March 2024; King Gizzard & the Lizard Wizard at the PALP Rocklette 
+version 2.16-1 (March 2024; King Gizzard & the Lizard Wizard at the PALP Rocklette
 Festival in August 2023 version)
 
   * New functions treegoer.score(), treegoer.filter() and treegoer.widen() that calculate
@@ -87,18 +93,18 @@ version 2.15-4 (October 2023)
 
   * Removed references to rgeos in the documentation for function ensemble.chull.create()
   that caused messages of 'unknown package'.
-  
-  * Include pvclust among the suggested packages (See also documentation for function 
+
+  * Include pvclust among the suggested packages (See also documentation for function
   pvclust.long()).
-  
+
   * Made changes to be compatible with Rcmdr 2.9-1.
 
 
 version 2.15-3 (September 2023)
 
   * Modified function ensemble.envirem.run to use envirem::generateEnvirem()
-  
-  * Included reference to TreeGOER: A database with globally observed environmental ranges 
+
+  * Included reference to TreeGOER: A database with globally observed environmental ranges
   for 48,129 tree species. Global Change Biology https://doi.org/10.1111/gcb.16914
 
 
@@ -106,11 +112,11 @@ version 2.15-2 (May 2023)
 
   * New function ensemble.Tjur() to calculate Tjur's Coefficient of Discrimination for
   logistic regression models.
-  
+
   * Modified function ensemble.evaluate() to include results from ensemble.Tjur().
-  
+
   * Corrected function ensemble.envirem.run() to work with newer versions of terra.
-  
+
   * Updated citation of van Zonneveld et al. 2023 in the documentation of function
   ensemble.concave.hull().
 
@@ -118,31 +124,31 @@ version 2.15-2 (May 2023)
 version 2.15-1 (January 2023; King Gizzard & the Lizard Wizard Omnium Gatherum version)
 
   * Removed dependencies on rgdal, rgeos and maptools (requested by Roger Bivand on 19-DEC)
-  
+
   * New function ensemble.outliers() to identify outliers in multivariate space based on
   user-defined number of variables and multiples of interquartile range distance.
-  
+
   * Modified function ensemble.chull.create() to remove use of rgeos::gBuffer.
-  
+
   * Modified function ensemble.plot() to remove use of maptools 'wrld_simpl' data set.
-  
+
   * Modified function ensemble.chull.apply() to save the masked suitability rasters in the
   'chull' subdirectory rather than overwriting the input files.
-  
+
   * The default output format for ensemble suitability methods that use the raster package
-  was modified to GTiff for functions ensemble.analogue(), ensemble.batch(), 
-  ensemble.bioclim(), ensemble.chull.create(), ensemble.chull.apply(), 
-  ensemble.ecocrop(), ensemble.habitat.change(), ensemble.mean(), ensemble.novel(), 
+  was modified to GTiff for functions ensemble.analogue(), ensemble.batch(),
+  ensemble.bioclim(), ensemble.chull.create(), ensemble.chull.apply(),
+  ensemble.ecocrop(), ensemble.habitat.change(), ensemble.mean(), ensemble.novel(),
   ensemble.raster() and ensemble.zones().
-  
+
   * Function ensemble.batch() now uses the 'GTiff' output format.
-  
-  * KML output is no longer supported, modified for functions ensemble.analogue(), 
-  ensemble.batch(), ensemble.bioclim(), ensemble.habitat.change(), ensemble.mean(), 
+
+  * KML output is no longer supported, modified for functions ensemble.analogue(),
+  ensemble.batch(), ensemble.bioclim(), ensemble.habitat.change(), ensemble.mean(),
   ensemble.novel(), ensemble.raster() and ensemble.zones().
-  
+
   * New option of 'hellinger' for argument 'dist' in function dist.eval().
-  
+
   * New option of by="onedf" for anova.cca() implemented in the Constrained Ordination
   Graphical User Interface.
 
@@ -155,13 +161,13 @@ Version 2.14-4 (September 2002)
 
 Version 2.14-3 (August 2022)
 
-	* Removed suggested package akima (email from Prof. Ripley 4-JUN-2022). Function 
+	* Removed suggested package akima (email from Prof. Ripley 4-JUN-2022). Function
 	residualssurface() was removed.
 
 	* New argument of 'aitchison_pseudocount' in function CAPdiscrim() to allow the new
 	methods of 'aitchison' and 'robust.aitchison' from vegan::vegdist().
 
-	* Added options of 'aitchison' and 'robust.aitchison' to documentation options of 
+	* Added options of 'aitchison' and 'robust.aitchison' to documentation options of
 	distdisplayed().
 
 	* Function nested.npmanova() now uses vegan::adonis2().
@@ -173,7 +179,7 @@ Version 2.14-3 (August 2022)
 	distances matrices. Note, however, that such methods may only work when calculating the
 	distance matrix first before using other methods such as ordination methods.
 
-	* Diversity calculation GUI now includes the options of 'simpson.unb' and 
+	* Diversity calculation GUI now includes the options of 'simpson.unb' and
 	'simpson.unb.inverse'.
 
 	* BiodiversityR now depends on vegan version 2.6-2.
@@ -181,19 +187,19 @@ Version 2.14-3 (August 2022)
 
 Version 2.14-2 (April 2022)
 
-	* New functions ensemble.concave.hull(), ensemble.concave.venn() and 
+	* New functions ensemble.concave.hull(), ensemble.concave.venn() and
 	ensemble.concave.union() that enable analysis of niche overlaps in environmental space
-	for different combinations of climates and geographical origins of accessions via 	
+	for different combinations of climates and geographical origins of accessions via
 	concave or convex hulls, building on methods used by Pironon et al. 2019.
 	https://doi.org/10.1038/s41558-019-0585-7.
 
-	* New functions ensemble.envirem.masterstack(), ensemble.envirem.solradstack() and 
+	* New functions ensemble.envirem.masterstack(), ensemble.envirem.solradstack() and
 	ensemble.envirem.run() that allow to calculate an expanded set of bioclimatic variables
 	via teh envirem package with data.frames as input.
 
-	* Function ensemble.environmentalThin() was modified to result in exactly the 
+	* Function ensemble.environmentalThin() was modified to result in exactly the
 	target number of environmentally-thinned locations.
-  
+
 	* The speed of function ensemble.ecocrop() was increased. The function now also works
 	with the SpatRaster objects of the terra package. Note that the setting of argument
 	temp.multiply was changed from 10 to 1 to work with later versions of WorldClim.
@@ -201,15 +207,15 @@ Version 2.14-2 (April 2022)
 
 Version 2.14-1 (January 2022; Ty Segall's Harmonizer version)
 
- 	* New function ensemble.terra() that creates raster files via the terra package with 
+ 	* New function ensemble.terra() that creates raster files via the terra package with
 	similar functionality as ensemble.raster.
-  
+
 	* ensemble.calibrate.models() and ensemble.calibrate.weights() functions now work with
-	package terra's SpatRaster objects (and still with package raster's rasterStack 
+	package terra's SpatRaster objects (and still with package raster's rasterStack
 	objects).
 
- 	* ensemble.PET.season(), ensemble.PET.seasons(), ensemble.prec.season(), 
-	ensemble.tmean.season() and ensemble.season.suitability() functions now work with 
+ 	* ensemble.PET.season(), ensemble.PET.seasons(), ensemble.prec.season(),
+	ensemble.tmean.season() and ensemble.season.suitability() functions now work with
 	package terra's SpatRaster objects (and still with package raster's rasterStack and
 	rasterLayerobjects).
 
@@ -221,7 +227,7 @@ Version 2.14-1 (January 2022; Ty Segall's Harmonizer version)
 
 Version 2.13-1 (April 2021)
 
-	* New functions ensemble.spatialBlock and ensemble.envBlock that allow for 
+	* New functions ensemble.spatialBlock and ensemble.envBlock that allow for
 	stratification methods available via the blockCV package. These functions were modified
  	from functions available previously from the ensemble.blockCV package.
 
@@ -236,7 +242,7 @@ Version 2.13-1 (April 2021)
 	suitability from ecocrop-like thresholds and growing season temperature and
 	precipitation.
 
-	* Readme file 
+	* Readme file
 
 
 Version 2.12-3 (December 2020)
@@ -247,10 +253,10 @@ Version 2.12-3 (December 2020)
 
 	* Removed calls to rgls and vegan3d in function BiodiversityRGUI
 
-	* New function ordiellipse.long that can be used to plot ordination diagrams via 
+	* New function ordiellipse.long that can be used to plot ordination diagrams via
 	ggplot2.
 
-	* New plot options of 'ggplot (ordiellipse)' in the constrained and unconstrained 
+	* New plot options of 'ggplot (ordiellipse)' in the constrained and unconstrained
 	ordination GUIs.
 
 	* Included references to https://rpubs.com/Roeland-KINDT in the documentation where
@@ -259,10 +265,10 @@ Version 2.12-3 (December 2020)
 
 Version 2.12-2 (November 2020; Fuzz III version )
 
-	* New functions sites.long, species.long, centroids.long, vectorfit.long, 
+	* New functions sites.long, species.long, centroids.long, vectorfit.long,
 	ordisurfgrid.long and axis.long that extract data in the 'long' (tidy) format and that
 	can subsequentially be used to plot ordination diagrams via ggplot2. Various examples
-	are provided in the documentation, including cases where concave hulls and 
+	are provided in the documentation, including cases where concave hulls and
 	superellipses are drawn via the ggforce package.
 
 	* New function accumcomp.long that extracts data in the 'long' (tidy) format from a
@@ -271,7 +277,7 @@ Version 2.12-2 (November 2020; Fuzz III version )
 	* New function renyicomp.long that extracts data in the 'long' (tidy) format from a
 	renyicomp result and that can subsequentially be used by ggplot2.
 
-	* New function renyi.long that extracts data in the 'long' (tidy) format from a   
+	* New function renyi.long that extracts data in the 'long' (tidy) format from a
 	renyiresult and that can subsequentially be used by ggplot2.
 
 	* New arguments of 'return.data' and 'specnames' that result in function rankabuncomp
@@ -284,9 +290,9 @@ Version 2.12-2 (November 2020; Fuzz III version )
 	* New argument of 'poly.only' in function ensemble.chull.create that results in only
 	returning the convex polygon.
 
-	* New plot methods of 'ggplot (ordisymbol1)', 'ggplot (ordisymbol2)', 
-	'ggplot (ordispider1)', 'ggplot (ordispider2)', 'ggplot (ordisurf1)', 
-	'ggplot (ordisurf2)', 'ggplot (add species)' and 'ggplot (add vector)' in the 
+	* New plot methods of 'ggplot (ordisymbol1)', 'ggplot (ordisymbol2)',
+	'ggplot (ordispider1)', 'ggplot (ordispider2)', 'ggplot (ordisurf1)',
+	'ggplot (ordisurf2)', 'ggplot (add species)' and 'ggplot (add vector)' in the
 	unconstrained ordination and constrained ordination GUIs. Except from the latter two
 	options, each method generates a ggplot2 graph ('plotgg1') based on information
 	available in an ordiplot object ('plot1') and ordination result. The latter two options
@@ -294,11 +300,11 @@ Version 2.12-2 (November 2020; Fuzz III version )
 	As for other scripts generated by the GUIs of BiodiversityR, it is expected that users
 	will further modify these scripts to get exactly the graphs that are wanted.
 
-	* New option in the Species accumulation curves, Renyi profiles and Rank abundance 
+	* New option in the Species accumulation curves, Renyi profiles and Rank abundance
 	curves GUI of 'ggplot'. These require that first the appropriate object (eg the result
 	from accumcomp) was generated.
 
-	* New feature for the Compare distance matrices GUI with betadisper options to also 
+	* New feature for the Compare distance matrices GUI with betadisper options to also
 	provide results for pairwise permutation tests.
 
 	* New accumulation method in the Species accumulation curves GUI to explicitly refer
@@ -309,7 +315,7 @@ Version 2.12-2 (November 2020; Fuzz III version )
 Version 2.12-1 (July 2020; Wand's Ganglion Reef + 1000 Days version)
 
 	* New function ensemble.PET.season that calculates the maximum climatological water
-	deficit (accumulated aridity), corresponding to the dry season with the largest 
+	deficit (accumulated aridity), corresponding to the dry season with the largest
 	accumulated difference between precipitation and potential evapotranspiration. The
 	methodology is the same as Aragao et al. 2007 (Spatial patterns and fire response of
 	recent Amazonian droughts. Geophysical Research Letters 34(7)), but the function uses
@@ -321,18 +327,18 @@ Version 2.12-1 (July 2020; Wand's Ganglion Reef + 1000 Days version)
 	* New function ensemble.chull.MSDM that creates input data and a suggested script for
 	the MSDM_Posteriori function of the MSDM package (Mendes, P.; Velazco S.J.E.; Andrade,
  	A.F.A.; De Marco, P. (2020) Dealing with overprediction in species distribution models:
-	how adding distance constraints can improve model accuracy, Ecological Modelling, 
+	how adding distance constraints can improve model accuracy, Ecological Modelling,
 	in press.)
 
 	* New argument 'TrainTestData' for function ensemble.calibrate.weights that allows the
 	function to calibrate suitability models and weights for the ensemble model based on
-	a data.frame. When providing k-fold arguments as a list, the user should ensure that 
+	a data.frame. When providing k-fold arguments as a list, the user should ensure that
 	these match the number of presence and absence (background) records of the data.frame.
 
 	* New argument 'buffer.maxmins' for function ensemble.chull.create that estimates the
 	buffer width from the observation that is farthest away from its closest neighbour.
 
-	* New argument 'lonlat.dist' for function ensemble.chull.create that calculates the 
+	* New argument 'lonlat.dist' for function ensemble.chull.create that calculates the
 	distance in km for analyses based on longitude-latitude coordinate systems
 
 	* Modification in function ensemble.calibrate.models to fit MAXENT and MAXNET models
@@ -344,11 +350,11 @@ Version 2.12-1 (July 2020; Wand's Ganglion Reef + 1000 Days version)
 	* Internally modified the 'rainbow' palette of functions accumcomp, rankabuncomp and
 	renyiplot to use the colorspace::rainbow_hcl palette
 
-	* Modified overall colour scheme of the GUI plot options to rainbow_hcl of the 
+	* Modified overall colour scheme of the GUI plot options to rainbow_hcl of the
 	colorspace package
 
 	* Expanded options in the presence-absence GUI for various models that are available
-	also from the ensemble suitability modelling algorithms. These include GBM (gbm), 
+	also from the ensemble suitability modelling algorithms. These include GBM (gbm),
 	RF (randomForest), CF (cforest), EARTH (earth), RPART (rpart), NNET (nnet), FDA (fda),
 	SVM (ksvm) and SVME (svm).
 
@@ -363,32 +369,32 @@ Version 2.12-1 (July 2020; Wand's Ganglion Reef + 1000 Days version)
 	package.
 
 	* New options in the clustering GUI to change branch and label colors of dendrograms
-	via the color_branches and color_labels functions of the dendextend package 
+	via the color_branches and color_labels functions of the dendextend package
 
-	* New options in the clustering GUI to create heat maps via the aspectHeatmap of the 
+	* New options in the clustering GUI to create heat maps via the aspectHeatmap of the
 	ClassDiscovery package
 
 	* New option in the clustering GUI to create a heat map based on a Thresher analysis
 	(available as plot option).
 
-	* Corrected an error in function ensemble.batch of assigning absence locations.	
-	
+	* Corrected an error in function ensemble.batch of assigning absence locations.
+
 
 Version 2.11-3 (October 2019)
 
-	* New function ensemble.SEDI that calculates the Symmetric Extremal Dependence Index 
+	* New function ensemble.SEDI that calculates the Symmetric Extremal Dependence Index
 	(SEDI), as formulated by Ferro et al. 2011. Wea. Forecasting 26: 699-713 and
-	recommended as evaluation metric by Wunderlich et al. 2019. Nature Conservation 35: 
+	recommended as evaluation metric by Wunderlich et al. 2019. Nature Conservation 35:
 	97-116.
 
 	* New function ensemble.evaluate that calculates the following evaluation statistics:
-	AUC: Area Under The Curve for the testing ModelEvaluation; TSS: maximum value of the 
-	True Skill Statistic over range of threshold values; SEDI: maximum value of the 
-	Symmetric Extremal Dependence Index over range of threshold values; TSS.fixed: True 
-	Skill Statistic at the fixed threshold value; SEDI.fixed: SEDI at the fixed threshold 
-	value; FNR.fixed: False Negative Rate (= omission rate) at the fixed threshold value; 
+	AUC: Area Under The Curve for the testing ModelEvaluation; TSS: maximum value of the
+	True Skill Statistic over range of threshold values; SEDI: maximum value of the
+	Symmetric Extremal Dependence Index over range of threshold values; TSS.fixed: True
+	Skill Statistic at the fixed threshold value; SEDI.fixed: SEDI at the fixed threshold
+	value; FNR.fixed: False Negative Rate (= omission rate) at the fixed threshold value;
 	MCR.fixed: Missclassification Rate at the fixed threshold value; and AUCdiff: Difference
- 	between AUC for calibration and the testing data 
+ 	between AUC for calibration and the testing data
 
 	* Internally call ensemble.evaluate in function ensemble.calibrate.models
 
@@ -401,8 +407,8 @@ Version 2.11-3 (October 2019)
 	* Corrected an error in function ensemble.mean when RASTER.stack.name=""
 
 	* Methods and examples of generating and using spatial folds for presence and absence
-	points via the blockCV package are available from the BiodiversityRblockCV package 
-	(URL https://github.com/RoelandKindt/BiodiversityRblockCV) through functions 
+	points via the blockCV package are available from the BiodiversityRblockCV package
+	(URL https://github.com/RoelandKindt/BiodiversityRblockCV) through functions
 	ensemble.spatialBlock and ensemble.envBlock (These functions are in a
 	separate package as blockCV is not available from CRAN). Use the commands
 	devtools::install_github("rvalavi/blockCV") and
@@ -415,34 +421,34 @@ Version 2.11-3 (October 2019)
 Version 2.11-2 (June 2019)
 
 	* new function ensemble.environmentalThin.clara that enables environmental thinning for
-	large data sets. Prior to using function ensemble.environmentalThin internally in the 
-	function, the points are first divided in clusters via the cluster.clara function. 
+	large data sets. Prior to using function ensemble.environmentalThin internally in the
+	function, the points are first divided in clusters via the cluster.clara function.
 	Subsequently points in each cluster are environmentally thinned.
-		
+
 	* new option for ensemble.calibrate.weights to import k-fold groupings for presence and
 	background points as a list with elements groupp (k-fold groupings for presence points)
 	and groupa (k-fold groupings for background points). The option was inspired on using
 	outputs from the blockCV package. The option is invoked by using the list as input for
-	argument k of ensemble.calibrate.weights. 
+	argument k of ensemble.calibrate.weights.
 
 	* modification in ensemble.environmentalThin to provide a final data set that matches
 	the requested number of environmentally thinned points (previously the function stopped
-	the second algorithm when the identified minimum distance was reached, in analogy to 
+	the second algorithm when the identified minimum distance was reached, in analogy to
 	the ensemble.spatialThin function).
 
-	* modification in ensemble.environmentalThin to possibly retain only 1 axis if the 
-	variance on 1 axis exceeds the selected threshold (the previous behaviour was to 
+	* modification in ensemble.environmentalThin to possibly retain only 1 axis if the
+	variance on 1 axis exceeds the selected threshold (the previous behaviour was to
 	select a minimum of 2 PCA axes).
 
 	* new argument 'silent' for the ensemble.spatialThin, ensemble.environmentalThin and
 	ensemble.spatialThin.quant functions, with option to have no reports on the processing
 	of points.
 
-	* new arguments 'cex.lab' and 'cex.axis' for the accumplot and accumcomp functions to 
+	* new arguments 'cex.lab' and 'cex.axis' for the accumplot and accumcomp functions to
 	modify sizes of axis labels (requested by Julio Cesar Canales).
 
-	* new options for the unconstrained and constrained ordination GUI to create 
-	3-dimensional ordination graphics via the ordiplot3d, ordirgl, orglspider and 
+	* new options for the unconstrained and constrained ordination GUI to create
+	3-dimensional ordination graphics via the ordiplot3d, ordirgl, orglspider and
 	orglellipse functions of the vegan3d package.
 
 	* additional options of 'ward.D', 'ward.D2' and 'mcquitty' for the cluster GUI.
@@ -450,16 +456,16 @@ Version 2.11-2 (June 2019)
 	* new option 'labels (variable)' of the cluster GUI to change labels in dendrograms
 	to data from the environmental data set.
 
-	* new option in the Analysis of species abundance menu to summarize differences in 
+	* new option in the Analysis of species abundance menu to summarize differences in
 	abundance with the Rmisc::summarySE function.
 
 	* corrected an error in the ensemble.raster function where projection ran into problems
 	with CATCH.OFF=FALSE for the GBM algorithm.
 
-	* corrected the error of having no visible global definitions for 'data' and 
+	* corrected the error of having no visible global definitions for 'data' and
 	'wrld_simpl' of the ensemble.plot function (error reported in the CRAN Package Check
 	results)
-	
+
 	* corrected an error for the envfit plotting option of the ordination GUI where results
 	of permutation tests were not shown
 
@@ -482,36 +488,36 @@ Version 2.11-1 (January 2019; Ty Segall & White Fence's Joy version)
 	step, spatial thinning is done for each bin. Bins are defined by quantile limits of
 	geographical coordinates.
 
-	* new argument of 'MAXNET' in ensemble.calibrate.models, ensemble.calibrate.weights, 
-	ensemble.raster, ensemble.batch, ensemble.drop1, evaluation.strip.data and 
-	evaluation.strip.plot functions, allowing for maximum entropy species distribution 
+	* new argument of 'MAXNET' in ensemble.calibrate.models, ensemble.calibrate.weights,
+	ensemble.raster, ensemble.batch, ensemble.drop1, evaluation.strip.data and
+	evaluation.strip.plot functions, allowing for maximum entropy species distribution
 	modeling using glmnet for model fitting as implemented in the maxnet package.
 
-	* new argument of 'CF' in ensemble.calibrate.models, ensemble.calibrate.weights, 
-	ensemble.raster, ensemble.batch, ensemble.drop1, evaluation.strip.data and 
-	evaluation.strip.plot functions, allowing for  random forest and bagging ensemble 
-	algorithms utilizing conditional inference trees as base learners as implemented in the 
-	party package. (Note that integration of cforest required modifications of 
+	* new argument of 'CF' in ensemble.calibrate.models, ensemble.calibrate.weights,
+	ensemble.raster, ensemble.batch, ensemble.drop1, evaluation.strip.data and
+	evaluation.strip.plot functions, allowing for  random forest and bagging ensemble
+	algorithms utilizing conditional inference trees as base learners as implemented in the
+	party package. (Note that integration of cforest required modifications of
 	raster::predict that were integrated in raster version 2.8-19.)
 
-	* new argument of 'target.groups' in ensemble.calibrate.models, 
+	* new argument of 'target.groups' in ensemble.calibrate.models,
 	ensemble.calibrate.weights, ensemble.batch and ensemble.drop1 that results in 'target
 	groups' of species that were all collected or observed using the same methods or
 	equipment as for the species for which species distribution models are calibrated.
-	See Phillips et al. 2009 https://doi.org/10.1890/07-2153.1 for details. When selecting 
+	See Phillips et al. 2009 https://doi.org/10.1890/07-2153.1 for details. When selecting
 	the option, users should provide the presence locations of the other species as
-	background. For model calibrations and evaluations, pseudo-absence locations will 
+	background. For model calibrations and evaluations, pseudo-absence locations will
 	correspond to centres of cells with presence locations of the other species, possibly
 	excluding cells where the focal species occurs (a similar option is available from
 	dismo::randomPoints). Feature requested by Tobias Fremout.
 
 	* new argument of 'block.default' in ensemble.calibrate.weights and ensemble.batch that
-	results in different options of blocking point data sets (first by latitude as only 
+	results in different options of blocking point data sets (first by latitude as only
 	option available from ENMeval::get.block [i.e. the default], or first by longitude).
 	Feature suggested by Evert Thomas.
 
 	* new argument of 'get.subblocks' in ensemble.calibrate.weights and ensemble.batch that
-	results in a double implementation of ENMeval::get.block, whereby point data sets 
+	results in a double implementation of ENMeval::get.block, whereby point data sets
 	assigned to one block in the first step are again assigned to four blocks ('subblocks')
 	in a second step.
 
@@ -519,10 +525,10 @@ Version 2.11-1 (January 2019; Ty Segall & White Fence's Joy version)
 	the random elimination process retained two points above the minimum distance in the
 	previous elimination step.
 
-	* modified ensemble.spatialThin to round geographical distances to 2 decimals (10 m)	
+	* modified ensemble.spatialThin to round geographical distances to 2 decimals (10 m)
 
 	* ensured that ensemble.raster function only retained numeric variables for maxlike and
-	glmnet algorithms in situations where categorical variables were used by other 
+	glmnet algorithms in situations where categorical variables were used by other
 	algorithms.
 
 	* corrected error for GBMSTEP and probit links where the gbm.x argument did not select
@@ -541,9 +547,9 @@ Version 2.11-1 (January 2019; Ty Segall & White Fence's Joy version)
 Version 2.10-1 (July 2018)
 
 	* new function ensemble.red that calculates statistics of Area of Occupancy (AOO) and
-	Extent of Occurrence (EOO) that are used as thresholds for the IUCN Red List (URL 
+	Extent of Occurrence (EOO) that are used as thresholds for the IUCN Red List (URL
 	http://www.iucnredlist.org/static/categories_criteria_3_1). AOO and EOO are expected
-	to be calculated for 'count' suitability layers that represent different levels of 
+	to be calculated for 'count' suitability layers that represent different levels of
 	consensus among ensembles or algorithms. AOO and EOO are calculated via the red package.
 
 	* new functions ensemble.chull.create and ensemble.chull.apply that restrict suitable
@@ -555,12 +561,12 @@ Version 2.10-1 (July 2018)
 
 	* new function BiodiversityR.changeLog
 
-	* corrected error in ensemble.VIF where keeping explanatory variables resulted in 
+	* corrected error in ensemble.VIF where keeping explanatory variables resulted in
 	never-ending loops if VIF of some kept explanatory variables was above VIF.max
 
 	* compatible with Rcmdr 2.4-4 (April 2018)
 
-	* Species accumulation GUI plots horizontal error bars (via argument ci.length for 
+	* Species accumulation GUI plots horizontal error bars (via argument ci.length for
 	plotting of specaccum objects)
 
 	* Distance matrix calculation GUI now includes the possibily to directly calculate the
@@ -569,7 +575,7 @@ Version 2.10-1 (July 2018)
 	* Distance matrix calculation GUI now includes the scaled Hellinder and Chord distances
 	(Conde and Dominguez 2018. https://doi.org/10.1016/j.japb.2018.01.001).
 
-	* Clark's 1952 coefficient of divergence (appropriate for the analysis of species 
+	* Clark's 1952 coefficient of divergence (appropriate for the analysis of species
 	abundance data; Legendre and Legendre 2012 p. 306) was included among the options
 	in distance, ordination and clustering GUIs.
 
@@ -589,7 +595,7 @@ Version 2.10-1 (July 2018)
 
 Version 2.9-2 (27 February 2018)
 
-	* modified gam (version 1.13 of 2018-02-25) functions to gam::predict.Gam and 
+	* modified gam (version 1.13 of 2018-02-25) functions to gam::predict.Gam and
 	gam::step.Gam in ensemble.calibrate.models, ensemble.raster and evaluation.strip.data
 	to safely retain BiodiversityR on CRAN (problems reported on 2018-02-26).
 
@@ -606,12 +612,12 @@ Version 2.9-1 (February 2018; Ty Segall's Freedom's Goblin version)
 	* new function ensemble.spatialThin that creates a spatially thinned point location
 	data set where all pairwise distances are above a threshold distance. Although similar
 	to functions in the spThin or red packages, the geodesic is calculated more accurately
-	via the geosphere package. The function was documented separately and also was 
+	via the geosphere package. The function was documented separately and also was
 	integrated in the ensemble.batch function.
 
 	* an article that documents the ensemble suitability modelling options of BiodiversityR
-	has been published (Kindt R. 2018. Ensemble species distribution modelling with 
-	transformed suitability values. Environmental Modelling & Software 100: 136-145. URL 
+	has been published (Kindt R. 2018. Ensemble species distribution modelling with
+	transformed suitability values. Environmental Modelling & Software 100: 136-145. URL
 	https://doi.org/10.1016/j.envsoft.2017.11.009. References to this article has been
 	included in the documentation of various functions.
 
@@ -620,27 +626,27 @@ Version 2.9-1 (February 2018; Ty Segall's Freedom's Goblin version)
 
 	* in the output of the ensemble.mean function, niche overlap between input suitability
 	layers and the mean (consensus) layer is calculated via Warren's I index that is based
-	on the Hellinger distance (dismo::nicheOverlap; Warren et al. 2008. Evolution 
+	on the Hellinger distance (dismo::nicheOverlap; Warren et al. 2008. Evolution
 	62-11: 2868?2883)
 
-	* in the ensemble.batch function, random selection of background locations (if an 
+	* in the ensemble.batch function, random selection of background locations (if an
 	option) is repeated in each run
 
-	* included options in ensemble.plot to specify colours for absence and presence 
+	* included options in ensemble.plot to specify colours for absence and presence
 	suitabilities, including a new option only to plot areas where the species is predicted
 	to be present. (Also included an example how to generate the colour scheme used in the
 	http://www.worldagroforestry.org/atlas-central-america climate change atlas.)
 
-	* It is now possible to disable calls to the tryCatch function in the ensemble 
-	suitability (parameter CATCH.OFF). This option was implemented to facilitate error 
+	* It is now possible to disable calls to the tryCatch function in the ensemble
+	suitability (parameter CATCH.OFF). This option was implemented to facilitate error
 	checking (such as problems when not all packages were installed).
 
 	* An error was encountered when attempting to plot evaluation results. This error seems
-	to be caused by interpretation of the ModelEvaluation signature. The error was 
+	to be caused by interpretation of the ModelEvaluation signature. The error was
 	circumvened by disabling plotting in the ensemble functions, but giving an example of
 	getting plot results in the examples. Error reported by Thomas Fremout 22-JAN-2018.
 
-	* the location of the dismo examples folder is provided explicitly in the GUI for 
+	* the location of the dismo examples folder is provided explicitly in the GUI for
 	creation of raster stacks
 
 
@@ -663,21 +669,21 @@ Version 2.8-2 (May 2017)
 
 	* full integration of the MAXLIKE algorithm in ensemble suitability modelling
 
-	* new argument of 'get.block' in ensemble.calibrate.weights and ensemble.batch. 
-		The argument splits 4-fold cross-validation presence and background point 
-		location data sets along longitudinaland latidudinal lines through function 
+	* new argument of 'get.block' in ensemble.calibrate.weights and ensemble.batch.
+		The argument splits 4-fold cross-validation presence and background point
+		location data sets along longitudinaland latidudinal lines through function
 		get.block of the ENMeval package.
 
 	* new argument of 'mmax' in the CAPdiscrim function. This argument limits the search for
 		the optimal m (number of PCoA axes) to a a maximum number of axes equal to mmax.
-		The argument was introduced to deal with the lda error of a variable appearing 
-		to be constant within groups. 
+		The argument was introduced to deal with the lda error of a variable appearing
+		to be constant within groups.
 
 	* function CAPdiscrim saves correct predictions per factor level
 
 	* function ordisymbol now allows different palettes
 
-	* errors corrected in the 'diversity indices' menu in saving results in the 
+	* errors corrected in the 'diversity indices' menu in saving results in the
 		environmental data set
 
 	* function evaluation.strip.data includes suitability values prior to the probit
@@ -693,19 +699,19 @@ Version 2.8-1 (January 2017, malaria recovery version)
 		versions of BiodiversityR
 
 	* new function ensemble.calibrate.models that replaces function ensemble.test.
-		The original name of ensemble.test originated from the first (2012) versions of 
-		ensemble suitability modelling functions in BiodiversityR where both 
+		The original name of ensemble.test originated from the first (2012) versions of
+		ensemble suitability modelling functions in BiodiversityR where both
 		ensemble.raster and ensemble test internally calibrated and evaluated (tested)
-		models, but only ensemble.raster went ahead with creating suitability raster 
-		layers. For possible backwards compatibility, assign 
+		models, but only ensemble.raster went ahead with creating suitability raster
+		layers. For possible backwards compatibility, assign
 		ensemble.test <- ensemble.calibrate.models
 
 	* new function ensemble.calibrate.weights that replaces function ensemble.test.splits
 
-	* slot ensemble.calibrate.weights$AUC.table (ensemble.calibrate.weights) replaces 
+	* slot ensemble.calibrate.weights$AUC.table (ensemble.calibrate.weights) replaces
 		ensemble.calibrate.weights$table
 
-	* argument SSB.reduce (ensemble.calibrate.models, ensemble.batch) replaces argument 
+	* argument SSB.reduce (ensemble.calibrate.models, ensemble.batch) replaces argument
 		CIRCLES.at
 
 	* ensemble suitability layers are now create in different 'ensemble' subfolders
@@ -725,47 +731,47 @@ Version 2.8-1 (January 2017, malaria recovery version)
 	* new function ensemble.bioclim that provides an algorithm that more closely represents
 		the original BIOCLIM algorithm than function dismo::bioclim
 
-	* new function ensemble.bioclim.graph that graph function makes graphs that show mean, 
+	* new function ensemble.bioclim.graph that graph function makes graphs that show mean,
 		median, minimum, maximum and lower and upper limits for species or climates
 
 	* new function stackcommunitydataset that creates a data.frame with separate columns
 		for sites, species and abundance values (therefore the inverse function of
-		makecommunitydataset). Function is useful to combine information from 
+		makecommunitydataset). Function is useful to combine information from
 		different community data sets into one community data set.
 
-	* new option for including the glmnet algorithm in ensemble suitability modelling. 
-		Option available via argument of GLMNET in ensemble.calibrate.models, 
+	* new option for including the glmnet algorithm in ensemble suitability modelling.
+		Option available via argument of GLMNET in ensemble.calibrate.models,
 		ensemble.batch, GUI interface and other functions.
 
 	* new option for including the maxlike algorithm (Royle et al. 2012. Methods in Ecology
 		and Evolution) in ensemble suitability modelling. However, because the maxlike
 		function does not accept data frames for model calibration and the predict
-		function does not have a newdata argument, inclusion of the algorithm is 
+		function does not have a newdata argument, inclusion of the algorithm is
 		problematic and may often not be available (as in evaluation.strip.data)
 		or fail (Roeland will write a new email to the authors of maxlike indicating
 		the need to expand maxlike to handle data frames).
 
 	* new option for including a modification of the dismo::mahal algorithm to ensure
 		that predictions are within the 0 to 1 range similar to probabilities. Option
-		available via argument of MAHAL01 and MAHAL.shape in ensemble.calibrate.models, 
-		ensemble.batch, GUI interface and other functions with 
+		available via argument of MAHAL01 and MAHAL.shape in ensemble.calibrate.models,
+		ensemble.batch, GUI interface and other functions with
 
 	* new output of the ensemble.batch function to report which ensemble had the best
 		overall AUC. (This option can be used to plot count models
 
 	* new options for ensemble.threshold
 		threshold.method == "threshold2013.mean" provides the mean threshold of
-			optimal thresholds identified by Liu et al. 2013. Journal of 
+			optimal thresholds identified by Liu et al. 2013. Journal of
 			Biogeography 40: 778-789
 		threshold.method == "threshold2013.min" provides the minimum threshold of
-			optimal thresholds identified by Liu et al. 2013. Journal of 
-			Biogeography 40: 778-789		
+			optimal thresholds identified by Liu et al. 2013. Journal of
+			Biogeography 40: 778-789
 		threshold.method == "threshold2005.mean" provides the mean threshold of
-			optimal thresholds identified by Liu et al. 2005. Ecography 28: 
+			optimal thresholds identified by Liu et al. 2005. Ecography 28:
 			385-393
 		threshold.method == "threshold2005.min" provides the minimum threshold of
-			optimal thresholds identified by Liu et al. 2005. Ecography 28: 
-			385-393		
+			optimal thresholds identified by Liu et al. 2005. Ecography 28:
+			385-393
 
 	* change of handling of data extraction from raster stacks with only 1 layer
 
@@ -808,7 +814,7 @@ Version 2.8-1 (January 2017, malaria recovery version)
 	* Diversity indices menu now also accepts two factor variables to create a 2-way
 		table with diversity statistics for each combination of factor levels
 
-	* Added links from the GUI help to vignettes on diversity analysis in vegan and 
+	* Added links from the GUI help to vignettes on diversity analysis in vegan and
 		ordination analysis in vegan. Also added link to the community analysis
 		website of Jari Oksanen from the GUI help.
 
@@ -824,38 +830,38 @@ Version 2.7-2 (August 2016)
 
 	* corrected error in makecommunitydataset (error reported by Pascal Hirsch)
 
-	* Graphical User Interface (GUI) now supports following functions or options from 
+	* Graphical User Interface (GUI) now supports following functions or options from
 	vegan:
 
 		o dispweight function (via Transform community matrix menu)
-		o fitspecaccum function (via options of "arrhenius", "gleason", "gitay", 
-			"lomolino", "asymp", "gompertz", "michaelis-menten", "logis" and 
+		o fitspecaccum function (via options of "arrhenius", "gleason", "gitay",
+			"lomolino", "asymp", "gompertz", "michaelis-menten", "logis" and
 			"weibull" in Species accumulation curves menu)
 		o specslope function (via options in Species accumulation curves menu)
 		o rareslope function (via options in Species accumulation curves menu)
 		o rarefy function  (via options in Species accumulation curves menu)
 		o tsallis function (via options in Renyi profile menu)
-		o tsallisaccum function (via options in Renyi profile menu)	
+		o tsallisaccum function (via options in Renyi profile menu)
 		o dbrda function (via Constrained ordination menu)
 		o monoMDS function (via Unconstrained ordination menu)
 		o stressplot function (via unconstrained and constrained ordination menus)
 		o betadisper function (via Compare distance matrices menu)
 		o designdist function (in Distance matrix calculation menu)
-		o Lingoes and Cailliez adjustments for wcmdscale, capscale, dbrda and 
+		o Lingoes and Cailliez adjustments for wcmdscale, capscale, dbrda and
 			betadisper
 		o sqrt.dist argument for wcmdscale, capscale, dbrda and betadisper
 		o descriptive string of "species" in scaling of ordination axes (via
 			unconstrained and constrained ordination menus)
-		o RsquareAdj function for cca, dbrda and capscale (in summaries of constrained 
+		o RsquareAdj function for cca, dbrda and capscale (in summaries of constrained
 			ordination)
 		o ordibar function (via plotting functions for unconstrained and constrained
 			ordination)
-		o plotting factor levels in different colours with ordihull, ordiarrows, 
-			ordisegments, ordispider, ordibar and ordiellipse (via plotting 
+		o plotting factor levels in different colours with ordihull, ordiarrows,
+			ordisegments, ordispider, ordibar and ordiellipse (via plotting
 			functions for unconstrained and contrained ordination)
-		o summary and ordiareatest for ordihull and ordiellipse (via plotting 
+		o summary and ordiareatest for ordihull and ordiellipse (via plotting
 			functions for unconstrained and contrained ordination)
-		o ehull option of ordiellipse ((via plotting functions for unconstrained 
+		o ehull option of ordiellipse ((via plotting functions for unconstrained
 			and contrained ordination))
 
 	* change in calculation for ensemble.threshold function when using thresholds from the
@@ -874,7 +880,7 @@ Version 2.7-2 (August 2016)
 
 	* breaks are forced to be unique in ensemble.plot
 
-	* ensemble.analogue gives warning is variables are very strongly correlated with 
+	* ensemble.analogue gives warning is variables are very strongly correlated with
 	method 'mahal' (as algorithm my fail)
 
 	* corrected problem in ensemble.novel function when x only has one layer
@@ -893,7 +899,7 @@ Version 2.7-1 (April 2016)
 	* new Graphical User Interface (GUI) for renaming layer names of calibration
 	and prediction stacks
 
-	* included link to Hijmans RJ and Elith J. 2016. Species distribution modelling with R.	
+	* included link to Hijmans RJ and Elith J. 2016. Species distribution modelling with R.
 
 	* options to set width and height of new graphical device for ensemble.plot,
 	evaluation.strip.plot and ensemble.centroids functions. Setting any of these parameters
@@ -914,7 +920,7 @@ Version 2.7-0 (March 2016)
 	differentiates between suitabilities below and above a threshold that
 	discriminates between predicted absence-presence of the organism
 
-	* new feature in the evaluation.strip.plot to include a boxplot for the 
+	* new feature in the evaluation.strip.plot to include a boxplot for the
 	presence locations of a data set used for model calibrations
 
 	* included help buttons in various GUI windows
@@ -922,26 +928,26 @@ Version 2.7-0 (March 2016)
 
 Version 2.6-1 (January 2016)
 
-	* ensemble.centroid and ensemble.zones: New functions to determine centroid 
-	locations in principal components space of presence locations of an organism. 
+	* ensemble.centroid and ensemble.zones: New functions to determine centroid
+	locations in principal components space of presence locations of an organism.
 	Mahalanobis distance from centroid locations to map zones based on the
 	minimum distance from centroid locations.
 
 	* report information on spatial sorting bias in ensemble.test.
 
-	* CIRLES.at and CIRCLES.d options in ensemble.test function to reduce spatial 
+	* CIRLES.at and CIRCLES.d options in ensemble.test function to reduce spatial
 	sorting bias between evaluation presence and absence locations
 
 	* threshold.PresenceAbsence option in ensemble.test to use the PresenceAbsence
 	package to calculate absence-presence thresholds.
-	
+
 	* ensemble.novel: New function to map novel environmental conditions.
-	
+
 	* ensemble.area: New function to calculate areas of suitability raster maps.
 
 	* ensemble.analogue: New function to map environmental (climate) analogues.
-	
-	* ensemble.ecocrop: New function to map suitability based on temperature 
+
+	* ensemble.ecocrop: New function to map suitability based on temperature
 	and rainfall optimal and absolute ranges.
 
 	* corrected problem in handling probit-transformations in ensemble.raster function
@@ -953,7 +959,7 @@ Version 2.5-4 (September 2015)
 
 	* compatibility with Rcmdr restored (eg qqPlot)
 
-	* menu interface scripts updated	
+	* menu interface scripts updated
 
 	* new menu option of Analysis of diversity > Add diversity variables to data set
 
@@ -966,8 +972,8 @@ Version 2.5-3 (July 2015)
 	handled by including as.dist() function prior to cmdscale() function).
 
 	* new function importancevalue to calculate Importance Value Index, and new
-	ifri data set (collaboration with the International Forestry Resources and Institutions 
-	[IFRI] research network; http://www.ifriresearch.net)  
+	ifri data set (collaboration with the International Forestry Resources and Institutions
+	[IFRI] research network; http://www.ifriresearch.net)
 
 	* new menu option of replacing NA with 0 in the community data set
 
@@ -975,7 +981,7 @@ Version 2.5-3 (July 2015)
 	weights for submodels when weights are not tuned
 
 	* ensured that subfolder to save models is created (ensemble.test function)
-	
+
 	* included package information for function visibility
 
 
@@ -1015,9 +1021,9 @@ Version 2-5.1 (November 2014)
 
 Version 2-4.4 (May 2014)
 
-	* new PROBIT option in ensemble.test function to transform outputs of 
-	ensemble submodels with probit transformation (also supported in 
-	ensemble.raster function)	
+	* new PROBIT option in ensemble.test function to transform outputs of
+	ensemble submodels with probit transformation (also supported in
+	ensemble.raster function)
 
 	* new ENSEMBLE.exponent option to modify weights of ensemble submodels
 	in ensemble model by using exponent

@@ -75,7 +75,7 @@ Tree diversity analysis: A manual and
   software for common statistical methods for ecological and
   biodiversity studies.
  
-  \url{https://www.worldagroforestry.org/output/tree-diversity-analysis} 
+  \url{https://www.landscapealliance.org/gtkp/resource/tree-diversity-analysis-manual/} 
 
 \url{https://rpubs.com/Roeland-KINDT}
 

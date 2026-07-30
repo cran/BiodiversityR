@@ -13,9 +13,7 @@ The package was initially built to provide a graphical user interface
 and different helper functions for the `vegan` community ecology
 package. As documented in a manual on biodiversity and community ecology
 analysis, available from [this
-website](http://www.worldagroforestry.org/output/tree-diversity-analysis)
-and [this
-link](http://www.worldagroforestry.org/downloads/Publications/PDFS/B13695.pdf),
+link](https://www.landscapealliance.org/publications/downloads/Publications/PDFS/B13695.pdf),
 most analysis pipelines require a **community matrix** (typically having
 sites as rows, species as columns and abundance values as cell values)
 and an **environmental data set** (typically providing numerical and
@@ -59,7 +57,7 @@ Data set **dune** is a community data set, where variables (columns)
 typically correspond to different species and data represents abundance
 of each species. Species names were abbreviated to eight characters,
 with for example Agrostol representing [*Agrostis
-stolonifera*](https://apps.worldagroforestry.org/products/switchboard/index.php/name_like/Agrostis%20stolonifera).
+stolonifera*](https://switchboard.cifor-icraf.org/index.php/name_like/Agrostis%20stolonifera).
 
 ``` r
 data(dune)
